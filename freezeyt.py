@@ -14,6 +14,6 @@ def freeze(app, path):
 
     result = app(environ, start_response)
 
-    with open("/tmp/frozen/index.html", "wb") as f:
+    with open(path / "index.html", "wb") as f:
         for item in result:
             f.write(item)
