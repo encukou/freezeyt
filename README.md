@@ -102,7 +102,7 @@ $ git push <your_remote> <your_new_branch>
 
 ## Authors
 Idea of this project occurred to encukou. He is one of the founders of Czech PyLadies.
-* [GitHub]((https://github.com/encukou).)
+* [encukou GitHub](https://github.com/encukou)
 
 Also every contributors help to create this module.
 
