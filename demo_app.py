@@ -1,9 +1,9 @@
-from flask import Flask
+from flask import Flask, url_for
 
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route("/")
 def index():
     return """
     <html>
@@ -11,7 +11,23 @@ def index():
             <title>Hello world</title>
         </head>
         <body>
-            Hello world!
+            Hello world!<br>
+            <a href="/about">About page</a>
         </body>
     </html>
     """
+
+
+@app.route("/about")
+def about():
+    return """
+    <html>
+        <head>
+            <title>About</title>
+        </head>
+        <body>
+            <h2>We are czech community of PyLadies !!!</h2>
+        </body>
+    </html>
+    """
+
