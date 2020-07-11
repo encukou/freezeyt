@@ -30,10 +30,12 @@ def test_two_pages(tmp_path):
     freeze(app, tmp_path)
 
     with open(tmp_path / "index.html", encoding="utf-8") as f:
-        read_text = f.read()
+        first_page = f.read()
+    with open(tmp_path / "about.html", encoding="utf-8") as f:
+        second_page = f.read()
 
     assert (
-        read_text
+        first_page
         == """
     <html>
         <head>
@@ -42,6 +44,19 @@ def test_two_pages(tmp_path):
         <body>
             Hello world!<br>
             <a href="/about">About page</a>
+        </body>
+    </html>
+    """
+    )
+    assert (
+        second_page
+        == """
+    <html>
+        <head>
+            <title>About</title>
+        </head>
+        <body>
+            <h2>We are czech community of PyLadies !!!</h2>
         </body>
     </html>
     """
