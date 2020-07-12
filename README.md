@@ -22,7 +22,7 @@ Main goal of this project is to create a versatile freezer to generate static we
 ## What IS the project about?
 The idea is to create a new freezer in order to generate static web pages. It should also help PyLadies who've already taken their first steps with the Python programming language and now they are looking for some real projects where they could not only put their programming skills to the test but also to improve them.
 
-The Czech community PyLadies has used a lot of static web pages that were generated from a web application for community purposes  e.g. workshops, courses, or meetups.
+The Czech Python community uses a lot of static web pages that are generated from a web application for community purposes e.g. workshops, courses, or meetups.
 
 The community has been so far relying on the following projects in order to generate the static web content:
 
@@ -41,14 +41,14 @@ The new freezer ought to be based on the old elsa one, but such that it can be u
 I have no idea so far.
 
 ## Installation
-It is higly recommended to create your own virtual enviroment for this project.
+It is higly recommended to create a separate virtual enviroment for this project.
 
 For testing the project it's necessary to install pytest:
 ```
 $ python -m pip install pytest
 ```
 
-The web application itself will be created by flask:
+The web application itself will be created using flask:
 ```
 $ python -m pip install flask
 ```
@@ -63,7 +63,7 @@ Tools used in this project:
 * [pytest](https://docs.pytest.org/en/latest/)
 
 ## Contributing
-Are you interested in this project ? Awesome! Anyone who wants to be part of this project and who's willing to help us is very welcome.
+Are you interested in this project? Awesome! Anyone who wants to be part of this project and who's willing to help us is very welcome.
 Only started with Python? Good news! We're trying to target mainly the beginner Pythonistas who are seeking opportunities to contribute to (ideally open source) projects and who would like to be part of an open source community which could give them a head start in their (hopefully open source :)) programming careers.
 Soo, what if I already have some solid Python-fu? First, there's always something new to learn, and second, we'd appreciate if you could guide the "rookies" and pass on some of the knowledge onto them.
 
@@ -94,7 +94,7 @@ $ git branch <name_new_branch>
 $ git switch <name_new_branch>
 ```
 6. Make some awesome changes in code
-7. Push changes to your forked repo in GitHub
+7. Push changes to your forked repo on GitHub
 
 ```
 $ git push <your_remote> <your_new_branch>
