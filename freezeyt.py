@@ -27,15 +27,17 @@ def get_all_links(page_content):
 
     Returns an iterable of strings
     """
-    result = []
-    print(page_content)
     document = html5lib.parse(page_content)
-    print(document)
-    for child in document:
-        for grandchild in child:
-            print(grandchild)
-            print(grandchild.tag)
-            if grandchild.tag == '{http://www.w3.org/1999/xhtml}a':
-                print(grandchild.attrib)
-                result.append(grandchild.attrib['href'])
+    return get_links_from_node(document)
+
+
+def get_links_from_node(node):
+    """Get all links from xml.dom.minidom Node
+    """
+    result = []
+    if 'href' in node.attrib:
+        result.append(node.attrib['href'])
+    for child in node:
+        result.extend(get_links_from_node(child))
     return result
+

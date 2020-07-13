@@ -10,7 +10,10 @@ def test_get_links():
                 Hello world!
                 <br>
                 <a href='/second_page'>LINK</a> to second page.
-                <a href='/third_page'>LINK</a> to third page.
+                <p>
+                    <a href='/third_page'>LINK</a> to third page.
+                </p>
+                <img src="blabla.png">
             </body>
         </html>
     """)
