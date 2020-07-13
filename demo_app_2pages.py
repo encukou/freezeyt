@@ -13,13 +13,13 @@ def index():
         <body>
             Hello world!
             <br>
-            <a href='/second_page'>LINK</a> to second page.
+            <a href='/second_page.html'>LINK</a> to second page.
         </body>
     </html>
     """
 
 
-@app.route('/second_page')
+@app.route('/second_page.html')
 def second_page():
     return """
     <html>

@@ -19,7 +19,24 @@ def freeze(app, path):
         for item in result:
             f.write(item)
 
-    links = get_all_links(result)
+    with open(path / "index.html", "rb") as f:
+        links = get_all_links(f)
+
+    for link in links:
+        environ = {
+            'SERVER_NAME': 'localhost',
+            'wsgi.url_scheme': 'http',
+            'SERVER_PORT': '8000',
+            'REQUEST_METHOD': 'GET',
+            'PATH_INFO': link,
+            # ...
+        }
+
+        result = app(environ, start_response)
+
+        with open(path / link.lstrip('/'), "wb") as f:
+            for item in result:
+                f.write(item)
 
 
 def get_all_links(page_content):

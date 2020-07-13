@@ -38,7 +38,7 @@ def test_two_pages(tmp_path):
         <body>
             Hello world!
             <br>
-            <a href='/second_page'>LINK</a> to second page.
+            <a href='/second_page.html'>LINK</a> to second page.
         </body>
     </html>
     """
