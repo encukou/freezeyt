@@ -1,18 +1,5 @@
 # freezeyt
-Generator of static web pages created by the Czech community of PyLadies.
-
-
-## Table of contents
-* [Project goal](#Project-goal)
-* [What is the project about?](#What-is-the-project-about?)
-    * [What is NOT the project about?](#What-is-NOT-the-project-about?)
-* [Installation](#Installation)
-* [Usage](#Usage)
-* [Contributing](#Contributing)
-    * [How to start contribute](#How-to-contribute)
-* [Authors](#Authors)
-* [Licence](#Licence)
-    
+Generator of static web pages created by the Czech community of python programming language.
 
 
 ## Project goal
@@ -20,47 +7,32 @@ Main goal of this project is to create a versatile freezer to generate static we
 
 
 ## What IS the project about?
-The idea is to create a new freezer in order to generate static web pages. It should also help PyLadies who've already taken their first steps with the Python programming language and now they are looking for some real projects where they could not only put their programming skills to the test but also to improve them.
-
-The Czech Python community uses a lot of static web pages that are generated from a web application for community purposes e.g. workshops, courses, or meetups.
-
-The community has been so far relying on the following projects in order to generate the static web content:
-
-* [flask-frozen](https://pythonhosted.org/Frozen-Flask/)
-* community module [elsa](https://github.com/pyvec/elsa/)
+The idea is to create a new freezer in order to generate static web pages. It should also help the czech beginner pythonistas who've already taken their first steps with the Python programming language and now they are looking for some real projects where they could not only put their programming skills to the test but also to improve them.
 
 
-
-The new freezer ought to be based on the old elsa one, but such that it can be used with an arbitrary Python Web application framework, e.g.:
-
-* [Django](https://www.djangoproject.com/)
-* [Tornado](https://www.tornadoweb.org/en/stable/)
-* etc.
  
 ### What the project IS NOT about?
 I have no idea so far.
 
+
 ## Installation
-It is higly recommended to create a separate virtual enviroment for this project.
 
-For testing the project it's necessary to install pytest:
-```
-$ python -m pip install pytest
-```
+There are no other installation requirements for this project.
+It is higly recommended to create a separate virtual enviroment.
 
-The web application itself will be created using flask:
-```
-$ python -m pip install flask
-```
 
+### Installation for testing project
+
+For testing the project it's necessary to install pytest and flask:
+```
+$ python -m pip install pytest flask
+```
 
 
 ## Usage
+The project has not been done yet.
+Freezer don't generate static pages so far.
 
-Tools used in this project:
-* [PEP 3333 - Python WSGI](https://www.python.org/dev/peps/pep-3333/)
-* [flask](https://flask.palletsprojects.com/en/1.1.x/)
-* [pytest](https://docs.pytest.org/en/latest/)
 
 ## Contributing
 Are you interested in this project? Awesome! Anyone who wants to be part of this project and who's willing to help us is very welcome.
@@ -71,8 +43,19 @@ Soo, what if I already have some solid Python-fu? First, there's always somethin
 Contributions, issues and feature requests are welcome.
 Feel free to check out [issues](https://github.com/encukou/freezeyt/issues) page if you'd like to contribute.
 
-### How to contribute
 
+### How to watch progress
+Unfortunately our progress of development can be watched only in Czech language.
+
+We have been using these channels:
+
+* live streaming on [jit.si](https://meet.jit.si/freezeyt)
+* videos from live streaming on [youtube](https://www.youtube.com/playlist?list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT)
+* [Pyvec channel](https://pyvec.slack.com/archives/C0168D5TQ4D) on slack is `# freezeyt`
+* [document](https://docs.google.com/document/d/1iACdWvSJZmKTgu2TBKYA71jGaiqftDZDqYW6c4BoqjE/edit) in czech where you can find all information about project
+
+
+### How to contribute
 
 1. Just clone this repository to your local computer:
 
@@ -103,11 +86,26 @@ $ git push <your_remote> <your_new_branch>
 9. Repeat this process until we will have done amazing freezer
 
 
-## Authors
-Idea of this project occurred to encukou. He is one of the founders of Czech PyLadies.
-* [encukou GitHub](https://github.com/encukou)
+### Used tools
 
-Also every contributors help to create this module.
+* [PEP 3333 - Python WSGI](https://www.python.org/dev/peps/pep-3333/)
+* [flask](https://flask.palletsprojects.com/en/1.1.x/)
+* [pytest](https://docs.pytest.org/en/latest/)
+
+
+### Why start this project
+
+The Czech Python community uses a lot of static web pages that are generated from a web application for community purposes e.g. workshops, courses, or meetups.
+
+The community has been so far relying on the following projects ([flask-frozen](https://pythonhosted.org/Frozen-Flask/) and [elsa](https://github.com/pyvec/elsa/)) in order to generate the static web content. 
+
+
+The new freezer ought to be used with any arbitrary Python Web application framework ([Flask](https://flask.palletsprojects.com/en/1.1.x/), [Django](https://www.djangoproject.com/), [Tornado](https://www.tornadoweb.org/en/stable/), etc.) and with our new [freezer](https://github.com/encukou/freezeyt).
+
+
+## Authors
+See GitHub history for all [contributors](https://github.com/encukou/freezeyt/graphs/contributors).
+
 
 ## License
-For purposes of this project the Massachusetts Institute of Technology License [(MIT)](LICENSE) has been chosen.
+For purposes of this project the [MIT License](LICENCE.MIT) has been chosen.
