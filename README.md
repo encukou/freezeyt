@@ -26,7 +26,7 @@ List of requirements:
 * [html5lib](https://html5lib.readthedocs.io/en/latest/)
 
 
-It is higly recommended to create a separate virtual enviroment for this project.
+It is higly recommended to create a separate virtual environment for this project.
 
 
 ### Installation for testing project
