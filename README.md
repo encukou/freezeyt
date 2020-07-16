@@ -1,5 +1,5 @@
 # freezeyt
-Generator of static web pages created by the Czech community of python programming language.
+Generator of static web pages created by the Czech Python community.
 
 
 ## Project goal
@@ -17,8 +17,16 @@ I have no idea so far.
 
 ## Installation
 
-There are no other installation requirements for this project.
-It is higly recommended to create a separate virtual enviroment.
+When you clone the project you can use command below for install all needed requirements:
+```
+python -m pip install -r requirements.txt
+```
+
+List of requirements:
+* [html5lib](https://html5lib.readthedocs.io/en/latest/)
+
+
+It is higly recommended to create a separate virtual enviroment for this project.
 
 
 ### Installation for testing project
@@ -49,10 +57,10 @@ Unfortunately our progress of development can be watched only in Czech language.
 
 We have been using these channels:
 
-* live streaming on [jit.si](https://meet.jit.si/freezeyt)
-* videos from live streaming on [youtube](https://www.youtube.com/playlist?list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT)
-* [Pyvec channel](https://pyvec.slack.com/archives/C0168D5TQ4D) on slack is `# freezeyt`
-* [document](https://docs.google.com/document/d/1iACdWvSJZmKTgu2TBKYA71jGaiqftDZDqYW6c4BoqjE/edit) in czech where you can find all information about project
+* live streaming on [Jitsi](https://meet.jit.si/freezeyt)
+* videos from live streaming on [Youtube](https://www.youtube.com/playlist?list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT)
+* [Pyvec channel](https://pyvec.slack.com/archives/C0168D5TQ4D) on Slack is `# freezeyt`
+* [document](https://docs.google.com/document/d/1iACdWvSJZmKTgu2TBKYA71jGaiqftDZDqYW6c4BoqjE/edit) in Czech where you can find all information about project
 
 
 ### How to contribute
@@ -91,16 +99,14 @@ $ git push <your_remote> <your_new_branch>
 * [PEP 3333 - Python WSGI](https://www.python.org/dev/peps/pep-3333/)
 * [flask](https://flask.palletsprojects.com/en/1.1.x/)
 * [pytest](https://docs.pytest.org/en/latest/)
+* [html5lib](https://html5lib.readthedocs.io/en/latest/)
 
 
 ### Why start this project
 
 The Czech Python community uses a lot of static web pages that are generated from a web application for community purposes e.g. workshops, courses, or meetups.
 
-The community has been so far relying on the following projects ([flask-frozen](https://pythonhosted.org/Frozen-Flask/) and [elsa](https://github.com/pyvec/elsa/)) in order to generate the static web content. 
-
-
-The new freezer ought to be used with any arbitrary Python Web application framework ([Flask](https://flask.palletsprojects.com/en/1.1.x/), [Django](https://www.djangoproject.com/), [Tornado](https://www.tornadoweb.org/en/stable/), etc.) and with our new [freezer](https://github.com/encukou/freezeyt).
+The community has been so far relying on the following projects ([flask-frozen](https://pythonhosted.org/Frozen-Flask/) and [elsa](https://github.com/pyvec/elsa/)) in order to generate the static web content. The new [freezer](https://github.com/encukou/freezeyt) ought to be used with any arbitrary Python Web application framework ([Flask](https://flask.palletsprojects.com/en/1.1.x/), [Django](https://www.djangoproject.com/), [Tornado](https://www.tornadoweb.org/en/stable/), etc.)
 
 
 ## Authors
