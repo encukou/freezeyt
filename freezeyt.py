@@ -37,6 +37,9 @@ def freeze(app, path):
         with open(path / link.lstrip('/'), "wb") as f:
             for item in result:
                 f.write(item)
+            
+        with open(path / link.lstrip('/'), "rb") as f:
+            links.extend(get_all_links(f))
 
 
 def get_all_links(page_content):
