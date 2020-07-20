@@ -22,7 +22,8 @@ def freeze(app, path):
     with open(path / "index.html", "rb") as f:
         links = get_all_links(f)
 
-    for link in links:
+    while links:
+        link = links.pop()
         environ = {
             'SERVER_NAME': 'localhost',
             'wsgi.url_scheme': 'http',
@@ -37,7 +38,7 @@ def freeze(app, path):
         with open(path / link.lstrip('/'), "wb") as f:
             for item in result:
                 f.write(item)
-            
+
         with open(path / link.lstrip('/'), "rb") as f:
             links.extend(get_all_links(f))
 
