@@ -16,6 +16,7 @@ def freeze(app, path):
 
     while links:
         link = links.pop()
+        print(link)
         environ = {
             'SERVER_NAME': 'localhost',
             'wsgi.url_scheme': 'http',

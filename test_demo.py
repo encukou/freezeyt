@@ -3,6 +3,7 @@ import pytest
 from demo_app import app
 from demo_app_2pages import app as app_2pages
 from demo_app_3pages_deep import app as app_3pages_deep
+from demo_app_2pages_cycle import app as app_2pages_cycle
 
 from freezeyt import freeze
 
@@ -71,3 +72,15 @@ def test_three_pages_deep(tmp_path):
     path3 = tmp_path / "third_page.html"
     assert path3.exists()
     assert 'Hello world third page' in path3.read_text()
+
+
+def test_two_pages_cycle(tmp_path):
+    freeze(app_2pages_cycle, tmp_path)
+
+    path1 = tmp_path / "index.html"
+    assert path1.exists()
+    assert 'Hello world!' in path2.read_text()
+
+    path2 = tmp_path / "second_page.html"
+    assert path2.exists()
+    assert 'Hello world second page' in path2.read_text()
