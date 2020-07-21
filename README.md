@@ -3,29 +3,27 @@ Generator of static web pages created by the Czech Python community.
 
 
 ## Project goal
-Main goal of this project is to create a versatile freezer to generate static web pages from web application. The freezer aims to be compatible with any Python Web framework. 
+Main goal of this project is to create a versatile freezer to generate static web pages from web application. The freezer aims to be compatible with any Python Web framework.
 
 
 ## What IS the project about?
 The idea is to create a new freezer in order to generate static web pages. It should also help the czech beginner pythonistas who've already taken their first steps with the Python programming language and now they are looking for some real projects where they could not only put their programming skills to the test but also to improve them.
 
- 
+
 ### What the project IS NOT about?
 I have no idea so far.
 
 
 ## Installation
-
-When you clone the project you can use command below for install all needed requirements:
+It is higly recommended to create a separate virtual environment for this project:
 ```
-python -m pip install -r requirements.txt
+$ python -m venv venv
 ```
 
-List of requirements:
-* [html5lib](https://html5lib.readthedocs.io/en/latest/)
-
-
-It is higly recommended to create a separate virtual environment for this project.
+After successful clone the project, install all needed requirements:
+```
+$ python -m pip install -r requirements.txt
+```
 
 
 ### Installation for testing project
@@ -54,13 +52,12 @@ Feel free to check out [issues](https://github.com/encukou/freezeyt/issues) page
 ### How to watch progress
 Unfortunately our progress of development can be watched only in Czech language.
 
-We have been using these channels:
+Watch the progress:
 
-* live streaming on [Jitsi](https://meet.jit.si/freezeyt)
-* videos from live streaming on [Youtube](https://www.youtube.com/playlist?list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT)
-* [Pyvec channel](https://pyvec.slack.com/archives/C0168D5TQ4D) on Slack is `# freezeyt`
-* [document](https://docs.google.com/document/d/1iACdWvSJZmKTgu2TBKYA71jGaiqftDZDqYW6c4BoqjE/edit) in Czech where you can find all information about project
+* [Youtube channel](https://www.youtube.com/playlist?list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT)
 
+Other communication channels and info you will find in:
+* [Google doc in Czech](https://docs.google.com/document/d/1iACdWvSJZmKTgu2TBKYA71jGaiqftDZDqYW6c4BoqjE/edit)
 
 ### How to contribute
 
@@ -101,11 +98,11 @@ $ git push <your_remote> <your_new_branch>
 * [html5lib](https://html5lib.readthedocs.io/en/latest/)
 
 
-### Why start this project
+### Why did the project start?
 
 The Czech Python community uses a lot of static web pages that are generated from a web application for community purposes e.g. workshops, courses, or meetups.
 
-The community has been so far relying on the following projects ([flask-frozen](https://pythonhosted.org/Frozen-Flask/) and [elsa](https://github.com/pyvec/elsa/)) in order to generate the static web content. The new [freezer](https://github.com/encukou/freezeyt) ought to be used with any arbitrary Python Web application framework ([Flask](https://flask.palletsprojects.com/en/1.1.x/), [Django](https://www.djangoproject.com/), [Tornado](https://www.tornadoweb.org/en/stable/), etc.)
+The community has been so far relying on the following projects ([flask-frozen](https://pythonhosted.org/Frozen-Flask/) and [elsa](https://github.com/pyvec/elsa/)) in order to generate the static web content. The new [freezer](https://github.com/encukou/freezeyt) ought to be used with any arbitrary Python Web application framework ([Flask](https://flask.palletsprojects.com/en/1.1.x/), [Django](https://www.djangoproject.com/), [Tornado](https://www.tornadoweb.org/en/stable/), etc.). So community won't be anymore limited by one web app technology for generating static pages.
 
 
 ## Authors
