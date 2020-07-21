@@ -9,7 +9,6 @@ Main goal of this project is to create a versatile freezer to generate static we
 ## What IS the project about?
 The idea is to create a new freezer in order to generate static web pages. It should also help the czech beginner pythonistas who've already taken their first steps with the Python programming language and now they are looking for some real projects where they could not only put their programming skills to the test but also to improve them.
 
-
  
 ### What the project IS NOT about?
 I have no idea so far.
@@ -57,10 +56,10 @@ Unfortunately our progress of development can be watched only in Czech language.
 
 We have been using these channels:
 
-* live streaming on [Jitsi](https://meet.jit.si/freezeyt) ![jitsi_logo](https://img.informer.com/icons/png/48/4832/4832341.png)
-* videos from live streaming on [Youtube](https://www.youtube.com/playlist?list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT) ![youtube_logo](https://cdn1.iconfinder.com/data/icons/google_jfk_icons_by_carlosjj/64/youtube.png)
-* [Pyvec channel](https://pyvec.slack.com/archives/C0168D5TQ4D) on Slack is `# freezeyt` ![slack_logo](https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Slack_Icon.png/40px-Slack_Icon.png)
-* [document](https://docs.google.com/document/d/1iACdWvSJZmKTgu2TBKYA71jGaiqftDZDqYW6c4BoqjE/edit) in Czech where you can find all information about project ![google_docs](https://lh6.googleusercontent.com/wZIj_18G6farOXdZTg5ulbIdLVWIf7nczqPyipVLgGTuAw3wIlAbDgqpQ0Ac7UiWKrffG1tj=s50-h50-e365)
+* live streaming on [Jitsi](https://meet.jit.si/freezeyt)
+* videos from live streaming on [Youtube](https://www.youtube.com/playlist?list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT)
+* [Pyvec channel](https://pyvec.slack.com/archives/C0168D5TQ4D) on Slack is `# freezeyt`
+* [document](https://docs.google.com/document/d/1iACdWvSJZmKTgu2TBKYA71jGaiqftDZDqYW6c4BoqjE/edit) in Czech where you can find all information about project
 
 
 ### How to contribute

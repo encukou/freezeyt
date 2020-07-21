@@ -1,28 +1,22 @@
 import html5lib
 
-def freeze(app, path):
-    environ = {
-        'SERVER_NAME': 'localhost',
-        'wsgi.url_scheme': 'http',
-        'SERVER_PORT': '8000',
-        'REQUEST_METHOD': 'GET',
-        # ...
-    }
 
+def url_to_filename(base, url):
+    if url.endswith('/'):
+        url = url + 'index.html'
+    return base / url.lstrip('/')
+
+
+def freeze(app, path):
     def start_response(status, headers):
         print('status', status)
         print('headers', headers)
 
-    result = app(environ, start_response)
+    links = ['/']
 
-    with open(path / "index.html", "wb") as f:
-        for item in result:
-            f.write(item)
-
-    with open(path / "index.html", "rb") as f:
-        links = get_all_links(f)
-
-    for link in links:
+    while links:
+        link = links.pop()
+        print(link)
         environ = {
             'SERVER_NAME': 'localhost',
             'wsgi.url_scheme': 'http',
@@ -34,9 +28,12 @@ def freeze(app, path):
 
         result = app(environ, start_response)
 
-        with open(path / link.lstrip('/'), "wb") as f:
+        with open(url_to_filename(path, link), "wb") as f:
             for item in result:
                 f.write(item)
+
+        with open(url_to_filename(path, link), "rb") as f:
+            links.extend(get_all_links(f))
 
 
 def get_all_links(page_content):
