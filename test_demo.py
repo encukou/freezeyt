@@ -79,7 +79,7 @@ def test_two_pages_cycle(tmp_path):
 
     path1 = tmp_path / "index.html"
     assert path1.exists()
-    assert 'Hello world!' in path2.read_text()
+    assert 'Hello world!' in path1.read_text()
 
     path2 = tmp_path / "second_page.html"
     assert path2.exists()
