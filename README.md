@@ -102,7 +102,7 @@ $ git push <your_remote> <your_new_branch>
 
 The Czech Python community uses a lot of static web pages that are generated from a web application for community purposes e.g. workshops, courses, or meetups.
 
-The community has been so far relying on the following projects ([flask-frozen](https://pythonhosted.org/Frozen-Flask/) and [elsa](https://github.com/pyvec/elsa/)) in order to generate the static web content. The new [freezer](https://github.com/encukou/freezeyt) ought to be used with any arbitrary Python Web application framework ([Flask](https://flask.palletsprojects.com/en/1.1.x/), [Django](https://www.djangoproject.com/), [Tornado](https://www.tornadoweb.org/en/stable/), etc.). So community won't be anymore limited by one web app technology for generating static pages.
+The community has been so far relying on the following projects ([flask-frozen](https://pythonhosted.org/Frozen-Flask/) and [elsa](https://github.com/pyvec/elsa/)) in order to generate the static web content. The new [freezer](https://github.com/encukou/freezeyt) ought to be used with any arbitrary Python Web application framework ([Flask](https://flask.palletsprojects.com/en/1.1.x/), [Django](https://www.djangoproject.com/), [Tornado](https://www.tornadoweb.org/en/stable/), etc.). So the community won't be limited by one web app technology for generating static pages anymore.
 
 
 ## Authors
