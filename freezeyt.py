@@ -14,9 +14,18 @@ def freeze(app, path):
 
     links = ['/']
 
+    visited_links = []
+
     while links:
         link = links.pop()
+
+        if link in visited_links:
+            continue
+
+        visited_links.append(link)
+
         print(link)
+
         environ = {
             'SERVER_NAME': 'localhost',
             'wsgi.url_scheme': 'http',
