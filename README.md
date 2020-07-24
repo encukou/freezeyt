@@ -20,7 +20,7 @@ It is higly recommended to create a separate virtual environment for this projec
 $ python -m venv venv
 ```
 
-After successful clone the project, install all needed requirements:
+All needed requirements can be installed to an activated virtual environment using this command:
 ```
 $ python -m pip install -r requirements.txt
 ```
