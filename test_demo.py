@@ -9,6 +9,9 @@ from freezeyt import freeze
 
 
 def test_one_page(tmp_path):
+    """
+    Tests if the freezer creates a file from a one-page app.
+    """
     freeze(app, tmp_path)
 
     with open(tmp_path / "index.html", encoding='utf-8') as f:
@@ -27,6 +30,10 @@ def test_one_page(tmp_path):
 
 
 def test_two_pages(tmp_path):
+    """
+    Tests if the freezer creates files from a two-page app
+    where the first page links to the second page.
+    """
     freeze(app_2pages, tmp_path)
 
     with open(tmp_path / "index.html", encoding='utf-8') as f:
@@ -61,6 +68,11 @@ def test_two_pages(tmp_path):
 
 
 def test_three_pages_deep(tmp_path):
+    """
+    Tests if the freezer creates files from a web app
+    where the first page links to the second page
+    and the second page links to the third page.
+    """
     freeze(app_3pages_deep, tmp_path)
 
     path1 = tmp_path / "index.html"
@@ -75,6 +87,10 @@ def test_three_pages_deep(tmp_path):
 
 
 def test_two_pages_cycle(tmp_path):
+    """
+    Tests if the freezer creates two pages
+    and doesn't get into an infinite loop.
+    """
     freeze(app_2pages_cycle, tmp_path)
 
     path1 = tmp_path / "index.html"

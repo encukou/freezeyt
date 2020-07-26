@@ -1,6 +1,11 @@
 from freezeyt import get_all_links
 
+
 def test_get_links():
+    """
+    Tests if the function gets all links from a page,
+    even when the links are deeper in the page.
+    """
     links = get_all_links(b"""
         <html>
             <head>
