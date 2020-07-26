@@ -56,7 +56,7 @@ Watch the progress:
 
 * [Youtube channel](https://www.youtube.com/playlist?list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT)
 
-Other communication channels and info you will find in:
+Other communication channels and info can be found here:
 * [Google doc in Czech](https://tinyurl.com/freezeyt)
 
 ### How to contribute
