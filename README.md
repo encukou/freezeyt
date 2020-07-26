@@ -15,7 +15,7 @@ I have no idea so far.
 
 
 ## Installation
-It is higly recommended to create a separate virtual environment for this project:
+It is highly recommended to create a separate virtual environment for this project:
 ```
 $ python -m venv venv
 ```
