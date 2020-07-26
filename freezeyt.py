@@ -2,12 +2,30 @@ import html5lib
 
 
 def url_to_filename(base, url):
+    """
+    Returns the filename to which the page is frozen
+
+    base is the path to the file
+    url is the link to the page
+    """
     if url.endswith('/'):
         url = url + 'index.html'
     return base / url.lstrip('/')
 
 
 def freeze(app, path):
+    """
+    Freezes (creates files of) all pages from a WSGI server
+
+    Makes an iterable of links
+    Goes through the links
+        Starts the app
+        Writes binary strings to the file
+        Extends the list of links by adding links from the current page
+
+    app is the web app you want to freeze
+    path is the path to the file
+    """
     def start_response(status, headers):
         print('status', status)
         print('headers', headers)
@@ -54,4 +72,3 @@ def get_links_from_node(node):
     for child in node:
         result.extend(get_links_from_node(child))
     return result
-
