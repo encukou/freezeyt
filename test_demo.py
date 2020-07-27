@@ -102,7 +102,7 @@ def test_two_pages_cycle(tmp_path):
     assert 'Hello world second page' in path2.read_text()
 
 
-def test_two_pages_cycle(tmp_path):
+def test_external_link(tmp_path):
     """Test if the freezer ignores external links.
     """
 
