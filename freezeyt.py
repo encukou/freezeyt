@@ -23,7 +23,7 @@ def freeze(app, path):
         print('status', status)
         print('headers', headers)
 
-    links = set('/')
+    links = ['/']
 
     visited_links = set()
 
@@ -53,7 +53,7 @@ def freeze(app, path):
                 f.write(item)
 
         with open(url_to_filename(path, link), "rb") as f:
-            links = links.union(set(get_all_links(f)))
+            links.extend(get_all_links(f))
 
 
 def get_all_links(page_content):
@@ -67,9 +67,9 @@ def get_all_links(page_content):
 
 def get_links_from_node(node):
     """Get all links from xml.dom.minidom Node."""
-    result = set()
+    result = []
     if 'href' in node.attrib:
-        result.add(node.attrib['href'])
+        result.append(node.attrib['href'])
     for child in node:
-        result = result.union(get_links_from_node(child))
+        result.extend(get_links_from_node(child))
     return result
