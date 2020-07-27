@@ -15,12 +15,6 @@ def url_to_filename(base, url):
 def freeze(app, path):
     """Freeze (create files of) all pages from a WSGI server.
 
-    Make an iterable of links.
-    Go through the links.
-        Start the app.
-        Write binary strings to the file.
-        Extend the list of links by adding links from the current page.
-
     Arguments:
     app -- web app you want to freeze
     path -- path to the file
