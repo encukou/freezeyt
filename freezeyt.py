@@ -1,3 +1,5 @@
+import xml.dom.minidom
+
 import html5lib
 
 
@@ -56,7 +58,7 @@ def freeze(app, path):
             links.extend(get_all_links(f))
 
 
-def get_all_links(page_content):
+def get_all_links(page_content: bytes) -> list:
     """Get all links from "page_content".
 
     Return an iterable of strings.
@@ -65,7 +67,7 @@ def get_all_links(page_content):
     return get_links_from_node(document)
 
 
-def get_links_from_node(node):
+def get_links_from_node(node: xml.dom.minidom.Node) -> list:
     """Get all links from xml.dom.minidom Node."""
     result = []
     if 'href' in node.attrib:
