@@ -5,6 +5,10 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    """Show index page of the web app.
+
+    And link to the second page.
+    """
     return """
     <html>
         <head>
@@ -21,6 +25,7 @@ def index():
 
 @app.route('/second_page.html')
 def second_page():
+    """Show the second page."""
     return """
     <html>
         <head>

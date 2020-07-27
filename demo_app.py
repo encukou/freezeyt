@@ -5,6 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    """Create the index page of the web app."""
     return """
     <html>
         <head>
