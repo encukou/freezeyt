@@ -5,6 +5,10 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    """Create the home page of the web app.
+
+    Link to the second page.
+    """
     return """
     <html>
         <head>
@@ -21,6 +25,10 @@ def index():
 
 @app.route('/second_page.html')
 def second_page():
+    """Show the second page.
+
+    Link to the third page.
+    """
     return """
     <html>
         <head>
@@ -36,6 +44,7 @@ def second_page():
 
 @app.route('/third_page.html')
 def third_page():
+    """Show the third page of the web app."""
     return """
     <html>
         <head>

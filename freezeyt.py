@@ -2,12 +2,23 @@ import html5lib
 
 
 def url_to_filename(base, url):
+    """Return the filename to which the page is frozen.
+
+    base -- path to the file
+    url -- web app endpoint of the page
+    """
     if url.endswith('/'):
         url = url + 'index.html'
     return base / url.lstrip('/')
 
 
 def freeze(app, path):
+    """Freeze (create files of) all pages from a WSGI server.
+
+    Arguments:
+    app -- web app you want to freeze
+    path -- path to the file
+    """
     def start_response(status, headers):
         print('status', status)
         print('headers', headers)
@@ -37,21 +48,19 @@ def freeze(app, path):
 
 
 def get_all_links(page_content):
-    """Get all links from "page_content"
+    """Get all links from "page_content".
 
-    Returns an iterable of strings
+    Return an iterable of strings.
     """
     document = html5lib.parse(page_content)
     return get_links_from_node(document)
 
 
 def get_links_from_node(node):
-    """Get all links from xml.dom.minidom Node
-    """
+    """Get all links from xml.dom.minidom Node."""
     result = []
     if 'href' in node.attrib:
         result.append(node.attrib['href'])
     for child in node:
         result.extend(get_links_from_node(child))
     return result
-
