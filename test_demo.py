@@ -4,6 +4,7 @@ from demo_app import app
 from demo_app_2pages import app as app_2pages
 from demo_app_3pages_deep import app as app_3pages_deep
 from demo_app_2pages_cycle import app as app_2pages_cycle
+from demo_app_external_link import app as app_external_link
 
 from freezeyt import freeze
 
@@ -99,3 +100,17 @@ def test_two_pages_cycle(tmp_path):
     path2 = tmp_path / "second_page.html"
     assert path2.exists()
     assert 'Hello world second page' in path2.read_text()
+
+
+def test_two_pages_cycle(tmp_path):
+    """Test if the freezer ignores external links.
+    """
+
+    freeze(app_external_link, tmp_path)
+
+    path1 = tmp_path / "index.html"
+    assert path1.exists()
+    assert 'Hello world!' in path1.read_text()
+
+    tmpdir_contents = list(tmp_path.iterdir())
+    assert tmpdir_contents == [path1]
