@@ -2,11 +2,10 @@ import html5lib
 
 
 def url_to_filename(base, url):
-    """
-    Returns the filename to which the page is frozen
+    """Return the filename to which the page is frozen.
 
-    base is the path to the file
-    url is the link to the page
+    base -- path to the file
+    url -- web app endpoint of the page
     """
     if url.endswith('/'):
         url = url + 'index.html'
@@ -14,17 +13,17 @@ def url_to_filename(base, url):
 
 
 def freeze(app, path):
-    """
-    Freezes (creates files of) all pages from a WSGI server
+    """Freeze (create files of) all pages from a WSGI server.
 
-    Makes an iterable of links
-    Goes through the links
-        Starts the app
-        Writes binary strings to the file
-        Extends the list of links by adding links from the current page
+    Make an iterable of links.
+    Go through the links.
+        Start the app.
+        Write binary strings to the file.
+        Extend the list of links by adding links from the current page.
 
-    app is the web app you want to freeze
-    path is the path to the file
+    Arguments:
+    app -- web app you want to freeze
+    path -- path to the file
     """
     def start_response(status, headers):
         print('status', status)
@@ -55,17 +54,16 @@ def freeze(app, path):
 
 
 def get_all_links(page_content):
-    """Get all links from "page_content"
+    """Get all links from "page_content".
 
-    Returns an iterable of strings
+    Return an iterable of strings.
     """
     document = html5lib.parse(page_content)
     return get_links_from_node(document)
 
 
 def get_links_from_node(node):
-    """Get all links from xml.dom.minidom Node
-    """
+    """Get all links from xml.dom.minidom Node."""
     result = []
     if 'href' in node.attrib:
         result.append(node.attrib['href'])
