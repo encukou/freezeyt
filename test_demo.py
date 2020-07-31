@@ -7,7 +7,7 @@ from demo_app_2pages_cycle import app as app_2pages_cycle
 from demo_app_external_link import app as app_external_link
 from demo_app_url_for import app as app_url_for
 
-from freezeyt import freeze, url_to_filename
+from freezeyt import freeze
 
 
 def test_one_page(tmp_path):
@@ -123,7 +123,8 @@ def test_flask_url_for(tmp_path):
 
     freeze(app_url_for, tmp_path)
 
-    path1 = url_to_filename(tmp_path, "index.html")
+    with open(tmp_path / "index.html", encoding='utf-8') as f:
+        read_text = f.read()
 
-    assert 'http://localhost:8000/second_page.html' in path1.read_text()
-    assert '/third_page.html' in path1.read_text()
+    assert 'http://localhost:8000/second_page.html' in read_text
+    assert '/third_page.html' in read_text
