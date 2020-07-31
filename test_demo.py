@@ -118,8 +118,12 @@ def test_external_link(tmp_path):
 
 
 def test_flask_url_for(tmp_path):
+    """Test if flask func url_for() run correctly.
+    """
 
     freeze(app_url_for, tmp_path)
 
     path1 = url_to_filename(tmp_path, "index.html")
+
     assert 'http://localhost:8000/second_page.html' in path1.read_text()
+    assert '/third_page.html' in path1.read_text()

@@ -17,7 +17,8 @@ def index():
         <body>
             Hello world!
             <br>
-            <a href='{url_for("second_page", _external=True)}'>'{url_for("second_page")}'</a> to second page.
+            <a href='{url_for("second_page", _external=True)}'>external_True</a> to second page.
+            <a href='{url_for("third_page")}'>external_False</a> to third page.
         </body>
     </html>
     """
@@ -33,6 +34,21 @@ def second_page():
         </head>
         <body>
             Second page !!!
+        </body>
+    </html>
+    """
+
+
+@app.route('/third_page.html')
+def third_page():
+    """Show the third page."""
+    return """
+    <html>
+        <head>
+            <title>Hello world third page</title>
+        </head>
+        <body>
+            Third page !!!
         </body>
     </html>
     """
