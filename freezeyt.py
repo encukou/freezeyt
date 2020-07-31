@@ -1,6 +1,7 @@
 import xml.dom.minidom
-
 import html5lib
+
+from urllib.parse import urlparse
 
 
 def url_to_filename(base, url):
@@ -9,6 +10,13 @@ def url_to_filename(base, url):
     base -- path to the file
     url -- web app endpoint of the page
     """
+    url_parse = urlparse(url)
+
+    if url_parse.netloc == 'localhost:8000' or not url_parse.netloc:
+        url = url_parse.path
+    else:
+        raise ValueError("Link contain external server")
+
     if url.endswith('/'):
         url = url + 'index.html'
     return base / url.lstrip('/')
