@@ -1,18 +1,30 @@
+from urllib.parse import urlparse
+
 import xml.dom.minidom
 
 import html5lib
 
-
 def url_to_filename(base, url):
-    """Return the filename to which the page is frozen.
-
-    base -- path to the file
-    url -- web app endpoint of the page
     """
+    Returns full file system path from parsed absolute or relative URL
+    base - Filesystem base path (eg. /tmp/)
+    url - Absolute or relative URL (eg. http://localhost:8000/ or /second/second.html)
+    """
+    url_parse = urlparse(url)
+
+    if url.startswith('http'):
+        if url_parse.netloc == 'localhost:8000':
+            url = url_parse.path
+        else:
+            raise ValueError("got external URL instead of localhost")
+        if url == "":
+            url = url + 'index.html'
+        else:
+            url = url_parse.path
     if url.endswith('/'):
         url = url + 'index.html'
-    return base / url.lstrip('/')
 
+    return base / url.lstrip('/')
 
 def freeze(app, path):
     """Freeze (create files of) all pages from a WSGI server.
