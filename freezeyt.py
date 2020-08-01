@@ -12,7 +12,7 @@ def url_to_filename(base, url):
     """
     url_parse = urlparse(url)
 
-    if url.startswith('http'):
+    if 'http' in url_parse.scheme:
         if url_parse.netloc == 'localhost:8000':
             url = url_parse.path
         else:
@@ -23,9 +23,8 @@ def url_to_filename(base, url):
             url = url_parse.path
     if url.endswith('/'):
         url = url + 'index.html'
-
     return base / url.lstrip('/')
-
+    
 def freeze(app, path):
     """Freeze (create files of) all pages from a WSGI server.
 
