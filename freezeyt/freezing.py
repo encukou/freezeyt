@@ -1,7 +1,6 @@
 from urllib.parse import urlparse
-
+from pathlib import Path
 import xml.dom.minidom
-
 import html5lib
 
 def url_to_filename(base, url):
@@ -35,6 +34,8 @@ def freeze(app, path):
     app -- web app you want to freeze
     path -- path to the file
     """
+    path = Path(path)
+
     def start_response(status, headers):
         print('status', status)
         print('headers', headers)
