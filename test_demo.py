@@ -128,3 +128,9 @@ def test_flask_url_for(tmp_path):
 
     assert 'http://localhost:8000/second_page.html' in read_text
     assert '/third_page.html' in read_text
+
+    path2 = tmp_path / "second_page.html"
+    assert path2.exists()
+
+    path3 = tmp_path / "third_page.html"
+    assert path3.exists()
