@@ -25,7 +25,8 @@ def url_to_filename(base, url):
     if url.endswith('/'):
         url = url + 'index.html'
     return base / url.lstrip('/')
-    
+
+
 def freeze(app, path):
     """Freeze (create files of) all pages from a WSGI server.
 
@@ -49,6 +50,12 @@ def freeze(app, path):
 
         visited_links.add(link)
 
+        try:
+            filename = url_to_filename(path, link)
+        except ValueError:
+            print('skipping', link)
+            continue
+
         print(link)
 
         environ = {
@@ -62,11 +69,11 @@ def freeze(app, path):
 
         result = app(environ, start_response)
 
-        with open(url_to_filename(path, link), "wb") as f:
+        with open(filename, "wb") as f:
             for item in result:
                 f.write(item)
 
-        with open(url_to_filename(path, link), "rb") as f:
+        with open(filename, "rb") as f:
             links.extend(get_all_links(f))
 
 
