@@ -6,6 +6,7 @@ import html5lib
 def url_to_filename(base, url):
     """Return the filename to which the page is frozen.
 
+    Parameters:
     base -- path to the file
     url -- web app endpoint of the page
     """
@@ -17,7 +18,7 @@ def url_to_filename(base, url):
 def freeze(app, path):
     """Freeze (create files of) all pages from a WSGI server.
 
-    Arguments:
+    Parameters:
     app -- web app you want to freeze
     path -- path to the file
     """
