@@ -13,18 +13,19 @@ def url_to_filename(base, url):
     """
     url_parse = urlparse(url)
 
-    if 'http' in url_parse.scheme:
-        if url_parse.netloc == 'localhost:8000':
-            url = url_parse.path
-        else:
-            raise ValueError("got external URL instead of localhost")
-        if url == "":
-            url = url + 'index.html'
-        else:
-            url = url_parse.path
-    if url.endswith('/'):
-        url = url + 'index.html'
-    return base / url.lstrip('/')
+    if url_parse.scheme:
+        if url_parse.scheme not in ('http', 'https'):
+            raise ValueError("got URL that is not http")
+
+    if url_parse.netloc == '' or url_parse.netloc == 'localhost:8000':
+        url_path = url_parse.path
+    else:
+        raise ValueError("got external URL instead of localhost")
+
+    if url_path.endswith('/'):
+        url_path = url_path + 'index.html'
+
+    return base / url_path.lstrip('/')
 
 
 def freeze(app, path):
