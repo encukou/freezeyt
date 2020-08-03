@@ -5,8 +5,9 @@ import xml.dom.minidom
 import html5lib
 
 def url_to_filename(base, url):
-    """
-    Returns full file system path from parsed absolute or relative URL
+    """Return the filename to which the page is frozen.
+
+    Parameters:
     base - Filesystem base path (eg. /tmp/)
     url - Absolute or relative URL (eg. http://localhost:8000/ or /second/second.html)
     """
@@ -28,7 +29,7 @@ def url_to_filename(base, url):
 def freeze(app, path):
     """Freeze (create files of) all pages from a WSGI server.
 
-    Arguments:
+    Parameters:
     app -- web app you want to freeze
     path -- path to the file
     """

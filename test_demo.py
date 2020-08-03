@@ -5,6 +5,7 @@ from demo_app_2pages import app as app_2pages
 from demo_app_3pages_deep import app as app_3pages_deep
 from demo_app_2pages_cycle import app as app_2pages_cycle
 from demo_app_external_link import app as app_external_link
+from demo_app_url_for import app as app_url_for
 
 from freezeyt import freeze
 
@@ -114,3 +115,22 @@ def test_external_link(tmp_path):
 
     tmpdir_contents = list(tmp_path.iterdir())
     assert tmpdir_contents == [path1]
+
+
+def test_flask_url_for(tmp_path):
+    """Test if flask func url_for() run correctly.
+    """
+
+    freeze(app_url_for, tmp_path)
+
+    with open(tmp_path / "index.html", encoding='utf-8') as f:
+        read_text = f.read()
+
+    assert 'http://localhost:8000/second_page.html' in read_text
+    assert '/third_page.html' in read_text
+
+    path2 = tmp_path / "second_page.html"
+    assert path2.exists()
+
+    path3 = tmp_path / "third_page.html"
+    assert path3.exists()
