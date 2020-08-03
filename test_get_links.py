@@ -1,4 +1,4 @@
-from freezeyt import get_all_links
+from freezeyt.freezing import get_all_links
 
 
 def test_get_links():

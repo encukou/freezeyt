@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from freezeyt import url_to_filename
+from freezeyt.freezing import url_to_filename
 
 base = Path('/test/')
 
