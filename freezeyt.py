@@ -70,6 +70,10 @@ def freeze(app, path):
 
         result = app(environ, start_response)
 
+        print(f'Saving to {filename}')
+
+        filename.parent.mkdir(parents=True, exist_ok=True)
+
         with open(filename, "wb") as f:
             for item in result:
                 f.write(item)

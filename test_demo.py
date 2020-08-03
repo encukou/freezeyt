@@ -6,6 +6,7 @@ from demo_app_3pages_deep import app as app_3pages_deep
 from demo_app_2pages_cycle import app as app_2pages_cycle
 from demo_app_external_link import app as app_external_link
 from demo_app_url_for import app as app_url_for
+from demo_app_structured import app as app_structured
 
 from freezeyt import freeze
 
@@ -134,3 +135,24 @@ def test_flask_url_for(tmp_path):
 
     path3 = tmp_path / "third_page.html"
     assert path3.exists()
+
+
+def test_structured(tmp_path):
+    """Test if an app with relative URLs works.
+    """
+
+    freeze(app_structured, tmp_path)
+
+    path1 = tmp_path / "index.html"
+    path2 = tmp_path / "users/index.html"
+    path3 = tmp_path / "users/a/index.html"
+    path4 = tmp_path / "users/b/index.html"
+
+    path_not_exists = tmp_path / "users/c/index.html"
+
+    assert path1.exists()
+    assert path2.exists()
+    assert path3.exists()
+    assert path4.exists()
+
+    assert not path_not_exists.exists()
