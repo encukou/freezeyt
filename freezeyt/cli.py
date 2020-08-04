@@ -1,14 +1,15 @@
-import sys
 import importlib
+
+import click
 
 from freezeyt.freezing import freeze
 
 
-def main():
-    app_module_name = sys.argv[1]
-
-    module = importlib.import_module(app_module_name)
+@click.command()
+@click.argument('module_name')
+@click.argument('dest_path')
+def main(module_name, dest_path):
+    module = importlib.import_module(module_name)
     app = module.app
 
-    path = sys.argv[2]
-    freeze(app, path)
+    freeze(app, dest_path)
