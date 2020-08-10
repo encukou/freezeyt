@@ -41,27 +41,27 @@ def freeze(app, path):
         print('status', status)
         print('headers', headers)
 
-    links = ['http://localhost:8000/']
+    new_urls = ['http://localhost:8000/']
 
-    visited_links = set()
+    visited_urls = set()
 
-    while links:
-        link = links.pop()
+    while new_urls:
+        url = new_urls.pop()
 
-        if link in visited_links:
+        if url in visited_urls:
             continue
 
-        visited_links.add(link)
+        visited_urls.add(url)
 
         try:
-            filename = url_to_filename(path, link)
+            filename = url_to_filename(path, url)
         except ValueError:
-            print('skipping', link)
+            print('skipping', url)
             continue
 
-        print('link:', link)
+        print('link:', url)
 
-        path_info = urlparse(link).path
+        path_info = urlparse(url).path
 
         print('path_info:', path_info)
 
@@ -85,7 +85,7 @@ def freeze(app, path):
                 f.write(item)
 
         with open(filename, "rb") as f:
-            links.extend(get_all_links(f, link))
+            new_urls.extend(get_all_links(f, url))
 
 
 def get_all_links(page_content: bytes, base_url) -> list:
