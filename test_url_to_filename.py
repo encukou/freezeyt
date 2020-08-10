@@ -34,3 +34,8 @@ def test_fragment():
 def test_fragment_ftp():
     with pytest.raises(ValueError):
         url_to_filename(base, "ftp://localhost:8000/second_page.html")
+
+
+def test_relative():
+    with pytest.raises(ValueError):
+        url_to_filename(base, "/a/b/c")
