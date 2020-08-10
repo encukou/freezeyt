@@ -26,6 +26,7 @@ def test_get_links():
     """, 'http://localhost:8000')
 
     assert sorted(links) == [
+        'http://localhost:8000/blabla.png',
         'http://localhost:8000/fourth_page/',
         'http://localhost:8000/second_page',
         'http://localhost:8000/third_page',
@@ -46,7 +47,6 @@ def test_get_links_path():
                     <a href='/third_page'>LINK</a> to third page.
                 </p>
                 <a href='fourth_page/'>LINK</a> to third page.
-                <img src="blabla.png">
             </body>
         </html>
     """, 'http://localhost:8000/path1/path2/')

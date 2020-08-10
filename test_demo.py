@@ -7,6 +7,7 @@ from demo_app_2pages_cycle import app as app_2pages_cycle
 from demo_app_external_link import app as app_external_link
 from demo_app_url_for import app as app_url_for
 from demo_app_structured import app as app_structured
+from demo_app_image import app as app_image
 
 from freezeyt import freeze
 
@@ -156,3 +157,16 @@ def test_structured(tmp_path):
     assert path4.exists()
 
     assert not path_not_exists.exists()
+
+
+def test_image(tmp_path):
+    """Test if an app with an image works.
+    """
+
+    freeze(app_image, tmp_path)
+
+    path1 = tmp_path / "index.html"
+    path2 = tmp_path / "static/smile.png"
+
+    assert path1.exists()
+    assert path2.exists()

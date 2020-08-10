@@ -110,6 +110,10 @@ def get_links_from_node(node: xml.dom.minidom.Node, base_url) -> list:
         href = node.attrib['href']
         full_url = urljoin(base_url, href)
         result.append(full_url)
+    if 'src' in node.attrib:
+        href = node.attrib['src']
+        full_url = urljoin(base_url, href)
+        result.append(full_url)
     for child in node:
         result.extend(get_links_from_node(child, base_url))
     return result
