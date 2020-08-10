@@ -35,8 +35,17 @@ $ python -m pip install pytest flask
 
 
 ## Usage
-The project has not been done yet.
-Freezer don't generate static pages so far.
+
+* Set `PYTHONPATH` to the directory with `freezeyt`, for example:
+  * Unix: `export PYTHONPATH=/home/name/freezeyt`
+  * Windows: `set PYTHONPATH=C:\Users\Name\freezeyt`
+
+* Install the web application you want to freeze. Either:
+  * install the application using `pip`, if possible, or
+  * install the application's dependencies and `cd` to the app's directory.
+
+* Run freezeyt, for example:
+  * `python -m freezeyt your_app_module _build`
 
 
 ## Contributing
