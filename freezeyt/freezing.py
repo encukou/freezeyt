@@ -9,15 +9,19 @@ def url_to_filename(base, url):
 
     Parameters:
     base - Filesystem base path (eg. /tmp/)
-    url - Absolute or relative URL (eg. http://localhost:8000/ or /second/second.html)
+    url - Absolute URL (eg. http://localhost:8000/second.html)
     """
     url_parse = urlparse(url)
 
-    if url_parse.scheme:
-        if url_parse.scheme not in ('http', 'https'):
-            raise ValueError("got URL that is not http")
+    if not url_parse.scheme:
+        raise ValueError("Need an absolute URL")
+    if url_parse.scheme not in ('http', 'https'):
+        raise ValueError("got URL that is not http")
 
-    if url_parse.netloc == '' or url_parse.netloc == 'localhost:8000':
+    if url_parse.netloc == '':
+        raise ValueError("Need an absolute URL")
+
+    if url_parse.netloc == 'localhost:8000':
         url_path = url_parse.path
     else:
         raise ValueError("got external URL instead of localhost")
