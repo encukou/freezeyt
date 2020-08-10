@@ -8,6 +8,7 @@ from demo_app_external_link import app as app_external_link
 from demo_app_url_for import app as app_url_for
 from demo_app_structured import app as app_structured
 from demo_app_image import app as app_image
+from demo_app_broken_link import app as app_broken_link
 
 from freezeyt import freeze
 
@@ -170,3 +171,11 @@ def test_image(tmp_path):
 
     assert path1.exists()
     assert path2.exists()
+
+
+def test_broken_link(tmp_path):
+    """Test if an app with an image works.
+    """
+
+    with pytest.raises(ValueError):
+        freeze(app_broken_link, tmp_path)
