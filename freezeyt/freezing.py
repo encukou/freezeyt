@@ -42,8 +42,11 @@ def freeze(app, path):
     path = Path(path)
 
     def start_response(status, headers):
-        print('status', status)
-        print('headers', headers)
+        if "200" not in status:
+            raise ValueError("Found broken page")
+        else:
+            print('status', status)
+            print('headers', headers)
 
     new_urls = ['http://localhost:8000/']
 
