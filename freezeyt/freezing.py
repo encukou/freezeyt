@@ -74,11 +74,20 @@ def freeze(app, path):
 
         environ = {
             'SERVER_NAME': 'localhost',
-            'wsgi.url_scheme': 'http',
             'SERVER_PORT': '8000',
             'REQUEST_METHOD': 'GET',
             'PATH_INFO': path_info,
-            # ...
+            'SCRIPT_NAME': '',
+            'SERVER_PROTOCOL': 'HTTP/1.1',
+
+            'wsgi.version': (1, 0),
+            'wsgi.url_scheme': 'http',
+            'wsgi.errors': sys.stderr,
+            'wsgi.multithread': False,
+            'wsgi.multiprocess': False,
+            'wsgi.run_once': False,
+
+            'freezeyt.freezing': True,
         }
 
         result = app(environ, start_response)
