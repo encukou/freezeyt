@@ -8,7 +8,8 @@ from freezeyt.freezing import freeze
 @click.command()
 @click.argument('module_name')
 @click.argument('dest_path')
-def main(module_name, dest_path):
+@click.option('--prefix', help='URL of the application root')
+def main(module_name, dest_path, prefix):
     """
     MODULE_NAME
         Name of the Python web app module which will be frozen.
@@ -23,4 +24,4 @@ def main(module_name, dest_path):
     module = importlib.import_module(module_name)
     app = module.app
 
-    freeze(app, dest_path)
+    freeze(app, dest_path, prefix=prefix)
