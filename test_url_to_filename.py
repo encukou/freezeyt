@@ -39,3 +39,53 @@ def test_fragment_ftp():
 def test_relative():
     with pytest.raises(ValueError):
         url_to_filename(base, "/a/b/c")
+
+
+def test_custom_prefix_index():
+    result = url_to_filename(
+        base, "http://freezeyt.test:1234/foo/",
+        hostname='freezeyt.test',
+        port=1234,
+        path='/foo/',
+    )
+    assert result == base / 'index.html'
+
+
+def test_custom_prefix_second_page():
+    result = url_to_filename(
+        base, "http://freezeyt.test:1234/foo/second/",
+        hostname='freezeyt.test',
+        port=1234,
+        path='/foo/',
+    )
+    assert result == base / "second/index.html"
+
+
+def test_custom_prefix_second_page_html():
+    result = url_to_filename(
+        base, "http://freezeyt.test:1234/foo/second.html",
+        hostname='freezeyt.test',
+        port=1234,
+        path='/foo/',
+    )
+    assert result == base / "second.html"
+
+
+def test_custom_prefix_fragment():
+    result = url_to_filename(
+        base, "http://freezeyt.test:1234/foo/second_page.html#odkaz",
+        hostname='freezeyt.test',
+        port=1234,
+        path='/foo/',
+    )
+    assert result == base / "second_page.html"
+
+
+def test_custom_prefix_fragment_ftp():
+    with pytest.raises(ValueError):
+        url_to_filename(
+            base, "ftp://localhost:8000/second_page.html",
+            hostname='freezeyt.test',
+            port=1234,
+            path='/foo/',
+        )

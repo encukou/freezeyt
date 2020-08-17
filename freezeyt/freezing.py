@@ -5,7 +5,7 @@ import sys
 import html5lib
 
 
-def url_to_filename(base, url):
+def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     """Return the filename to which the page is frozen.
 
     Parameters:
@@ -22,10 +22,13 @@ def url_to_filename(base, url):
     if url_parse.netloc == '':
         raise ValueError("Need an absolute URL")
 
-    if url_parse.netloc == 'localhost:8000':
+    if url_parse.hostname == hostname and port == port:
         url_path = url_parse.path
     else:
-        raise ValueError("got external URL instead of localhost")
+        raise ValueError(f"got external URL instead of {hostname}:{port}")
+
+    if url_path.startswith(path):
+        url_path = '/' + url_path[len(path):]
 
     if url_path.endswith('/'):
         url_path = url_path + 'index.html'
@@ -33,7 +36,7 @@ def url_to_filename(base, url):
     return base / url_path.lstrip('/')
 
 
-def freeze(app, path):
+def freeze(app, path, prefix='http://localhost:8000/'):
     """Freeze (create files of) all pages from a WSGI server.
 
     Parameters:
@@ -42,19 +45,26 @@ def freeze(app, path):
     """
     path = Path(path)
 
+    prefix_parsed = urlparse(prefix)
+    hostname = prefix_parsed.hostname
+    port = prefix_parsed.port
+    script_name = prefix_parsed.path
+
     def start_response(status, headers):
         if not status.startswith("200"):
-            raise ValueError("Found broken link.")
+            raise ValueError(f"Found broken link.")
         else:
             print('status', status)
             print('headers', headers)
 
-    new_urls = ['http://localhost:8000/']
+    new_urls = [prefix]
 
     visited_urls = set()
 
     while new_urls:
         url = new_urls.pop()
+
+        # url = http://freezeyt.test:1234/foo/
 
         if url in visited_urls:
             continue
@@ -74,11 +84,11 @@ def freeze(app, path):
         print('path_info:', path_info)
 
         environ = {
-            'SERVER_NAME': 'localhost',
-            'SERVER_PORT': '8000',
+            'SERVER_NAME': hostname,
+            'SERVER_PORT': str(port),
             'REQUEST_METHOD': 'GET',
             'PATH_INFO': path_info,
-            'SCRIPT_NAME': '',
+            'SCRIPT_NAME': script_name,
             'SERVER_PROTOCOL': 'HTTP/1.1',
 
             'wsgi.version': (1, 0),
