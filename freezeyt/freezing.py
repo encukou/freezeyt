@@ -42,7 +42,7 @@ def freeze(app, path):
     path = Path(path)
 
     def start_response(status, headers):
-        if "200" not in status:
+        if not status.startswith("200"):
             raise ValueError("Found broken link.")
         else:
             print('status', status)
