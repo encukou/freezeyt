@@ -1,6 +1,7 @@
 from urllib.parse import urlparse, urljoin
 from pathlib import Path
 import xml.dom.minidom
+import sys
 import html5lib
 
 
