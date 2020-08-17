@@ -121,7 +121,7 @@ def test_external_link(tmp_path):
 
 
 def test_flask_url_for(tmp_path):
-    """Test if flask func url_for() run correctly.
+    """Test if an app unsing Flask url_for() is frozen correctly.
     """
 
     freeze(app_url_for, tmp_path)
@@ -174,7 +174,7 @@ def test_image(tmp_path):
 
 
 def test_broken_link(tmp_path):
-    """Test if an app with an image works.
+    """Test if an app with a broken link doesn't get frozen.
     """
 
     with pytest.raises(ValueError):
