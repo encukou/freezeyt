@@ -19,7 +19,7 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     if url_parse.scheme not in ('http', 'https'):
         raise ValueError("got URL that is not http")
 
-    if url_parse.netloc == '':
+    if not url_parse.netloc:
         raise ValueError("Need an absolute URL")
 
     if url_parse.hostname == hostname and port == port:
