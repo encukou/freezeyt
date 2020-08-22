@@ -22,7 +22,8 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     if url_parse.hostname == hostname and url_parse.port == port:
         url_path = url_parse.path
     else:
-        raise ValueError(f"got external URL instead of {hostname}:{port}")
+        raise ValueError(f"Got external URL:{url}\
+                                    instead of {hostname}:{port}")
 
     if url_path.startswith(path):
         url_path = '/' + url_path[len(path):]
@@ -73,7 +74,8 @@ def freeze(app, path, prefix='http://localhost:8000/'):
                                         hostname=hostname,
                                         port=port,
                                         path=script_name)
-        except ValueError:
+        except ValueError as err:
+            print(err)
             print('skipping', url)
             continue
 
