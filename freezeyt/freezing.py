@@ -19,7 +19,7 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     if url_parse.scheme not in ('http', 'https'):
         raise ValueError("got URL that is not http")
 
-    if url_parse.hostname == hostname and port == port:
+    if url_parse.hostname == hostname and url_parse.port == port:
         url_path = url_parse.path
     else:
         raise ValueError(f"got external URL instead of {hostname}:{port}")
