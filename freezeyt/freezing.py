@@ -69,7 +69,10 @@ def freeze(app, path, prefix='http://localhost:8000/'):
         visited_urls.add(url)
 
         try:
-            filename = url_to_filename(path, url)
+            filename = url_to_filename(path, url,
+                                        hostname=hostname,
+                                        port=port,
+                                        path=script_name)
         except ValueError:
             print('skipping', url)
             continue
@@ -77,6 +80,9 @@ def freeze(app, path, prefix='http://localhost:8000/'):
         print('link:', url)
 
         path_info = urlparse(url).path
+
+        if path_info.startswith(script_name):
+            path_info = "/" + path_info[len(script_name):]
 
         print('path_info:', path_info)
 
