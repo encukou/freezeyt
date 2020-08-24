@@ -14,18 +14,16 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     """
     url_parse = urlparse(url)
 
-    if not url_parse.scheme:
+    if not url_parse.scheme or not url_parse.netloc:
         raise ValueError("Need an absolute URL")
     if url_parse.scheme not in ('http', 'https'):
         raise ValueError("got URL that is not http")
 
-    if url_parse.netloc == '':
-        raise ValueError("Need an absolute URL")
-
-    if url_parse.hostname == hostname and port == port:
+    if url_parse.hostname == hostname and url_parse.port == port:
         url_path = url_parse.path
     else:
-        raise ValueError(f"got external URL instead of {hostname}:{port}")
+        raise ValueError(f"Got external URL:{url}\
+                                    instead of {hostname}:{port}")
 
     if url_path.startswith(path):
         url_path = '/' + url_path[len(path):]
@@ -72,14 +70,21 @@ def freeze(app, path, prefix='http://localhost:8000/'):
         visited_urls.add(url)
 
         try:
-            filename = url_to_filename(path, url)
-        except ValueError:
+            filename = url_to_filename(path, url,
+                                        hostname=hostname,
+                                        port=port,
+                                        path=script_name)
+        except ValueError as err:
+            print(err)
             print('skipping', url)
             continue
 
         print('link:', url)
 
         path_info = urlparse(url).path
+
+        if path_info.startswith(script_name):
+            path_info = "/" + path_info[len(script_name):]
 
         print('path_info:', path_info)
 
