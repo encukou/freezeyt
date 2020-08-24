@@ -19,7 +19,16 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     if url_parse.scheme not in ('http', 'https'):
         raise ValueError("got URL that is not http")
 
-    if url_parse.hostname == hostname and url_parse.port == port:
+    url_port = url_parse.port
+    if url_port == None:
+        if url_parse.scheme == 'http':
+            url_port = 80
+        elif url_parse.scheme == 'https':
+            url_port = 443
+        else:
+            raise ValueError("got URL that is not http")
+
+    if url_parse.hostname == hostname and url_port == port:
         url_path = url_parse.path
     else:
         raise ValueError(f"Got external URL:{url}\
@@ -46,6 +55,13 @@ def freeze(app, path, prefix='http://localhost:8000/'):
     prefix_parsed = urlparse(prefix)
     hostname = prefix_parsed.hostname
     port = prefix_parsed.port
+    if port == None:
+        if prefix_parsed.scheme == 'http':
+            port = 80
+        elif prefix_parsed.scheme == 'https':
+            port = 443
+        else:
+            raise ValueError('prefix must have a scheme')
     script_name = prefix_parsed.path
 
     def start_response(status, headers):
