@@ -5,6 +5,31 @@ import sys
 import html5lib
 
 
+def parse_absolute_url(url):
+    """Parse absolute URL
+
+    Returns the same result as urllib.parse.urlparse, but works on
+    absolute HTTP and HTTPS URLs only.
+    The result port is always an integer.
+    """
+    parsed = urlparse(url)
+    if not parsed.scheme or not parsed.netloc:
+        raise ValueError("Need an absolute URL")
+
+    if parsed.scheme not in ('http', 'https'):
+        raise ValueError("URL scheme must be http or https")
+
+    if parsed.port == None:
+        if parsed.scheme == 'http':
+            parsed = parsed._replace(netloc=parsed.hostname + ':80')
+        elif parsed.scheme == 'https':
+            parsed = parsed._replace(netloc=parsed.hostname + ':443')
+        else:
+            raise ValueError("URL scheme must be http or https")
+
+    return parsed
+
+
 def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     """Return the filename to which the page is frozen.
 
@@ -12,23 +37,9 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     base - Filesystem base path (eg. /tmp/)
     url - Absolute URL (eg. http://localhost:8000/second.html)
     """
-    url_parse = urlparse(url)
+    url_parse = parse_absolute_url(url)
 
-    if not url_parse.scheme or not url_parse.netloc:
-        raise ValueError("Need an absolute URL")
-    if url_parse.scheme not in ('http', 'https'):
-        raise ValueError("got URL that is not http")
-
-    url_port = url_parse.port
-    if url_port == None:
-        if url_parse.scheme == 'http':
-            url_port = 80
-        elif url_parse.scheme == 'https':
-            url_port = 443
-        else:
-            raise ValueError("got URL that is not http")
-
-    if url_parse.hostname == hostname and url_port == port:
+    if url_parse.hostname == hostname and url_parse.port == port:
         url_path = url_parse.path
     else:
         raise ValueError(f"Got external URL:{url}\
@@ -52,16 +63,9 @@ def freeze(app, path, prefix='http://localhost:8000/'):
     """
     path = Path(path)
 
-    prefix_parsed = urlparse(prefix)
+    prefix_parsed = parse_absolute_url(prefix)
     hostname = prefix_parsed.hostname
     port = prefix_parsed.port
-    if port == None:
-        if prefix_parsed.scheme == 'http':
-            port = 80
-        elif prefix_parsed.scheme == 'https':
-            port = 443
-        else:
-            raise ValueError('prefix must have a scheme')
     script_name = prefix_parsed.path
 
     def start_response(status, headers):
