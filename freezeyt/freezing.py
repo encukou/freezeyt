@@ -35,7 +35,10 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
 
     Parameters:
     base - Filesystem base path (eg. /tmp/)
-    url - Absolute URL (eg. http://localhost:8000/second.html)
+    url - Absolute URL (eg. http://localhost:8000/foo/second.html)
+    hostname - Domain name from URL (eg. 'localhost')
+    port - HTTP port number (eg. 8000)
+    path - URL path (eg. '/foo/second.html')
     """
     url_parse = parse_absolute_url(url)
 
