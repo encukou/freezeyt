@@ -1,6 +1,8 @@
 import importlib
 from pathlib import Path
 import filecmp
+import os
+import shutil
 
 import pytest
 
@@ -16,6 +18,15 @@ def test_output(tmp_path, module_name='demo_app'):
     # ../test_expected_output.py
     # ../fixtures/demo_app/
     expected = Path(__file__).parent / 'fixtures' / module_name
+
+    if not expected.exists():
+        if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+            shutil.copytree(tmp_path, expected)
+        else:
+            raise AssertionError(
+                f'Expected output directory ({expected}) does not exist. '
+                + f'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+            )
 
     assert_dirs_same(tmp_path, expected)
 
