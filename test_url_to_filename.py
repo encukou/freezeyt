@@ -31,7 +31,7 @@ def test_fragment():
     assert result == base / "second_page.html"
 
 
-def test_fragment_ftp():
+def test_scheme_ftp():
     with pytest.raises(ValueError):
         url_to_filename(base, "ftp://localhost:8000/second_page.html")
 
