@@ -37,7 +37,7 @@ $ python -m pip install pytest flask
 ## Usage
 
 * Set `PYTHONPATH` to the directory with `freezeyt`, for example:
-  * Unix: `export PYTHONPATH=/home/name/freezeyt`
+  * Unix: `export PYTHONPATH="/home/name/freezeyt"`
   * Windows: `set PYTHONPATH=C:\Users\Name\freezeyt`
 
 * Install the web application you want to freeze. Either:
