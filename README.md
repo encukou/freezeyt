@@ -45,7 +45,7 @@ $ python -m pip install pytest flask
   * install the application's dependencies and `cd` to the app's directory.
 
 * Run freezeyt, for example:
-  * `python -m freezeyt your_app_module _build`
+  * `python -m freezeyt demo_app_url_for _build --prefix http://freezeyt.test/foo/`
 
 
 ## Contributing
