@@ -60,12 +60,15 @@ def assert_cmp_same(cmp):
         assert_cmp_same(subcmp)
 
 
-def test_assert_dirs_same():
-    fixture_path = Path(__file__).parent / 'fixtures' / 'dirs_same'
-    for path in fixture_path.iterdir():
-        print(path)
-        if path.name in ('testdir', 'same'):
-            assert_dirs_same(path, fixture_path / 'testdir')
-        else:
-            with pytest.raises(AssertionError):
-                assert_dirs_same(path, fixture_path / 'testdir')
+DIRS_SAME_FIXTURES = Path(__file__).parent / 'fixtures' / 'dirs_same'
+DIRS_SAME_CASES = [p.name for p in DIRS_SAME_FIXTURES.iterdir()]
+
+@pytest.mark.parametrize('dir_name', DIRS_SAME_CASES)
+def test_assert_dirs_same(dir_name):
+    path = DIRS_SAME_FIXTURES / dir_name
+
+    if path.name in ('testdir', 'same'):
+        assert_dirs_same(path, DIRS_SAME_FIXTURES / 'testdir')
+    else:
+        with pytest.raises(AssertionError):
+            assert_dirs_same(path, DIRS_SAME_FIXTURES / 'testdir')
