@@ -9,7 +9,12 @@ import pytest
 from freezeyt import freeze
 
 
-def test_output(tmp_path, module_name='demo_app'):
+FIXTURES_PATH = Path(__file__).parent / 'fixtures'
+MODULE_NAMES = [p.stem for p in FIXTURES_PATH.iterdir() if p.is_file()]
+
+
+@pytest.mark.parametrize('module_name', MODULE_NAMES)
+def test_output(tmp_path, module_name):
     module = importlib.import_module(module_name)
     app = module.app
 
