@@ -18,22 +18,26 @@ def test_output(tmp_path, module_name):
     module = importlib.import_module(module_name)
     app = module.app
 
-    freeze(app, tmp_path)
+    if module_name == "demo_app_broken_link":
+        with pytest.raises(ValueError):
+            freeze(app, tmp_path)
+    else:
+        freeze(app, tmp_path)
 
-    # ../test_expected_output.py
-    # ../fixtures/demo_app/
-    expected = Path(__file__).parent / 'fixtures' / module_name
+        # ../test_expected_output.py
+        # ../fixtures/demo_app/
+        expected = Path(__file__).parent / 'fixtures' / module_name
 
-    if not expected.exists():
-        if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
-            shutil.copytree(tmp_path, expected)
-        else:
-            raise AssertionError(
-                f'Expected output directory ({expected}) does not exist. '
-                + f'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
-            )
+        if not expected.exists():
+            if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                shutil.copytree(tmp_path, expected)
+            else:
+                raise AssertionError(
+                    f'Expected output directory ({expected}) does not exist. '
+                    + f'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                )
 
-    assert_dirs_same(tmp_path, expected)
+        assert_dirs_same(tmp_path, expected)
 
 
 def assert_dirs_same(got: Path, expected: Path):
