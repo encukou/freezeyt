@@ -30,7 +30,7 @@ $ python -m pip install -r requirements.txt
 
 For testing the project it's necessary to install pytest and flask:
 ```
-$ python -m pip install pytest flask
+$ python -m pip install -r requirements-dev.txt
 ```
 
 
