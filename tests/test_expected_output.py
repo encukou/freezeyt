@@ -14,7 +14,12 @@ MODULE_NAMES = [p.stem for p in FIXTURES_PATH.iterdir() if p.is_file()]
 
 
 @pytest.mark.parametrize('module_name', MODULE_NAMES)
-def test_output(tmp_path, module_name):
+def test_output(tmp_path, monkeypatch, module_name):
+
+    # Add FIXTURES_PATH to sys.path, the list of directories that `import`
+    # looks in
+    monkeypatch.syspath_prepend(str(FIXTURES_PATH))
+
     module = importlib.import_module(module_name)
     app = module.app
 
