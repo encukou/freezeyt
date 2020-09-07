@@ -4,6 +4,8 @@ from pathlib import Path
 
 app = Flask(__name__)
 
+base_path = Path(__file__).parent
+
 @app.route('/')
 def index():
     """Start page with list of articles."""
@@ -30,7 +32,7 @@ def index():
 
 @app.route('/lekce6')
 def lesson6():
-    md_file = Path('content/articles/lekce6.md')
+    md_file = base_path / 'content/articles/lekce6.md'
     with open(md_file, mode='r', encoding='UTF-8') as f:
         md_content = f.read()
 
@@ -40,7 +42,7 @@ def lesson6():
 
 @app.route('/lekce7')
 def lesson7():
-    md_file = Path('content/articles/lekce7.md')
+    md_file = base_path / 'content/articles/lekce7.md'
     with open(md_file, mode='r', encoding='UTF-8') as f:
         md_content = f.read()
 
