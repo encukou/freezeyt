@@ -10,7 +10,7 @@
 
 *00hr:18mins*
 
-Petr started to reorganize tests on a separate branch because it was not to be done in one shot. In order not to loose the work done he commited it as WIP (work in progress) without pushing it.
+Petr started to reorganize tests on a separate branch because it was not to be done in one shot. In order not to lose the work done he commited it as WIP (work in progress) without pushing it.
 To continue working on it checkout to the ```reorganize tests``` branch.
 
 ![Reorganize tests gitk --all](freezeyt/freezeyt_blog/images/git_checkout_reorganize.png)
