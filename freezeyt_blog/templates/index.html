@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <title>Freezeyt blog</title>
+    </head>
+    <body>
+        <h1>Vítejte na blogu o projektu freezeyt !</h1>
+        <hr>
+        <br>
+        Všechny články k projektu:
+        <br>
+        {% for post_name in post_names %}
+            <br>
+            <a href={{ url_for('post', slug=post_name) }}>Článek {{ post_name }}</a>
+        {% endfor %}
+    </body>
+
+</html>

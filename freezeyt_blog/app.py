@@ -1,4 +1,4 @@
-from flask import Flask, url_for, abort
+from flask import Flask, url_for, abort, render_template
 from mistune import markdown
 from pathlib import Path
 
@@ -10,25 +10,11 @@ base_path = Path(__file__).parent
 def index():
     """Start page with list of articles."""
 
-    return f"""
-    <html>
-        <head>
-            <title>Freezeyt blog</title>
-        </head>
-        <body>
-            <h1>Vítejte na blogu o projektu freezeyt !</h1>
-            <hr>
-            <br>
-            Všechny články k projektu:
-            <br>
-            <br>
-            <a href={url_for('post', slug='lekce6')}>Článek o lekci 6</a>
-            <br>
-            <a href={url_for('post', slug='lekce7')}>Článek o lekci 7</a>
-        </body>
+    return render_template(
+        'index.html',
+        post_names=['lekce6', 'lekce7'],
+    )
 
-    </html>
-    """
 
 @app.route('/<slug>')
 def post(slug):
