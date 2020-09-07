@@ -18,15 +18,13 @@ def test_output(tmp_path, module_name):
     module = importlib.import_module(module_name)
     app = module.app
 
-    if module_name == "demo_app_broken_link":
+    expected = Path(__file__).parent / 'fixtures' / module_name
+
+    if not expected.exists():
         with pytest.raises(ValueError):
             freeze(app, tmp_path)
     else:
         freeze(app, tmp_path)
-
-        # ../test_expected_output.py
-        # ../fixtures/demo_app/
-        expected = Path(__file__).parent / 'fixtures' / module_name
 
         if not expected.exists():
             if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
