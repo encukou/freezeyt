@@ -13,7 +13,7 @@ STATIC_PATH = content_path / 'images/'
 @app.route('/')
 def index():
     """Start page with list of articles."""
-    post_names = [art_file.stem for art_file in ARTICLES_PATH.iterdir()]
+    post_names = [a.stem for a in ARTICLES_PATH.iterdir() if a.is_file()]
 
     return render_template(
         'index.html',
