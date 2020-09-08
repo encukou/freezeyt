@@ -33,6 +33,14 @@ For testing the project it's necessary to install pytest and flask:
 $ python -m pip install -r requirements-dev.txt
 ```
 
+### Installation for blog site
+
+It's necessary to install all dependecies mentioned in `requirements-blog.txt`:
+
+```shell
+$ python -m pip install -r requirements-blog.txt
+```
+
 
 ## Usage
 
