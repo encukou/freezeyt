@@ -34,7 +34,10 @@ def post(slug):
 
     html_content = markdown(md_content)
 
-    return html_content
+    return render_template(
+        'post.html',
+        content=html_content,
+    )
 
 
 
