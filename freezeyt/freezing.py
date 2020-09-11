@@ -35,10 +35,10 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
 
     Parameters:
     base - Filesystem base path (eg. /tmp/)
-    url - Absolute URL (eg. http://localhost:8000/foo/second.html)
-    hostname - Domain name from URL (eg. 'localhost')
-    port - HTTP port number (eg. 8000)
-    path - URL path (eg. '/foo/second.html')
+    url - Absolute URL (eg. http://example.com:8000/foo/second.html) to create filename
+    hostname - Domain name from URL to deploy web app in production (eg. 'example.com')
+    port - HTTP port number from URL to deploy web app in production (eg. 8000)
+    path - URL path from URL to deploy web app in production (eg. '/foo/second.html')
     """
     url_parse = parse_absolute_url(url)
 
@@ -63,6 +63,7 @@ def freeze(app, path, prefix='http://localhost:8000/'):
     Parameters:
     app -- web app you want to freeze
     path -- path to the file
+    prefix (url) -- domain name to deploy web app
     """
     path = Path(path)
 
