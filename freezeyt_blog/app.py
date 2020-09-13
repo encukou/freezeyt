@@ -14,7 +14,7 @@ content_path = base_path / 'content/'
 ARTICLES_PATH = content_path / 'articles/'
 STATIC_PATH = content_path / 'images/'
 
-class MyRenderer(mistune.Renderer):
+class HighlightRenderer(mistune.Renderer):
     def block_code(self, code, lang):
         if not lang:
             return '\n<pre><code>%s</code></pre>\n' % \
@@ -46,7 +46,7 @@ def post(slug):
     with file:
         md_content = file.read()
 
-    renderer = MyRenderer()
+    renderer = HighlightRenderer()
     md = mistune.Markdown(renderer=renderer)
     html_content = md.render(md_content)
 
