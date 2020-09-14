@@ -8,11 +8,11 @@ from pygments.formatters import HtmlFormatter
 
 app = Flask(__name__)
 
-base_path = Path(__file__).parent
-content_path = base_path / 'content/'
+BASE_PATH = Path(__file__).parent
+CONTENT_PATH = BASE_PATH / 'content/'
 
-ARTICLES_PATH = content_path / 'articles/'
-STATIC_PATH = content_path / 'images/'
+ARTICLES_PATH = CONTENT_PATH / 'articles/'
+STATIC_PATH = CONTENT_PATH / 'images/'
 
 class HighlightRenderer(mistune.Renderer):
     def block_code(self, code, lang):
