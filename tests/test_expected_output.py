@@ -61,6 +61,11 @@ def assert_cmp_same(cmp):
     if cmp.common_funny:
         raise AssertionError(f'Funny differences: {cmp.common_funny}')
 
+    # dircmp does "shallow comparison"; it only looks at file size and
+    # similar attributes. So, files in "same_files" might actually
+    # be different, and we need to check their contents.
+    # Files in "diff_files" are checked first, so failures are reported
+    # early.
     for filename in list(cmp.diff_files) + list(cmp.same_files):
         path1 = Path(cmp.left) / filename
         path2 = Path(cmp.right) / filename
