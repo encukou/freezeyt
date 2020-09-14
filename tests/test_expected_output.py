@@ -45,6 +45,7 @@ def test_output(tmp_path, monkeypatch, module_name):
 
 def assert_dirs_same(got: Path, expected: Path):
     cmp = filecmp.dircmp(got, expected, ignore=[])
+    cmp.report_full_closure()
     assert_cmp_same(cmp)
 
 
