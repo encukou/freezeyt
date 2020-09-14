@@ -33,6 +33,20 @@ For testing the project it's necessary to install pytest and flask:
 $ python -m pip install -r requirements-dev.txt
 ```
 
+To run tests, use pytest:
+
+```
+$ python -m pytest
+```
+
+To run tests with multiple Python versions (if you have them installed),
+install `tox` using `python -m pip install tox` and tun it:
+
+```
+$ tox
+```
+
+
 ### Installation for blog site
 
 It's necessary to install all dependecies mentioned in `requirements-blog.txt`:
