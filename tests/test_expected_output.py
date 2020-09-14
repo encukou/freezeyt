@@ -60,12 +60,18 @@ def assert_cmp_same(cmp):
     if cmp.common_funny:
         raise AssertionError(f'Funny differences: {cmp.common_funny}')
 
-    if cmp.diff_files:
-        for filename in cmp.diff_files:
-            path1 = Path(cmp.left) / filename
-            path2 = Path(cmp.right) / filename
-            assert path1.read_text() == path2.read_text()
+    for filename in list(cmp.diff_files) + list(cmp.same_files):
+        path1 = Path(cmp.left) / filename
+        path2 = Path(cmp.right) / filename
+        try:
+            content1 = path1.read_text()
+            content2 = path2.read_text()
+        except UnicodeDecodeError:
+            content1 = path1.read_bytes()
+            content2 = path2.read_bytes()
+        assert content1 == content2
 
+    if cmp.diff_files:
         raise AssertionError(f'Files do not have expected content: {cmp.diff_files}')
 
     for subcmp in cmp.subdirs.values():
