@@ -35,7 +35,7 @@ def index():
     )
 
 
-@app.route('/<slug>')
+@app.route('/<slug>/')
 def post(slug):
     article = ARTICLES_PATH / f'{slug}.md'
     try:
