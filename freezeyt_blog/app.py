@@ -54,8 +54,3 @@ def post(slug):
         'post.html',
         content=html_content,
     )
-
-
-
-
-
