@@ -1,27 +1,41 @@
 import mistune
 from flask import Flask, url_for, abort, render_template
 from pathlib import Path
+from urllib.parse import urlparse
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 
 app = Flask(__name__)
+print(app.config)
 
 BASE_PATH = Path(__file__).parent
 CONTENT_PATH = BASE_PATH / 'content/'
 
 ARTICLES_PATH = CONTENT_PATH / 'articles/'
-STATIC_PATH = CONTENT_PATH / 'images/'
+IMG_PATH = 'static/images/'
 
-class HighlightRenderer(mistune.Renderer):
+app.config['IMAGES_PATH'] = ['static/images']
+
+class BlogRenderer(mistune.Renderer):
     def block_code(self, code, lang):
         if not lang:
-            return '\n<pre><code>%s</code></pre>\n' % \
-                mistune.escape(code)
+            return '\n<pre><code>%s</code></pre>\n' %mistune.escape(code)
+
         lexer = get_lexer_by_name(lang, stripall=True)
         formatter = HtmlFormatter()
         return highlight(code, lexer, formatter)
+
+    def image(self, src, alt="", title=None):
+        src = urlparse(src)
+        if not src.scheme or src.netloc:
+            filename = Path(src.path).name
+            src = f"{ url_for('static.images', filename=filename) }"
+            return f'\n<img src={src} alt={alt}>\n'
+
+        return f'\n<img {mistune.escape(src, alt)} >\n'
+
 
 
 @app.route('/')
@@ -46,7 +60,7 @@ def post(slug):
     with file:
         md_content = file.read()
 
-    renderer = HighlightRenderer()
+    renderer = BlogRenderer()
     md = mistune.Markdown(renderer=renderer)
     html_content = md.render(md_content)
 
