@@ -1,5 +1,5 @@
 import mistune
-from flask import Flask, url_for, abort, render_template
+from flask import Flask, url_for, abort, render_template, Response
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -8,34 +8,32 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 
 app = Flask(__name__)
-print(app.config)
 
 BASE_PATH = Path(__file__).parent
-CONTENT_PATH = BASE_PATH / 'content/'
 
-ARTICLES_PATH = CONTENT_PATH / 'articles/'
-IMG_PATH = 'static/images/'
+ARTICLES_PATH = BASE_PATH / 'articles'
+IMAGES_PATH = BASE_PATH / 'static/images'
 
-app.config['IMAGES_PATH'] = ['static/images']
+
 
 class BlogRenderer(mistune.Renderer):
     def block_code(self, code, lang):
         if not lang:
             escaped = mistune.escape(code)
-            return f'\n<pre><code>{escaped}</code></pre>\n' 
+            return f'\n<pre><code>{escaped}</code></pre>\n'
+
         lexer = get_lexer_by_name(lang, stripall=True)
         formatter = HtmlFormatter()
         return highlight(code, lexer, formatter)
 
     def image(self, src, alt="", title=None):
         src = urlparse(src)
-        if not src.scheme or src.netloc:
+        if not src.netloc:
             filename = Path(src.path).name
-            src = f"{ url_for('static.images', filename=filename) }"
+            src = f"{ url_for('article_image', filename=filename) }"
             return f'\n<img src={src} alt={alt}>\n'
 
         return f'\n<img {mistune.escape(src, alt)} >\n'
-
 
 
 @app.route('/')
@@ -68,3 +66,12 @@ def post(slug):
         'post.html',
         content=html_content,
     )
+
+
+@app.route('/article_image/<filename>')
+def article_image(filename):
+    """Route to returns images saved in static/images"""
+    img_p = IMAGES_PATH / filename
+    img_bytes = img_p.read_bytes()
+
+    return Response(img_bytes, mimetype='image/png')
