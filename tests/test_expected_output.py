@@ -10,37 +10,38 @@ from freezeyt import freeze
 
 
 FIXTURES_PATH = Path(__file__).parent / 'fixtures'
-MODULE_NAMES = [p.stem for p in FIXTURES_PATH.iterdir() if p.is_file()]
+DIRS_SAME_FIXTURES = Path(__file__).parent / 'fixtures' / 'dirs_same'
+
+DIRS_SAME_CASES = [p.name for p in DIRS_SAME_FIXTURES.iterdir()]
+APP_NAMES = [p.name for p in FIXTURES_PATH.iterdir() if p.is_dir() and p != DIRS_SAME_FIXTURES]
 
 
-@pytest.mark.parametrize('module_name', MODULE_NAMES)
-def test_output(tmp_path, monkeypatch, module_name):
+@pytest.mark.parametrize('app_name', APP_NAMES)
+def test_output(tmp_path, monkeypatch, app_name, module_name='app'):
+    app_path = FIXTURES_PATH / app_name
 
     # Add FIXTURES_PATH to sys.path, the list of directories that `import`
     # looks in
-    monkeypatch.syspath_prepend(str(FIXTURES_PATH))
+    monkeypatch.syspath_prepend(str(app_path))
 
     module = importlib.import_module(module_name)
     app = module.app
 
-    expected = Path(__file__).parent / 'fixtures' / module_name
+    expected = app_path / 'test_expected_output'
+    print("expected_path:", expected)
+
+    freeze(app, tmp_path)
 
     if not expected.exists():
-        with pytest.raises(ValueError):
-            freeze(app, tmp_path)
-    else:
-        freeze(app, tmp_path)
+        if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+            shutil.copytree(tmp_path, expected)
+        else:
+            raise AssertionError(
+                f'Expected output directory ({expected}) does not exist. '
+                + f'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+            )
 
-        if not expected.exists():
-            if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
-                shutil.copytree(tmp_path, expected)
-            else:
-                raise AssertionError(
-                    f'Expected output directory ({expected}) does not exist. '
-                    + f'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
-                )
-
-        assert_dirs_same(tmp_path, expected)
+    assert_dirs_same(tmp_path, expected)
 
 
 def assert_dirs_same(got: Path, expected: Path):
@@ -83,9 +84,6 @@ def assert_cmp_same(cmp):
     for subcmp in cmp.subdirs.values():
         assert_cmp_same(subcmp)
 
-
-DIRS_SAME_FIXTURES = Path(__file__).parent / 'fixtures' / 'dirs_same'
-DIRS_SAME_CASES = [p.name for p in DIRS_SAME_FIXTURES.iterdir()]
 
 @pytest.mark.parametrize('dir_name', DIRS_SAME_CASES)
 def test_assert_dirs_same(dir_name):
