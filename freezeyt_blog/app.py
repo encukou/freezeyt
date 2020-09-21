@@ -1,4 +1,4 @@
-import imghdr
+import mimetypes
 import mistune
 from flask import Flask, url_for, abort, render_template, Response
 from pathlib import Path
@@ -73,10 +73,11 @@ def post(slug):
 def article_image(filename):
     """Route to returns images saved in static/images"""
     img_path = IMAGES_PATH / filename
-    img_type = imghdr.what(img_path)
-    if img_type:
+    (mimetype, encoding) = mimetypes.guess_type(img_path)
+    if mimetype:
         img_bytes = img_path.read_bytes()
+        print(mimetype)
 
-        return Response(img_bytes, mimetype=f'image/{img_type}')
+        return Response(img_bytes, mimetype=mimetype)
 
     return None
