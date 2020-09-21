@@ -11,27 +11,24 @@
 *00hr:18mins*
 
 Petr started to reorganize tests on a separate branch because it was not to be done in one shot. In order not to lose the work done he commited it as WIP (work in progress) without pushing it.
-To continue working on it checkout to the ```reorganize tests``` branch.
-
-![Reorganize tests gitk --all](freezeyt/freezeyt_blog/images/git_checkout_reorganize.png)
+To continue working on it he switched to the ```reorganize tests``` branch.
 
 ### Rebase the reorganize-tests branch to the master in order not to lose any history.
+
 Each commit in Git represents the state of the whole project. ```Git show``` and ```gitk --all``` both display all the changes since the last commit. In the background however it actually saves the whole content/state of each commit. Saving the whole state of all commits makes it possible for Git to display all that happened within each commit. In reality, it compares the state of the previous/parent commit, and the state of the current commit by listing the ```diff --git a/``` of all files from both commits.
 
-![git_diff_commits](freezeyt/freezeyt_blog/images/git_diff_commits.png)
+To do the ```git rebase master```, Git takes the diff or all changes from the commit and attempts to apply the same changes to the current master. More precisely, Git creates a new commit, goes file by file and tries to apply all changes until a conflict appears or until all changes are applied to the master.
 
-To do the ```git rebase master```, Git takes the diff or all changes from the commit and attempts to apply the same changes to the current master. More precisely, git creates a new commit, goes file by file and tries to apply all changes until a conflict appears or until all changes are applied to the master.
-
-![Rebase commits](freezeyt/freezeyt_blog/images/rebase_commits.png)
+![Rebase commits](../images/rebase_commits.png)
 
 ### Good Rebase - Conflict Example
 *00hr:21min*
 
-![Rebase conflict](freezeyt/freezeyt_blog/images/rebase_conflict.png)
+![Rebase conflict](../images/rebase_conflict.png)
 
 The "modify/delete" means that ```test_demo.py``` changed in the master and the same file was deleted from the reorganize-tests branch which is being rebased.
 
-![Git status rebase](freezeyt/freezeyt_blog/images/git_status_rebase.png)
+![Git status rebase](../images/git_status_rebase.png)
 
 "Version HEAD of test_demo.py left in tree" means that the file ```test_demo.py``` was left in the working tree although it was deleted/renamed into ```test_expected_output.py``` in the reorganize-tests branch. This change was done because test_demo.py contained repetitive tests which import an app, freeze the same and than check if the app does what it was supposed to do.
 
@@ -40,11 +37,9 @@ The "modify/delete" means that ```test_demo.py``` changed in the master and the 
 
 The new tests do not assert ```test_flask_url_for_custom_prefix_without_port(tmp_path)```.
 
-![Before rebase](freezeyt/freezeyt_blog/images/before_rebase.png)
-
 After all conflicts are resolved and the changes are commited just ```git rebase --continue``` to complete the rebase. Finally, reorganize-tests is established on the master branch.
 
-![After rebase](freezeyt/freezeyt_blog/images/after_rebase.png)
+![After rebase](../images/after_rebase.png)
 
 ### Add test_expected_output comparing freeze output to expected output
 *00hr:27min*
@@ -84,7 +79,7 @@ It is better to create an [assert_dirs_same](https://github.com/encukou/freezeyt
 
 Created folders ```same``` and ```testdir```, inside the fixtures folder. ```testdir``` contains a file.txt with some random text, and a sub-folder with a file inside it. Inside the fixtures folder is a ```dirs_same``` folder containing all possible variations of testing folders which should cause the test to fail like ```missing_file```, ```extra_file```, ```extra_in_subdir```, ```missing_dir```, ```missing_file_in_dir```, ```same```, ```funny```, ```diff_files```.
 
-![Testing tree](freezeyt/freezeyt_blog/images/testing_tree.png)
+![Testing tree](../images/testing_tree2.png)
 
 At this stage ```test_assert_dirs_same``` compares all these possible variations to both ```testdir``` and ```same``` since these two need to be identical for the tests to pass:
 ```python
@@ -111,7 +106,7 @@ The same is done until all ```test_assert_dirs_same``` conditions pass without a
 
 The test does not count on subdirectories so we need to find a way for each ```subdir``` to pass the ```test_assert_dirs_same``` as well. The best way to do this is to divide ```assert_dirs_same``` in two functions where one will be calling the other.
 
-![Testing Subdirectories](freezeyt/freezeyt_blog/images/subdirs.png)
+![Testing Subdirectories](../images/subdirs.png)
 
 In this case, ```cmp``` notes all files and folders that are within each folder using ```filecmp.dircmp``` and does the same again for each subfolder every time [```assert_dirs_same``` calls ```assert_cmp_same](https://github.com/encukou/freezeyt/blob/0bbed56c3cc49f06451d0b89fb85before_reorganize_tests.png37761403b976/tests/test_expected_output.py#L34%20-%20L60).
 
@@ -120,9 +115,7 @@ In this case, ```cmp``` notes all files and folders that are within each folder 
 
 Improve the description to AssertionErrors in [assert_cmp_same](https://github.com/encukou/freezeyt/blob/0bbed56c3cc49f06451d0b89fb8537761403b976/tests/test_expected_output.py#L39-L57) gradually as further test failures appear. It would be good to get the absolute path to the folder where the failure happens for example.
 
-When calling assert_dirs_same inside test_output we got:
-
-![diff_files_assert_error](freezeyt/freezeyt_blog/images/diff_files_assert_error.png)
+When calling assert_dirs_same inside test_output we got an ```AssertionError: Files does not have expected content: ['index.html']```
 
 ### Gradually Improving Tests
 The following asks pytest to compare the expected and the output file to make it easier to locate the the difference:
@@ -135,28 +128,18 @@ if cmp.diff_files:
 ```
 This provided the following:
 
-![diff_files_error_details](freezeyt/freezeyt_blog/images/diff_files_error_details.png)
+![diff_files_error_details](../images/diff_files_error_details.png)
 
 ### Interactive Rebase - complete control over the branch's commit history
 *01hr:19min*
 
-Need to merge the work_in_progress commit to reorganize tests:
-
-![Before the rebase](freezeyt/freezeyt_blog/images/before_rebase.png)
-
-This is best done by interactive rebase which lets you reorganize, delete or alter all commits as they are moved to the new branch. It's done by ```$ git rebase --interactive <branc_from_where_to_start>```
+Interactive rebase was used to merge the work_in_progress commit to reorganize tests. ```$ git rebase --interactive <branch_from_where_to_start>```
 
 This way you get a list of a few commands to change your commits history:
 
-![](freezeyt/freezeyt_blog/images/interactive_rebase_commits.png)
+![](../images/interactive_rebase_commits2.png)
 
-Reword lets you change the description of a commit:
-
-![](freezeyt/freezeyt_blog/images/reword_commit.png)
-
-We wanted to meld two commits into one:
-
-![Squash commits](freezeyt/freezeyt_blog/images/squash_commits.png)
+Reword lets you change the description of a commit and we squashed (melded) the two commits into one.
 
 ### Making sure no commits were lost - changing commit history
 *01hr:25min*
@@ -166,7 +149,7 @@ $ git --reflog
 ```
 Shows the entire and complete history of commits which existed at any point in time, and makes it possible to retrieve lost commits:
 
-![Git reflog](freezeyt/freezeyt_blog/images/git_reflog.png)
+![Git reflog](../images/git_reflog2.png)
 
 This history can be browsed using the commit name: ``` $ git show HEAD @ {3}``` - where the history was three changes ago, or ``` $ git show HEAD@{3.weeks.ago}```. This way you can return to any of the changes at any point in he commit history. Also available ```$ git log HEAD@{3.weeks.ago}``` and ```$ gitk --all HEAD@{3.weeks.ago}```
 
@@ -197,13 +180,11 @@ This is why @pytest.mark.parametrize: parametrizing test functions was used.
 ### Making two tests out of one function
 *01hr:50min*
 
-The function takes the ```dir_names``` argument, add it to the path, and than use ```@pytest.mark.parametrize('dir_names', ['difference', 'extra'])``` setting the ```dir_names``` argument to 'difference' and 'extra'. Making two tests out of a single function. More precisely, a single test function receives and tests two different parameters, 'difference' and 'extra':
-
-![Test parametrization](freezeyt/freezeyt_blog/images/test_parametrization.png)
+The function takes the ```dir_names``` argument, add it to the path, and than use ```@pytest.mark.parametrize('dir_names', ['difference', 'extra'])``` setting the ```dir_names``` argument to 'difference' and 'extra'. Making two tests out of a single function. More precisely, a single test function receives and tests two different parameters, 'difference' and 'extra'.
 
 [test_assert_dirs_same](https://github.com/encukou/freezeyt/blob/0bbed56c3cc49f06451d0b89fb8537761403b976/tests/test_expected_output.py#L63-L74) was changed accordingly, the fixture_path was made into a global variable named DIRS_SAME_FIXTURES and than we are able to iterate over it inside the test, which made it possible to test all of the apps from inside fixtures with this single test:
 
-![Test parametrization magic](freezeyt/freezeyt_blog/images/test_parametrized.png)
+![Test parametrization magic](../images/test_parametrized.png)
 
 ### Homework
 - Write doc strings (what it does and how to call it) to new test functions or comments (how it does it)
