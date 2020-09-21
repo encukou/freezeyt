@@ -49,10 +49,10 @@ This [demo_app_structured](https://github.com/encukou/freezeyt/blob/master/demo_
 Until this point the ```url_to_filename()``` function would take both absolute and relative URLs as arguments. The solution for issue#27 was to always make an absolute path out of any relative link/path received as an argument. To solve this we need to add the base (*scheme* and *netloc* attributes) to the link/path to make an absolute path out of the relative.
 For example:
 The freeze() function takes two parameters, base and url:
-- If on page (base): http://localhost:8000/users/
+- If on page (base): `http://localhost:8000/users/`
 - On it is a link (url): a/
 - we need to make the following out of this:
-http://localhost:8000/users/a/
+  `http://localhost:8000/users/a/`
 
 The best way to do this is using the ```urljoin``` method, which joins the base address and the rest of the URL. To start off with an absolute address, a full_url was added to links in the freeze function instead of just '/':
 ```python
@@ -89,7 +89,7 @@ The changes made to ```get_all_links()``` and ```get_links_from_node()``` (the a
 ```
 Consequently, we needed to add an argument (base_url) to the [test_get_links.py](https://github.com/encukou/freezeyt/blob/master/test_get_links.py) since it calls the get_all_links() function where we added the base_url argument.
 Furthermore, to test the new 'relative links' feature of the ```get_all_links()``` function a relative link ```<a href='fourth_page/'>LINK</a>``` was added to the test as well.
-In case ```get_all_links()``` was called with a path like 'http://localhost:8000/path1/path2/' the relative link should also link to it, so a new ```test_get_links_path()``` was added.
+In case ```get_all_links()``` was called with a path like `http://localhost:8000/path1/path2/` the relative link should also link to it, so a new ```test_get_links_path()``` was added.
 ```python
 def test_get_links_path():
     links = get_all_links(b"""
