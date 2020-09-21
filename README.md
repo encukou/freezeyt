@@ -74,58 +74,38 @@ $ python -m pip install -r requirements-blog.txt
 
 ### How to use freezeyt-blog
 
-It is neccesary set blog app to flask variable `FLASK_APP` to run blog on your local machine:
+To run the blog on your local machine, set the environment variable `FLASK_APP` to the path of the blog app.
+Also set `FLASK_ENV` to "development" for easier debugging.
+Then, run the Flask server.
 
-1. OS Microsoft Windows
+1. On Microsoft Windows:
 
 ```shell
 > set FLASK_APP=freezeyt_blog/app.py
+> set FLASK_ENV=development
+> flask run
 ```
 
-2. OS UNIX
+2. On UNIX:
 
 ```shell
 $ export FLASK_APP=freezeyt_blog/app.py
-```
-
-After you add app to variable `FLASK_APP`, we will need run flask server to serve your blog on local machine
-
-```shell
+$ export FLASK_ENV=development
 $ flask run
 ```
 
-Terminal print to you local URL where your blog is running.
+The URL where your blog is running will be printed on the terminal.
 
-
-#### How to develop freezeyt blog with debug environment
-
-If you want to contribute the blog then is good practise to set up also flask variable `DEBUG_ENV` to value True
-
-OS UNIX
-
-```shell
-$ export DEBUG_ENV=1
-```
-
-Another way how to set up debug mode to True is set up `FLASK_ENV` to development enviroment:
-
-```shell
-$ export FLASK_ENV=development
-```
-
-_Note:_
-
-When you are Windows user - everywhere switch `export` to `set` in command line
 
 #### How to add new articles to freezeyt blog
 
-New article has to be write in `Markdown` language.
+Articles are writen in the `Markdown` language.
 
-**Article** - save to directory `../freezeyt/freezeyt_blog/content/articles`
+**Article** - save to directory `../freezeyt/freezeyt_blog/articles`
 
-**Images to articles** - save to directory `../freezeyt/freezeyt_blog/content/images`
+**Images to articles** - save to directory `../freezeyt/freezeyt_blog/static/images`
 
-Without correct destination place of saving files, blog will not work correctly.
+If te files are saved elsewhere, the blog will not work correctly.
 
 
 ## Contributing
