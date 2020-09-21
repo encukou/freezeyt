@@ -1,3 +1,4 @@
+import imghdr
 import mistune
 from flask import Flask, url_for, abort, render_template, Response
 from pathlib import Path
@@ -71,7 +72,11 @@ def post(slug):
 @app.route('/article_image/<filename>')
 def article_image(filename):
     """Route to returns images saved in static/images"""
-    img_p = IMAGES_PATH / filename
-    img_bytes = img_p.read_bytes()
+    img_path = IMAGES_PATH / filename
+    img_type = imghdr.what(img_path)
+    if img_type:
+        img_bytes = img_path.read_bytes()
 
-    return Response(img_bytes, mimetype='image/png')
+        return Response(img_bytes, mimetype=f'image/{img_type}')
+
+    return None
