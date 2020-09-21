@@ -45,6 +45,7 @@ def test_output(tmp_path, monkeypatch, module_name):
 
 def assert_dirs_same(got: Path, expected: Path):
     cmp = filecmp.dircmp(got, expected, ignore=[])
+    cmp.report_full_closure()
     assert_cmp_same(cmp)
 
 
@@ -60,12 +61,23 @@ def assert_cmp_same(cmp):
     if cmp.common_funny:
         raise AssertionError(f'Funny differences: {cmp.common_funny}')
 
-    if cmp.diff_files:
-        for filename in cmp.diff_files:
-            path1 = Path(cmp.left) / filename
-            path2 = Path(cmp.right) / filename
-            assert path1.read_text() == path2.read_text()
+    # dircmp does "shallow comparison"; it only looks at file size and
+    # similar attributes. So, files in "same_files" might actually
+    # be different, and we need to check their contents.
+    # Files in "diff_files" are checked first, so failures are reported
+    # early.
+    for filename in list(cmp.diff_files) + list(cmp.same_files):
+        path1 = Path(cmp.left) / filename
+        path2 = Path(cmp.right) / filename
+        try:
+            content1 = path1.read_text()
+            content2 = path2.read_text()
+        except UnicodeDecodeError:
+            content1 = path1.read_bytes()
+            content2 = path2.read_bytes()
+        assert content1 == content2
 
+    if cmp.diff_files:
         raise AssertionError(f'Files do not have expected content: {cmp.diff_files}')
 
     for subcmp in cmp.subdirs.values():
@@ -84,3 +96,20 @@ def test_assert_dirs_same(dir_name):
     else:
         with pytest.raises(AssertionError):
             assert_dirs_same(path, DIRS_SAME_FIXTURES / 'testdir')
+
+
+def test_files_with_same_signature(tmp_path):
+    dir1 = tmp_path / 'dir1'
+    dir2 = tmp_path / 'dir2'
+
+    dir1.mkdir()
+    dir2.mkdir()
+
+    path1 = dir1 / 'file.txt'
+    path2 = dir2 / 'file.txt'
+
+    path1.write_text('A')
+    path2.write_text('B')
+
+    with pytest.raises(AssertionError):
+        assert_dirs_same(dir1, dir2)
