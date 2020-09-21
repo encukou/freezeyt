@@ -1,6 +1,8 @@
+import imghdr
 import mistune
-from flask import Flask, url_for, abort, render_template
+from flask import Flask, url_for, abort, render_template, Response
 from pathlib import Path
+from urllib.parse import urlparse
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
@@ -9,19 +11,30 @@ from pygments.formatters import HtmlFormatter
 app = Flask(__name__)
 
 BASE_PATH = Path(__file__).parent
-CONTENT_PATH = BASE_PATH / 'content/'
 
-ARTICLES_PATH = CONTENT_PATH / 'articles/'
-STATIC_PATH = CONTENT_PATH / 'images/'
+ARTICLES_PATH = BASE_PATH / 'articles'
+IMAGES_PATH = BASE_PATH / 'static/images'
 
-class HighlightRenderer(mistune.Renderer):
+
+
+class BlogRenderer(mistune.Renderer):
     def block_code(self, code, lang):
         if not lang:
-            return '\n<pre><code>%s</code></pre>\n' % \
-                mistune.escape(code)
+            escaped = mistune.escape(code)
+            return f'\n<pre><code>{escaped}</code></pre>\n'
+
         lexer = get_lexer_by_name(lang, stripall=True)
         formatter = HtmlFormatter()
         return highlight(code, lexer, formatter)
+
+    def image(self, src, alt="", title=None):
+        src = urlparse(src)
+        if not src.netloc:
+            filename = Path(src.path).name
+            src = f"{ url_for('article_image', filename=filename) }"
+            return f'\n<img src={src} alt={alt}>\n'
+
+        return f'\n<img {mistune.escape(src, alt)} >\n'
 
 
 @app.route('/')
@@ -46,7 +59,7 @@ def post(slug):
     with file:
         md_content = file.read()
 
-    renderer = HighlightRenderer()
+    renderer = BlogRenderer()
     md = mistune.Markdown(renderer=renderer)
     html_content = md.render(md_content)
 
@@ -56,6 +69,14 @@ def post(slug):
     )
 
 
+@app.route('/article_image/<filename>')
+def article_image(filename):
+    """Route to returns images saved in static/images"""
+    img_path = IMAGES_PATH / filename
+    img_type = imghdr.what(img_path)
+    if img_type:
+        img_bytes = img_path.read_bytes()
 
+        return Response(img_bytes, mimetype=f'image/{img_type}')
 
-
+    return None

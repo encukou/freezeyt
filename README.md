@@ -58,6 +58,8 @@ $ python -m pip install -r requirements-blog.txt
 
 ## Usage
 
+### How to use static web site generator freezeyt
+
 * Set `PYTHONPATH` to the directory with `freezeyt`, for example:
   * Unix: `export PYTHONPATH="/home/name/freezeyt"`
   * Windows: `set PYTHONPATH=C:\Users\Name\freezeyt`
@@ -68,6 +70,62 @@ $ python -m pip install -r requirements-blog.txt
 
 * Run freezeyt, for example:
   * `python -m freezeyt demo_app_url_for _build --prefix http://freezeyt.test/foo/`
+
+
+### How to use freezeyt-blog
+
+It is neccesary set blog app to flask variable `FLASK_APP` to run blog on your local machine:
+
+1. OS Microsoft Windows
+
+```shell
+> set FLASK_APP=freezeyt_blog/app.py
+```
+
+2. OS UNIX
+
+```shell
+$ export FLASK_APP=freezeyt_blog/app.py
+```
+
+After you add app to variable `FLASK_APP`, we will need run flask server to serve your blog on local machine
+
+```shell
+$ flask run
+```
+
+Terminal print to you local URL where your blog is running.
+
+
+#### How to develop freezeyt blog with debug environment
+
+If you want to contribute the blog then is good practise to set up also flask variable `DEBUG_ENV` to value True
+
+OS UNIX
+
+```shell
+$ export DEBUG_ENV=1
+```
+
+Another way how to set up debug mode to True is set up `FLASK_ENV` to development enviroment:
+
+```shell
+$ export FLASK_ENV=development
+```
+
+_Note:_
+
+When you are Windows user - everywhere switch `export` to `set` in command line
+
+#### How to add new articles to freezeyt blog
+
+New article has to be write in `Markdown` language.
+
+**Article** - save to directory `../freezeyt/freezeyt_blog/content/articles`
+
+**Images to articles** - save to directory `../freezeyt/freezeyt_blog/content/images`
+
+Without correct destination place of saving files, blog will not work correctly.
 
 
 ## Contributing
