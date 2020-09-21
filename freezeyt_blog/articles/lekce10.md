@@ -10,7 +10,7 @@
 
 1. Remove excess images, and improve quality of some images from blog9.
 2. Issue#54 - continue improving the blog app
-      - The "MDconvert/__init__.py" was removed from the blog app)
+      - The `MDconvert/__init__.py` was removed from the blog app)
       - **Homework notes** at 00hr:42mins
       - **Note on Flask security**  at 00hr:47mins   
 3. Add install mistune to readme or requirements
@@ -23,50 +23,55 @@
     - The problem was in the app.route to '/lekce6' since the Path('content/articles/lekce6.md') limits the app to be run from a single location/folder.
     - **Run a web app from any location/Path/folder**, 00hr:14min,  we created a base path determined only by the location of app.py:
 
-                ```python
-                base_path = Path(__file__).parent
-                ```
+        ```python
+        base_path = Path(__file__).parent
+        ```
+
 2. **Creating a dynamic route (generic route for all posts)** - added a ```'/<slug>''``` parameter (slug is a tech-term referring to the last peace of an address/Path):
 
-                ```python
-                @app.route('/<slug>')
-                def post(slug):
-                   md_file = base_url / Path('content/articles/{slug}.md')
-                ```
-      - Changed the url_for in the index page accordingly.
+   ```python
+   @app.route('/<slug>')
+   def post(slug):
+       md_file = base_url / Path('content/articles/{slug}.md')
+   ```
+
+    - Changed the url_for in the index page accordingly.
 
 3. **When a nonexistent page is requested in the URL** - except FileNotFoundError as 404 not found:
 
-                ```python
-              except FileNotFoundError:
-                  abort(404)
-                ```
+    ```python
+    except FileNotFoundError:
+        abort(404)
+    ```
+
 4. **Shorten code in the 'try' block:**
 
-                ```python
-                try:
-                  with open(md_file, mode='r', encoding='UTF-8') as f:
-                    md_content = f.read()
-                except FileNotFoundError:
-                  abort(404)
-                ```
+    ```python
+    try:
+        with open(md_file, mode='r', encoding='UTF-8') as f:
+        md_content = f.read()
+    except FileNotFoundError:
+        abort(404)
+    ```
+
     Improved into:
 
-                ```python
-                  try:
-                    file = open(md_file, mode='r', encoding='UTF-8')
-                  except FileNotFoundError:
-                    abort(404)
-                  with file:
-                     md_content = f.read()
-                ```
+    ```python
+        try:
+        file = open(md_file, mode='r', encoding='UTF-8')
+        except FileNotFoundError:
+        abort(404)
+        with file:
+            md_content = f.read()
+    ```
+
 5. **Note on security** 00hr:46min - users should not be able to input paths into the URL
       - Flask takes care of this in its [variable rules](https://flask.palletsprojects.com/en/1.1.x/quickstart/?highlight=variable%20rules) by escaping any slashes within strings. This will prevent strings to contain file system paths.
       - When creating <html> templates use the safe filter, ```{{text | safe}}``` which is a way to tell Flask that this text is safe so it can omit the variable rules on that specific instance. Otherwise, Flask will convert the html code into regular text, and the page will not render properly.
 
 6. **Adding new posts** 00hr:33min
       - Separate all html code in a templates folder and add template-path to main route.
-      - Add render_template to Flask and adapt html code accordingly
+      - Add `render_template` to Flask and adapt html code accordingly
       - Added a [list of 'post_names' to the index page route](https://github.com/encukou/freezeyt/blob/291cacf672b9c6f56abe57eabc4eb36663b74436/freezeyt_blog/app.py#L15) and use the same in the 'index.html' by [embedding a python 'for' loop in the html](https://github.com/encukou/freezeyt/blob/291cacf672b9c6f56abe57eabc4eb36663b74436/freezeyt_blog/templates/index.html#L11-L14) to avoid repetition.
 
 ### Test Parametrization PR - [Issue#51](https://github.com/encukou/freezeyt/pull/51)
