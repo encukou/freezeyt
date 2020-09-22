@@ -1,8 +1,9 @@
-import imghdr
+import mimetypes
 import mistune
 from flask import Flask, url_for, abort, render_template, Response
 from pathlib import Path
 from urllib.parse import urlparse
+import html
 
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
@@ -16,7 +17,6 @@ ARTICLES_PATH = BASE_PATH / 'articles'
 IMAGES_PATH = BASE_PATH / 'static/images'
 
 
-
 class BlogRenderer(mistune.Renderer):
     def block_code(self, code, lang):
         if not lang:
@@ -27,14 +27,14 @@ class BlogRenderer(mistune.Renderer):
         formatter = HtmlFormatter()
         return highlight(code, lexer, formatter)
 
-    def image(self, src, alt="", title=None):
+    def image(self, src, title, alt_text):
         src = urlparse(src)
         if not src.netloc:
             filename = Path(src.path).name
             src = f"{ url_for('article_image', filename=filename) }"
-            return f'\n<img src={src} alt={alt}>\n'
+            return f'\n<img src="{html.escape(src, quote=True)}" alt="{html.escape(alt_text, quote=True)}">\n'
 
-        return f'\n<img {mistune.escape(src, alt)} >\n'
+        return f'\n<img {mistune.escape(src, alt_text)} >\n'
 
 
 @app.route('/')
@@ -73,10 +73,11 @@ def post(slug):
 def article_image(filename):
     """Route to returns images saved in static/images"""
     img_path = IMAGES_PATH / filename
-    img_type = imghdr.what(img_path)
-    if img_type:
+    (mimetype, encoding) = mimetypes.guess_type(img_path)
+    if mimetype:
         img_bytes = img_path.read_bytes()
+        print(mimetype)
 
-        return Response(img_bytes, mimetype=f'image/{img_type}')
+        return Response(img_bytes, mimetype=mimetype)
 
     return None
