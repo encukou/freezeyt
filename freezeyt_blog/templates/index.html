@@ -1,13 +1,16 @@
 {% extends 'base.html' %} {% block content %}
 
 <h1>Vítejte na blogu o projektu freezeyt !</h1>
-<hr>
-<br>
+
+<div>
 Všechny články k projektu:
-<br>
+</div>
+<ul class="list-unstyled">
 {% for post_name in post_names %}
-    <br>
-    <a href={{ url_for('post', slug=post_name) }}>Článek {{ post_name }}</a>
+    <li>
+        <a href={{ url_for('post', slug=post_name) }}>Článek {{ post_name }}</a>
+    </li>
 {% endfor %}
+<ul>
 
 {% endblock content %}
