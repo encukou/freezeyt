@@ -84,7 +84,7 @@ Created folders ```same``` and ```testdir```, inside the fixtures folder. ```tes
 At this stage ```test_assert_dirs_same``` compares all these possible variations to both ```testdir``` and ```same``` since these two need to be identical for the tests to pass:
 ```python
 def test_assert_dirs_same():
-  fixture_path = Path(__file__).parent / 'fixtures' 'dirs_same'before_reorganize_tests.png
+  fixture_path = Path(__file__).parent / 'fixtures' 'dirs_same'
   for path in fixture_path.iterdir():
     if path.name in ('testdir', 'same'):
       assert_dirs_same(path, fixture_path / 'testdir')
@@ -108,7 +108,7 @@ The test does not count on subdirectories so we need to find a way for each ```s
 
 ![Testing Subdirectories](../images/subdirs.png)
 
-In this case, ```cmp``` notes all files and folders that are within each folder using ```filecmp.dircmp``` and does the same again for each subfolder every time [```assert_dirs_same``` calls ```assert_cmp_same](https://github.com/encukou/freezeyt/blob/0bbed56c3cc49f06451d0b89fb85before_reorganize_tests.png37761403b976/tests/test_expected_output.py#L34%20-%20L60).
+In this case, ```cmp``` notes all files and folders that are within each folder using ```filecmp.dircmp``` and does the same again for each subfolder every time [```assert_dirs_same``` calls ```assert_cmp_same](https://github.com/encukou/freezeyt/blob/0bbed56c3cc49f06451d0b89fb8537761403b976/tests/test_expected_output.py#L34%20-%20L60).
 
 ### Future ISSUE
 *01hr:09min*
@@ -188,7 +188,7 @@ The function takes the ```dir_names``` argument, add it to the path, and than us
 
 ### Homework
 - Write doc strings (what it does and how to call it) to new test functions or comments (how it does it)
-- [Issue#32](https://github.com/encukou/freezeyt/issues/32)before_reorganize_tests.png
+- [Issue#32](https://github.com/encukou/freezeyt/issues/32)
 - hledani odkazy ve CSS very complicated
 - [Issue#39](https://github.com/encukou/freezeyt/issues/39), Petr will do it live
 - doc. string for freeze
