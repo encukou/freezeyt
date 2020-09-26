@@ -63,7 +63,7 @@ def freeze(app, path, prefix='http://localhost:8000/'):
     Parameters:
     app -- web app you want to freeze
     path -- path to the file
-    prefix (url) -- domain name to deploy web app
+    prefix (url) -- URL to deploy web app
     """
     path = Path(path)
 
