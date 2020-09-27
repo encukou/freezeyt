@@ -28,16 +28,18 @@ def test_output(tmp_path, monkeypatch, app_name):
     try:
         module = importlib.import_module('app')
         app = module.app
+        prefix = getattr(module, 'prefix', None)
 
         expected = app_path / 'test_expected_output'
-        print("expected_path:", expected)
-
 
         if not module_path.exists() or app_name == 'demo_app_broken_link':
             with pytest.raises(ValueError):
                 freeze(app, tmp_path)
         else:
-            freeze(app, tmp_path)
+            if prefix:
+                freeze(app, tmp_path, prefix=prefix)
+            else:
+                freeze(app, tmp_path)
 
             if not expected.exists():
                 if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
