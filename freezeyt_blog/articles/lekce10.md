@@ -93,18 +93,18 @@
 3. Modifying ```test_expected_output``` so that it passes - solved by raising a ValueError when freezing ```demo_app_broken_link```. This means that an if statement was added and the rest stayed as is except that it was indented. To make sure the only change was the indentation:
       - **Github Tip** 01hr:00min - to see all changes in a pull request **excluding white spaces**: under the 'Files changed' tab > settings > check-mark - 'Hide whitespace changes' or delete the 'w=1' at the end of the URL in the browser
 
-      ![](../images/hide_whitespaces.png)
+      ![](../static/images/hide_whitespaces.png)
 
 4. Comparing directory trees - the issue when comparing to an empty directory. **GIT does not add empty folders** 01hr:5min
 
       - Simplest way is to add one extra file to all sub-directories to just get past this issue.
       - Considering [```filecmp.DEFAULT_IGNORES```](https://docs.python.org/3/library/filecmp.html#the-dircmp-class) can hide files which we might need, and the fact that we want our Freezeyt 'comparator' to be able to generate Git folders, it is important to [set it up in a way that it does not ignore any files](https://github.com/encukou/freezeyt/blob/d9e59f0d29d72a2e1ac1375e5fe96c5858fd44c9/tests/test_expected_output.py#L47).
 
-      ![In the future we might need to use Freezyt for generate Git directories](../images/default_ignores.png)
+      ![In the future we might need to use Freezyt for generate Git directories](../static/images/default_ignores.png)
 
       - In order to test this, a RCS folder (filecmp ignores all folders named RCS), was added to the test data, and test file3.txt was added to all sub-directories in fixtures and testdir:
 
-        ![](../images/test_filecmp_ignored_folders.png)
+        ![](../static/images/test_filecmp_ignored_folders.png)
 
 5. Adding more apps which can not be frozen, similar to "demo_app_broken_link":
 01hr:17min
@@ -123,7 +123,7 @@ This happens because python does not know to search and import the requested mod
 ## Searching for and importing modules
 01hr:24min
 
-![Python is set up to search in a few places depending on the module being imported](../images/importing_modules2.png)
+![Python is set up to search in a few places depending on the module being imported](../static/images/importing_modules2.png)
 
 **Built-in modules are not imported from a specific file, so python does not need a path to get to them.**
 Asside from built_in modules, all others are imported from a python variable named "Path" saved under ```sys.path``` which is a list of all directories from which you can import:
@@ -151,7 +151,7 @@ The first item in this list is an empty string which represents the current dire
 
 When test_expected_output needs to import a module it should search for it in the fixtures folder. This requires to import the sys module and to ```sys.path.append(str(FIXTURES_PATH))```. The issue with this is that it appends the path for every test, and creates a mess in the sys.path as the same path is just appended a few times:
 
-![](../images/sys_path_append_mess.png)
+![](../static/images/sys_path_append_mess.png)
 
 The solution is to create another orig_path variable to record the original sys.path, and put the test_output inside a ```try``` block. Once the test is finished return the sys.path to it's original state before the test.
 
