@@ -175,7 +175,7 @@ More precisely, these links are used as the value for the ```'PATH_INFO'``` in t
 ### Test Driven Development - Refactoring
 *22nd min*
 
-![](images/test_driven_development.png)
+![](../static/images/test_driven_development.png)
 
 - Some variable names changed for clarity in the code. Changed 'link' to 'url' because it is a full address now, and 'new_urls' instead of 'links' since these are yet to go through the while loop check.
 - Another *ValueError* is raised in the ```url_to_file_name()``` function in case the url received did not contain a *'scheme'* (ie. was not an absolute url).
@@ -269,13 +269,13 @@ How to do this step by step:
 We ran into an issue when trying to compare because when Elsa makes a change it creates a completely new commit, separate from the commit history and it saves this new commit to gh-pages without the history. Git pull would remove all previous commit history since Elsa created a new commit for every change. This way gh-pages would not show the history of commits:
 
 
-![Elsa's commit history](images/elsa_commits.png )
+![Elsa's commit history](../static/images/elsa_commits.png )
 
 
 When we have an old commit locally in our gh-pages and git pull finds origin/gh-pages without any history the merge is not possible because git only merges with branches which branch out from a previous project/change:
 
 
-![Mergin unrelated histories](images/merging_unrelated_histories.png)
+![Mergin unrelated histories](../static/images/merging_unrelated_histories.png)
 
 
 This is why it was necessary to force the switch to the origin/gh-pages branch even if it means loosing the history:
@@ -285,7 +285,7 @@ $ git reset --hard origin/gh-pages
 This particular command is needed to align the local and remote *gh-pages* branch. Once aligned they can be properly compared using *meld*.
 
 
-![Elsa's commit history shown on the left, and the hard reset on the right side of the picture](images/elsa_commit_history.png)
+![Elsa's commit history shown on the left, and the hard reset on the right side of the picture](../static/images/elsa_commit_history.png)
 
 
 ***Tip**: When you start meld it is better not to turn it off until finished since it takes it some time to do the comparison*
@@ -303,7 +303,7 @@ This means that the link to the email address leads to nowhere and when opened, 
 Due to the missing 'maito' scheme the browser takes the email address as a relative address which leads to nowhere and treats it as URL not found:
 
 
-![URL not found](images/url_not_found.png)
+![URL not found](../static/images/url_not_found.png)
 
 
 ***How should Freezyt react to an ```URL not found```?***
@@ -365,7 +365,7 @@ In short, at some point pyladies.cz pages layout looked different and the conten
 Going through the current pyladies.cz you will not find any links leading to ```/<city>_course/```. All links are redirected to pyladies.cz/brno/#meetups which means that our freezeyt is not able to find this page <_course>. Elsa finds the ```/<city>_course/``` page by using a special generator which creates a ```course_redirect()``` page for each of the 'OLD-CITIES':
 
 
-![](images/generator_for_freezer.png)
+![](../static/images/generator_for_freezer.png)
 
 
 ### Issue#33 - recognizing CSS styles
