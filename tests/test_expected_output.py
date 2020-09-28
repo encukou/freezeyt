@@ -21,6 +21,7 @@ APP_NAMES = [p.name for p in FIXTURES_PATH.iterdir() if p.is_dir() and p != DIRS
 def test_output(tmp_path, monkeypatch, app_name):
     app_path = FIXTURES_PATH / app_name
     module_path = app_path / 'app.py'
+    error_path = app_path / 'error.txt'
 
     # Add FIXTURES_PATH to sys.path, the list of directories that `import`
     # looks in
@@ -38,7 +39,7 @@ def test_output(tmp_path, monkeypatch, app_name):
 
         expected = app_path / 'test_expected_output'
 
-        if not module_path.exists() or app_name in ('demo_app_broken_link', 'app_with_missing_extra_page'):
+        if error_path.exists():
             with pytest.raises(ValueError):
                 freeze(app, tmp_path, **freeze_args)
         else:
