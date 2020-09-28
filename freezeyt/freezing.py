@@ -78,6 +78,7 @@ def freeze(app, path, prefix='http://localhost:8000/'):
         else:
             print('status', status)
             print('headers', headers)
+            check_mimetype(filename, headers)
 
     new_urls = [prefix]
 
@@ -169,3 +170,7 @@ def get_links_from_node(node: xml.dom.minidom.Node, base_url) -> list:
     for child in node:
         result.extend(get_links_from_node(child, base_url))
     return result
+
+def check_mimetype(filename, headers):
+    print('Checking mimetype', filename, headers)
+

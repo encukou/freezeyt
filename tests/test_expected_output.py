@@ -32,7 +32,7 @@ def test_output(tmp_path, monkeypatch, app_name):
 
         expected = app_path / 'test_expected_output'
 
-        if not module_path.exists() or app_name == 'demo_app_broken_link':
+        if not module_path.exists() or app_name in ('demo_app_broken_link', 'app_wrong_mimetype'):
             with pytest.raises(ValueError):
                 freeze(app, tmp_path)
         else:
