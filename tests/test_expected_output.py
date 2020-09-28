@@ -28,8 +28,15 @@ def test_output(tmp_path, monkeypatch, app_name):
     try:
         module = importlib.import_module('app')
         app = module.app
+
+        freeze_args = {}
+
         prefix = getattr(module, 'prefix', None)
+        if prefix != None:
+            freeze_args['prefix'] = prefix
         extra_pages = getattr(module, 'extra_pages', None)
+        if extra_pages != None:
+            freeze_args['extra_pages'] = extra_pages
 
         expected = app_path / 'test_expected_output'
 
@@ -37,16 +44,7 @@ def test_output(tmp_path, monkeypatch, app_name):
             with pytest.raises(ValueError):
                 freeze(app, tmp_path)
         else:
-            if extra_pages:
-                if prefix:
-                    freeze(app, tmp_path, prefix=prefix, extra_pages=extra_pages)
-                else:
-                    freeze(app, tmp_path, extra_pages=extra_pages)
-            else:
-                if prefix:
-                    freeze(app, tmp_path, prefix=prefix)
-                else:
-                    freeze(app, tmp_path)
+            freeze(app, tmp_path, **freeze_args)
 
             if not expected.exists():
                 if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
