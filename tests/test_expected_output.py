@@ -31,12 +31,10 @@ def test_output(tmp_path, monkeypatch, app_name):
 
         freeze_args = {}
 
-        prefix = getattr(module, 'prefix', None)
-        if prefix != None:
-            freeze_args['prefix'] = prefix
-        extra_pages = getattr(module, 'extra_pages', None)
-        if extra_pages != None:
-            freeze_args['extra_pages'] = extra_pages
+        for arg_name in 'prefix', 'extra_pages':
+            arg_value = getattr(module, arg_name, None)
+            if arg_value != None:
+                freeze_args[arg_name] = arg_value
 
         expected = app_path / 'test_expected_output'
 
