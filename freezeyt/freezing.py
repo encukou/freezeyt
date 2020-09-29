@@ -57,7 +57,7 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     return base / url_path.lstrip('/')
 
 
-def freeze(app, path, prefix='http://localhost:8000/'):
+def freeze(app, path, prefix='http://localhost:8000/', extra_pages=()):
     """Freeze (create files of) all pages from a WSGI server.
 
     Parameters:
@@ -80,6 +80,8 @@ def freeze(app, path, prefix='http://localhost:8000/'):
             print('headers', headers)
 
     new_urls = [prefix]
+    for extra in extra_pages:
+        new_urls.append(urljoin(prefix, extra))
 
     visited_urls = set()
 
