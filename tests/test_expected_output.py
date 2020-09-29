@@ -51,7 +51,7 @@ def test_output(tmp_path, monkeypatch, app_name):
                 else:
                     raise AssertionError(
                         f'Expected output directory ({expected}) does not exist. '
-                        + f'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                        + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
                     )
 
             assert_dirs_same(tmp_path, expected)
