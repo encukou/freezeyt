@@ -20,7 +20,6 @@ APP_NAMES = [p.name for p in FIXTURES_PATH.iterdir() if p.is_dir() and p != DIRS
 @pytest.mark.parametrize('app_name', APP_NAMES)
 def test_output(tmp_path, monkeypatch, app_name):
     app_path = FIXTURES_PATH / app_name
-    module_path = app_path / 'app.py'
     error_path = app_path / 'error.txt'
 
     # Add FIXTURES_PATH to sys.path, the list of directories that `import`
