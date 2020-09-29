@@ -1,7 +1,7 @@
 from flask import Flask, url_for
 
 app = Flask(__name__)
-
+prefix = 'http://freezeyt.test/foo/'
 
 @app.route('/')
 def index():
@@ -52,4 +52,4 @@ def third_page():
         </body>
     </html>
     """
-    
+
