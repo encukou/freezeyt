@@ -32,16 +32,18 @@ class BlogRenderer(mistune.Renderer):
         alt_text = html.escape(alt_text, quote=True)
 
         if title:
-            title = html.escape(title, quote=True)
+            title_part = f'title="{html.escape(title, quote=True)}"'
+        else:
+            title_part = ""
 
         if not src_parse.netloc:
             filename = Path(src_parse.path).name
             src = url_for('article_image', filename=filename)
-            src = html.escape(str(src), quote=True)
-            return f'\n<img src="{src}" alt="{alt_text}" title="{title}" >\n'
+            src = html.escape(src, quote=True)
+            return f'\n<img src="{src}" alt="{alt_text}" {title_part}>\n'
 
         src = html.escape(src, quote=True)
-        return f'\n<img src="{src}" alt="{alt_text}" title="{title}" >\n'
+        return f'\n<img src="{src}" alt="{alt_text}" {title_part}>\n'
 
 
 @app.route('/')
