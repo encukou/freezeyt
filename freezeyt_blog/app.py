@@ -28,13 +28,22 @@ class BlogRenderer(mistune.Renderer):
         return highlight(code, lexer, formatter)
 
     def image(self, src, title, alt_text):
-        src = urlparse(src)
-        if not src.netloc:
-            filename = Path(src.path).name
-            src = f"{ url_for('article_image', filename=filename) }"
-            return f'\n<img src="{html.escape(src, quote=True)}" alt="{html.escape(alt_text, quote=True)}">\n'
+        src_parse = urlparse(src)
+        alt_text = html.escape(alt_text, quote=True)
 
-        return f'\n<img {mistune.escape(src, alt_text)} >\n'
+        if title:
+            title_part = f'title="{html.escape(title, quote=True)}"'
+        else:
+            title_part = ""
+
+        if not src_parse.netloc:
+            filename = Path(src_parse.path).name
+            src = url_for('article_image', filename=filename)
+            src = html.escape(src, quote=True)
+            return f'\n<img src="{src}" alt="{alt_text}" {title_part}>\n'
+
+        src = html.escape(src, quote=True)
+        return f'\n<img src="{src}" alt="{alt_text}" {title_part}>\n'
 
 
 @app.route('/')
