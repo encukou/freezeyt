@@ -1,5 +1,8 @@
 from urllib.parse import urlparse, urljoin
 from pathlib import Path
+from werkzeug.datastructures import Headers
+from werkzeug.http import parse_options_header
+from mimetypes import guess_type
 import xml.dom.minidom
 import sys
 import html5lib
@@ -74,7 +77,7 @@ def freeze(app, path, prefix='http://localhost:8000/', extra_pages=()):
 
     def start_response(status, headers):
         if not status.startswith("200"):
-            raise ValueError(f"Found broken link.")
+            raise ValueError("Found broken link.")
         else:
             print('status', status)
             print('headers', headers)
@@ -174,5 +177,9 @@ def get_links_from_node(node: xml.dom.minidom.Node, base_url) -> list:
     return result
 
 def check_mimetype(filename, headers):
-    print('Checking mimetype', filename, headers)
+    f_type, f_encode = guess_type(str(filename))
+    headers = Headers(headers)
+    cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
+    if f_type.lower() != cont_type.lower():
+        raise ValueError("Content-type is different to filetype")
 
