@@ -42,6 +42,16 @@ def test_missing_content_type():
         )
 
 
+# def test_missing_file_suffix():
+#     check_mimetype(
+#         '/tmp/index',
+#         [
+#             ('Content-Type', 'TEXT/HTML; charset=utf-8'),
+#             ('Content-Length', '164'),
+#         ]
+#     )
+
+
 def test_case_insensitive_fail():
     with pytest.raises(ValueError):
         check_mimetype(
