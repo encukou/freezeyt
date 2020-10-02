@@ -11,7 +11,7 @@ def test_normal_html():
         ]
     )
 
-def test_different_type_jpg_png_fail():
+def test_diff_type_jpg_png_fail():
     with pytest.raises(ValueError):
         check_mimetype(
             '/tmp/image.jpg',
@@ -19,16 +19,6 @@ def test_different_type_jpg_png_fail():
                 ('Content-Type', 'image/png'),
                 ('Content-Length', '654'),
             ],
-        )
-
-
-def test_case_sensitive():
-        check_mimetype(
-            '/tmp/index.html',
-            [
-                ('Content-Type', 'TEXT/HTML; charset=utf-8'),
-                ('Content-Length', '164'),
-            ]
         )
 
 
@@ -51,8 +41,27 @@ def test_missing_content_type():
 #         ]
 #     )
 
+def test_case_insensitive_content_type():
+        check_mimetype(
+            '/tmp/index.html',
+            [
+                ('Content-Type', 'TEXT/HTML; charset=utf-8'),
+                ('Content-Length', '164'),
+            ]
+        )
 
-def test_case_insensitive_fail():
+
+def test_case_insensitive_file():
+        check_mimetype(
+            '/tmp/index.HTML',
+            [
+                ('Content-Type', 'text/html; charset=utf-8'),
+                ('Content-Length', '164'),
+            ]
+        )
+
+
+def test_case_insensitive_headers_fail():
     with pytest.raises(ValueError):
         check_mimetype(
             '/tmp/image.jpg',
@@ -63,7 +72,7 @@ def test_case_insensitive_fail():
         )
 
 
-def test_case_insensitive_crazy():
+def test_case_insensitive_headers():
     check_mimetype(
         '/tmp/image.jpg',
         [
