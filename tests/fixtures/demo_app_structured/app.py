@@ -1,4 +1,4 @@
-from flask import Flask, url_for
+from flask import Flask
 
 app = Flask(__name__)
 
@@ -21,7 +21,7 @@ def index():
 
 @app.route('/users/')
 def user_list():
-    return f"""
+    return """
     <html>
         <head>
             <title>User List</title>
