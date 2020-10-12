@@ -82,3 +82,23 @@ def test_same_jpg_fail():
                 ('Content-Length', '654'),
             ],
         )
+
+
+def test_missing_file_suffix():
+    check_mimetype(
+        '/tmp/index',
+        [
+            ('Content-Type', 'application/octet-stream'),
+            ('Content-Length', '164'),
+        ]
+    )
+
+def test_missing_file_suffix():
+    with pytest.raises(ValueError):
+        check_mimetype(
+            '/tmp/index',
+            [
+                ('Content-Type', 'image/png'),
+                ('Content-Length', '164'),
+            ]
+        )

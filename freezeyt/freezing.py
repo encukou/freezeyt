@@ -178,6 +178,8 @@ def get_links_from_node(node: xml.dom.minidom.Node, base_url) -> list:
 
 def check_mimetype(filename, headers):
     f_type, f_encode = guess_type(str(filename))
+    if not f_type:
+        f_type = 'application/octet-stream'
     headers = Headers(headers)
     cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
     if f_type.lower() != cont_type.lower():
