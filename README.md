@@ -74,6 +74,8 @@ $ python -m pip install -r requirements-blog.txt
 
 ### How to use freezeyt-blog
 
+Blog was tested on Python version 3.8.
+
 To run the blog on your local machine, set the environment variable `FLASK_APP` to the path of the blog app.
 Also set `FLASK_ENV` to "development" for easier debugging.
 Then, run the Flask server.
