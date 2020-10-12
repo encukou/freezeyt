@@ -93,7 +93,7 @@ def test_missing_file_suffix():
         ]
     )
 
-def test_missing_file_suffix():
+def test_missing_file_suffix_fail():
     with pytest.raises(ValueError):
         check_mimetype(
             '/tmp/index',
