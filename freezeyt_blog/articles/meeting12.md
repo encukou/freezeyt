@@ -102,5 +102,5 @@ aby se místo dvou podtržítek nezobrazovaly tučně.
 
 Sraz jsme zakončili kontrolou otevřených issues a toho, co je potřeba udělat.
 
-> Záznam z lekce [zde](https://youtu.be/MonD2jaagK8).
+> Záznam ze srazu [zde](https://youtu.be/MonD2jaagK8).
 Více informací o projektu [zde](https://tinyurl.com/freezeyt).
