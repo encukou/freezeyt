@@ -1,4 +1,4 @@
-# Freezeyt lekce sedmá
+# Freezeyt sraz sedmý
 
 
 ## Review pull requestů
@@ -107,5 +107,5 @@ V reorganizaci testů budeme pokračovat příště.
 * `__name__` vrátí název modulu.
 * `__file__` vrátí název souboru s celou cestou a příponou.
 
-> Záznam z lekce [zde](https://youtu.be/DzpNvEarVAE).
+> Záznam ze srazu [zde](https://youtu.be/DzpNvEarVAE).
 Více informací o projektu [zde](https://tinyurl.com/freezeyt).

@@ -57,5 +57,5 @@ Jakmile děláte force-push, měli byste vědět, co děláte.
 Příští aktualizace GitHub actions by mohla být, že každý nový článek se automaticky
 přidá na blog, který by byl hostovaný na [GH pages](https://pages.github.com/).
 
-> Záznam z lekce [zde](https://youtu.be/kFaDcOU7ZQo) a [zde](https://youtu.be/Q7ELr2clx5o).
+> Záznam ze srazu [zde](https://youtu.be/kFaDcOU7ZQo) a [zde](https://youtu.be/Q7ELr2clx5o).
 Více informací o projektu [zde](https://tinyurl.com/freezeyt).
