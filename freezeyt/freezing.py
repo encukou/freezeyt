@@ -27,8 +27,6 @@ def parse_absolute_url(url):
             parsed = parsed._replace(netloc=parsed.hostname + ':80')
         elif parsed.scheme == 'https':
             parsed = parsed._replace(netloc=parsed.hostname + ':443')
-        else:
-            raise ValueError("URL scheme must be http or https")
 
     return parsed
 
