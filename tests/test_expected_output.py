@@ -31,7 +31,7 @@ def test_output(tmp_path, monkeypatch, app_name):
 
         freeze_args = {}
 
-        for arg_name in 'prefix', 'extra_pages':
+        for arg_name in 'prefix', 'extra_pages', 'extra_files':
             arg_value = getattr(module, arg_name, None)
             if arg_value != None:
                 freeze_args[arg_name] = arg_value

@@ -60,7 +60,10 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     return base / url_path.lstrip('/')
 
 
-def freeze(app, path, prefix='http://localhost:8000/', extra_pages=()):
+def freeze( app, path,
+            prefix='http://localhost:8000/',
+            extra_pages=(),
+            extra_files=None):
     """Freeze (create files of) all pages from a WSGI server.
 
     Parameters:
@@ -74,6 +77,15 @@ def freeze(app, path, prefix='http://localhost:8000/', extra_pages=()):
     hostname = prefix_parsed.hostname
     port = prefix_parsed.port
     script_name = prefix_parsed.path
+
+    if extra_files is not None:
+        for filename, content in extra_files.items():
+            filename = path / filename
+            filename.parent.mkdir(parents=True, exist_ok=True)
+            if isinstance(content, bytes):
+                filename.write_bytes(content)
+            else:
+                filename.write_text(content)
 
     def start_response(status, headers):
         if not status.startswith("200"):
