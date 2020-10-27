@@ -70,6 +70,8 @@ def freeze( app, path,
     app -- web app you want to freeze
     path -- path to the file
     prefix (url) -- URL to deploy web app
+    extra_pages -- pages without any link in application
+    extra_files -- files dont generate by app but needs to correct deploy
     """
     path = Path(path)
 
