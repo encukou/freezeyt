@@ -14,7 +14,7 @@ def decode_input_path(s):
 
 
 def encode_wsgi_path(s):
-    """Encodes an URL path for use in WSGI"""
+    """Encodes an URL path from internal format for use in WSGI"""
 
     bytestring = s.encode('utf-8', errors='surrogateescape')
     print(bytestring)
@@ -22,7 +22,7 @@ def encode_wsgi_path(s):
 
 
 def encode_file_path(s):
-    """Encodes an URL path for use in disk filenames"""
+    """Encodes an URL path from internal format for use in disk filenames"""
     # This doesn't change the string.
     # But, if we ever change the internal representation of paths, we'll
     # need to change the 3 functions here that deal with it

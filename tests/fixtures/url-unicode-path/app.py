@@ -1,27 +1,24 @@
-from flask import Flask, url_for, Response, request
-
+from flask import Flask, url_for, Response
 app = Flask(__name__)
 
 
 @app.route('/')
 def index():
     """Create the index page of the web app."""
-    return Response(f"""
+    return f"""
     <html>
         <head>
             <title>Hello world</title>
         </head>
         <body>
-            <a href="/čau/☺フ">Link 1</a>
+            <a href="/čau/☺フ.html">Link 1</a>
             <a href="{url_for('extra2')}">Link 2</a>
-            <a href="/%E2%98%BA%E3%83%95/%8Dau">Link 3</a>
         </body>
     </html>
-    """, content_type="text/html; charset=latin-1")
+    """
 
-@app.route('/čau/☺フ')
+@app.route('/čau/☺フ.html')
 def extra():
-    print(request.environ)
     return """
     <html>
         <head>
@@ -30,13 +27,25 @@ def extra():
     </html>
     """
 
-@app.route('/☺フ/čau')
+@app.route('/☺フ/čau.html')
 def extra2():
-    print(request.environ)
-    return """
+    return Response(b"""
     <html>
         <head>
             <title>Extra page 2</title>
+        </head>
+        <body>
+            <a href="/constant/\xf0.html">Link</a>
+        </body>
+    </html>
+    """, content_type='text/html; charset=cp1253')
+
+@app.route('/constant/π.html')
+def extra_pi():
+    return """
+    <html>
+        <head>
+            <title>Extra page Pi</title>
         </head>
     </html>
     """

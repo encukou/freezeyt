@@ -7,6 +7,9 @@ import xml.dom.minidom
 import sys
 import html5lib
 
+from freezeyt.encoding import decode_input_path, encode_wsgi_path
+from freezeyt.encoding import encode_file_path
+
 
 def parse_absolute_url(url):
     """Parse absolute URL
@@ -57,7 +60,7 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     if url_path.endswith('/'):
         url_path = url_path + 'index.html'
 
-    return base / url_path.lstrip('/')
+    return base / encode_file_path(url_path).lstrip('/')
 
 
 def freeze(app, path, prefix='http://localhost:8000/', extra_pages=()):
@@ -70,29 +73,45 @@ def freeze(app, path, prefix='http://localhost:8000/', extra_pages=()):
     """
     path = Path(path)
 
+    # Decode path in the prefix URL.
+    # Both "prefix" and "prefix_parsed" will have the path decoded.
     prefix_parsed = parse_absolute_url(prefix)
+    decoded_path = decode_input_path(prefix_parsed.path)
+    prefix_parsed = prefix_parsed._replace(path=decoded_path)
+    prefix = prefix_parsed.geturl()
+
     hostname = prefix_parsed.hostname
     port = prefix_parsed.port
     script_name = prefix_parsed.path
 
     def start_response(status, headers):
+
+        # The rest of the program will need to know the response
+        # headers, so we need to pass them out of this function somehow.
+        # Just assigning to a variable would create a local variable, which
+        # would disappear when start_response() ends.
+        # To prevent that, we use `nonlocal` to say we want to set the variable
+        # from the enclosing function, freeze().
+        nonlocal response_headers
+
         if not status.startswith("200"):
             raise ValueError("Found broken link.")
         else:
             print('status', status)
             print('headers', headers)
             check_mimetype(filename, headers)
+            response_headers = Headers(headers)
 
     new_urls = [prefix]
     for extra in extra_pages:
-        new_urls.append(urljoin(prefix, extra))
+        new_urls.append(urljoin(prefix, decode_input_path(extra)))
 
     visited_urls = set()
 
     while new_urls:
         url = new_urls.pop()
 
-        # url = http://freezeyt.test:1234/foo/
+        # url = http://freezeyt.test:1234/foo/čau/
 
         if url in visited_urls:
             continue
@@ -122,8 +141,8 @@ def freeze(app, path, prefix='http://localhost:8000/', extra_pages=()):
             'SERVER_NAME': hostname,
             'SERVER_PORT': str(port),
             'REQUEST_METHOD': 'GET',
-            'PATH_INFO': path_info,
-            'SCRIPT_NAME': script_name,
+            'PATH_INFO': encode_wsgi_path(path_info),
+            'SCRIPT_NAME': encode_wsgi_path(script_name),
             'SERVER_PROTOCOL': 'HTTP/1.1',
 
             'wsgi.version': (1, 0),
@@ -136,6 +155,10 @@ def freeze(app, path, prefix='http://localhost:8000/', extra_pages=()):
             'freezeyt.freezing': True,
         }
 
+        # app() will call start_response(), which will set
+        # `response_headers` to a Headers object.
+        response_headers = None
+
         result = app(environ, start_response)
 
         print(f'Saving to {filename}')
@@ -147,17 +170,25 @@ def freeze(app, path, prefix='http://localhost:8000/', extra_pages=()):
                 f.write(item)
 
         with open(filename, "rb") as f:
-            new_urls.extend(get_all_links(f, url))
+            new_urls.extend(get_all_links(f, url, response_headers))
 
 
-def get_all_links(page_content: bytes, base_url) -> list:
+def get_all_links(
+    page_content: bytes, base_url, headers: Headers = None
+) -> list:
     """Get all links from "page_content".
 
     Return an iterable of strings.
 
     base_url is the URL of the page.
     """
-    document = html5lib.parse(page_content)
+    if headers == None:
+        cont_charset = None
+    else:
+        content_type_header = headers.get('Content-Type')
+        cont_type, cont_options = parse_options_header(content_type_header)
+        cont_charset = cont_options.get('charset')
+    document = html5lib.parse(page_content, transport_encoding=cont_charset)
     return get_links_from_node(document, base_url)
 
 
@@ -165,11 +196,11 @@ def get_links_from_node(node: xml.dom.minidom.Node, base_url) -> list:
     """Get all links from xml.dom.minidom Node."""
     result = []
     if 'href' in node.attrib:
-        href = node.attrib['href']
+        href = decode_input_path(node.attrib['href'])
         full_url = urljoin(base_url, href)
         result.append(full_url)
     if 'src' in node.attrib:
-        href = node.attrib['src']
+        href = decode_input_path(node.attrib['src'])
         full_url = urljoin(base_url, href)
         result.append(full_url)
     for child in node:
