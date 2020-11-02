@@ -1,0 +1,26 @@
+URL paths:
+    Internally in freezeyt:
+        str, surrogate escapes
+        Example:
+            /čau/☺フ
+            '/☺フ/\udc8dau'
+
+    Input - From HTML:
+        handle with urllib.parse.unquote
+        Example:
+            /čau/☺フ
+            /%E2%98%BA%E3%83%95/%C4%8Dau
+            /%E2%98%BA%E3%83%95/%8Dau
+
+    Input - prefix:
+        handle with urllib.parse.unquote
+        Same as from HTML
+
+    To WSGI environ (PATH_INFO):
+        encode('utf-8').decode('latin-1')
+        Example:
+            /Ä\x8dau/â\x98ºã\x83\x95
+            /â\x98ºã\x83\x95/\x8dau
+
+    On disk:
+        use internal format
