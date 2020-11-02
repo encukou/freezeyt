@@ -183,5 +183,8 @@ def check_mimetype(filename, headers):
     headers = Headers(headers)
     cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
     if f_type.lower() != cont_type.lower():
-        raise ValueError("Content-type is different to filetype")
+        raise ValueError(
+            f"Content-type '{cont_type}' is different from filetype '{f_type}'"
+            + f" guessed from '{filename}'"
+        )
 
