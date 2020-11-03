@@ -9,8 +9,8 @@ from freezeyt.freezing import freeze
 @click.argument('module_name')
 @click.argument('dest_path')
 @click.option('--prefix', default='http://localhost:8000/', help='URL of the application root')
-@click.option('--extra-pages', multiple=True, help='Pages without any link in application')
-def main(module_name, dest_path, prefix, extra_pages):
+@click.option('--extra-page', multiple=True, help='Pages without any link in application')
+def main(module_name, dest_path, prefix, extra_page):
     """
     MODULE_NAME
         Name of the Python web app module which will be frozen.
@@ -25,4 +25,4 @@ def main(module_name, dest_path, prefix, extra_pages):
     module = importlib.import_module(module_name)
     app = module.app
 
-    freeze(app, dest_path, prefix=prefix, extra_pages=extra_pages)
+    freeze(app, dest_path, prefix=prefix, extra_pages=extra_page)
