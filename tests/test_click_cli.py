@@ -32,7 +32,7 @@ def test_cli_output(tmp_path, monkeypatch, app_name):
                     extra_pages = list(map(make_cli_arg, arg_value))
                     cli_args.extend(extra_pages)
                 else:
-                    cli_args.append = arg_value
+                    cli_args.append(arg_value)
 
 
         expected = app_path / 'test_expected_output'
