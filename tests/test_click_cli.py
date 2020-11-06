@@ -3,7 +3,7 @@ import pytest
 import sys
 
 from click.testing import CliRunner
-from freezeyt import cli
+from freezeyt.cli import main
 from test_expected_output import APP_NAMES, FIXTURES_PATH, assert_dirs_same
 
 
@@ -39,10 +39,10 @@ def test_cli_output(tmp_path, monkeypatch, app_name):
 
         if error_path.exists():
             with pytest.raises(ValueError):
-                runner.invoke(cli, cli_args)
+                runner.invoke(main, cli_args)
 
         else:
-            result = runner.invoke(cli, cli_args)
+            result = runner.invoke(main, cli_args)
             print('Result:', result)
 
             if not expected.exists():
