@@ -56,3 +56,47 @@ def test_get_links_path():
         'http://localhost:8000/second_page',
         'http://localhost:8000/third_page',
     ]
+
+
+def test_get_links_utf8():
+    # Test that links are parsed according to the content encoding (UTF-8)
+    links = get_all_links(
+        b"""
+            <html>
+                <head>
+                    <title>Hello world</title>
+                </head>
+                <body>
+                    <a href='/\xc4\x8dau'>LINK</a> to second page.
+                </body>
+            </html>
+        """,
+        'http://localhost:8000/',
+        {'Content-Type': 'text/html; charset=utf-8'},
+    )
+
+    assert sorted(links) == [
+        'http://localhost:8000/čau',
+    ]
+
+
+def test_get_links_cp1253():
+    # Test that links are parsed according to the content encoding (Greek)
+    links = get_all_links(
+        b"""
+            <html>
+                <head>
+                    <title>Hello world</title>
+                </head>
+                <body>
+                    <a href='/\xf0'>LINK</a> to second page.
+                </body>
+            </html>
+        """,
+        'http://localhost:8000/',
+        {'Content-Type': 'text/html; charset=cp1253'},
+    )
+
+    assert sorted(links) == [
+        'http://localhost:8000/π',
+    ]
