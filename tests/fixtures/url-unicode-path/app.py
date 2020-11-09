@@ -1,5 +1,6 @@
 from flask import Flask, url_for, Response
 app = Flask(__name__)
+extra_pages = ['/éxtrą/']
 
 
 @app.route('/')
@@ -46,6 +47,16 @@ def extra_pi():
     <html>
         <head>
             <title>Extra page Pi</title>
+        </head>
+    </html>
+    """
+
+@app.route('/éxtrą/')
+def extra_page():
+    return """
+    <html>
+        <head>
+            <title>éxtrą page</title>
         </head>
     </html>
     """
