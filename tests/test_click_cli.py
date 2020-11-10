@@ -45,8 +45,8 @@ def test_cli_output(tmp_path, monkeypatch, app_name):
             # with pytest.raises(ValueError):
             # nevyvolava chybu
             result = runner.invoke(main, cli_args)
-            print('Result output:', result.output)
-            raise AssertionError
+            assert result.exit_code != 0
+
 
         else:
             result = runner.invoke(main, cli_args)
