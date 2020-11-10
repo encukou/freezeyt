@@ -1,58 +1,67 @@
 import importlib
 import pytest
 import sys
+import os
+
+from pathlib import Path
 
 from click.testing import CliRunner
 from freezeyt.cli import main
 from test_expected_output import APP_NAMES, FIXTURES_PATH, assert_dirs_same
 
 
-
 @pytest.mark.parametrize('app_name', APP_NAMES)
 def test_cli_output(tmp_path, monkeypatch, app_name):
+    app_dir = Path('fixtures', app_name)
+    expected = FIXTURES_PATH / app_name / 'test_expected_output'
+    module_path = app_dir / 'app'
+    error_path = FIXTURES_PATH / app_name / 'error.txt'
+    module_path = '.'.join(module_path.parts)
+    print('MOdule path:', module_path)
+
+
+    # Add app_path to variable PYTHONPATH, the variable of dir that `import`
+    # python looks in the variable when is started everytime
     runner = CliRunner()
-    app_path = FIXTURES_PATH / app_name
-    error_path = app_path / 'error.txt'
 
-
-    # Add FIXTURES_PATH to sys.path, the list of directories that `import`
-    # looks in
-    monkeypatch.syspath_prepend(str(app_path))
     try:
-        module = importlib.import_module('app')
-        # app = module.app
-
-        cli_args = [module, tmp_path]
+        module = importlib.import_module(module_path)
+        print('MODULE:', module)
+        cli_args = [str(module_path), str(tmp_path)]
 
         for arg_name in 'prefix', 'extra_pages':
             arg_value = getattr(module, arg_name, None)
             if arg_value != None:
-                if arg_name == 'extra_pages':
-                    make_cli_arg = lambda s: f"--extra-page {s}"
-                    extra_pages = list(map(make_cli_arg, arg_value))
+                if arg_name == 'prefix':
+                    cli_args.append(f"--prefix {arg_value}")
+                elif arg_name == 'extra_pages':
+                    add_option = lambda s: f"--extra-page {s}"
+                    extra_pages = list(map(add_option, arg_value))
                     cli_args.extend(extra_pages)
                 else:
                     cli_args.append(arg_value)
 
-
-        expected = app_path / 'test_expected_output'
+        print('CLI ARGS:', cli_args)
 
         if error_path.exists():
-            with pytest.raises(ValueError):
-                runner.invoke(main, cli_args)
+            # with pytest.raises(ValueError):
+            # nevyvolava chybu
+            result = runner.invoke(main, cli_args)
+            print('Result output:', result.output)
+            raise AssertionError
 
         else:
             result = runner.invoke(main, cli_args)
-            print('Result:', result)
+            print('Result output:', result.output)
 
             if not expected.exists():
                 raise AssertionError(
                     f'Expected output directory ({expected}) does not exist. '
                     + '\nRun $ python -m pytest test_expected_output.py\n'
                     + 'And follow instructions'
-
                     )
 
+            assert result.exit_code == 0
             assert_dirs_same(tmp_path, expected)
     finally:
         sys.modules.pop('app', None)
