@@ -1,7 +1,6 @@
 import importlib
 import pytest
 import sys
-import os
 
 from pathlib import Path
 
@@ -33,11 +32,10 @@ def test_cli_output(tmp_path, monkeypatch, app_name):
             arg_value = getattr(module, arg_name, None)
             if arg_value != None:
                 if arg_name == 'prefix':
-                    cli_args.append(f"--prefix {arg_value}")
+                    cli_args.extend(['--prefix', arg_value])
                 elif arg_name == 'extra_pages':
-                    add_option = lambda s: f"--extra-page {s}"
-                    extra_pages = list(map(add_option, arg_value))
-                    cli_args.extend(extra_pages)
+                    for page in arg_value:
+                        cli_args.extend(['--extra-page', page])
                 else:
                     cli_args.append(arg_value)
 
