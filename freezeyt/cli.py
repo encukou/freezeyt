@@ -8,7 +8,7 @@ from freezeyt.freezing import freeze
 DEFAULT_PREFIX = 'http://localhost:8000/'
 
 
-@click.command(context_settings={'show_default': True})
+@click.command()
 @click.argument('module_name')
 @click.argument('dest_path')
 @click.option('--prefix', default=DEFAULT_PREFIX, show_default=True, help='URL of the application root')
