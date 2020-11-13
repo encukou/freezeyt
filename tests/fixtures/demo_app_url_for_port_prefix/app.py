@@ -1,7 +1,7 @@
 from flask import Flask, url_for
 
 app = Flask(__name__)
-prefix = 'http://freezeyt.test:1234/foo/'
+freeze_config = {'prefix': 'http://freezeyt.test:1234/foo/'}
 
 
 @app.route('/')

@@ -1,6 +1,7 @@
 from flask import Flask, url_for, Response
+
 app = Flask(__name__)
-extra_pages = ['/éxtrą/']
+freeze_config = {'extra_pages': ['/éxtrą/']}
 
 
 @app.route('/')

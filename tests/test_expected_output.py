@@ -29,20 +29,15 @@ def test_output(tmp_path, monkeypatch, app_name):
         module = importlib.import_module('app')
         app = module.app
 
-        freeze_args = {}
-
-        for arg_name in 'prefix', 'extra_pages', 'extra_files':
-            arg_value = getattr(module, arg_name, None)
-            if arg_value != None:
-                freeze_args[arg_name] = arg_value
+        freeze_config = getattr(module, 'freeze_config', {})
 
         expected = app_path / 'test_expected_output'
 
         if error_path.exists():
             with pytest.raises(ValueError):
-                freeze(app, tmp_path, **freeze_args)
+                freeze(app, tmp_path, freeze_config)
         else:
-            freeze(app, tmp_path, **freeze_args)
+            freeze(app, tmp_path, freeze_config)
 
             if not expected.exists():
                 if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:

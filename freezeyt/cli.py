@@ -57,4 +57,4 @@ def main(module_name, dest_path, prefix, extra_page, config):
     module = importlib.import_module(module_name)
     app = module.app
 
-    freeze(app, dest_path, **cli_params)
+    freeze(app, dest_path, cli_params)
