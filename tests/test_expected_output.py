@@ -85,12 +85,8 @@ def assert_cmp_same(cmp):
     for filename in list(cmp.diff_files) + list(cmp.same_files):
         path1 = Path(cmp.left) / filename
         path2 = Path(cmp.right) / filename
-        try:
-            content1 = path1.read_text()
-            content2 = path2.read_text()
-        except UnicodeDecodeError:
-            content1 = path1.read_bytes()
-            content2 = path2.read_bytes()
+        content1 = path1.read_bytes()
+        content2 = path2.read_bytes()
         assert content1 == content2
 
     if cmp.diff_files:
