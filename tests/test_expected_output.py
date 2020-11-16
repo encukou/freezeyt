@@ -12,10 +12,14 @@ from freezeyt import freeze
 
 FIXTURES_PATH = Path(__file__).parent / 'fixtures'
 DIRS_SAME_FIXTURES = Path(__file__).parent / 'fixtures' / 'dirs_same'
+CSS_FILE_FIXTURES = Path(__file__).parent / 'fixtures' / 'css_files'
 
 DIRS_SAME_CASES = [p.name for p in DIRS_SAME_FIXTURES.iterdir()]
-APP_NAMES = [p.name for p in FIXTURES_PATH.iterdir() if p.is_dir() and p != DIRS_SAME_FIXTURES]
-
+APP_NAMES = [
+    p.name
+    for p in FIXTURES_PATH.iterdir()
+    if p.is_dir() and p != DIRS_SAME_FIXTURES and p != CSS_FILE_FIXTURES
+]
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
 def test_output(tmp_path, monkeypatch, app_name):

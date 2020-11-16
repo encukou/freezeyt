@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'TurretRoad';
+    src: url(TurretRoad-Regular.ttf) format('truetype');
+    font-weight: normal;
+}
+
+body {
+    font-family: 'TurretRoad';
+}
