@@ -1,11 +1,9 @@
 from io import BytesIO
-from pathlib import Path
 
 from freezeyt.freezing import get_links_from_css
 
+
 def test_get_links_css():
-    # css_file = Path(__file__).parent / 'fixtures' / 'css_files' / 'style.css'
-    # with open(css_file, "rb") as f:
     f = BytesIO(b"""
     @font-face {
             font-family: 'TurretRoad';
