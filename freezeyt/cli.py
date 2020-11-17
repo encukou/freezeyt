@@ -6,15 +6,12 @@ import yaml
 from freezeyt.freezing import freeze
 
 
-DEFAULT_PREFIX = 'http://localhost:8000/'
-
-
 @click.command()
 @click.argument('module_name')
 @click.argument('dest_path')
-@click.option('--prefix', default=DEFAULT_PREFIX, show_default=True, help='URL of the application root')
+@click.option('--prefix', help='URL of the application root')
 @click.option('--extra-page', multiple=True, help='Pages without any link in application')
-@click.option('-c', '--config', default=None, type=click.File(), help='YAML file of configuration')
+@click.option('-c', '--config', type=click.File(), help='YAML file of configuration')
 def main(module_name, dest_path, prefix, extra_page, config):
     """
     MODULE_NAME
@@ -24,16 +21,25 @@ def main(module_name, dest_path, prefix, extra_page, config):
         Absolute or relative path to the directory to which the files
     will be frozen.
 
+    --extra-page
+        Path to page which is not linked by application
+
+    -c / --config
+        Path to configuration YAML file
+
     Example use:
-        python -m freezeyt demo_app build
+        python -m freezeyt demo_app build --prefix 'http://localhost:8000/' --extra-page /extra/
+
+        python -m freezeyt demo_app build -c config.yaml
     """
     cli_params = {
-        'prefix': prefix,
-        'extra_pages': list(extra_page),
-        'extra_files': None,
+        'extra_pages': list(extra_page)
     }
 
-    if config:
+    if prefix != None:
+        cli_params['prefix'] = prefix
+
+    if config != None:
         file_config = yaml.safe_load(config)
 
         if not isinstance(file_config, dict):
@@ -43,12 +49,8 @@ def main(module_name, dest_path, prefix, extra_page, config):
         else:
             print("Loading config YAML file was successful")
 
-            if file_config.get('prefix', None) != None:
-                if prefix == DEFAULT_PREFIX:
-                    cli_params['prefix'] = file_config['prefix']
-                else:
-                    print("WARNING: Conflicting input data in prefix!")
-                    print(f"Prefix is setup to {prefix}")
+            if (file_config.get('prefix', None) != None) and (prefix is None):
+                cli_params['prefix'] = file_config['prefix']
 
             if file_config.get('extra_pages', None) != None:
                 cli_params['extra_pages'].extend(file_config['extra_pages'])
