@@ -21,8 +21,11 @@ def main(module_name, dest_path, prefix, extra_page, config):
         Absolute or relative path to the directory to which the files
     will be frozen.
 
+    --prefix
+        URL, where we want to deploy our static site
+
     --extra-page
-        Path to page which is not linked by application
+        Path to page without any link in application
 
     -c / --config
         Path to configuration YAML file
