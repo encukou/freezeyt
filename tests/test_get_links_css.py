@@ -5,7 +5,7 @@ from freezeyt.freezing import get_links_from_css
 
 def test_get_links_css():
     f = BytesIO(b"""
-    @font-face {
+        @font-face {
             font-family: 'TurretRoad';
             src: url(TurretRoad-Regular.ttf) format('truetype');
             font-weight: normal;
