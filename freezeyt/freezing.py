@@ -6,6 +6,7 @@ from mimetypes import guess_type
 import xml.dom.minidom
 import sys
 import html5lib
+import cssutils
 
 from freezeyt.encoding import decode_input_path, encode_wsgi_path
 from freezeyt.encoding import encode_file_path
@@ -184,7 +185,13 @@ def freeze(app, path, config):
                 f.write(item)
 
         with open(filename, "rb") as f:
-            new_urls.extend(get_all_links(f, url, response_headers))
+            cont_type, cont_encode = parse_options_header(response_headers.get('Content-Type'))
+            if cont_type == "text/html":
+                new_urls.extend(get_all_links(f, url, response_headers))
+            elif cont_type == "text/css":
+                new_urls.extend(get_links_from_css(f, url))
+            else:
+                continue
 
 
 def get_all_links(
@@ -232,3 +239,14 @@ def check_mimetype(filename, headers):
             f"Content-type '{cont_type}' is different from filetype '{f_type}'"
             + f" guessed from '{filename}'"
         )
+
+
+def get_links_from_css(css_file, base_url):
+    """Get all links from a CSS file."""
+    result = []
+    text = css_file.read()
+    parsed = cssutils.parseString(text)
+    all_urls = cssutils.getUrls(parsed)
+    for url in all_urls:
+        result.append(urljoin(base_url, url))
+    return result
