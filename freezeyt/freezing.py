@@ -63,7 +63,7 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     return base / encode_file_path(url_path).lstrip('/')
 
 
-def freeze( app, path, config):
+def freeze(app, path, config):
     """Freeze (create files of) all pages from a WSGI server.
 
     Parameters:
@@ -232,4 +232,3 @@ def check_mimetype(filename, headers):
             f"Content-type '{cont_type}' is different from filetype '{f_type}'"
             + f" guessed from '{filename}'"
         )
-

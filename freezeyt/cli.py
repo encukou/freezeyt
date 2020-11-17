@@ -1,5 +1,6 @@
-import click
 import importlib
+
+import click
 import yaml
 
 from freezeyt.freezing import freeze
