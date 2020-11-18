@@ -1,10 +1,11 @@
 import importlib
-import pytest
 import sys
-
 from pathlib import Path
 
+import pytest
+from yaml import safe_dump
 from click.testing import CliRunner
+
 from freezeyt.cli import main
 from test_expected_output import APP_NAMES, FIXTURES_PATH, assert_dirs_same
 
@@ -15,44 +16,31 @@ def test_cli_output(tmp_path, monkeypatch, app_name):
     expected = FIXTURES_PATH / app_name / 'test_expected_output'
     module_path = app_dir / 'app'
     error_path = FIXTURES_PATH / app_name / 'error.txt'
+    config_file = tmp_path / 'config.yaml'
+    build_dir = tmp_path / 'build'
+
+    build_dir.mkdir()
     module_path = '.'.join(module_path.parts)
-    print('MOdule path:', module_path)
 
-
-    # Add app_path to variable PYTHONPATH, the variable of dir that `import`
-    # python looks in the variable when is started everytime
     runner = CliRunner()
 
     try:
         module = importlib.import_module(module_path)
-        print('MODULE:', module)
-        cli_args = [str(module_path), str(tmp_path)]
+        cli_args = [str(module_path), str(build_dir)]
+        freeze_config = getattr(module, 'freeze_config', None)
 
-        for arg_name in 'prefix', 'extra_pages', 'extra_files':
-            arg_value = getattr(module, arg_name, None)
-            if arg_value != None:
-                if arg_name == 'prefix':
-                    cli_args.extend(['--prefix', arg_value])
-                elif arg_name == 'extra_pages':
-                    for page in arg_value:
-                        cli_args.extend(['--extra-page', page])
-                elif arg_name == 'extra_files':
-                    pytest.skip("extra_files not supported in CLI")
-                else:
-                    cli_args.append(arg_value)
+        if freeze_config != None:
+            with open(config_file, mode='w') as file:
+                safe_dump(freeze_config, stream=file)
 
-        print('CLI ARGS:', cli_args)
+            cli_args.extend(['--config', config_file])
 
         if error_path.exists():
-            # with pytest.raises(ValueError):
-            # nevyvolava chybu
             result = runner.invoke(main, cli_args)
             assert result.exit_code != 0
 
-
         else:
             result = runner.invoke(main, cli_args)
-            print('Result output:', result.output)
 
             if not expected.exists():
                 raise AssertionError(
@@ -62,6 +50,8 @@ def test_cli_output(tmp_path, monkeypatch, app_name):
                     )
 
             assert result.exit_code == 0
-            assert_dirs_same(tmp_path, expected)
+
+            assert_dirs_same(build_dir, expected)
+
     finally:
         sys.modules.pop('app', None)
