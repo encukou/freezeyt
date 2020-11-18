@@ -1,4 +1,5 @@
 import importlib
+import os
 import sys
 from pathlib import Path
 
@@ -43,11 +44,12 @@ def test_cli_with_fixtures_output(tmp_path, monkeypatch, app_name):
             result = runner.invoke(main, cli_args)
 
             if not expected.exists():
-                raise AssertionError(
-                    f'Expected output directory ({expected}) does not exist. '
-                    + '\nRun $ python -m pytest test_expected_output.py\n'
-                    + 'And follow instructions'
-                    )
+                if not 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                    raise AssertionError(
+                        f'Expected output directory ({expected}) does not exist. '
+                        + '\nRun $ python -m pytest test_expected_output.py\n'
+                        + 'And follow instructions'
+                        )
 
             assert result.exit_code == 0
 
@@ -73,11 +75,50 @@ def test_cli_with_prefix_option(tmp_path):
         result = runner.invoke(main, cli_args)
 
         if not expected.exists():
-            raise AssertionError(
-                f'Expected output directory ({expected}) does not exist. '
-                + '\nRun $ python -m pytest test_expected_output.py\n'
-                + 'And follow instructions'
-                )
+            if not 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                    raise AssertionError(
+                        f'Expected output directory ({expected}) does not exist. '
+                        + '\nRun $ python -m pytest test_expected_output.py\n'
+                        + 'And follow instructions'
+                        )
+
+        assert result.exit_code == 0
+
+        assert_dirs_same(tmp_path, expected)
+
+    finally:
+        sys.modules.pop('app', None)
+
+
+def test_cli_with_extra_page_option(tmp_path):
+    module_path = Path('fixtures', 'app_with_extra_page_deep', 'app')
+    module_path = '.'.join(module_path.parts)
+    expected = FIXTURES_PATH / 'app_with_extra_page_deep' / 'test_expected_output'
+    runner = CliRunner()
+
+
+    try:
+        module = importlib.import_module(module_path)
+        cli_args = [str(module_path), str(tmp_path)]
+
+        freeze_config = getattr(module, 'freeze_config')
+
+        extra_pages = []
+        for extra in freeze_config['extra_pages']:
+            extra_pages.append('--extra-page')
+            extra_pages.append(extra)
+
+        cli_args.extend(extra_pages)
+
+        result = runner.invoke(main, cli_args)
+
+        if not expected.exists():
+            if not 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                    raise AssertionError(
+                        f'Expected output directory ({expected}) does not exist. '
+                        + '\nRun $ python -m pytest test_expected_output.py\n'
+                        + 'And follow instructions'
+                        )
 
         assert result.exit_code == 0
 
