@@ -11,7 +11,7 @@ from test_expected_output import APP_NAMES, FIXTURES_PATH, assert_dirs_same
 
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
-def test_cli_output(tmp_path, monkeypatch, app_name):
+def test_cli_with_fixtures_output(tmp_path, monkeypatch, app_name):
     app_dir = Path('fixtures', app_name)
     expected = FIXTURES_PATH / app_name / 'test_expected_output'
     module_path = app_dir / 'app'
@@ -52,6 +52,36 @@ def test_cli_output(tmp_path, monkeypatch, app_name):
             assert result.exit_code == 0
 
             assert_dirs_same(build_dir, expected)
+
+    finally:
+        sys.modules.pop('app', None)
+
+
+def test_cli_with_prefix_option(tmp_path):
+    module_path = Path('fixtures', 'demo_app_url_for_prefix', 'app')
+    module_path = '.'.join(module_path.parts)
+    expected = FIXTURES_PATH / 'demo_app_url_for_prefix' / 'test_expected_output'
+    runner = CliRunner()
+
+
+    try:
+        module = importlib.import_module(module_path)
+        freeze_config = getattr(module, 'freeze_config')
+        prefix = freeze_config['prefix']
+        cli_args = [str(module_path), str(tmp_path), '--prefix', prefix]
+
+        result = runner.invoke(main, cli_args)
+
+        if not expected.exists():
+            raise AssertionError(
+                f'Expected output directory ({expected}) does not exist. '
+                + '\nRun $ python -m pytest test_expected_output.py\n'
+                + 'And follow instructions'
+                )
+
+        assert result.exit_code == 0
+
+        assert_dirs_same(tmp_path, expected)
 
     finally:
         sys.modules.pop('app', None)
