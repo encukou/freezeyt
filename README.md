@@ -72,7 +72,7 @@ $ python -m pip install -r requirements-blog.txt
   * `python -m freezeyt demo_app_url_for _build --prefix http://freezeyt.test/foo/`
 
 
-### How to use CLI of freezeyt
+### How to use freezeyt CLI
 
 #### Mandatory positional arguments:
 
@@ -89,9 +89,9 @@ or
 
 2. **destination path**
 
-Path to dir, where we want to save output html file of freezed application.
+Path to dir, where we want to save the frozen output.
 
-Examples:
+Example:
 
     path/to/output_dir
 
@@ -110,7 +110,7 @@ or
 
 2. **--extra-page**
 
-Path to page without any link in application. The number of pages to add is not limited. Each page has to be add with option `--extra-page` see examples.
+Path to page without any link in application. The number of pages to add is not limited. Each page has to be added with the `--extra-page` option see examples.
 
 Examples:
 
@@ -122,7 +122,7 @@ or
 
 3. **-c/--config**
 
-Path to configuration file in format YAML. Scheme of file has to be made as python dictionary.
+Path to the configuration file in YAML format. Scheme of file has to be made as Python dictionary.
 
 Allowable keys of configuration file are:
 
@@ -153,14 +153,14 @@ extra_files:
       smile.png: b'\x89PNG\r\n\x1a\n\0\0\0\rIHDR\0\0\0\x08\0\0\0\x08\x08\x04\0\0\0n\x06v\0\0\0\0#IDAT\x08\xd7cd``\xf8\xcf\x80\0\x8c\xa8\\ \x8f\tB!\x91D\xab\xf8\x8f\x10D\xd3\xc2\x88n-\0\x0e\x1b\x0f\xf9LT9_\0\0\0\0IEND\xaeB`\x82'
 ```
 
-Examples of use options `--config`:
+Example of use `--config` option:
 
     -c path/to/config.yaml
 
 
 #### Conflict situations
 
-CLI can be used just with options, just with configuration file or combined of them. If we combine configuration and options it is necessary to be aware of conflicts that may occur. These situtations are described below.
+CLI can be used just with options, just with configuration file or using combination of both. If we combine configuration and options it is necessary to be aware of conflicts that may occur. These situations are described below.
 
 1. prefix conflict
 
