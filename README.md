@@ -72,6 +72,116 @@ $ python -m pip install -r requirements-blog.txt
   * `python -m freezeyt demo_app_url_for _build --prefix http://freezeyt.test/foo/`
 
 
+### How to use freezeyt CLI
+
+#### Mandatory positional arguments:
+
+1. **module name**
+
+Module path to application, which we are going to freeze via freezeyt.
+
+Examples:
+
+    app
+or
+
+    folder1.folder2.app
+
+2. **destination path**
+
+Path to dir, where we want to save the frozen output.
+
+Example:
+
+    path/to/output_dir
+
+#### Optional arguments:
+
+1. **--prefix**
+
+URL, where we want to deploy our static site
+
+Examples:
+
+    --prefix http://localhost:8000/
+or
+
+    --prefix https://pyladies.cz/
+
+2. **--extra-page**
+
+Path to page without any link in application. The number of pages to add is not limited. Each page has to be added with the `--extra-page` option see examples.
+
+Examples:
+
+    --extra-page /extra/
+
+or
+
+    --extra-page /extra/extra1/ --extra-page /extra2/
+
+3. **-c/--config**
+
+Path to the configuration file in YAML format.
+
+Allowable keys of configuration file are:
+
+* prefix
+* extra-pages
+* extra-files
+
+Example of YAML file:
+
+```YAML
+prefix: https://pyladies.cz/
+extra_pages:
+    - /extra/
+extra_files:
+      CNAME: pylades.cz
+      ".nojekyll": ''
+      config/xyz: abc
+```
+
+Example of use `--config` option:
+
+    -c path/to/config.yaml
+
+
+#### Conflict situations
+
+CLI can be used just with options, just with configuration file or using combination of both. If we combine configuration and options it is necessary to be aware of conflicts that may occur. These situations are described below.
+
+1. prefix conflict
+
+Prefix input with option `--prefix` has higher priority than prefix saved in configuration file.
+
+2. extra-pages conflict
+
+Extra pages saved in configuration file will automatically extend extra-pages input with option `--extra-page`. It is not necessary to use option `--extra-page`
+
+#### Examples of CLI usage
+
+```shell
+$ python -m freezeyt folder.app build
+```
+
+```shell
+$ python -m freezeyt app build --prefix https://pyladies.cz/
+```
+
+```shell
+$ python -m freezeyt folder1.folder2.app build -c config.yaml
+```
+
+```shell
+$ python -m freezeyt app build --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/
+```
+
+```shell
+$ python -m freezeyt app build --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/ --config path/to/config.yaml
+```
+
+
 ### How to use freezeyt-blog
 
 Blog was tested on Python version 3.8.

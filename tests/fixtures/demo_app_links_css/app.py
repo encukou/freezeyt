@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 
 app = Flask(__name__)
-extra_pages = ["/static/OFL.txt"]
+freeze_config = {'extra_pages': ["/static/OFL.txt"]}
 
 
 @app.route("/")

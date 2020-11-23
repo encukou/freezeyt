@@ -64,10 +64,7 @@ def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
     return base / encode_file_path(url_path).lstrip('/')
 
 
-def freeze( app, path,
-            prefix='http://localhost:8000/',
-            extra_pages=(),
-            extra_files=None):
+def freeze(app, path, config):
     """Freeze (create files of) all pages from a WSGI server.
 
     Parameters:
@@ -78,6 +75,9 @@ def freeze( app, path,
     extra_files -- files dont generate by app but needs to correct deploy
     """
     path = Path(path)
+    prefix = config.get('prefix', 'http://localhost:8000/')
+    extra_pages = config.get('extra_pages', ())
+    extra_files = config.get('extra_files', None)
 
     # Decode path in the prefix URL.
     # Both "prefix" and "prefix_parsed" will have the path decoded.
