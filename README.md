@@ -122,7 +122,7 @@ or
 
 3. **-c/--config**
 
-Path to the configuration file in YAML format. Scheme of file has to be made as Python dictionary.
+Path to the configuration file in YAML format.
 
 Allowable keys of configuration file are:
 
@@ -130,27 +130,16 @@ Allowable keys of configuration file are:
 * extra-pages
 * extra-files
 
-_Note:_
-
-Value of extra-files has to be another dictionary, which is made as:
-
-```python
-    {
-      "name_of_file": "content_of_file",
-      "CNAME": "pyladies.cz",
-    }
-```
-
 Example of YAML file:
 
 ```YAML
 prefix: https://pyladies.cz/
-extra_pages: /extra/
+extra_pages:
+    - /extra/
 extra_files:
-      CNAME: pylades.cz,
-      .nojekyll: '',
-      config/xyz: abc,
-      smile.png: b'\x89PNG\r\n\x1a\n\0\0\0\rIHDR\0\0\0\x08\0\0\0\x08\x08\x04\0\0\0n\x06v\0\0\0\0#IDAT\x08\xd7cd``\xf8\xcf\x80\0\x8c\xa8\\ \x8f\tB!\x91D\xab\xf8\x8f\x10D\xd3\xc2\x88n-\0\x0e\x1b\x0f\xf9LT9_\0\0\0\0IEND\xaeB`\x82'
+      CNAME: pylades.cz
+      ".nojekyll": ''
+      config/xyz: abc
 ```
 
 Example of use `--config` option:
