@@ -55,8 +55,7 @@ def main(module_name, dest_path, prefix, extra_page, config):
             if (file_config.get('prefix', None) != None) and (prefix is None):
                 cli_params['prefix'] = file_config['prefix']
 
-            if file_config.get('extra_pages', None) != None:
-                cli_params['extra_pages'].extend(file_config['extra_pages'])
+            cli_params['extra_pages'].extend(file_config.get('extra_pages', []))
 
             cli_params['extra_files'] = file_config.get('extra_files', None)
 
