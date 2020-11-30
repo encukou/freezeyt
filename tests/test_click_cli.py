@@ -57,47 +57,52 @@ def test_cli_with_fixtures_output(tmp_path, app_name, monkeypatch):
         sys.modules.pop('app', None)
 
 
-def test_cli_with_prefix_option(tmp_path):
-    module_path = Path('fixtures', 'demo_app_url_for_prefix', 'app')
-    module_path = '.'.join(module_path.parts)
+def test_cli_with_prefix_option(tmp_path, monkeypatch):
+    app_dir = FIXTURES_PATH / 'demo_app_url_for_prefix'
     expected = FIXTURES_PATH / 'demo_app_url_for_prefix' / 'test_expected_output'
-    runner = CliRunner()
+    build_dir = tmp_path / 'build'
+    build_dir.mkdir()
 
+    runner = CliRunner(env={'PYTHONPATH': str(app_dir)})
+    monkeypatch.syspath_prepend(app_dir)
 
     try:
-        module = importlib.import_module(module_path)
+        module = importlib.import_module('app')
         freeze_config = getattr(module, 'freeze_config')
         prefix = freeze_config['prefix']
-        cli_args = [str(module_path), str(tmp_path), '--prefix', prefix]
+        cli_args = ['app', str(build_dir), '--prefix', prefix]
 
         result = runner.invoke(main, cli_args)
 
         if not expected.exists():
-            if not 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
-                    raise AssertionError(
-                        f'Expected output directory ({expected}) does not exist. '
-                        + '\nRun $ python -m pytest test_expected_output.py\n'
-                        + 'And follow instructions'
-                        )
+            if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                pytest.skip('Expected output is created in other tests')
+            else:
+                raise AssertionError(
+                    f'Expected output directory ({expected}) does not exist. '
+                    + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                )
+        else:
+            assert result.exit_code == 0
 
-        assert result.exit_code == 0
-
-        assert_dirs_same(tmp_path, expected)
+            assert_dirs_same(build_dir, expected)
 
     finally:
         sys.modules.pop('app', None)
 
 
-def test_cli_with_extra_page_option(tmp_path):
-    module_path = Path('fixtures', 'app_with_extra_page_deep', 'app')
-    module_path = '.'.join(module_path.parts)
+def test_cli_with_extra_page_option(tmp_path, monkeypatch):
+    app_dir = FIXTURES_PATH / 'app_with_extra_page_deep'
     expected = FIXTURES_PATH / 'app_with_extra_page_deep' / 'test_expected_output'
-    runner = CliRunner()
+    build_dir = tmp_path / 'build'
+    build_dir.mkdir()
 
+    runner = CliRunner(env={'PYTHONPATH': str(app_dir)})
+    monkeypatch.syspath_prepend(app_dir)
 
     try:
-        module = importlib.import_module(module_path)
-        cli_args = [str(module_path), str(tmp_path)]
+        module = importlib.import_module('app')
+        cli_args = ['app', str(build_dir)]
 
         freeze_config = getattr(module, 'freeze_config')
 
@@ -111,36 +116,37 @@ def test_cli_with_extra_page_option(tmp_path):
         result = runner.invoke(main, cli_args)
 
         if not expected.exists():
-            if not 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
-                    raise AssertionError(
-                        f'Expected output directory ({expected}) does not exist. '
-                        + '\nRun $ python -m pytest test_expected_output.py\n'
-                        + 'And follow instructions'
-                        )
+            if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                pytest.skip('Expected output is created in other tests')
+            else:
+                raise AssertionError(
+                    f'Expected output directory ({expected}) does not exist. '
+                    + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                )
+        else:
+            assert result.exit_code == 0
 
-        assert result.exit_code == 0
-
-        assert_dirs_same(tmp_path, expected)
+            assert_dirs_same(build_dir, expected)
 
     finally:
         sys.modules.pop('app', None)
 
 
-def test_cli_prefix_conflict(tmp_path):
-    module_path = Path('fixtures', 'demo_app_url_for_prefix', 'app')
-    module_path = '.'.join(module_path.parts)
+def test_cli_prefix_conflict(tmp_path, monkeypatch):
+    app_dir = FIXTURES_PATH / 'demo_app_url_for_prefix'
     expected = FIXTURES_PATH / 'demo_app_url_for_prefix' / 'test_expected_output'
     config_file = tmp_path / 'config.yaml'
     build_dir = tmp_path / 'build'
     build_dir.mkdir()
 
-    runner = CliRunner()
+    runner = CliRunner(env={'PYTHONPATH': str(app_dir)})
+    monkeypatch.syspath_prepend(app_dir)
 
     try:
-        module = importlib.import_module(module_path)
+        module = importlib.import_module('app')
         freeze_config = getattr(module, 'freeze_config')
         prefix = freeze_config['prefix']
-        cli_args = [str(module_path), str(build_dir), '--prefix', prefix]
+        cli_args = ['app', str(build_dir), '--prefix', prefix]
 
         data = {'prefix': 'http://pyladies.cz/lessons/'}
         with open(config_file, mode='w') as file:
@@ -151,16 +157,17 @@ def test_cli_prefix_conflict(tmp_path):
         result = runner.invoke(main, cli_args)
 
         if not expected.exists():
-            if not 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+            if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                pytest.skip('Expected output is created in other tests')
+            else:
                 raise AssertionError(
                     f'Expected output directory ({expected}) does not exist. '
-                    + '\nRun $ python -m pytest test_expected_output.py\n'
-                    + 'And follow instructions'
-                    )
+                    + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                )
+        else:
+            assert result.exit_code == 0
 
-        assert result.exit_code == 0
-
-        assert_dirs_same(build_dir, expected)
+            assert_dirs_same(build_dir, expected)
 
     finally:
         sys.modules.pop('app', None)
