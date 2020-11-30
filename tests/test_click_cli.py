@@ -1,7 +1,6 @@
 import importlib
 import os
 import sys
-from pathlib import Path
 from contextlib import contextmanager
 
 import pytest
@@ -53,7 +52,6 @@ def context_for_test(app_name, monkeypatch):
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
 def test_cli_with_fixtures_output(tmp_path, app_name, monkeypatch):
-    app_dir = FIXTURES_PATH / app_name
     config_file = tmp_path / 'config.yaml'
     build_dir = tmp_path / 'build'
 
@@ -72,7 +70,6 @@ def test_cli_with_fixtures_output(tmp_path, app_name, monkeypatch):
 
 def test_cli_with_prefix_option(tmp_path, monkeypatch):
     app_name = 'demo_app_url_for_prefix'
-    app_dir = FIXTURES_PATH / app_name
     build_dir = tmp_path / 'build'
 
     with context_for_test(app_name, monkeypatch) as module:
@@ -85,7 +82,6 @@ def test_cli_with_prefix_option(tmp_path, monkeypatch):
 
 def test_cli_with_extra_page_option(tmp_path, monkeypatch):
     app_name = 'app_with_extra_page_deep'
-    app_dir = FIXTURES_PATH / app_name
     build_dir = tmp_path / 'build'
 
     with context_for_test(app_name, monkeypatch) as module:
@@ -105,7 +101,6 @@ def test_cli_with_extra_page_option(tmp_path, monkeypatch):
 
 def test_cli_prefix_conflict(tmp_path, monkeypatch):
     app_name = 'demo_app_url_for_prefix'
-    app_dir = FIXTURES_PATH / app_name
     config_file = tmp_path / 'config.yaml'
     build_dir = tmp_path / 'build'
 
