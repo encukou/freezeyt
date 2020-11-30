@@ -12,22 +12,21 @@ from test_expected_output import APP_NAMES, FIXTURES_PATH, assert_dirs_same
 
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
-def test_cli_with_fixtures_output(tmp_path, app_name):
-    app_dir = Path('fixtures', app_name)
+def test_cli_with_fixtures_output(tmp_path, app_name, monkeypatch):
+    app_dir = FIXTURES_PATH / app_name
     expected = FIXTURES_PATH / app_name / 'test_expected_output'
-    module_path = app_dir / 'app'
     error_path = FIXTURES_PATH / app_name / 'error.txt'
     config_file = tmp_path / 'config.yaml'
     build_dir = tmp_path / 'build'
 
     build_dir.mkdir()
-    module_path = '.'.join(module_path.parts)
 
-    runner = CliRunner()
+    runner = CliRunner(env={'PYTHONPATH': str(app_dir)})
+    monkeypatch.syspath_prepend(app_dir)
 
     try:
-        module = importlib.import_module(module_path)
-        cli_args = [str(module_path), str(build_dir)]
+        module = importlib.import_module('app')
+        cli_args = ['app', str(build_dir)]
         freeze_config = getattr(module, 'freeze_config', None)
 
         if freeze_config != None:
