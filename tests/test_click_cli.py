@@ -35,24 +35,23 @@ def test_cli_with_fixtures_output(tmp_path, app_name, monkeypatch):
 
             cli_args.extend(['--config', config_file])
 
+        result = runner.invoke(main, cli_args)
         if error_path.exists():
-            result = runner.invoke(main, cli_args)
             assert result.exit_code != 0
 
         else:
-            result = runner.invoke(main, cli_args)
-
             if not expected.exists():
-                if not 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                    pytest.skip('Expected output is created in other tests')
+                else:
                     raise AssertionError(
                         f'Expected output directory ({expected}) does not exist. '
-                        + '\nRun $ python -m pytest test_expected_output.py\n'
-                        + 'And follow instructions'
-                        )
+                        + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                    )
+            else:
+                assert result.exit_code == 0
 
-            assert result.exit_code == 0
-
-            assert_dirs_same(build_dir, expected)
+                assert_dirs_same(build_dir, expected)
 
     finally:
         sys.modules.pop('app', None)
