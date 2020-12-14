@@ -1,5 +1,45 @@
 # Freezeyt plugins (WIP)
 
+
+Configuration:
+
+```yaml
+prefix: "localhost:8080"
+extra_pages:
+    - /extra.html
+extra_files:
+    /CNAME: "my.site.example"
+    /favicon.ico:
+        file: static/favicon.ico
+progressbar: true
+
+output:
+    type: dir
+    dir: "_build"
+# or:
+output: "dict"
+# or:
+output:
+    type: git
+    repo: "."  # optional
+    branch: gh-pages
+
+validate:
+    mimetypes: true
+    html: true
+    png: true   # with hypothetical plugin
+get_links:
+    html: true
+    css: true
+static_files:
+    /static/: static/
+
+plugins:
+    "freezeyt_validate_png:Validator"
+```
+
+
+
 ## Progressbar
 
 ```python
@@ -15,8 +55,6 @@ class FreezeytProgress:
 
     def close(self):
         self.progress.close()
-
-config['progress'] = FreezeytProgress()
 ```
 
 ## Option to save to files, dict or Git
@@ -39,12 +77,10 @@ class FileSaver:
     def open(self, url):
         filename = self.url_to_filename(url)
         return open(filename, 'rb')
-
-config['save'] = FileSaver()
 ```
 
 ```python
-class FileSaver:
+class DictSaver:
     def __init__(self, base_path, prefix):
         self.base_path = base_path
         self.prefix = prefix
@@ -73,8 +109,6 @@ class FileSaver:
 class MimeValidator:
     def validate(self, url, headers, open_output):
         # (see check_mimetype)
-
-config['validators'].append(MimeValidator())
 ```
 
 ## Page validation
@@ -86,8 +120,6 @@ class HtmlValidator:
             html = parse_html()
             if not valid(html):
                 raise ValueError("invalid HTML")
-
-config['validators'].append(HtmlValidator())
 ```
 
 ## Harvesting links
@@ -100,8 +132,6 @@ class GetLinksFromHTML:
             links = []
             ...
             return links
-
-config['get_links'] = GetLinksFromHTML()
 ```
 
 ## Static files directory
