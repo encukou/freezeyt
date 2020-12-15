@@ -7,7 +7,7 @@ def index(request):
     return HttpResponse("""
     <html>
         <head>
-            <title>Hello world</title>
+            <title>Hello world app</title>
         </head>
         <body>
             <h3>Hello world! This is a home page of app.</h3>
@@ -23,7 +23,7 @@ def second_page(request):
     template = Template("""
     <html>
         <head>
-            <title>Hello world second page</title>
+            <title>Hello world app</title>
         </head>
         <body>
             <h3>Second page !!!</h3>
@@ -41,7 +41,7 @@ def third_page(request):
     template = Template("""
     <html>
         <head>
-            <title>Hello world third page</title>
+            <title>Hello world app</title>
         </head>
         <body>
             <h3>Third page !!!</h3>
@@ -60,12 +60,16 @@ def third_page(request):
 
 def image_page(request):
     template = Template("""
+    {% load static %}
     <html>
         <head>
-            <title>Hello world second page</title>
+            <title>Hello world app</title>
         </head>
         <body>
             <h3>Image page !!!</h3>
+            <div>
+            <img src="{% static 'smile.png' %}">
+            </div>
             <div>
             <a href="{% url 'home' %}">HOME</a> back to index page.
             </div>
