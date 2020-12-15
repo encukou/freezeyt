@@ -11,7 +11,7 @@ def index(request):
         <body>
             Hello world!
             <br>
-            <a href='/demo_app_2pages/second_page.html'>LINK</a> to second page.
+            <a href='/second_page.html'>LINK</a> to second page.
         </body>
     </html>
     """)
