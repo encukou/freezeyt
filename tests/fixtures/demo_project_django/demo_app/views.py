@@ -9,9 +9,22 @@ def index(request):
             <title>Hello world</title>
         </head>
         <body>
-            <h3>Hello world!</h3>
+            Hello world!
+            <br>
+            <a href='/demo_app_2pages/second_page.html'>LINK</a> to second page.
+        </body>
+    </html>
+    """)
 
-            This is index page of app - django demo_app.
+
+def second_page(request):
+    return HttpResponse("""
+    <html>
+        <head>
+            <title>Hello world second page</title>
+        </head>
+        <body>
+            Second page !!!
         </body>
     </html>
     """)
