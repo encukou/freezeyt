@@ -1,5 +1,4 @@
 from django.http import HttpResponse
-from django.conf.urls import url
 from django.template import Context, Template
 # from django.shortcuts import render
 
@@ -34,12 +33,12 @@ def second_page(request):
         </body>
     </html>
     """)
-    context = Context({"url": url})
+    context = Context({})
     return HttpResponse(template.render(context=context))
 
 
 def third_page(request):
-    return HttpResponse("""
+    template = Template("""
     <html>
         <head>
             <title>Hello world third page</title>
@@ -47,8 +46,34 @@ def third_page(request):
         <body>
             <h3>Third page !!!</h3>
             <div>
+            <a href="{% url 'page_with_image' %}">LINK</a> to page with smile.png
+            </div>
+            <div>
             <a href='/'>LINK</a> to home page.
             </div>
         </body>
     </html>
     """)
+    context = Context({})
+    return HttpResponse(template.render(context=context))
+
+
+def image_page(request):
+    template = Template("""
+    <html>
+        <head>
+            <title>Hello world second page</title>
+        </head>
+        <body>
+            <h3>Image page !!!</h3>
+            <div>
+            <a href="{% url 'home' %}">HOME</a> back to index page.
+            </div>
+            <div>
+            <a href="{% url 'third_page' %}">BACK</a> back to third page.
+            </div>
+        </body>
+    </html>
+    """)
+    context = Context({})
+    return HttpResponse(template.render(context=context))
