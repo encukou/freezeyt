@@ -162,6 +162,7 @@ def freeze(app, path, config):
 
             'wsgi.version': (1, 0),
             'wsgi.url_scheme': 'http',
+            'wsgi.input': sys.stdin.buffer,
             'wsgi.errors': sys.stderr,
             'wsgi.multithread': False,
             'wsgi.multiprocess': False,
