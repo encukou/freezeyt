@@ -17,8 +17,8 @@ Navíc má základní projekt jednu „hlavní“ aplikaci, kam se dává kód s
 pro ten jeden projekt.
 
 Každá aplikace může mít své vlastní nastavení URL.
-Pod `/admin/...` se většinou dává administrační rozhraní; všechny URL co
-nezačíná `/admin` se přenechá „hlavní“ aplikaci.
+Pod `/admin/...` se většinou dává administrační rozhraní; všechny URL, které
+nezačínjí `/admin` se přenechají „hlavní“ aplikaci.
 To se definuje v souboru `urls.py`projektu.
 V rámci aplikace je pak další `urls.py`, kde se definují URL pro jednotlivé
 stránky.
@@ -69,7 +69,7 @@ extra_files:
 Pro `extra_files` by bylo fajn umožnit vzít obsah ze souboru, ne jen z řetězce.
 Takové věci se dají docela jednoduše doplnit: zatím může být obsah zadaný jen
 jako řetězec (zde `"my.site.example"`, takže máme možnost místo toho použít
-slovník, který se dají specifikovat nejrůznější rozšíření.
+slovník, kterým se dají specifikovat nejrůznější rozšíření.
 Třeba soubor, ze kterého odkaz vzít:
 
 ```
@@ -125,7 +125,7 @@ příkazové řádce, tak jako to děláme teď.
 
 Teď ale máme všechny tři varianty zamíchané do sebe.
 Kdyby někco začal přidávat další možnosti (např. kopírovat soubory přímo na
-vzdálený server, nebo použít jiné verzovací systémy než Git.), mohly by 
+vzdálený server, nebo použít jiné verzovací systémy než Git.), mohl by 
 v tom být docela chaos.
 Stálo by za to udělat z nich seznam?
 
