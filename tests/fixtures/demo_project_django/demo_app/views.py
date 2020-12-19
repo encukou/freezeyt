@@ -60,7 +60,6 @@ def third_page(request):
 
 def image_page(request):
     template = Template("""
-    {% load static %}
     <html>
         <head>
             <title>Hello world app</title>
@@ -68,7 +67,8 @@ def image_page(request):
         <body>
             <h3>Image page !!!</h3>
             <div>
-            <img src="{% static 'smile.png' %}">
+            {% load static %}
+            <img src="{% static 'demo_app/smile.png' %}" alt="smile">
             </div>
             <div>
             <a href="{% url 'home' %}">HOME</a> back to index page.
