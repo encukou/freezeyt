@@ -120,7 +120,7 @@ USE_TZ = True
 
 
 STATIC_ROOT = 'static/'
-STATIC_URL = 'demo_app/static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     "demo_app/static",
