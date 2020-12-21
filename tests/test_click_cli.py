@@ -34,6 +34,9 @@ def run_and_check(cli_args, app_name, build_dir):
                     + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
                 )
         else:
+            print(result.stdout)
+            if result.exception is not None:
+                raise result.exception
             assert result.exit_code == 0
 
             assert_dirs_same(build_dir, expected)
