@@ -3,7 +3,7 @@ import importlib
 import click
 import yaml
 
-from freezeyt.freezing import freeze
+from freezeyt.freezer import freeze
 
 
 @click.command()
