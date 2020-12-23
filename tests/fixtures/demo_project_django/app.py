@@ -10,3 +10,5 @@ STATIC_DIRS = [BASE_PATH / 'static']
 app = StaticMiddleware(
     django_wsgi_app, static_root='/static', static_dirs=STATIC_DIRS
 )
+
+freeze_config = {'extra_pages': ['/extra/']}

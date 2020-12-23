@@ -81,3 +81,19 @@ def image_page(request):
     """)
     context = Context({})
     return HttpResponse(template.render(context=context))
+
+
+def extra(request):
+    return HttpResponse("""
+    <html>
+        <head>
+            <title>Hello world app</title>
+        </head>
+        <body>
+            <h3>Hello world! This is a extra page of app.</h3>
+            <div>
+            Theres is no any link to this page in app.
+            </div>
+        </body>
+    </html>
+    """)
