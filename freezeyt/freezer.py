@@ -1,11 +1,12 @@
 import sys
 from pathlib import Path
+from mimetypes import guess_type
 
 from urllib.parse import urlparse, urljoin
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
-from freezeyt.freezing import parse_absolute_url, url_to_filename, check_mimetype, get_all_links, get_links_from_css
+from freezeyt.freezing import parse_absolute_url, url_to_filename, get_all_links, get_links_from_css
 from freezeyt.encoding import decode_input_path, encode_wsgi_path
 from freezeyt.encoding import encode_file_path
 
@@ -14,6 +15,51 @@ def freeze(app, path, config):
     freezer = Freezer(app, path, config)
     freezer.freeze_extra_files()
     freezer.handle_urls()
+
+
+def check_mimetype(url_path, headers):
+    if url_path.endswith('/'):
+        # Directories get saved as index.html
+        url_path = 'index.html'
+    f_type, f_encode = guess_type(url_path)
+    if not f_type:
+        f_type = 'application/octet-stream'
+    headers = Headers(headers)
+    cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
+    if f_type.lower() != cont_type.lower():
+        raise ValueError(
+            f"Content-type '{cont_type}' is different from filetype '{f_type}'"
+            + f" guessed from '{url_path}'"
+        )
+
+
+def is_external(url, hostname='localhost', port=8000, path='/'):
+    url_parse = parse_absolute_url(url)
+    return (url_parse.hostname != hostname or url_parse.port != port)
+
+
+class FileSaver:
+    def __init__(self, base_path, prefix):
+        self.base_path = base_path
+        self.prefix = prefix
+
+    def url_to_filename(self, url):
+        return url_to_filename(
+            self.base_path, url, hostname=self.prefix.hostname,
+            port=self.prefix.port, path=self.prefix.path,
+        )
+
+    def save(self, url, content_iterable):
+        filename = self.url_to_filename(url)
+        print(f'Saving to {filename}')
+        filename.parent.mkdir(parents=True, exist_ok=True)
+        with open(filename, "wb") as f:
+            for item in content_iterable:
+                f.write(item)
+
+    def open(self, url):
+        filename = self.url_to_filename(url)
+        return open(filename, 'rb')
 
 
 class Freezer:
@@ -33,6 +79,8 @@ class Freezer:
         decoded_path = decode_input_path(prefix_parsed.path)
         self.prefix = prefix_parsed._replace(path=decoded_path)
 
+        self.saver = FileSaver(self.path, self.prefix)
+
     def freeze_extra_files(self):
         if self.extra_files is not None:
             for filename, content in self.extra_files.items():
@@ -50,7 +98,7 @@ class Freezer:
         else:
             print('status', status)
             print('headers', headers)
-            check_mimetype(self.filename, headers)
+            check_mimetype(urlparse(self.url).path, headers)
             self.response_headers = Headers(headers)
 
     def handle_urls(self):
@@ -63,6 +111,7 @@ class Freezer:
 
         while new_urls:
             url = new_urls.pop()
+            self.url = url
 
             # url = http://freezeyt.test:1234/foo/čau/
 
@@ -71,17 +120,13 @@ class Freezer:
 
             visited_urls.add(url)
 
-            try:
-                filename = url_to_filename(self.path, url,
-                                            hostname=self.prefix.hostname,
-                                            port=self.prefix.port,
-                                            path=self.prefix.path)
-            except ValueError as err:
-                print(err)
-                print('skipping', url)
+            if is_external(
+                url,
+                hostname=self.prefix.hostname,
+                port=self.prefix.port,
+            ):
+                print('skipping external', url)
                 continue
-
-            self.filename = filename
 
             print('link:', url)
 
@@ -112,15 +157,9 @@ class Freezer:
 
             result = self.app(environ, self.start_response)
 
-            print(f'Saving to {filename}')
+            self.saver.save(url, result)
 
-            filename.parent.mkdir(parents=True, exist_ok=True)
-
-            with open(filename, "wb") as f:
-                for item in result:
-                    f.write(item)
-
-            with open(filename, "rb") as f:
+            with self.saver.open(url) as f:
                 cont_type, cont_encode = parse_options_header(self.response_headers.get('Content-Type'))
                 if cont_type == "text/html":
                     new_urls.extend(get_all_links(f, url, self.response_headers))
