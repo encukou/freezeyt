@@ -71,18 +71,6 @@ def get_links_from_node(node: xml.dom.minidom.Node, base_url) -> list:
         result.extend(get_links_from_node(child, base_url))
     return result
 
-def check_mimetype(filename, headers):
-    f_type, f_encode = guess_type(str(filename))
-    if not f_type:
-        f_type = 'application/octet-stream'
-    headers = Headers(headers)
-    cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
-    if f_type.lower() != cont_type.lower():
-        raise ValueError(
-            f"Content-type '{cont_type}' is different from filetype '{f_type}'"
-            + f" guessed from '{filename}'"
-        )
-
 
 def get_links_from_css(css_file, base_url):
     """Get all links from a CSS file."""
