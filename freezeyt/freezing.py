@@ -3,6 +3,7 @@ from pathlib import Path
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 from mimetypes import guess_type
+import io
 import xml.dom.minidom
 import sys
 import html5lib
@@ -162,6 +163,7 @@ def freeze(app, path, config):
 
             'wsgi.version': (1, 0),
             'wsgi.url_scheme': 'http',
+            'wsgi.input': io.BytesIO(),
             'wsgi.errors': sys.stderr,
             'wsgi.multithread': False,
             'wsgi.multiprocess': False,
