@@ -9,6 +9,7 @@ from freezeyt.freezing import parse_absolute_url, url_to_filename, check_mimetyp
 from freezeyt.encoding import decode_input_path, encode_wsgi_path
 from freezeyt.encoding import encode_file_path
 
+
 def freeze(app, path, config):
     freezer = Freezer(app, path, config)
     freezer.freeze_extra_files()
