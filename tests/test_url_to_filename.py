@@ -77,3 +77,9 @@ def test_custom_prefix_fragment_ftp():
     saver = FileSaver(base, urlparse('http://freezeyt.test:1234/foo/'))
     with pytest.raises(ValueError):
         saver.url_to_filename("ftp://localhost:8000/second_page.html")
+
+
+def test_custom_prefix_above():
+    saver = FileSaver(base, urlparse('http://freezeyt.test:1234/foo/'))
+    with pytest.raises(ValueError):
+        saver.url_to_filename("http://freezeyt.test:1234/second_page.html")

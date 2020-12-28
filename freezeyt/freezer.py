@@ -38,6 +38,7 @@ def is_external(url, prefix):
     return (
         url_parse.hostname != prefix.hostname
         or url_parse.port != prefix.port
+        or not url_parse.path.startswith(prefix.path)
     )
 
 
@@ -101,6 +102,8 @@ class Freezer:
         # Save the parsed version of prefix as self.prefix
         prefix_parsed = parse_absolute_url(prefix)
         decoded_path = decode_input_path(prefix_parsed.path)
+        if not decoded_path.endswith('/'):
+            raise ValueError('prefix must end with /')
         self.prefix = prefix_parsed._replace(path=decoded_path)
 
         self.saver = FileSaver(self.path, self.prefix)
