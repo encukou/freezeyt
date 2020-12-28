@@ -6,7 +6,7 @@ from urllib.parse import urlparse, urljoin
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
-from freezeyt.freezing import parse_absolute_url, url_to_filename, get_all_links, get_links_from_css
+from freezeyt.freezing import parse_absolute_url, get_all_links, get_links_from_css
 from freezeyt.encoding import decode_input_path, encode_wsgi_path
 from freezeyt.encoding import encode_file_path
 
@@ -33,21 +33,45 @@ def check_mimetype(url_path, headers):
         )
 
 
-def is_external(url, hostname='localhost', port=8000, path='/'):
+def is_external(url, prefix):
     url_parse = parse_absolute_url(url)
-    return (url_parse.hostname != hostname or url_parse.port != port)
+    return (
+        url_parse.hostname != prefix.hostname
+        or url_parse.port != prefix.port
+    )
 
 
 class FileSaver:
+    """Outputs frozen pages as files on the filesystem.
+
+    base - Filesystem base path (eg. /tmp/)
+    prefix - Base URL to deploy web app in production
+        (eg. urlparse('http://example.com:8000/foo/')
+    """
     def __init__(self, base_path, prefix):
         self.base_path = base_path
         self.prefix = prefix
 
     def url_to_filename(self, url):
-        return url_to_filename(
-            self.base_path, url, hostname=self.prefix.hostname,
-            port=self.prefix.port, path=self.prefix.path,
-        )
+        """Return the filename to which the page is frozen.
+
+        Parameters:
+        url - Absolute URL (eg. http://example.com:8000/foo/second.html) to create filename
+        """
+        if is_external(url, self.prefix):
+            raise ValueError(f'external url {url}')
+
+        url_parse = parse_absolute_url(url)
+
+        url_path = url_parse.path
+
+        if url_path.startswith(self.prefix.path):
+            url_path = '/' + url_path[len(self.prefix.path):]
+
+        if url_path.endswith('/'):
+            url_path = url_path + 'index.html'
+
+        return self.base_path / encode_file_path(url_path).lstrip('/')
 
     def save(self, url, content_iterable):
         filename = self.url_to_filename(url)
@@ -120,11 +144,7 @@ class Freezer:
 
             visited_urls.add(url)
 
-            if is_external(
-                url,
-                hostname=self.prefix.hostname,
-                port=self.prefix.port,
-            ):
+            if is_external(url, self.prefix):
                 print('skipping external', url)
                 continue
 

@@ -37,33 +37,6 @@ def parse_absolute_url(url):
     return parsed
 
 
-def url_to_filename(base, url, hostname='localhost', port=8000, path='/'):
-    """Return the filename to which the page is frozen.
-
-    Parameters:
-    base - Filesystem base path (eg. /tmp/)
-    url - Absolute URL (eg. http://example.com:8000/foo/second.html) to create filename
-    hostname - Domain name from URL to deploy web app in production (eg. 'example.com')
-    port - HTTP port number from URL to deploy web app in production (eg. 8000)
-    path - URL path from URL to deploy web app in production (eg. '/foo/second.html')
-    """
-    url_parse = parse_absolute_url(url)
-
-    if url_parse.hostname == hostname and url_parse.port == port:
-        url_path = url_parse.path
-    else:
-        raise ValueError(f"Got external URL:{url}\
-                                    instead of {hostname}:{port}")
-
-    if url_path.startswith(path):
-        url_path = '/' + url_path[len(path):]
-
-    if url_path.endswith('/'):
-        url_path = url_path + 'index.html'
-
-    return base / encode_file_path(url_path).lstrip('/')
-
-
 def get_all_links(
     page_content: bytes, base_url, headers: Headers = None
 ) -> list:
