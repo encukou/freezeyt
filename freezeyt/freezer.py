@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 from mimetypes import guess_type
+import io
 
 from urllib.parse import urlparse, urljoin
 from werkzeug.datastructures import Headers
@@ -116,6 +117,7 @@ class Freezer:
 
                 'wsgi.version': (1, 0),
                 'wsgi.url_scheme': 'http',
+                'wsgi.input': io.BytesIO(),
                 'wsgi.errors': sys.stderr,
                 'wsgi.multithread': False,
                 'wsgi.multiprocess': False,
