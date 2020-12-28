@@ -6,9 +6,12 @@ from urllib.parse import urlparse, urljoin
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
-from freezeyt.freezing import parse_absolute_url, get_all_links, get_links_from_css
 from freezeyt.encoding import decode_input_path, encode_wsgi_path
 from freezeyt.encoding import encode_file_path
+from freezeyt.filesaver import FileSaver
+from freezeyt.util import parse_absolute_url, is_external
+from freezeyt.getlinks_html import get_all_links
+from freezeyt.getlinks_css import get_links_from_css
 
 
 def freeze(app, path, config):
@@ -31,60 +34,6 @@ def check_mimetype(url_path, headers):
             f"Content-type '{cont_type}' is different from filetype '{f_type}'"
             + f" guessed from '{url_path}'"
         )
-
-
-def is_external(parsed_url, prefix):
-    return (
-        parsed_url.scheme != prefix.scheme
-        or parsed_url.hostname != prefix.hostname
-        or parsed_url.port != prefix.port
-        or not parsed_url.path.startswith(prefix.path)
-    )
-
-
-class FileSaver:
-    """Outputs frozen pages as files on the filesystem.
-
-    base - Filesystem base path (eg. /tmp/)
-    prefix - Base URL to deploy web app in production
-        (eg. urlparse('http://example.com:8000/foo/')
-    """
-    def __init__(self, base_path, prefix):
-        self.base_path = base_path
-        self.prefix = prefix
-
-    def url_to_filename(self, parsed_url):
-        """Return the filename to which the page is frozen.
-
-        Parameters:
-        parsed_url
-            Parsed URL (eg. urlparse(http://example.com:8000/foo/second.html))
-            to convert to filename
-        """
-        if is_external(parsed_url, self.prefix):
-            raise ValueError(f'external url {parsed_url}')
-
-        url_path = parsed_url.path
-
-        if url_path.startswith(self.prefix.path):
-            url_path = '/' + url_path[len(self.prefix.path):]
-
-        if url_path.endswith('/'):
-            url_path = url_path + 'index.html'
-
-        return self.base_path / encode_file_path(url_path).lstrip('/')
-
-    def save(self, parsed_url, content_iterable):
-        filename = self.url_to_filename(parsed_url)
-        print(f'Saving to {filename}')
-        filename.parent.mkdir(parents=True, exist_ok=True)
-        with open(filename, "wb") as f:
-            for item in content_iterable:
-                f.write(item)
-
-    def open(self, parsed_url):
-        filename = self.url_to_filename(parsed_url)
-        return open(filename, 'rb')
 
 
 class Freezer:
