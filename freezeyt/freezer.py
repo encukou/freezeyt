@@ -33,12 +33,12 @@ def check_mimetype(url_path, headers):
         )
 
 
-def is_external(url, prefix):
-    url_parse = parse_absolute_url(url)
+def is_external(parsed_url, prefix):
     return (
-        url_parse.hostname != prefix.hostname
-        or url_parse.port != prefix.port
-        or not url_parse.path.startswith(prefix.path)
+        parsed_url.scheme != prefix.scheme
+        or parsed_url.hostname != prefix.hostname
+        or parsed_url.port != prefix.port
+        or not parsed_url.path.startswith(prefix.path)
     )
 
 
@@ -53,18 +53,18 @@ class FileSaver:
         self.base_path = base_path
         self.prefix = prefix
 
-    def url_to_filename(self, url):
+    def url_to_filename(self, parsed_url):
         """Return the filename to which the page is frozen.
 
         Parameters:
-        url - Absolute URL (eg. http://example.com:8000/foo/second.html) to create filename
+        parsed_url
+            Parsed URL (eg. urlparse(http://example.com:8000/foo/second.html))
+            to convert to filename
         """
-        if is_external(url, self.prefix):
-            raise ValueError(f'external url {url}')
+        if is_external(parsed_url, self.prefix):
+            raise ValueError(f'external url {parsed_url}')
 
-        url_parse = parse_absolute_url(url)
-
-        url_path = url_parse.path
+        url_path = parsed_url.path
 
         if url_path.startswith(self.prefix.path):
             url_path = '/' + url_path[len(self.prefix.path):]
@@ -74,16 +74,16 @@ class FileSaver:
 
         return self.base_path / encode_file_path(url_path).lstrip('/')
 
-    def save(self, url, content_iterable):
-        filename = self.url_to_filename(url)
+    def save(self, parsed_url, content_iterable):
+        filename = self.url_to_filename(parsed_url)
         print(f'Saving to {filename}')
         filename.parent.mkdir(parents=True, exist_ok=True)
         with open(filename, "wb") as f:
             for item in content_iterable:
                 f.write(item)
 
-    def open(self, url):
-        filename = self.url_to_filename(url)
+    def open(self, parsed_url):
+        filename = self.url_to_filename(parsed_url)
         return open(filename, 'rb')
 
 
@@ -147,13 +147,15 @@ class Freezer:
 
             visited_urls.add(url)
 
-            if is_external(url, self.prefix):
+            url_parsed = parse_absolute_url(url)
+
+            if is_external(url_parsed, self.prefix):
                 print('skipping external', url)
                 continue
 
             print('link:', url)
 
-            path_info = urlparse(url).path
+            path_info = url_parsed.path
 
             if path_info.startswith(self.prefix.path):
                 path_info = "/" + path_info[len(self.prefix.path):]
@@ -180,9 +182,9 @@ class Freezer:
 
             result = self.app(environ, self.start_response)
 
-            self.saver.save(url, result)
+            self.saver.save(url_parsed, result)
 
-            with self.saver.open(url) as f:
+            with self.saver.open(url_parsed) as f:
                 cont_type, cont_encode = parse_options_header(self.response_headers.get('Content-Type'))
                 if cont_type == "text/html":
                     new_urls.extend(get_all_links(f, url, self.response_headers))
