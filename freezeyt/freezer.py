@@ -140,8 +140,6 @@ class Freezer:
             url = new_urls.pop()
             self.url = url
 
-            # url = http://freezeyt.test:1234/foo/čau/
-
             if url in visited_urls:
                 continue
 
@@ -159,8 +157,6 @@ class Freezer:
 
             if path_info.startswith(self.prefix.path):
                 path_info = "/" + path_info[len(self.prefix.path):]
-
-            print('path_info:', path_info)
 
             environ = {
                 'SERVER_NAME': self.prefix.hostname,
