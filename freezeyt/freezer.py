@@ -7,7 +7,6 @@ from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
 from freezeyt.encoding import decode_input_path, encode_wsgi_path
-from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.util import parse_absolute_url, is_external
 from freezeyt.getlinks_html import get_all_links
