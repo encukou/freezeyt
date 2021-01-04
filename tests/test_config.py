@@ -19,7 +19,6 @@ def test_cli_to_files(tmp_path, monkeypatch):
 def test_func_to_files(tmp_path):
     builddir = tmp_path / 'build'
 
-
     config = {
         'output': {'type': 'dir', 'dir': builddir},
     }
@@ -40,3 +39,21 @@ def test_func_to_dict(tmp_path, config):
     result = freeze(app, builddir, config)
 
     assert sorted(result) == ['index.html', 'second_page.html']
+
+
+def test_cli_to_dict_without_path(tmp_path, monkeypatch):
+    builddir = tmp_path / 'build'
+    config_path = tmp_path / 'freezeyt.conf'
+    app_name = 'demo_app_2pages'
+
+    config_path.write_text('output: dict')
+
+    run_freezeyt_cli(['app', '-c', config_path], app_name)
+
+
+def test_cli_without_path_and_output(tmp_path, monkeypatch):
+    builddir = tmp_path / 'build'
+    app_name = 'demo_app_2pages'
+
+    result = run_freezeyt_cli(['app'], app_name, check=False)
+    assert result.exit_code != 0

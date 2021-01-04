@@ -41,7 +41,8 @@ def check_mimetype(url_path, headers):
 class Freezer:
     def __init__(self, app, path, config):
         self.app = app
-        self.path = Path(path)
+        if path is not None:
+            self.path = Path(path)
         self.config = config
 
         self.extra_pages = config.get('extra_pages', ())
@@ -64,7 +65,7 @@ class Freezer:
         if output['type'] == 'dict':
             self.saver = DictSaver(self.prefix)
         else:
-            self.saver = FileSaver(self.path, self.prefix)
+            self.saver = FileSaver(Path(output['dir']), self.prefix)
 
     def get_result(self):
         get_result = getattr(self.saver, 'get_result', None)
