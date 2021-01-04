@@ -1,6 +1,9 @@
+import pytest
+
 from freezeyt import freeze
 
 from test_click_cli import run_freezeyt_cli
+from fixtures.demo_app_2pages.app import app
 
 
 def test_cli_to_files(tmp_path, monkeypatch):
@@ -16,7 +19,6 @@ def test_cli_to_files(tmp_path, monkeypatch):
 def test_func_to_files(tmp_path):
     builddir = tmp_path / 'build'
 
-    from tests.fixtures.demo_app_2pages.app import app
 
     config = {
         'output': {'type': 'dir', 'dir': builddir},
@@ -28,14 +30,12 @@ def test_func_to_files(tmp_path):
     assert (builddir / 'second_page.html').exists()
 
 
-def test_func_to_dict(tmp_path):
+@pytest.mark.parametrize('config', (
+    {'output': 'dict'},
+    {'output': {'type': 'dict'}},
+))
+def test_func_to_dict(tmp_path, config):
     builddir = tmp_path / 'build'
-
-    from tests.fixtures.demo_app_2pages.app import app
-
-    config = {
-        'output': 'dict',
-    }
 
     result = freeze(app, builddir, config)
 

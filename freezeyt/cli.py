@@ -59,6 +59,9 @@ def main(module_name, dest_path, prefix, extra_page, config):
 
             cli_params['extra_files'] = file_config.get('extra_files', None)
 
+    if 'output' not in cli_params:
+        cli_params['output'] = {'type': 'dir', 'dir': dest_path}
+
     module = importlib.import_module(module_name)
     app = module.app
 

@@ -57,7 +57,11 @@ class Freezer:
             raise ValueError('prefix must end with /')
         self.prefix = prefix_parsed._replace(path=decoded_path)
 
-        if config.get('output') == 'dict':
+        output = config['output']
+        if isinstance(output, str):
+            output = {'type': output}
+
+        if output['type'] == 'dict':
             self.saver = DictSaver(self.prefix)
         else:
             self.saver = FileSaver(self.path, self.prefix)

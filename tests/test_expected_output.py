@@ -76,6 +76,7 @@ def test_output(tmp_path, monkeypatch, app_name):
         app = module.app
 
         freeze_config = getattr(module, 'freeze_config', {})
+        freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
 
         expected = app_path / 'test_expected_output'
 
