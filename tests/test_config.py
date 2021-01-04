@@ -1,14 +1,13 @@
 from freezeyt import freeze
 
-from test_click_cli import run_freezeyt_cli, context_for_test
+from test_click_cli import run_freezeyt_cli
 
 
 def test_cli_to_files(tmp_path, monkeypatch):
     builddir = tmp_path / 'build'
     app_name = 'demo_app_2pages'
 
-    with context_for_test(app_name, monkeypatch):
-        run_freezeyt_cli(['app', str(builddir)], app_name)
+    run_freezeyt_cli(['app', str(builddir)], app_name)
 
     assert (builddir / 'index.html').exists()
     assert (builddir / 'second_page.html').exists()

@@ -16,7 +16,10 @@ def run_freezeyt_cli(cli_args, app_name, check=True):
 
     runner = CliRunner(env={'PYTHONPATH': str(app_dir)})
 
-    result = runner.invoke(main, cli_args)
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.syspath_prepend(app_dir)
+        result = runner.invoke(main, cli_args)
+
     print(result.stdout)
 
     if check:
@@ -54,22 +57,23 @@ def run_and_check(cli_args, app_name, build_dir):
 
 
 @contextmanager
-def context_for_test(app_name, monkeypatch):
+def context_for_test(app_name):
     app_dir = FIXTURES_PATH / app_name
-    monkeypatch.syspath_prepend(app_dir)
     try:
-        module = importlib.import_module('app')
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            monkeypatch.syspath_prepend(app_dir)
+            module = importlib.import_module('app')
         yield module
     finally:
         sys.modules.pop('app', None)
 
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
-def test_cli_with_fixtures_output(tmp_path, app_name, monkeypatch):
+def test_cli_with_fixtures_output(tmp_path, app_name):
     config_file = tmp_path / 'config.yaml'
     build_dir = tmp_path / 'build'
 
-    with context_for_test(app_name, monkeypatch) as module:
+    with context_for_test(app_name) as module:
         cli_args = ['app', str(build_dir)]
         freeze_config = getattr(module, 'freeze_config', None)
 
@@ -82,11 +86,11 @@ def test_cli_with_fixtures_output(tmp_path, app_name, monkeypatch):
         run_and_check(cli_args, app_name, build_dir)
 
 
-def test_cli_with_prefix_option(tmp_path, monkeypatch):
+def test_cli_with_prefix_option(tmp_path):
     app_name = 'demo_app_url_for_prefix'
     build_dir = tmp_path / 'build'
 
-    with context_for_test(app_name, monkeypatch) as module:
+    with context_for_test(app_name,) as module:
         freeze_config = getattr(module, 'freeze_config')
         prefix = freeze_config['prefix']
         cli_args = ['app', str(build_dir), '--prefix', prefix]
@@ -94,11 +98,11 @@ def test_cli_with_prefix_option(tmp_path, monkeypatch):
         run_and_check(cli_args, app_name, build_dir)
 
 
-def test_cli_with_extra_page_option(tmp_path, monkeypatch):
+def test_cli_with_extra_page_option(tmp_path):
     app_name = 'app_with_extra_page_deep'
     build_dir = tmp_path / 'build'
 
-    with context_for_test(app_name, monkeypatch) as module:
+    with context_for_test(app_name) as module:
         cli_args = ['app', str(build_dir)]
 
         freeze_config = getattr(module, 'freeze_config')
@@ -113,12 +117,12 @@ def test_cli_with_extra_page_option(tmp_path, monkeypatch):
         run_and_check(cli_args, app_name, build_dir)
 
 
-def test_cli_prefix_conflict(tmp_path, monkeypatch):
+def test_cli_prefix_conflict(tmp_path):
     app_name = 'demo_app_url_for_prefix'
     config_file = tmp_path / 'config.yaml'
     build_dir = tmp_path / 'build'
 
-    with context_for_test(app_name, monkeypatch) as module:
+    with context_for_test(app_name) as module:
         freeze_config = getattr(module, 'freeze_config')
         prefix = freeze_config['prefix']
         cli_args = ['app', str(build_dir), '--prefix', prefix]
