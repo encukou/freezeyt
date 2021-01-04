@@ -41,6 +41,15 @@ def test_func_to_dict(tmp_path, config):
     assert sorted(result) == ['index.html', 'second_page.html']
 
 
+def test_func_empty_config(tmp_path):
+    builddir = tmp_path / 'build'
+
+    config = {}
+
+    with pytest.raises(KeyError):
+        freeze(app, builddir, config)
+
+
 def test_cli_to_dict_without_path(tmp_path, monkeypatch):
     builddir = tmp_path / 'build'
     config_path = tmp_path / 'freezeyt.conf'
