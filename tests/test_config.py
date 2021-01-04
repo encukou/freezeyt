@@ -55,7 +55,6 @@ def test_func_empty_config(tmp_path):
 
 
 def test_cli_to_dict_without_path(tmp_path, monkeypatch):
-    builddir = tmp_path / 'build'
     config_path = tmp_path / 'freezeyt.conf'
     app_name = 'app_with_extra_files'
 
@@ -78,7 +77,6 @@ def test_cli_to_dict_with_config_and_path(tmp_path, monkeypatch):
 
 
 def test_cli_without_path_and_output(tmp_path, monkeypatch):
-    builddir = tmp_path / 'build'
     app_name = 'app_with_extra_files'
 
     result = run_freezeyt_cli(['app'], app_name, check=False)
