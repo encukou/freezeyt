@@ -35,11 +35,18 @@ class FileSaver:
 
         return self.base_path / encode_file_path(url_path).lstrip('/')
 
+    def save_to_filename(self, filename, content_iterable):
+        absolute_filename = self.base_path / filename
+        self._save(absolute_filename, content_iterable)
+
     def save(self, parsed_url, content_iterable):
-        filename = self.url_to_filename(parsed_url)
-        print(f'Saving to {filename}')
-        filename.parent.mkdir(parents=True, exist_ok=True)
-        with open(filename, "wb") as f:
+        absolute_filename = self.url_to_filename(parsed_url)
+        self._save(absolute_filename, content_iterable)
+
+    def _save(self, absolute_filename, content_iterable):
+        print(f'Saving to {absolute_filename}')
+        absolute_filename.parent.mkdir(parents=True, exist_ok=True)
+        with open(absolute_filename, "wb") as f:
             for item in content_iterable:
                 f.write(item)
 

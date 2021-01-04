@@ -41,8 +41,6 @@ def check_mimetype(url_path, headers):
 class Freezer:
     def __init__(self, app, path, config):
         self.app = app
-        if path is not None:
-            self.path = Path(path)
         self.config = config
 
         self.extra_pages = config.get('extra_pages', ())
@@ -75,12 +73,9 @@ class Freezer:
     def freeze_extra_files(self):
         if self.extra_files is not None:
             for filename, content in self.extra_files.items():
-                filename = self.path / filename
-                filename.parent.mkdir(parents=True, exist_ok=True)
-                if isinstance(content, bytes):
-                    filename.write_bytes(content)
-                else:
-                    filename.write_text(content)
+                if isinstance(content, str):
+                    content = content.encode()
+                self.saver.save_to_filename(filename, [content])
 
 
     def start_response(self, status, headers):

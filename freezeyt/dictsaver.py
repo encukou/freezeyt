@@ -1,4 +1,5 @@
 from io import BytesIO
+from pathlib import Path
 
 from freezeyt.util import is_external
 from freezeyt.encoding import encode_file_path
@@ -37,8 +38,15 @@ class DictSaver:
 
         return tuple(encode_file_path(url_path).lstrip('/').split('/'))
 
+    def save_to_filename(self, filename, content_iterable):
+        parts = Path(filename).parts
+        self._save_to_parts(parts, content_iterable)
+
     def save(self, parsed_url, content_iterable):
         parts = self.url_to_parts(parsed_url)
+        self._save_to_parts(parts, content_iterable)
+
+    def _save_to_parts(self, parts, content_iterable):
         print(f'Saving to {parts}')
         target = self.contents
         for part in parts[:-1]:
