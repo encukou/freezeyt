@@ -18,6 +18,9 @@ output:
     dir: "_build"
 # or:
 output: "dict"
+# or equivalently:
+output:
+    type: "dict"
 # or:
 output:
     type: git

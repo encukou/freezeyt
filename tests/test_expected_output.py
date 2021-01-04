@@ -20,6 +20,48 @@ APP_NAMES = [
     if (p / 'app.py').exists()
 ]
 
+@pytest.mark.parametrize('app_name', APP_NAMES)
+def test_output_dict(tmp_path, monkeypatch, app_name):
+    app_path = FIXTURES_PATH / app_name
+    error_path = app_path / 'error.txt'
+
+    # Add FIXTURES_PATH to sys.path, the list of directories that `import`
+    # looks in
+    monkeypatch.syspath_prepend(str(app_path))
+    try:
+        module = importlib.import_module('app')
+        app = module.app
+
+        # XXX Not all tests have expected_dict so far
+        expected_dict = getattr(module, 'expected_dict', None)
+        if expected_dict is None:
+            pytest.skip('No expected_dict')
+
+        freeze_config = getattr(module, 'freeze_config', {})
+        freeze_config['output'] = 'dict'
+
+        expected = app_path / 'test_expected_output'
+
+        if error_path.exists():
+            with pytest.raises(ValueError):
+                freeze(app, tmp_path, freeze_config)
+        else:
+            result = freeze(app, tmp_path, freeze_config)
+
+            if not expected.exists():
+                if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                    shutil.copytree(tmp_path, expected)
+                else:
+                    raise AssertionError(
+                        f'Expected output directory ({expected}) does not exist. '
+                        + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                    )
+
+            assert result == expected_dict
+
+    finally:
+        sys.modules.pop('app', None)
+
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
 def test_output(tmp_path, monkeypatch, app_name):

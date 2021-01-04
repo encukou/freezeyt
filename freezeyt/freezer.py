@@ -9,6 +9,7 @@ from werkzeug.http import parse_options_header
 
 from freezeyt.encoding import decode_input_path, encode_wsgi_path
 from freezeyt.filesaver import FileSaver
+from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external
 from freezeyt.getlinks_html import get_all_links
 from freezeyt.getlinks_css import get_links_from_css
@@ -18,6 +19,7 @@ def freeze(app, path, config):
     freezer = Freezer(app, path, config)
     freezer.freeze_extra_files()
     freezer.handle_urls()
+    return freezer.get_result()
 
 
 def check_mimetype(url_path, headers):
@@ -55,7 +57,15 @@ class Freezer:
             raise ValueError('prefix must end with /')
         self.prefix = prefix_parsed._replace(path=decoded_path)
 
-        self.saver = FileSaver(self.path, self.prefix)
+        if config.get('output') == 'dict':
+            self.saver = DictSaver(self.prefix)
+        else:
+            self.saver = FileSaver(self.path, self.prefix)
+
+    def get_result(self):
+        get_result = getattr(self.saver, 'get_result', None)
+        if get_result is not None:
+            return self.saver.get_result()
 
     def freeze_extra_files(self):
         if self.extra_files is not None:
