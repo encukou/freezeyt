@@ -11,16 +11,28 @@ from freezeyt.cli import main
 from test_expected_output import APP_NAMES, FIXTURES_PATH, assert_dirs_same
 
 
-def run_and_check(cli_args, app_name, build_dir):
+def run_freezeyt_cli(cli_args, app_name, check=True):
     app_dir = FIXTURES_PATH / app_name
-    error_path = FIXTURES_PATH / app_name / 'error.txt'
-    expected = FIXTURES_PATH / app_name / 'test_expected_output'
-
-    build_dir.mkdir()
 
     runner = CliRunner(env={'PYTHONPATH': str(app_dir)})
 
     result = runner.invoke(main, cli_args)
+    print(result.stdout)
+
+    if check:
+        if result.exception is not None:
+            raise result.exception
+        assert result.exit_code == 0
+
+    return result
+
+
+def run_and_check(cli_args, app_name, build_dir):
+    error_path = FIXTURES_PATH / app_name / 'error.txt'
+    expected = FIXTURES_PATH / app_name / 'test_expected_output'
+
+    result = run_freezeyt_cli(cli_args, app_name, check=False)
+
     if error_path.exists():
         assert result.exit_code != 0
 
@@ -34,7 +46,6 @@ def run_and_check(cli_args, app_name, build_dir):
                     + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
                 )
         else:
-            print(result.stdout)
             if result.exception is not None:
                 raise result.exception
             assert result.exit_code == 0
