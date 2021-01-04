@@ -51,6 +51,19 @@ def test_cli_to_dict_without_path(tmp_path, monkeypatch):
     run_freezeyt_cli(['app', '-c', config_path], app_name)
 
 
+def test_cli_to_dict_with_config_and_path(tmp_path, monkeypatch):
+    builddir = tmp_path / 'build'
+    config_path = tmp_path / 'freezeyt.conf'
+    app_name = 'demo_app_2pages'
+
+    config_path.write_text('output: dict')
+
+    result = run_freezeyt_cli(
+        ['app', '-c', config_path, str(builddir)], app_name, check=False
+    )
+    assert result.exit_code != 0
+
+
 def test_cli_without_path_and_output(tmp_path, monkeypatch):
     builddir = tmp_path / 'build'
     app_name = 'demo_app_2pages'

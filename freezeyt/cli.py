@@ -62,7 +62,12 @@ def main(module_name, dest_path, prefix, extra_page, config):
         if 'output' in file_config:
             cli_params['output'] = file_config['output']
 
-    if 'output' not in cli_params:
+    if 'output' in cli_params:
+        if dest_path is not None:
+            raise click.UsageError(
+                'DEST_PATH argument is not needed if output is configured from file'
+            )
+    else:
         if dest_path is None:
             raise click.UsageError('DEST_PATH argument is required')
         cli_params['output'] = {'type': 'dir', 'dir': dest_path}
