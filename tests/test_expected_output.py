@@ -82,9 +82,9 @@ def test_output(tmp_path, monkeypatch, app_name):
 
         if error_path.exists():
             with pytest.raises(ValueError):
-                freeze(app, tmp_path, freeze_config)
+                freeze(app, freeze_config)
         else:
-            freeze(app, tmp_path, freeze_config)
+            freeze(app, freeze_config)
 
             if not expected.exists():
                 if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:

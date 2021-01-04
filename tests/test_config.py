@@ -24,7 +24,7 @@ def test_func_to_files(tmp_path):
         'output': {'type': 'dir', 'dir': builddir},
     }
 
-    freeze(app, builddir, config)
+    freeze(app, config)
 
     assert (builddir / 'index.html').exists()
     assert (builddir / '.nojekyll').exists()
@@ -37,11 +37,9 @@ def test_func_to_files(tmp_path):
     {'type': 'dict'},
 ))
 def test_func_to_dict(tmp_path, output):
-    builddir = tmp_path / 'build'
-
     config = {**freeze_config, 'output': output}
 
-    result = freeze(app, builddir, config)
+    result = freeze(app, config)
 
     print(result)
     assert sorted(result) == [
@@ -50,12 +48,10 @@ def test_func_to_dict(tmp_path, output):
 
 
 def test_func_empty_config(tmp_path):
-    builddir = tmp_path / 'build'
-
     config = {}
 
     with pytest.raises(KeyError):
-        freeze(app, builddir, config)
+        freeze(app, config)
 
 
 def test_cli_to_dict_without_path(tmp_path, monkeypatch):

@@ -15,8 +15,8 @@ from freezeyt.getlinks_html import get_all_links
 from freezeyt.getlinks_css import get_links_from_css
 
 
-def freeze(app, path, config):
-    freezer = Freezer(app, path, config)
+def freeze(app, config):
+    freezer = Freezer(app, config)
     freezer.freeze_extra_files()
     freezer.handle_urls()
     return freezer.get_result()
@@ -39,7 +39,7 @@ def check_mimetype(url_path, headers):
 
 
 class Freezer:
-    def __init__(self, app, path, config):
+    def __init__(self, app, config):
         self.app = app
         self.config = config
 
