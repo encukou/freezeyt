@@ -28,6 +28,7 @@ def test_output_dict(tmp_path, monkeypatch, app_name):
     # Add FIXTURES_PATH to sys.path, the list of directories that `import`
     # looks in
     monkeypatch.syspath_prepend(str(app_path))
+    sys.modules.pop('app', None)
     try:
         module = importlib.import_module('app')
         app = module.app
@@ -71,6 +72,7 @@ def test_output(tmp_path, monkeypatch, app_name):
     # Add FIXTURES_PATH to sys.path, the list of directories that `import`
     # looks in
     monkeypatch.syspath_prepend(str(app_path))
+    sys.modules.pop('app', None)
     try:
         module = importlib.import_module('app')
         app = module.app

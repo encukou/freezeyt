@@ -59,6 +59,7 @@ def run_and_check(cli_args, app_name, build_dir):
 @contextmanager
 def context_for_test(app_name):
     app_dir = FIXTURES_PATH / app_name
+    sys.modules.pop('app', None)
     try:
         with pytest.MonkeyPatch.context() as monkeypatch:
             monkeypatch.syspath_prepend(app_dir)
