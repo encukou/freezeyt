@@ -1,4 +1,4 @@
-from freezeyt.freezing import freeze
+from freezeyt.freezer import freeze
 
 
 __all__ = ['freeze']

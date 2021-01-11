@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from freezeyt.freezing import get_links_from_css
+from freezeyt.getlinks_css import get_links_from_css
 
 
 def test_get_links_css():

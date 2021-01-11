@@ -1,6 +1,6 @@
 import pytest
 
-from freezeyt.freezing import parse_absolute_url
+from freezeyt.util import parse_absolute_url
 
 def test_absolute():
     with pytest.raises(ValueError):
