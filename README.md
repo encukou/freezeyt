@@ -1,64 +1,290 @@
 # freezeyt
-Generator of static web pages created by the Czech Python community.
+
+Static web page generator created by the Czech Python community.
 
 
-## Project goal
-Main goal of this project is to create a versatile freezer to generate static web pages from web application. The freezer aims to be compatible with any Python Web framework.
+## What this does
 
+Freezeyt is a static webpage *freezer*.
+It takes a Python web application and turns it into a set of files
+that can be served by a simple server like [GitHub Pages] or
+Python's [http.server].
 
-## What IS the project about?
-The idea is to create a new freezer in order to generate static web pages. It should also help the czech beginner pythonistas who've already taken their first steps with the Python programming language and now they are looking for some real projects where they could not only put their programming skills to the test but also to improve them.
+[GitHub Pages]: https://docs.github.com/en/free-pro-team@latest/github/working-with-github-pages/about-github-pages
+[http.server]: https://docs.python.org/3/library/http.server.html
 
+Freezeyt is compatible with all Python web frameworks that use the common
+[Web Server Gatweay Interface] (WSGI)
 
-### What the project IS NOT about?
-I have no idea so far.
+[Web Server Gatweay Interface]: https://www.python.org/dev/peps/pep-3333/
 
 
 ## Installation
-It is highly recommended to create a separate virtual environment for this project:
-```
-$ python -m venv venv
-```
 
-All needed requirements can be installed to an activated virtual environment using this command:
+Freezeyt requires Python 3.6 or above.
+
+It is highly recommended to create and activate a separate virtual
+environment for this project.
+You can use [`venv`], `virtualenv`, Conda, containers or any other kind
+of virtual environment.
+
+[`venv`]: https://docs.python.org/3/library/venv.html?highlight=venv#module-venv
+
+The needed requirements can be installed using:
+
 ```
 $ python -m pip install -r requirements.txt
 ```
 
 
-### Installation for testing project
-
-For testing the project it's necessary to install pytest and flask:
-```
-$ python -m pip install -r requirements-dev.txt
-```
-
-To run tests, use pytest:
-
-```
-$ python -m pytest
-```
-
-To run tests with multiple Python versions (if you have them installed),
-install `tox` using `python -m pip install tox` and tun it:
-
-```
-$ tox
-```
-
-
-### Installation for blog site
-
-It's necessary to install all dependecies mentioned in `requirements-blog.txt`:
-
-```shell
-$ python -m pip install -r requirements-blog.txt
-```
-
-
 ## Usage
 
-### How to use static web site generator freezeyt
+To use freezeyt, you need a Python web application.
+You can use the [example Flask app].
+
+[example Flask app]: https://flask.palletsprojects.com/en/1.1.x/quickstart/
+
+Your WSGI application should be named `app`.
+Both the application and Freezeyt must be importable (installed)
+in your environment.
+
+Run freezeyt with the name of your application and the
+output directory. For example:
+
+```shell
+$ python -m freezeyt my_app _build
+```
+
+Freezeyt may overwrite the build directory (here, `_build`),
+removing all existing files from it.
+
+For more options, see Configuration below.
+
+
+### Python API
+
+Freezeyt also has a Python API, the `freeze` function
+that takes an application to freeze and a configuration dict:
+
+```python
+from freezeyt import freeze
+freeze(app, config)
+```
+
+The `config` should be a dict as if read from a YAML configuration
+file (see Configuration below).
+
+
+## Configuration
+
+While common options can be given on the command line,
+you can full control over the freezing process with a YAML
+configuration file.
+You can specify a config wile using the `-c/--config` option,
+for example:
+
+```shell
+$ python -m freezeyt my_app _build -c freezeyt.yaml
+```
+
+The following options are configurable:
+
+### Module Name
+
+The module that contains the application must be given on the 
+command line.
+In it, Freezyt looks for the variable `app`.
+
+Examples:
+
+    application
+or
+
+    folder1.folder2.application
+
+
+### Output
+
+To outupt the frozen website to a directory, specify
+the directory name:
+
+```yaml
+output: ./_build/
+```
+
+Or use the full form – using the `dir` *saver*:
+
+```yaml
+output:
+    type: dir
+    dir: ./_build/
+```
+
+If output is not specified in the configuration file,
+you must specify the oputput directory on the command line.
+Specifying it both on the command line and in the config file
+is an error.
+
+
+#### Output to dict
+
+For testing, Freezeyt can also output to a dictionary.
+This can be configured with:
+
+```yaml
+output:
+    type: dict
+```
+
+This is not useful in the CLI, as the return value is lost.
+
+
+### Prefix
+
+The URL where the application will be deployed can be
+specified with:
+
+```yaml
+prefix: http://localhost:8000/
+```
+or
+```yaml
+prefix: https://mysite.example.com/subpage/
+```
+
+Freezeyt will freeze all pages starting with `prefix` that
+it finds.
+
+The prefix can also be specified on thecommand line with e.g.:
+`--prefix=http://localhost:8000/`.
+The CLI argument has priority over the config file.
+
+### Extra pages
+
+A list of URLs to “extra” pages within the application can
+be given using:
+```yaml
+extra_pages:
+    - /extra/
+    - /extra2.html
+```
+
+Freezeyt will freeze these pages in addition to those it
+finds by following links.
+
+Extra pages may also be give on the command line,
+e.g. `--extra-page /extra/ --extra-page /extra2.html`.
+The lists from CLI and the config file are merged together.
+
+
+### Extra files
+
+Extra files to be included in the output can be specified,
+along with their content.
+
+This is useful for configuration of your static server.
+(For pages that are part of your website, we recommend
+adding them to your application rather than as extra files.)
+
+For example, the following config will add 3 files to
+the output:
+
+```yaml
+extra_files:
+      CNAME: mysite.example.com
+      ".nojekyll": ''
+      config/xyz: abc
+```
+
+Extra files cannot be specified on the CLI.
+
+## Examples of CLI usage
+
+```shell
+$ python -m freezeyt my_app _build/
+```
+
+```shell
+$ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/
+```
+
+```shell
+$ python -m freezeyt my_app _build/ -c config.yaml
+```
+
+```shell
+$ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/
+```
+
+```shell
+$ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/ --config path/to/config.yaml
+```
+
+
+## Contributing
+
+Are you interested in this project? Awesome!
+Anyone who wants to be part of this project and who's willing
+to help us is very welcome.
+Just started with Python? Good news!
+We're trying to target mainly the beginner Pythonistas who
+are seeking opportunities to contribute to (ideally open source)
+projects and who would like to be part of an open source community
+which could give them a head start in their
+(hopefully open source :)) programming careers.
+
+Soo, what if you already have some solid Python-fu?
+First, there's always something new to learn, and second,
+we'd appreciate if you could guide the “rookies” and pass on
+some of the knowledge onto them.
+
+Contributions, issues and feature requests are welcome.
+Feel free to check out the [issues] page if you'd like to
+contribute.
+
+[issues]: https://github.com/encukou/freezeyt/issues
+
+
+## How to contribute
+
+1. Clone this repository to your local computer:
+
+```shell
+$ git clone https://github.com/encukou/freezeyt
+```
+
+2. Then fork this repo to your GitHub account
+3. Add your forked repo as a new remote to your local computer:
+
+```shell
+$ git remote add <name_your_remote> https://github.com/<your_username>/freezeyt
+```
+
+4. Create new branch at your local computer
+
+```shell
+$ git branch <name_new_branch>
+```
+
+5. Switch to your new branch
+
+```shell
+$ git switch <name_new_branch>
+```
+
+6. Make some awesome changes in code
+7. Push changes to your forked repo on GitHub
+
+```shell
+$ git push <your_remote> <your_new_branch>
+```
+
+8. Finally make a pull request from your GitHub account to origin
+
+9. Repeat this process until we will have done amazing freezer
+
+
+### Using an in-development copy of freezeyt
 
 * Set `PYTHONPATH` to the directory with `freezeyt`, for example:
   * Unix: `export PYTHONPATH="/home/name/freezeyt"`
@@ -72,162 +298,37 @@ $ python -m pip install -r requirements-blog.txt
   * `python -m freezeyt demo_app_url_for _build --prefix http://freezeyt.test/foo/`
 
 
-### How to use freezeyt CLI
 
-#### Mandatory positional arguments:
+### Tests
 
-1. **module name**
+For testing the project it's necessary to install additional requirements:
 
-Module path to application, which we are going to freeze via freezeyt.
-
-Examples:
-
-    app
-or
-
-    folder1.folder2.app
-
-2. **destination path**
-
-Path to dir, where we want to save the frozen output.
-
-Example:
-
-    path/to/output_dir
-
-#### Optional arguments:
-
-1. **--prefix**
-
-URL, where we want to deploy our static site
-
-Examples:
-
-    --prefix http://localhost:8000/
-or
-
-    --prefix https://pyladies.cz/
-
-2. **--extra-page**
-
-Path to page without any link in application. The number of pages to add is not limited. Each page has to be added with the `--extra-page` option see examples.
-
-Examples:
-
-    --extra-page /extra/
-
-or
-
-    --extra-page /extra/extra1/ --extra-page /extra2/
-
-3. **-c/--config**
-
-Path to the configuration file in YAML format.
-
-Allowable keys of configuration file are:
-
-* prefix
-* extra-pages
-* extra-files
-
-Example of YAML file:
-
-```YAML
-prefix: https://pyladies.cz/
-extra_pages:
-    - /extra/
-extra_files:
-      CNAME: pylades.cz
-      ".nojekyll": ''
-      config/xyz: abc
+```
+$ python -m pip install -r requirements-dev.txt
 ```
 
-Example of use `--config` option:
+To run tests in your current environment, use pytest:
 
-    -c path/to/config.yaml
-
-
-#### Conflict situations
-
-CLI can be used just with options, just with configuration file or using combination of both. If we combine configuration and options it is necessary to be aware of conflicts that may occur. These situations are described below.
-
-1. prefix conflict
-
-Prefix input with option `--prefix` has higher priority than prefix saved in configuration file.
-
-2. extra-pages conflict
-
-Extra pages saved in configuration file will automatically extend extra-pages input with option `--extra-page`. It is not necessary to use option `--extra-page`
-
-#### Examples of CLI usage
-
-```shell
-$ python -m freezeyt folder.app build
+```
+$ python -m pytest
 ```
 
-```shell
-$ python -m freezeyt app build --prefix https://pyladies.cz/
-```
+To run tests with multiple Python versions (if you have them installed),
+install `tox` using `python -m pip install tox` and tun it:
 
-```shell
-$ python -m freezeyt folder1.folder2.app build -c config.yaml
 ```
-
-```shell
-$ python -m freezeyt app build --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/
-```
-
-```shell
-$ python -m freezeyt app build --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/ --config path/to/config.yaml
+$ tox
 ```
 
 
-### How to use freezeyt-blog
+### Tools and technologies used
 
-Blog was tested on Python version 3.8.
+* [PEP 3333 - Python WSGI](https://www.python.org/dev/peps/pep-3333/)
+* [flask](https://flask.palletsprojects.com/en/1.1.x/)
+* [pytest](https://docs.pytest.org/en/latest/)
+* [html5lib](https://html5lib.readthedocs.io/en/latest/)
 
-To run the blog on your local machine, set the environment variable `FLASK_APP` to the path of the blog app.
-Also set `FLASK_ENV` to "development" for easier debugging.
-Then, run the Flask server.
-
-1. On Microsoft Windows:
-
-```shell
-> set FLASK_APP=freezeyt_blog/app.py
-> set FLASK_ENV=development
-> flask run
-```
-
-2. On UNIX:
-
-```shell
-$ export FLASK_APP=freezeyt_blog/app.py
-$ export FLASK_ENV=development
-$ flask run
-```
-
-The URL where your blog is running will be printed on the terminal.
-
-
-#### How to add new articles to freezeyt blog
-
-Articles are writen in the `Markdown` language.
-
-**Article** - save to directory `../freezeyt/freezeyt_blog/articles`
-
-**Images to articles** - save to directory `../freezeyt/freezeyt_blog/static/images`
-
-If te files are saved elsewhere, the blog will not work correctly.
-
-
-## Contributing
-Are you interested in this project? Awesome! Anyone who wants to be part of this project and who's willing to help us is very welcome.
-Only started with Python? Good news! We're trying to target mainly the beginner Pythonistas who are seeking opportunities to contribute to (ideally open source) projects and who would like to be part of an open source community which could give them a head start in their (hopefully open source :)) programming careers.
-Soo, what if I already have some solid Python-fu? First, there's always something new to learn, and second, we'd appreciate if you could guide the "rookies" and pass on some of the knowledge onto them.
-
-
-Contributions, issues and feature requests are welcome.
-Feel free to check out [issues](https://github.com/encukou/freezeyt/issues) page if you'd like to contribute.
+And others – see `requirements.txt`.
 
 
 ### How to watch progress
@@ -240,50 +341,81 @@ Watch the progress:
 Other communication channels and info can be found here:
 * [Google doc in Czech](https://tinyurl.com/freezeyt)
 
-### How to contribute
 
-1. Just clone this repository to your local computer:
+#### Development blog
 
-```
-$ git clone https://github.com/encukou/freezeyt
+We keep a blog about the development of Freezeyt.
+Be warned: some of it is in the Czech language.
+
+The blog was tested on Python version 3.8.
+
+The blog is a Flask application.
+To run it, install additional dependecies mentioned in
+`requirements-blog.txt`.
+Then, set the environment variable `FLASK_APP` to the path of the
+blog app.
+Also set `FLASK_ENV` to "development" for easier debugging.
+Then, run the Flask server.
+
+1. On Microsoft Windows:
+
+```shell
+> python -m pip install -r requirements-blog.txt
+> set FLASK_APP=freezeyt_blog/app.py
+> set FLASK_ENV=development
+> flask run
 ```
 
-2. Then fork this repo to your GitHub account
-3. Add your forked repo as a new remote to your local computer:
-```
-$ git remote add <name_your_remote> https://github.com/<your_username>/freezeyt
-```
-4. Create new branch at your local computer
-```
-$ git branch <name_new_branch>
-```
-5. Switch to your new branch
-```
-$ git switch <name_new_branch>
-```
-6. Make some awesome changes in code
-7. Push changes to your forked repo on GitHub
+2. On UNIX:
 
+```shell
+$ python -m pip install -r requirements-blog.txt
+$ export FLASK_APP=freezeyt_blog/app.py
+$ export FLASK_ENV=development
+$ flask run
 ```
-$ git push <your_remote> <your_new_branch>
+
+The URL where your blog is running will be printed on the terminal.
+
+Once you're satisfied with how the blog looks, you can freeze it with:
+
+```shell
+$ python -m freezeyt freezeyt_blog.app freezeyt_blog/build
 ```
-8. Finally make a pull request from your GitHub account to origin
-9. Repeat this process until we will have done amazing freezer
+
+#### Adding new articles to freezeyt blog
+
+Articles are writen in the `Markdown` language.
+
+**Article** - save to directory `../freezeyt/freezeyt_blog/articles`
+
+**Images to articles** - save to directory `../freezeyt/freezeyt_blog/static/images`
+
+If te files are saved elsewhere, the blog will not work correctly.
 
 
-### Used tools
-
-* [PEP 3333 - Python WSGI](https://www.python.org/dev/peps/pep-3333/)
-* [flask](https://flask.palletsprojects.com/en/1.1.x/)
-* [pytest](https://docs.pytest.org/en/latest/)
-* [html5lib](https://html5lib.readthedocs.io/en/latest/)
-
+## History
 
 ### Why did the project start?
 
-The Czech Python community uses a lot of static web pages that are generated from a web application for community purposes e.g. workshops, courses, or meetups.
+The Czech Python community uses a lot of static web pages that
+are generated from a web application for community purposes.
+For example, organizing and announcing workshops, courses,
+or meetups.
 
-The community has been so far relying on the following projects ([flask-frozen](https://pythonhosted.org/Frozen-Flask/) and [elsa](https://github.com/pyvec/elsa/)) in order to generate the static web content. The new [freezer](https://github.com/encukou/freezeyt) ought to be used with any arbitrary Python Web application framework ([Flask](https://flask.palletsprojects.com/en/1.1.x/), [Django](https://www.djangoproject.com/), [Tornado](https://www.tornadoweb.org/en/stable/), etc.). So the community won't be limited by one web app technology for generating static pages anymore.
+The community has been so far relying on [Frozen Flask] and [elsa]
+in order to generate the static web content.
+The new [freezer] ought to be used with any arbitrary Python Web
+application framework ([Flask], [Django], [Tornado], etc.).
+So the community won't be limited by one web app technology for
+generating static pages anymore.
+
+[Frozen Flask]: https://pythonhosted.org/Frozen-Flask/
+[elsa]: https://github.com/pyvec/elsa/
+[freezer]: https://github.com/encukou/freezeyt
+[Flask]: https://flask.palletsprojects.com/en/1.1.x/
+[Django]: https://www.djangoproject.com/
+[Tornado]: https://www.tornadoweb.org/en/stable/
 
 
 ## Authors
@@ -291,4 +423,6 @@ See GitHub history for all [contributors](https://github.com/encukou/freezeyt/gr
 
 
 ## License
-For purposes of this project the [MIT License](LICENCE.MIT) has been chosen.
+
+This project is licensed under the [MIT License](LICENCE.MIT).
+May it serve you well.
