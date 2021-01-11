@@ -8,7 +8,7 @@ on:
     branches:
     - master
 
-name: Build freezeyt blog
+name: Freezeyt blog
 
 jobs:
   # Set the job key. The key is displayed as the job name
@@ -24,7 +24,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up python
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
@@ -38,4 +38,11 @@ jobs:
         run: |
           python -m freezeyt freezeyt_blog.app freezeyt_blog/build
 
-
+      - if: ${{ github.ref == 'refs/heads/master' }}
+        name: Deploy
+        uses: JamesIves/github-pages-deploy-action@3.7.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages  # The branch the action should deploy to.
+          FOLDER: freezeyt_blog/build  # The folder the action should deploy.
+          CLEAN: true  # Automatically remove deleted files from the deploy branch
