@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz čtrnáctý</h1>
+<blockquote><p>Tento článek není hotový. Záznam ze srazu je <a href="https://youtu.be/52pb6IDXxGc">zde</a>.</p>
+</blockquote>
+<p>Tentokrát bylo opět pár pull requestů začleněno již před srazem. Jedním z nich byl PR, který se věnoval mimetypes a k tomuto pull requestu jsme se začátkem srazu vrátili.</p>
+<blockquote><p>Ze záznamu o začleňování pull requestu o mimetypes
+<code>git revert &lt;commit&gt;</code> - zahodí změny z daného commitu a vytvoří nový commit.</p>
+</blockquote>
+<h2>Zamezení přepisování funkcí</h2>
+<p>Dále jsme se pustili do řešení issue, které by zamezilo tomu, aby se v kódu přepisovaly funkce. Jak už bylo minule zmíněno, šlo by to vyřešit pravděpodobně pomocí linteru. A tak jsme vyzkoušeli <a href="https://pypi.org/project/pyflakes/">PyFlakes</a>. V dokumentaci jsme našli, jak je možné limitovat adresáře. (Aby si to nestěžovalo na adresář tox a virtuální prostředí.) PyFlakes vadilo, že v souboru <code>__init__.py</code> máme nepoužitý import, to jsme vyřešili pomocí</p>
+<div class="highlight"><pre><span></span><span class="n">__all__</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;freeze&quot;</span><span class="p">]</span>
+</pre></div>
+<p>Do toxu jsme přidali i kontrolu pomocí PyFlakes a následně ho přidali do GitHub actions.</p>
+<p>Následně byl poslán Pull request.</p>
+<h2>Implementace celého protokolu WSGI</h2>
+<p>Pak jsme se podívali na to, abychom implementovali celý protokol WSGI. První věc, vše musí být v kódování <a href="https://cs.wikipedia.org/wiki/ISO_8859-1">Latin 1</a> - python používá Unicode - tohle bude dělat problémy, jakmile věci v environ nebudou v tomto kódování. Zbytek budeme řešit příště/později.</p>
+<blockquote><p>Komentář k pull requestu o mimetyes <a href="https://youtu.be/yKCb8-c_vxw">zde</a>.
+Záznam ze srazu <a href="https://youtu.be/52pb6IDXxGc">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

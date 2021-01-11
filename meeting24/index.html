@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz dvacátý čtvrtý - Django &amp; návrh konfigurace</h1>
+<p>První část srazu zabrala revize <a href="https://github.com/encukou/freezeyt/pull/115">PR 115</a>, který do testů přidává webovku
+napsanou ve frameworku Django.
+Základní, nově založený projekt v Djangu je mnohem větší než stránka ve Flasku:
+sestává z <em>projektu</em>, který spojuje několik <em>aplikací</em>.
+Projekt se zakládá příkazem, který vytvoří adresářovou strukturu se spoustou
+souborů.</p>
+<p>Django aplikace jsou pak jednotlivé součásti, které jsou teoreticky použitelné
+ve více projektech: základní projekt má aplikaci na přihlašování, administrační
+rozhraní, sezení, zprávy a kdo ví co ještě.
+Navíc má základní projekt jednu „hlavní“ aplikaci, kam se dává kód specifický
+pro ten jeden projekt.</p>
+<p>Každá aplikace může mít své vlastní nastavení URL.
+Pod <code>/admin/...</code> se většinou dává administrační rozhraní; všechny URL, které
+nezačínjí <code>/admin</code> se přenechají „hlavní“ aplikaci.
+To se definuje v souboru <code>urls.py</code>projektu.
+V rámci aplikace je pak další <code>urls.py</code>, kde se definují URL pro jednotlivé
+stránky.</p>
+<p>Každá Django aplikace může mít i své vlastní modely (tabulky v databázi).
+Základní projekt obsahuje aplikaci pro správu uživatelů
+(<code>django.contrib.auth</code>), která databázi používá, at tak se kolem prvního
+spuštění projektu vytvoří databáze.
+Základní projekt používá jednoduchou databázi <code>sqlite</code>, která ukládá data
+do souboru; tenhle soubor nepatří do Gitu.</p>
+<p>Aby bylo možné Django projekt spustit pod WSGI serverem, poskytuje základní
+aplikace soubor <code>wsgi.py</code>, který vytvoří WSGI aplikaci a uloží ji do proměnné
+<code>application</code>.
+Pro integraci do testů ji bude potřeba dostat do proměnné <code>app</code> v <code>app.py</code>.</p>
+<p>Další, menší problém byl v tom, že nově vytvořený projekt obsahuje spoustu
+„načatých“ modulů, které jen něco importují – zbytek modulu je potřeba dopsat.
+Freezeyt ale používá linter Pyflakes, kterému se nepoužité importy nelíbí
+– v opravdovém kódu nejsou k ničemu.
+Pyflakes nemají velké možnosti nastavení, takže se mu nedá říct aby Django
+projekt ignoroval, ale můžeme tu udělat trochu podvod: nevyužité proměnné
+zmínit v <code>__all__</code>.
+Normálně se tak označuje API modulu: to, co modul dává k dispozici těm, kdo ho
+naimportují.
+Vedlejší efekt ale je že pyflakes označí proměnnou zmínějou v <code>__all__</code>
+za použitou.
+(Teď když, když píšu blog, mi ale přijde jednodušší nepoužité importy
+zakomentovat. Až budou potřeba, dají se obnovit.)</p>
+<h2>Konfigurace</h2>
+<p>Další část srazu jsme se věnovali vymýšlení konfigurace.
+Jak by mohl vypadat konfigurační soubor, který zapíná věci které chceme
+umožnit?
+Aby to šlo líp přemýšleli jsme nad konkrétním příkladem/ukázkou.
+Zatím konfigurák vypadá asi takhle:</p>
+<div class="highlight"><pre><span></span><span class="nt">prefix</span><span class="p">:</span> <span class="s">&quot;localhost:8080&quot;</span>
+<span class="nt">extra_pages</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">/extra.html</span>
+<span class="nt">extra_files</span><span class="p">:</span>
+    <span class="nt">/CNAME</span><span class="p">:</span> <span class="s">&quot;my.site.example&quot;</span>
+</pre></div>
+<p>Pro <code>extra_files</code> by bylo fajn umožnit vzít obsah ze souboru, ne jen z řetězce.
+Takové věci se dají docela jednoduše doplnit: zatím může být obsah zadaný jen
+jako řetězec (zde <code>"my.site.example"</code>, takže máme možnost místo toho použít
+slovník, kterým se dají specifikovat nejrůznější rozšíření.
+Třeba soubor, ze kterého odkaz vzít:</p>
+
+<pre><code>extra_files:
+    /CNAME: "my.site.example"
+    /favicon.ico:
+        file: static/favicon.ico</code></pre>
+<p>(Tenhle konkrétní soubor by ale bylo lepší dát přímo do aplikace, ale jako
+příklad to stačí.)</p>
+<p>První rozšíření, které jsme minule navrhli, je progressbar.
+Ten se by se měl dát nastavit docela jednoduše:</p>
+<div class="highlight"><pre><span></span><span class="nt">progressbar</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+<p>Kdyby bylo někdy potřeba víc detailů, můžeme potom povolit
+použtí slovníku s detailním nastavením.
+Teď ale bude stačit <code>True</code>.</p>
+<p>Další rozšíření bude možnost vybrat, kam se bude ukládat výstup.
+Může to být do adresáře, slovníku nebo Gitové větve:</p>
+<div class="highlight"><pre><span></span><span class="nt">output</span><span class="p">:</span>
+    <span class="nt">dir</span><span class="p">:</span> <span class="s">&quot;_build&quot;</span>
+    <span class="nt">dict</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+    <span class="nt">git</span><span class="p">:</span>
+        <span class="nt">repo</span><span class="p">:</span> <span class="s">&quot;.&quot;</span>
+        <span class="nt">branch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">gh-pages</span>
+</pre></div>
+<blockquote><p>Spousta podobných nástrojů dává výstup do adresáře <code>_build</code> nebo <code>.build</code>.
+Je to jenom konvence; divný název umožňuje aplikaci použít <code>build</code> pro sebe.
+Varianta s tečkou navíc na Unixu soubor skryje ve výpisech (např. <code>ls</code>).</p>
+</blockquote>
+<p>Pokecali jsme o tom, jaké by mělo být výchozí nastavení.
+Mně se nelíbí ani jedno.
+Ukládání do slovníku je dobré pro testy, ale větší stránky zahltí
+paměť počítače.
+V Gitu by nebylo hezké jen tak přepsat nějakou větev.
+A adresář taky potřebuje konfiguraci: vytvořit <code>_build</code> v aktuálním adresáři
+může být překvapivé, a stejně tak vždy nefunguje vytvořit adresář v rámci
+Pythonního balíčku s webovou aplikací.
+(Tohle dělá <code>frozen-flask</code>/<code>elsa</code> a pokud člověk nevyvíjí přímo aplikaci
+ale třeba jen obsah do ní, adresář <code>build</code> se objeví schovaný kdesi ve
+virtuálním prostředí.)
+Nejlepší tak bude při chybějícím <code>output</code> požadovat zadání adresáře na
+příkazové řádce, tak jako to děláme teď.</p>
+<p>Teď ale máme všechny tři varianty zamíchané do sebe.
+Kdyby někco začal přidávat další možnosti (např. kopírovat soubory přímo na
+vzdálený server, nebo použít jiné verzovací systémy než Git.), mohl by 
+v tom být docela chaos.
+Stálo by za to udělat z nich seznam?</p>
+<div class="highlight"><pre><span></span><span class="nt">output</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">dir</span><span class="p">:</span> <span class="s">&quot;_build&quot;</span>
+    <span class="p p-Indicator">-</span> <span class="nt">dict</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+    <span class="p p-Indicator">-</span> <span class="nt">git</span><span class="p">:</span>
+        <span class="nt">repo</span><span class="p">:</span> <span class="s">&quot;.&quot;</span>
+        <span class="nt">branch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">gh-pages</span>
+</pre></div>
+<p>Případně mít ve slovníku přímo klíč s typem výstupu?
+(Taklhe to dělá např. Ansible)</p>
+<div class="highlight"><pre><span></span><span class="nt">output</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dir</span>
+      <span class="nt">dir</span><span class="p">:</span> <span class="s">&quot;_build&quot;</span>
+    <span class="p p-Indicator">-</span> <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dict</span>
+    <span class="p p-Indicator">-</span> <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">git</span>
+      <span class="nt">repo</span><span class="p">:</span> <span class="s">&quot;.&quot;</span>
+      <span class="nt">branch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">gh-pages</span>
+</pre></div>
+<p>Zapřemýšleli jsme a nepřišli jsme na důvod umožnit víc druhů výstupů.
+I kdyby to bylo potřeba, dát adresář do Gitu nebo rozbalit Gitovou větev na
+disk není velký problém.
+A tak bude asi nejlepší umožnit jen jednu variantu:</p>
+<div class="highlight"><pre><span></span><span class="nt">output</span><span class="p">:</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dir</span>
+    <span class="nt">dir</span><span class="p">:</span> <span class="s">&quot;_build&quot;</span>
+</pre></div>
+<p>nebo</p>
+<div class="highlight"><pre><span></span><span class="nt">output</span><span class="p">:</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dict</span>
+</pre></div>
+<p>nebo</p>
+<div class="highlight"><pre><span></span><span class="nt">output</span><span class="p">:</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">git</span>
+    <span class="nt">repo</span><span class="p">:</span> <span class="s">&quot;.&quot;</span>
+    <span class="nt">branch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">gh-pages</span>
+</pre></div>
+<p>Další „rozšíření“ je validace.
+Tady už dává smysl umožnit validátorů víc, třeba:</p>
+
+<pre><code>validate:
+    - type: css
+    - type: html
+      content-types:
+        - text/html
+        - text/html+xml</code></pre>
+<p>Protože ale mají všechny validátory stejný klíč <code>type</code>,
+daly by se nakonfigurovat i slovníkem:</p>
+<div class="highlight"><pre><span></span><span class="nt">validate</span><span class="p">:</span>
+    <span class="nt">css</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+    <span class="nt">html</span><span class="p">:</span>
+      <span class="nt">content-types</span><span class="p">:</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">text/html</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">text/html+xml</span>
+</pre></div>
+<p>Podobně by mohlo fungovat nastavení pro sbírání odkazů:</p>
+<div class="highlight"><pre><span></span><span class="nt">get_links</span><span class="p">:</span>
+    <span class="nt">html</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+    <span class="nt">css</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+<p>Další na řadě je možnost nadefinovat adresář se statickými soubory,
+které se jen nakopírují do výstupu.
+Na to je potřeba znát jen začátek URL a příslušný adresář:</p>
+<div class="highlight"><pre><span></span><span class="nt">static_files</span><span class="p">:</span>
+    <span class="nt">/static/</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">./static/</span>
+</pre></div>
+<p>A poslední na řadě je načítání vlastních pluginů, tedy načtení nějaké
+Pythonní funkce/třídy z nějakého modulu.
+Na podobné věci se dá použít syntax s dvojtečkou, která odděluje jméno
+modulu od jména objektu v něm:</p>
+<div class="highlight"><pre><span></span><span class="nt">plugins</span><span class="p">:</span>
+    <span class="s">&quot;freezeyt_validate_png:Validator&quot;</span>
+</pre></div>
+<p>Python samotný používá tečky, ale pokud jsou obsaženy jak ve jménu modulu
+tak ve jménu objektu, není jasné co je potřeba naimportovat a co pak dostat
+jako atribut.
+Například pro funkci <code>PngValidator.plugin_v2</code> v modulu
+<code>my_plugins.validators.png</code> by bylo potřeba udělat:</p>
+<div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s1">&#39;my_plugins.validators.png&#39;</span><span class="p">)</span>
+<span class="n">plugin</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">PngValidator</span><span class="o">.</span><span class="n">plugin_v2</span>
+</pre></div>
+<p>Dvojtečka v <code>my_plugins.validators.png:PngValidator.plugin_v2</code> ukazuje,
+kde končí jméno modulu.</p>
+<p>Výsledný návrh je <a href="https://github.com/encukou/freezeyt/blob/342ed8de39/doc/plugin-notes.md">na Githubu</a>.</p>
+<blockquote><p>Záznam ze srazu se bohužel nepovedl.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

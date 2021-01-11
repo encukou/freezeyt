@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz třináctý</h1>
+<h2>Review PR</h2>
+<p>Jako už klasicky, sraz začal, kontrolou pull requestů z GitHubu.
+Některé byly začleněny už v průběhu týdne, abychom se tím na srazu nezdržovali.</p>
+<p>První přesouval testy z hlavní úrovně repozitáře do test_expected_output.</p>
+<p>Druhý upravoval obrázky na blogu. Momentálně obrázky na blogu fungují tak,
+že je možné je mít jen v adresáři static/images.
+Řešit se to bude, jakmile to bude potřeba.</p>
+<p>Třetí PR přejmenovával články na blog, tak, aby byly seřazené a nejmenovaly
+se lekce.</p>
+<p>Čtvrtý PR opravoval odkazy na obrázky ve článcích. Obrázky na blog budou vždy ve
+static/images, pro webové aplikace to není ideální, ale pro naše účely by to
+nemuselo ničemu vadit.</p>
+<p>Pátý a poslední pull request přidával článek z dvanáctého srazu.</p>
+<h2>Kontrola otevřených issues</h2>
+<p>Následně jsme se podívali na otevřené issues. U některých jsme se zastavili
+a řekli jsme si, jak by se daly vyřešit.</p>
+<p>To, aby se nepřepisovaly funkce se dá vyřešit například pomocí linteru, stačit
+nám bude prozatím <a href="https://pypi.org/project/pyflakes/">PyFlakes</a>.
+Kontrolu linterem můžeme zařadit do GitHub actions.</p>
+<h3>Odbočka k mazání souborů z Gitu</h3>
+<p>Smažeme-li soubor normálně (buď z prohlížeče souborů, nebo pomocí <code>rm</code>
+v příkazovém řádku), musíme říct gitu, že je smazán, tedy pomocí <code>git add &lt;file&gt;</code>.
+Pomocí <code>git add</code> dáváme Gitu vědět, že má přidat aktuální stav daného souboru,
+tedy i jeho smazání. Další možnost je použít <code>git rm &lt;file&gt;</code></p>
+<h2>Stránky, na které nevede odkaz</h2>
+<p>Je spousta možností, které bychom chtěli konfigurovat. Většina z nich je v issues.
+Bylo by složité konfigurovat vše z příkazové řádky, protože by toho mohlo být více,
+například extra stránky, vypisovat jejich seznam by bylo složité a zdlouhavé.</p>
+<p>Začali jsme tím, že jsme na to napsali testy. Následně jsme aplikaci upravili
+tak, aby testy procházely a následoval 3. krok TDD a to refactoring dané podmínky.</p>
+<p>Máme-li nějaké nepovinné argumenty, tak je dobré je předávat pomocí slovníku
+<code>kwargs</code>. To znamená, že funkci <code>freeze</code> teď voláme takto, abychom zamezili
+exponenciálnímu nárůstu délky <code>else</code> bloku v testech: <code>freeze (app, tmp_path,
+**freeze_args)</code>. Následně byl se změnami poslán PR, který čeká na review.</p>
+<h2>Kontrola, že mimetype sedí k příponě souboru</h2>
+<p>Opět jsme začali napsáním testu. Aplikace vrací správný <code>mimetype</code>, ale jakmile
+ji spustíme jako statickou stránku, tak <code>mimetype</code> není správný. Demonstrovali
+jsme si možné řešení. Takže byl otevřen Draft pull request, kde je možní řešení
+tohoto issue. Více informací a rad, jak postupovat. Je možno najít v popisku
+pull requestu.</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/CG5dPqZzC8M">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Web App Best Practices and Tests Parametrization</h1>
+<p><strong><a href="https://www.youtube.com/watch?v=Hs-HJ56572g&amp;list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT&amp;index=11&amp;t=3154s&amp;ab_channel=encukou">10th Online Meeting</a>, September 7, 2020</strong></p>
+<p><strong><em>Mentor: Petr Viktorin</em></strong></p>
+<h2>Checking New PRs</h2>
+<p><em>TO-DO</em></p>
+<ol>
+<li>Remove excess images, and improve quality of some images from blog9.</li>
+<li>Issue#54 - continue improving the blog app<ul>
+<li>The <code>MDconvert/__init__.py</code> was removed from the blog app)</li>
+<li><strong>Homework notes</strong> at 00hr:42mins</li>
+<li><strong>Note on Flask security</strong>  at 00hr:47mins   </li>
+</ul>
+</li>
+<li>Add install mistune to readme or requirements</li>
+</ol>
+<h3>Web Application Best Practices</h3>
+<p><em>DONE</em></p>
+<ol>
+<li><p>When running the blog app we got FileNotFoundError: [Errno 2] No such file or directory: 'content/articles/lekce6.md'</p>
+<ul>
+<li>The problem was in the app.route to '/lekce6' since the Path('content/articles/lekce6.md') limits the app to be run from a single location/folder.</li>
+<li><p><strong>Run a web app from any location/Path/folder</strong>, 00hr:14min,  we created a base path determined only by the location of app.py:</p>
+<div class="highlight"><pre><span></span><span class="n">base_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+</pre></div>
+</li>
+</ul>
+</li>
+<li><p><strong>Creating a dynamic route (generic route for all posts)</strong> - added a <code>'/&lt;slug&gt;''</code> parameter (slug is a tech-term referring to the last peace of an address/Path):</p>
+<div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&lt;slug&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="n">slug</span><span class="p">):</span>
+    <span class="n">md_file</span> <span class="o">=</span> <span class="n">base_url</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;content/articles/</span><span class="si">{slug}</span><span class="s1">.md&#39;</span><span class="p">)</span>
+</pre></div>
+<ul>
+<li>Changed the url_for in the index page accordingly.</li>
+</ul>
+</li>
+<li><p><strong>When a nonexistent page is requested in the URL</strong> - except FileNotFoundError as 404 not found:</p>
+<div class="highlight"><pre><span></span><span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+     <span class="n">abort</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
+</pre></div>
+</li>
+<li><p><strong>Shorten code in the 'try' block:</strong></p>
+<div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">md_file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+     <span class="n">md_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+ <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+     <span class="n">abort</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
+</pre></div>
+<p>Improved into:</p>
+<div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+     <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">md_file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
+     <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+     <span class="n">abort</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
+     <span class="k">with</span> <span class="n">file</span><span class="p">:</span>
+         <span class="n">md_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+</li>
+<li><p><strong>Note on security</strong> 00hr:46min - users should not be able to input paths into the URL</p>
+<ul>
+<li>Flask takes care of this in its <a href="https://flask.palletsprojects.com/en/1.1.x/quickstart/?highlight=variable%20rules">variable rules</a> by escaping any slashes within strings. This will prevent strings to contain file system paths.</li>
+<li>When creating <html> templates use the safe filter, <code>{{text | safe}}</code> which is a way to tell Flask that this text is safe so it can omit the variable rules on that specific instance. Otherwise, Flask will convert the html code into regular text, and the page will not render properly.</li>
+</ul>
+</li>
+<li><p><strong>Adding new posts</strong> 00hr:33min</p>
+<ul>
+<li>Separate all html code in a templates folder and add template-path to main route.</li>
+<li>Add <code>render_template</code> to Flask and adapt html code accordingly</li>
+<li>Added a <a href="https://github.com/encukou/freezeyt/blob/291cacf672b9c6f56abe57eabc4eb36663b74436/freezeyt_blog/app.py#L15">list of 'post_names' to the index page route</a> and use the same in the 'index.html' by <a href="https://github.com/encukou/freezeyt/blob/291cacf672b9c6f56abe57eabc4eb36663b74436/freezeyt_blog/templates/index.html#L11-L14">embedding a python 'for' loop in the html</a> to avoid repetition.</li>
+</ul>
+</li>
+</ol>
+<h3>Test Parametrization PR - <a href="https://github.com/encukou/freezeyt/pull/51">Issue#51</a></h3>
+<p>00hr:52min</p>
+<ol>
+<li><p>In the first commit, MODULE_NAMES is generated from the 'fixtures' folder and than used as a parameter in <code>test_output(tmp_path, module_name)</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">FIXTURES_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;fixtures&#39;</span>
+ <span class="n">MODULE_NAMES</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">stem</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">FIXTURES_PATH</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">is_file</span><span class="p">()]</span>
+
+ <span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">&#39;module_name&#39;</span><span class="p">,</span> <span class="n">MODULE_NAMES</span><span class="p">)</span>
+ <span class="k">def</span> <span class="nf">test_output</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">module_name</span><span class="p">):</span>
+</pre></div>
+</li>
+<li><p>In the second commit, the expected output/all demo_apps are added for testing. This adds automatically generated files, and it's useful to explain the way you did this in the commit description.</p>
+<ul>
+<li>Ex. Tests were run from environmental variable 'TEST_CREATE_EXPECTED_OUTPUT' which stores the expected output.</li>
+</ul>
+</li>
+<li><p>Modifying <code>test_expected_output</code> so that it passes - solved by raising a ValueError when freezing <code>demo_app_broken_link</code>. This means that an if statement was added and the rest stayed as is except that it was indented. To make sure the only change was the indentation:</p>
+<ul>
+<li><p><strong>Github Tip</strong> 01hr:00min - to see all changes in a pull request <strong>excluding white spaces</strong>: under the 'Files changed' tab &gt; settings &gt; check-mark - 'Hide whitespace changes' or delete the 'w=1' at the end of the URL in the browser</p>
+<p>
+<img src="/article_image/hide_whitespaces.png" alt="" >
+</p>
+</li>
+</ul>
+</li>
+<li><p>Comparing directory trees - the issue when comparing to an empty directory. <strong>GIT does not add empty folders</strong> 01hr:5min</p>
+<ul>
+<li>Simplest way is to add one extra file to all sub-directories to just get past this issue.</li>
+<li><p>Considering <a href="https://docs.python.org/3/library/filecmp.html#the-dircmp-class"><code>filecmp.DEFAULT_IGNORES</code></a> can hide files which we might need, and the fact that we want our Freezeyt 'comparator' to be able to generate Git folders, it is important to <a href="https://github.com/encukou/freezeyt/blob/d9e59f0d29d72a2e1ac1375e5fe96c5858fd44c9/tests/test_expected_output.py#L47">set it up in a way that it does not ignore any files</a>.</p>
+<p>
+<img src="/article_image/default_ignores.png" alt="In the future we might need to use Freezyt for generate Git directories" >
+</p>
+</li>
+<li><p>In order to test this, a RCS folder (filecmp ignores all folders named RCS), was added to the test data, and test file3.txt was added to all sub-directories in fixtures and testdir:</p>
+<p>
+<img src="/article_image/test_filecmp_ignored_folders.png" alt="" >
+</p>
+</li>
+</ul>
+</li>
+<li><p>Adding more apps which can not be frozen, similar to "demo_app_broken_link":
+01hr:17min</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">module_name</span> <span class="o">==</span> <span class="s2">&quot;demo_app_broken_link&quot;</span><span class="p">:</span>
+     <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+       <span class="n">freeze</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
+</pre></div>
+<ul>
+<li>Check if the app fails freezing or not by <a href="https://github.com/encukou/freezeyt/blob/d9e59f0d29d72a2e1ac1375e5fe96c5858fd44c9/tests/test_expected_output.py#L26-L32">checking if there is an output folder</a> for the same.</li>
+</ul>
+</li>
+</ol>
+<h3>How to get rid of duplicate apps in Freezyt</h3>
+<p>At this point one copy is in the fixtures folder and another one is in the main folder, and if one is deleted, test_demo_app fails due to a module_name error since Python searches for it in the deleted folder.
+This happens because python does not know to search and import the requested module from the correct location, and we want the path to all apps to be the fixtures folder.</p>
+<h2>Searching for and importing modules</h2>
+<p>01hr:24min</p>
+<p>
+<img src="/article_image/importing_modules2.png" alt="Python is set up to search in a few places depending on the module being imported" >
+</p>
+<p><strong>Built-in modules are not imported from a specific file, so python does not need a path to get to them.</strong>
+Asside from built_in modules, all others are imported from a python variable named "Path" saved under <code>sys.path</code> which is a list of all directories from which you can import:</p>
+<div class="highlight"><pre><span></span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib64</span><span class="o">/</span><span class="n">python38</span><span class="o">.</span><span class="n">zip</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib64</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">8</span>
+<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">lib64</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">8</span><span class="o">/</span><span class="n">lib</span><span class="o">-</span><span class="n">dynload</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">python_2020</span><span class="o">/</span><span class="n">pyladiesweb</span><span class="o">/</span><span class="n">projekt</span><span class="o">/</span><span class="n">venv</span><span class="o">/</span><span class="n">lib64</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">8</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">python_2020</span><span class="o">/</span><span class="n">pyladiesweb</span><span class="o">/</span><span class="n">projekt</span><span class="o">/</span><span class="n">venv</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">8</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span>
+</pre></div>
+<p>The first item in this list is an empty string which represents the current directory. When we import something from python, it iterates through the whole list until it finds the requested module:</p>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span>
+<span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/lib64/python38.zip&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/lib64/python3.8&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/lib64/python3.8/lib-dynload&#39;</span><span class="p">,</span> <span class="s1">&#39;/home/user/python_2020/pyladiesweb/projekt/venv/lib64/python3.8/site-packages&#39;</span><span class="p">,</span> <span class="s1">&#39;/home/user/python_2020/pyladiesweb/projekt/venv/lib/python3.8/site-packages&#39;</span><span class="p">]</span>
+</pre></div>
+<h3>How is the <code>__path__</code> created</h3>
+<ul>
+<li><strong>The <strong>path</strong> attribute can be created manually</strong> 01hr:32min.</li>
+<li>Otherwise, Python can set the path where modules are imported from automatically. In a package with an <code>__init__.py</code> file in one of it's folders, Python automatically sets the <code>__path__</code> to the folder which contains the <code>__init__.py</code> file.</li>
+<li><strong>To go deeper with Modules and Packages check out <a href="http://www.dabeaz.com/modulepackage/">David M. Beazley's workshop</a></strong></li>
+</ul>
+<h3>Adding the <code>__path__</code> to the fixtures folder to the <code>sys.path</code> list:</h3>
+<p>01hr:41min</p>
+<p>When test_expected_output needs to import a module it should search for it in the fixtures folder. This requires to import the sys module and to <code>sys.path.append(str(FIXTURES_PATH))</code>. The issue with this is that it appends the path for every test, and creates a mess in the sys.path as the same path is just appended a few times:</p>
+<p>
+<img src="/article_image/sys_path_append_mess.png" alt="" >
+</p>
+<p>The solution is to create another orig_path variable to record the original sys.path, and put the test_output inside a <code>try</code> block. Once the test is finished return the sys.path to it's original state before the test.</p>
+<div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">&#39;module_name&#39;</span><span class="p">,</span> <span class="n">MODULE_NAMES</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_output</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">module_name</span><span class="p">):</span>
+  <span class="n">orig_path</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span>
+  <span class="k">try</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">FIXTURES_PATH</span><span class="p">))</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">app</span>
+
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;fixture&#39;</span> <span class="o">/</span> <span class="n">module_name</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">expected</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+      <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">freeze</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">freeze</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
+
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">expected</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;TEST_CREATE_EXPECTED_OUTPUT&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+          <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Expected output directory (</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s1">) does not exist.</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it&#39;</span>
+          <span class="p">)</span>
+      <span class="n">assert_dirs_same</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+  <span class="k">finally</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">orig_path</span>
+</pre></div>
+<p><strong>Monkey_patch</strong> 01hr:50min...</p>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz dvacátý druhý - testování CLI</h1>
+<p>Sraz začal kontrolou PR na GitHubu. První (a poslední) testoval CLI.
+První bylo potřeba vyřešit merge konflikty a poté kód trochu optimalizovat.</p>
+<p>Pokud uděláme vetší změny a chtěli bychom je rozdělit do více commitů, můžeme
+to udělat například pomocí nástroje Git GUI - grafický nástroj pro práci s Gitem.
+V Git GUI můžeme přidat jednotlivé řádky místo celých souborů.
+V příkazové řádce je možno toho stejného docílit pomocí
+<code>git add -p</code> tak nám Git nabídne jednotlivé části a my se můžeme rozhodnout,
+zda se mají přidat, čí nikoli. Pomocí <code>s</code> pak můžeme části rozdělit.</p>
+<p>Následně jsme se věnovali tomu, abychom zamezili opakování kódu. Všechny funkce
+byly stejné na začátku a na konci a jediné, co se měnilo byl střed funkce.
+Zamezit opakování jde udělat vícero způsoby - jeden z nich je, že vytvoříme
+jednu funkci, která zajistí, co se má udělat předem a co se má stát po tom.
+Druhou možností je napsat vlastní context manager, který by se dal použít
+pomocí <code>with</code>, třeba takto:</p>
+<div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">my_context_manager</span><span class="p">:</span>
+    <span class="o">...</span>
+</pre></div>
+<p>Context manager lze napsat pomocí dekorátoru <code>@contextmanager</code> z knihovny <code>contextlib</code>.
+Místo, kam má uživatel vložit daný kus kódu označíme slovem <code>yield</code>, na němž se
+funkce zastaví.</p>
+<p>Do příště by bylo fajn si rozmyslet, jak by se dal freezeyt používat a jaká by
+mohl mít rozšíření.</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/4OFdP8usCTw">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

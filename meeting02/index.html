@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt - sraz druhý (13. 7. 2020)</h1>
+<blockquote><p>Tento článek není hotový - poznámky jsou napsány do 37. minuty <a href="https://youtu.be/xmtqV7PfbD4?t=2219">záznamu</a>.</p>
+</blockquote>
+<p>Sraz začal kontrolou pull requestů, které přistály na GitHubu.
+První z nich upravoval/přidával README. Následně jsme dostali zpětnou vazbu k tomu, jak psát README a co by se na něm dalo ještě vylepšit:</p>
+<ul>
+<li>Obsah - je užitečný, ale spíše pro větší projekty. Je v něm bohužel problém s některými odkazy - GitHub s odkazy pomůže - stačí najet na nadpis a ukáže se tam odkaz na danou sekci. Dále je potřeba myslet na to, že je potřeba každou sekci přidat. Takže bychom ho možná mohli odstranit.</li>
+<li>Cíl projektu - vypadá v pohodě.</li>
+<li>O čem je projekt - ne jen pro PyLadies, ale pro jakéhokoliv začátečníka v Česku. Je tam část o tom, proč projekt vznikl a ne o čem to je.</li>
+<li>README je pro někoho, kdo to chce používat - moc ho nezajímá, jak to vzniklo a jak se do něj zapojit. -&gt; Historii bude lepší přesunout nakonec. Na začátek dát, co to dělá, jak se to používá apod.</li>
+<li>Přidat Flask do příkladů fremeworků.</li>
+<li>Frozen Flask je také komunitní projekt.</li>
+<li>Projekt není založen na else.</li>
+<li>Instalace zatím nejsou nutné, jen pro testy je potřeba instalace. Přidat sekci o tom, jak testovat.</li>
+<li>Použité nástroje nejsou informace o tom, jak se to používá. Je lepší tam napsat něco ve smyslu - zatím se to použít nedá.</li>
+<li>Contributing sekce s omáčkou je fajn - ještě tam můžeme přidat informaci o streamech a info o tom, že to probíhá v ČJ.</li>
+<li>Info o autorech se dá zjistit dle contributors na GitHubu.</li>
+<li>Ujasnili jsme si, jak zapsat licenci do readme a jak to budeme spellovat.</li>
+</ul>
+<p>Dále se sešly 2 pull requesty řešící Issue z minula o napsání testu na 2 stránky.</p>
+<ul>
+<li>První PR - začal tím, že přidal funkcionalitu, přišel na všechny problémy. Bohužel ještě formatter black změnil uvozovky. - Pro příště je lepší takové změny dělat zvlášť. Také to trvá déle, než se k tomu někdo dostane. Byla upravena původní aplikace, tím pádem i testy.</li>
+<li>Druhý PR přidal novou aplikaci a nový test, tím jsme zajistili, že nový test nepokazil původní test. Tímto PR bylo začleněno i WSGI demo pro tuto aplikaci, tento soubor není úplně nutný a proto jsme ho odstranili.</li>
+</ul>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/xmtqV7PfbD4">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

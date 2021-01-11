@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz první</h1>
+<h2>Co je úkolem projektu?</h2>
+<p>Vytvořit generátor statických webových stránek, tedy vzít kód webové stránky
+a stáhnout ho na disk, aby se daly jednotlivé stránky zveřejnit a nemusel
+běžet nějaký složitý webový server.
+Budeme to dělat pro stránky, které nejsou webové aplikace.</p>
+<h2>Jak vypadal první sraz?</h2>
+<p>Seznámili jsme se službami, které budeme používat pro komunikaci v průběhu srazů
+(jit.si, Etherpad, GSheet). Také jsme se dozvěděli, jak budou "srazy probíhat" -
+bude se tvořit a naším úkolem je pro začátek chápat o čem je řeč.
+Kvůli/díky koronaviru budou srazy probíhat online, momentálně se naše skupinka
+skládá z lidí z Brna a Ostravy. Úkoly budou zadávány formou issues na GitHubu.
+Kód bude na GitHubu. Ujasnili jsme si, co bude cílem projektu (viz výše).
+Ujasnili jsme si rozdíl mezi stránkou a aplikací.
+Na aplikaci uživatel něco mění a aplikace na něj reaguje.
+Na stránkách mění obsah pouze administrátoři.</p>
+<p>Domluvili jsme se, že kód a commity budu anglicky a komunikace klidně česky.
+Freezeyt je pracovní název a nikdo neví, zda bude finální.</p>
+<p>A poté jsme se pustili do práce.</p>
+<h2>Jak začít?</h2>
+<p>Potřebujeme vytvořit aplikaci, která vezme kód nějaké stránky a uloží všechen
+obsah na disk. To je ovšem celkem složitý proces, jak tedy začít? Pro začátek
+jsme vytvořili jednoduchý program, který vezme jednu stránku a uloží ji na disk.
+Proto, abychom nějakou aplikaci mohli uložit na disk, budeme (logicky)
+potřebovat aplikaci. Pro její vytvoření použijeme webový framework Flask.
+Základní konstrukce takové aplikace vypadá následovně:</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;html&gt;</span>
+<span class="s2">        &lt;head&gt;</span>
+<span class="s2">            &lt;title&gt;Hello world&lt;/title&gt;</span>
+<span class="s2">        &lt;/head&gt;</span>
+<span class="s2">        &lt;body&gt;</span>
+<span class="s2">            Hello world!</span>
+<span class="s2">        &lt;/body&gt;</span>
+<span class="s2">    &lt;/html&gt;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+</pre></div>
+<p>Dále jsme si vytvořili virtuální prostředí a do něj nainstalovali Flask.
+Dalším krokem je pustit Flask pomocí následujících příkazů
+(na Windows místo <code>export</code> použijte <code>set</code>):</p>
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="nb">export</span> <span class="nv">FLASK_APP</span><span class="o">=</span>demo_app.py
+<span class="gp">$</span> <span class="nb">export</span> <span class="nv">FLASK_DEBUG</span><span class="o">=</span><span class="m">1</span>
+<span class="gp">$</span> flask run
+</pre></div>
+<p>Abychom si ujasnili, co všechno má generátor udělat, je vhodnou metodou test
+driven development (TDD). Nejdříve se napíše test který by měl projekt splňovat
+a poté zařídíme, aby test procházel.</p>
+<p>Pro testování použijeme, stejně jako na
+<a href="https://naucse.python.cz/course/pyladies/beginners/testing/">začátečnickém kurzu</a>,
+<a href="https://docs.pytest.org/">Pytest</a>.
+Nainstalovali jsme si ho do aktivovaného virtuálního prostředí.</p>
+<p>První test ověřuje, že nová funkce <code>freeze</code> zmrazí obsah aplikace, tam kam má.
+Funkce <code>freeze(app, tmp_path)</code> ještě není napsaná, ale test zajistí,
+že jakmile ji vytvoříme, bude se chovat tak, jak chceme</p>
+<p>Test momentálně neprochází kvůli <em>ModuleNotFoundError</em>, protože modul
+<code>freezeyt</code> ještě neexistuje. První test tedy vypadá nějak takto:</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
+<span class="kn">from</span> <span class="nn">demo_app</span> <span class="kn">import</span> <span class="n">app</span>
+<span class="kn">from</span> <span class="nn">freezeyt</span> <span class="kn">import</span> <span class="n">freeze</span>
+
+
+<span class="k">def</span> <span class="nf">test_one_page</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
+    <span class="n">freeze</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">read_text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">read_text</span> <span class="o">==</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;html&gt;</span>
+<span class="s2">        &lt;head&gt;</span>
+<span class="s2">            &lt;title&gt;Hello world&lt;/title&gt;</span>
+<span class="s2">        &lt;/head&gt;</span>
+<span class="s2">        &lt;body&gt;</span>
+<span class="s2">            Hello world!</span>
+<span class="s2">        &lt;/body&gt;</span>
+<span class="s2">    &lt;/html&gt;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+</pre></div>
+<blockquote><p><code>tmp/frozen</code> je dočasný adresář a na Windows to nebude fungovat.
+Na konci srazu to bylo změněno tak, aby to fungovalo i na Windows.
+Testy si tedy vytvoří vlastní adresář a po skončení testu ho smažou.
+K tomu se použijeme
+<a href="https://docs.pytest.org/en/stable/tmpdir.html#the-tmp-path-fixture"><code>tmp_path</code></a>
+z pytestu.</p>
+<p>Zeptá-li se prohlížeč na nějaký adresář, server statických stránek sáhne po
+souboru <code>index.html</code> jako hlavní stránce daného adresáře.</p>
+</blockquote>
+<p>Při TDD již při návrhu testu přijdeme na to, jak se daná funkce volá a můžeme
+na to přijít mnohem dříve, než kdybychom testy napsané neměli.</p>
+<h2>Jak dostat obsah stránky z aplikace?</h2>
+<p>Pro to je potřeba porozumět (alespoň základům) technologii WSGI.</p>
+<p>WSGI (Web Server Gateway Interface) definuje jednoduché a univerzální rozhraní
+(interface) mezi webovým serverem a webovou aplikací nebo frameworkem.
+Vše o tomto rozhraní je popsáno v <a href="https://www.python.org/dev/peps/pep-3333/">PEP 3333</a>.</p>
+<p>Webové aplikace napsané v Pythonních frameworcích (např. Flask, Django)
+mají společné rozhraní WSGI.
+WSGI nám také umožňuje používat různé kombinace frameworků s různými HTTP servery.
+Znamená to tedy, že pokud bude náš freezer kompatibilní s tímto rozhraním bude
+kompatibilní s jakoukoliv webovou aplikací napsanou v Pythonu.
+Aplikaci můžeme vytvořit v mnoha frameworcích. Také ji můžeme nasadit na mnoho
+HTTP serverů, které se o vše postarají.</p>
+<p>Standardní knihovna Pythonu obsahuje knihovnu <em>wsgiref</em>, kde <code>wsgiref.simple_server</code>
+je schopno servírovat Pythonní web aplikaci, napsanou například ve Flasku.
+Tím jsme si ukázali, že aplikace demo_app.py je kompatibilní s tímto webovým
+rozhraním. Soubor wsgi_demo.py ukazuje způsob, jak je možno takovou aplikaci
+spustit pomocí <code>wsgiref.simple_server</code> a ne pomocí Flask. A téměř celá aplikace
+je zkopírována z <a href="https://docs.python.org/3.8/library/wsgiref.html#module-wsgiref.simple_server">dokumentace</a>:</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">wsgiref.simple_server</span> <span class="kn">import</span> <span class="n">make_server</span>
+<span class="kn">from</span> <span class="nn">demo_app</span> <span class="kn">import</span> <span class="n">app</span>
+
+<span class="c1"># Create a demo WSGI server from a Flask app.</span>
+<span class="k">with</span> <span class="n">make_server</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">app</span><span class="p">)</span> <span class="k">as</span> <span class="n">server</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Serving HTTP on port 8000...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Respond to requests until process is killed</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
+</pre></div>
+<p>Naši spuštěnou aplikaci najdeme na portu 8000, proto do prohlížeče zadáme <code>localhost:8000</code>.</p>
+<hr>
+<h2>Jak toto rozhraní funguje?</h2>
+<p>Proto, abychom z aplikace dostali nějaký obsah, tak ji potřebujeme zavolat.
+Každá webová aplikace v Pythonu je volatelná, může to být třeba funkce nebo třída.</p>
+<p>Tato aplikace potřebuje <code>environ</code>, což je slovník, a <code>start_response</code>,
+což je funkce, jako argumenty. Následně jsme postupně do slovníku <code>environ</code>
+přidali vše potřebné, dokud nám volání nevrátilo odpověď <em>200 OK</em>. Zatím tam máme vše,
+pro to, aby bylo možné spustit jednoduchou WSGI aplikaci, ale není to vše,
+co by tento slovník měl obsahovat. Co všechno tam musí být specifikuje
+<a href="https://www.python.org/dev/peps/pep-3333/#environ-variables">dokumentace</a>.
+To, co daná aplikace vrací je iterátor, takže se to dá projít for-cyklem.</p>
+<p>Server zavolá funkci a zpátky dostane sekvenci bytových řetězců, stav a hlavičky.
+Aplikace zavolá funkci <code>start_response</code> a následně vrátí obsah.</p>
+<h2>Jak začít s generátorem statických stránek?</h2>
+<p>Funkce, která zmrazí stránku musí vytvořit slovník <code>environ</code>. Následně funkce
+vytvoří lokální funkci <code>start_response</code>.</p>
+<p>Povedlo se nám zajistit, že test prochází. Jakmile něco alespoň trochu funguje,
+je dobré to uložit do Gitu. Začali jsme vytvořením repozitáře a přidáním první
+revize. Na GitHubu byl vytvořen <a href="https://github.com/encukou/freezeyt">repozitář pro projekt</a>.
+My už nový repozitář tvořit nemusíme, my si repozitář jen naklonujeme z GitHubu.</p>
+<h2>Co by bylo dobré přidat?</h2>
+<p>Přidali jsme projektu licenci. Na webu <a href="https://choosealicense.com/">choosealicense.com</a>
+je seznam nejčastěji používaných open source licencí a pomůže nám i s výběrem.
+My jsme vybrali MIT licenci.</p>
+<p>Dále by bylo dobré přidat README - popis projektu. Tak jsme si ukázali, jak se
+README píše a co by v něm mělo být. README máme
+v <a href="https://guides.github.com/features/mastering-markdown/">markdownu</a> a při psaní
+nám může pomoct služba <a href="https://hackmd.io/#">HackMD</a>, kde na jedné
+straně vidíme zdrojový kód a na druhé straně, jak to vypadá.</p>
+<h2>S čím můžeme pomoci?</h2>
+<p>Úkoly budou v <a href="https://github.com/encukou/freezeyt/issues">Issues</a>. Bylo by dobré,
+abychom úkoly, které si zamluvíme, dokončili. Momentálně jsou úkoly napsat článek
+na blog, následně napsat test, kdy na jedné stránce je odkaz a na ní je odkaz
+na stránku druhou. A dále by bylo dobré napsat README.</p>
+<p>Aby se nám lépe pracovalo na projektu, je dobré si u projektu nastavit „Watching“
+u <a href="https://github.com/encukou/freezeyt">repozitáře</a> projektu. Tím nám budou chodit
+upozornění o Issues a Pull requestech.</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/6xDkqmQPefw">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

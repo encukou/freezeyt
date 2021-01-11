@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>The First Attempt to Freeze</h1>
+<p><strong><a href="https://www.youtube.com/watch?v=ycEkUs_rm4Y&amp;feature=youtu.be">6th Online Meeting</a>, August 10, 2020</strong></p>
+<p><strong><em>Mentor: Petr Viktorin</em></strong></p>
+<h2><a href="https://www.youtube.com/watch?v=ycEkUs_rm4Y&amp;feature=youtu.be">Overview</a></h2>
+<ul>
+<li><a href="#Issue#27">00:04min</a> - Issue#27: <a href="https://github.com/encukou/freezeyt/commit/36bd13b4de3900cf356e4cd079ee7a06802be99b">Handling relative links correctly</a> - <a href="https://github.com/encukou/freezeyt/blob/master/test_demo.py">according to test_structured</a></li>
+<li><a href="#Tests-still-failing">00:18min</a> - Failing tests after the changes</li>
+<li><a href="#Test-Driven-Development">00:22min</a> - Test Driven Development and Refactoring</li>
+<li><a href="#Freezing-pyladies.cz">00:34min</a> - Freezing pyladies.cz</li>
+<li><a href="#First-result-from-our-freezeyt">00:42min</a> - First results from our first freeze</li>
+<li><a href="#The-Missing-Images">00:49min</a> - Missing images, first issue with the first freeze</li>
+<li><a href="#How-can-we-be-sure-that-the-frozen">01hr:00min</a> - Make sure the frozen website looks exactly as intended</li>
+<li><a href="#The-Issue-with-Elsa&#39;s-Commits">01hr:12min</a> - The issue with the way Elsa commits</li>
+<li><a href="#Issue#31">01hr:17min</a> - Broken links</li>
+<li><a href="#Issue#32">01hr:31min</a> - Recognizing page redirections</li>
+<li><a href="#Issue#33">01hr:35min</a> - Recognizing CSS styles</li>
+<li><a href="#Good-Future-Issues">01hr:42min</a> - Good Future Issues</li>
+<li><a href="#Issue#34">01hr:46min</a> - Add the possibility to generate additional files as <code>CNAME</code> and <code>.nojekyl</code></li>
+</ul>
+<h3>Issue#27:</h3>
+<p><em>4th minute</em></p>
+<p><a href="https://github.com/encukou/freezeyt/commit/36bd13b4de3900cf356e4cd079ee7a06802be99b">Handle relative links correctly</a> - <a href="https://github.com/encukou/freezeyt/blob/master/test_demo.py">according to test_structured</a> which tests on <a href="https://github.com/encukou/freezeyt/blob/master/demo_app_structured.py">demo_app_structured.py</a>:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_structured</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test if an app with relative URLs works.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">freeze</span><span class="p">(</span><span class="n">app_structured</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
+
+    <span class="n">path1</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;index.html&quot;</span>
+    <span class="n">path2</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;users/index.html&quot;</span>
+    <span class="n">path3</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;users/a/index.html&quot;</span>
+    <span class="n">path4</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;users/b/index.html&quot;</span>
+
+    <span class="n">path_not_exists</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;users/c/index.html&quot;</span>
+
+    <span class="k">assert</span> <span class="n">path1</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">path2</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">path3</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">path4</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">path_not_exists</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+</pre></div>
+<p>This <a href="https://github.com/encukou/freezeyt/blob/master/demo_app_structured.py">demo_app_structured</a> includes a page which has a slightly more complicated path starting with a folder <code>'/users/'</code> which branches out to two other sub-pages, for user A and user B. At the moment Freezyt recognizes this route as an absolute path, and leads to route <code>'/a/'</code> instead of <code>'/users/a/'</code>.
+Until this point the <code>url_to_filename()</code> function would take both absolute and relative URLs as arguments. The solution for issue#27 was to always make an absolute path out of any relative link/path received as an argument. To solve this we need to add the base (<em>scheme</em> and <em>netloc</em> attributes) to the link/path to make an absolute path out of the relative.
+For example:
+The freeze() function takes two parameters, base and url:</p>
+<ul>
+<li>If on page (base): <code>http://localhost:8000/users/</code></li>
+<li>On it is a link (url): a/</li>
+<li>we need to make the following out of this:
+<code>http://localhost:8000/users/a/</code></li>
+</ul>
+<p>The best way to do this is using the <code>urljoin</code> method, which joins the base address and the rest of the URL. To start off with an absolute address, a full_url was added to links in the freeze function instead of just '/':</p>
+<div class="highlight"><pre><span></span><span class="n">links</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;http://localhost:8000/&#39;</span><span class="p">]</span>
+</pre></div>
+<p>Next we needed to make sure we also get full_urls in the visited links as well. The <em>visited_links</em> list is populated with new links from the <code>get_all_links()</code> function which is why it was necesary for this function to also return absolute urls. This way we made sure that we prepend the full address to the <em>links</em> and <em>visited_links</em> lists. In this way we are always working with absolute URLs.
+The changes made to <code>get_all_links()</code> and <code>get_links_from_node()</code> (the addition of a base_url argument and the <code>urljoin</code> method) are visible bellow:</p>
+<div class="highlight"><pre><span></span><span class="o">-</span><span class="k">def</span> <span class="nf">get_all_links</span><span class="p">(</span><span class="n">page_content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="o">+</span><span class="k">def</span> <span class="nf">get_all_links</span><span class="p">(</span><span class="n">page_content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+     <span class="sd">&quot;&quot;&quot;Get all links from &quot;page_content&quot;.</span>
+
+<span class="sd">     Return an iterable of strings.</span>
+<span class="sd">+</span>
+<span class="sd">+    base_url is the URL of the page.</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+     <span class="n">document</span> <span class="o">=</span> <span class="n">html5lib</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">page_content</span><span class="p">)</span>
+<span class="o">-</span>    <span class="k">return</span> <span class="n">get_links_from_node</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
+<span class="o">+</span>    <span class="k">return</span> <span class="n">get_links_from_node</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span>
+
+<span class="o">-</span><span class="k">def</span> <span class="nf">get_links_from_node</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="o">+</span><span class="k">def</span> <span class="nf">get_links_from_node</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+     <span class="sd">&quot;&quot;&quot;Get all links from xml.dom.minidom Node.&quot;&quot;&quot;</span>
+     <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+     <span class="k">if</span> <span class="s1">&#39;href&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
+<span class="o">-</span>        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;href&#39;</span><span class="p">])</span>
+<span class="o">+</span>        <span class="n">href</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;href&#39;</span><span class="p">]</span>
+<span class="o">+</span>        <span class="n">full_url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span> <span class="n">href</span><span class="p">)</span>
+<span class="o">+</span>        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">full_url</span><span class="p">)</span>
+     <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
+<span class="o">-</span>        <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_links_from_node</span><span class="p">(</span><span class="n">child</span><span class="p">))</span>
+<span class="o">+</span>        <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_links_from_node</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">base_url</span><span class="p">))</span>
+     <span class="k">return</span> <span class="n">result</span>
+</pre></div>
+<p>Consequently, we needed to add an argument (base_url) to the <a href="https://github.com/encukou/freezeyt/blob/master/test_get_links.py">test_get_links.py</a> since it calls the get_all_links() function where we added the base_url argument.
+Furthermore, to test the new 'relative links' feature of the <code>get_all_links()</code> function a relative link <code>&lt;a href='fourth_page/'&gt;LINK&lt;/a&gt;</code> was added to the test as well.
+In case <code>get_all_links()</code> was called with a path like <code>http://localhost:8000/path1/path2/</code> the relative link should also link to it, so a new <code>test_get_links_path()</code> was added.</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_get_links_path</span><span class="p">():</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="n">get_all_links</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        &lt;html&gt;</span>
+<span class="s2">            &lt;head&gt;</span>
+<span class="s2">                &lt;title&gt;Hello world&lt;/title&gt;</span>
+<span class="s2">            &lt;/head&gt;</span>
+<span class="s2">            &lt;body&gt;</span>
+<span class="s2">                Hello world!</span>
+<span class="s2">                &lt;br&gt;</span>
+<span class="s2">                &lt;a href=&#39;/second_page&#39;&gt;LINK&lt;/a&gt; to second page.</span>
+<span class="s2">                &lt;p&gt;</span>
+<span class="s2">                    &lt;a href=&#39;/third_page&#39;&gt;LINK&lt;/a&gt; to third page.</span>
+<span class="s2">                &lt;/p&gt;</span>
+<span class="s2">                &lt;a href=&#39;fourth_page/&#39;&gt;LINK&lt;/a&gt; to third page.</span>
+<span class="s2">            &lt;/body&gt;</span>
+<span class="s2">        &lt;/html&gt;</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">,</span> <span class="s1">&#39;http://localhost:8000/path1/path2/&#39;</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">links</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span>
+        <span class="s1">&#39;http://localhost:8000/path1/path2/fourth_page/&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;http://localhost:8000/second_page&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;http://localhost:8000/third_page&#39;</span><span class="p">,</span>
+</pre></div>
+<p>This test ensures (<em>asserts</em>) that when given an absolute link, nothing will change:</p>
+<div class="highlight"><pre><span></span><span class="s1">&#39;http://localhost:8000/second_page&#39;</span><span class="p">,</span>
+<span class="s1">&#39;http://localhost:8000/third_page&#39;</span><span class="p">,</span>
+</pre></div>
+<p>And when given a relative link (ex. 'fourth_page/'), the base appends the relative link:</p>
+<div class="highlight"><pre><span></span><span class="s1">&#39;http://localhost:8000/path1/path2/fourth_page/</span>
+</pre></div>
+<p>To get a clearer picture as to why and how this happens, here is how the <code>url_to_filename()</code> function looks like at the moment:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">url_to_filename</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the filename to which the page is frozen.</span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    base - Filesystem base path (eg. /tmp/)</span>
+<span class="sd">    url - Absolute URL (eg. http://localhost:8000/second.html)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_parse</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">url_parse</span><span class="o">.</span><span class="n">scheme</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Need an absolute URL&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">url_parse</span><span class="o">.</span><span class="n">scheme</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;http&#39;</span><span class="p">,</span> <span class="s1">&#39;https&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;got URL that is not http&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">url_parse</span><span class="o">.</span><span class="n">netloc</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Need an absolute URL&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">url_parse</span><span class="o">.</span><span class="n">netloc</span> <span class="o">==</span> <span class="s1">&#39;localhost:8000&#39;</span><span class="p">:</span>
+        <span class="n">url_path</span> <span class="o">=</span> <span class="n">url_parse</span><span class="o">.</span><span class="n">path</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;got external URL instead of localhost&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">url_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
+        <span class="n">url_path</span> <span class="o">=</span> <span class="n">url_path</span> <span class="o">+</span> <span class="s1">&#39;index.html&#39;</span>
+
+    <span class="k">return</span> <span class="n">base</span> <span class="o">/</span> <span class="n">url_path</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+</pre></div>
+<h3>Tests still failing</h3>
+<p><em>18th min</em></p>
+<p>After the aforementioned changes, most tests were failing and the reason was that in the <code>freeze()</code> function we changed the links into absolute links only:</p>
+<div class="highlight"><pre><span></span><span class="o">-</span>    <span class="n">links</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;/&#39;</span><span class="p">]</span>
+<span class="o">+</span>    <span class="n">links</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;http://localhost:8000/&#39;</span><span class="p">]</span>
+</pre></div>
+<p>More precisely, these links are used as the value for the <code>'PATH_INFO'</code> in the <code>environ</code> dictionary. According to the general structure of an URL <code>scheme://netloc/path</code>, 'path' is what comes after the base address/netloc. This was easily changed by entering the following before the environ:</p>
+<div class="highlight"><pre><span></span><span class="o">+</span> <span class="n">path_info</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">link</span><span class="p">)</span><span class="o">.</span><span class="n">path</span>
+<span class="o">+</span> <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;path_info:&#39;</span><span class="p">,</span> <span class="n">path_info</span><span class="p">)</span>
+
+         <span class="n">environ</span> <span class="o">=</span> <span class="p">{</span>
+             <span class="s1">&#39;SERVER_NAME&#39;</span><span class="p">:</span> <span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;wsgi.url_scheme&#39;</span><span class="p">:</span> <span class="s1">&#39;http&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;SERVER_PORT&#39;</span><span class="p">:</span> <span class="s1">&#39;8000&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;REQUEST_METHOD&#39;</span><span class="p">:</span> <span class="s1">&#39;GET&#39;</span><span class="p">,</span>
+<span class="o">-</span>            <span class="s1">&#39;PATH_INFO&#39;</span><span class="p">:</span> <span class="n">link</span><span class="p">,</span>
+<span class="o">+</span>            <span class="s1">&#39;PATH_INFO&#39;</span><span class="p">:</span> <span class="n">path_info</span><span class="p">,</span>
+</pre></div>
+<h3>Test Driven Development - Refactoring</h3>
+<p><em>22nd min</em></p>
+<p>
+<img src="/article_image/test_driven_development.png" alt="" >
+</p>
+<ul>
+<li>Some variable names changed for clarity in the code. Changed 'link' to 'url' because it is a full address now, and 'new_urls' instead of 'links' since these are yet to go through the while loop check.</li>
+<li>Another <em>ValueError</em> is raised in the <code>url_to_file_name()</code> function in case the url received did not contain a <em>'scheme'</em> (ie. was not an absolute url).</li>
+<li>The same thing happens in case there is no <em>'netloc'</em> in the received url.</li>
+<li>Reorganized the tests and fixed some of the URLs used in the tests since we changed all relative URLs to absolute ones.</li>
+<li><code>test_relative()</code> was added to the <a href="https://github.com/encukou/freezeyt/blob/master/test_url_to_filename.py">test_url_to_filename</a>:<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_relative</span><span class="p">():</span>
+  <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+      <span class="n">url_to_filename</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s2">&quot;/a/b/c&quot;</span><span class="p">)</span>
+</pre></div>
+</li>
+</ul>
+<h2>Freezing pyladies.cz</h2>
+<p><em>34th minute</em></p>
+<p>In order to freeze pyladies.cz we started with the documentation in the README file <a href="https://github.com/PyLadiesCZ/pyladies.cz/blob/master/README.md">Usage</a>.
+After cloning both <a href="https://github.com/encukou/freezeyt">freezeyt</a> and <a href="https://github.com/PyLadiesCZ/pyladies.cz">pyladies.cz</a> we needed to find a way to import both files <a href="https://github.com/PyLadiesCZ/pyladies.cz/blob/master/pyladies_cz.py">pyladies_cz.py</a> and <a href="https://github.com/encukou/freezeyt/blob/master/freezeyt/freezing.py">freezing.py</a>  since they reside in different folders.
+The first option, suitable for this first attempt is to set up an environmental variable PYTHONPATH:</p>
+<div class="highlight"><pre><span></span><span class="err">$</span> <span class="n">export</span> <span class="n">PYTHONPATH</span><span class="o">=</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">freezeyt</span> <span class="p">(</span><span class="n">on</span> <span class="n">linux</span><span class="p">)</span>
+</pre></div>
+<p>or</p>
+<div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">PYTHONPATH</span><span class="o">=</span> <span class="o">../</span><span class="n">freezeyt</span> <span class="p">(</span><span class="n">on</span> <span class="n">windows</span><span class="p">)</span>
+</pre></div>
+<p><em>(""/home/user/"" is the absolute path where you cloned your freezyet repository. Adjust according to your system)</em></p>
+<p>The second option, is to install freezeyt into the virtual environment and in the same folder with the application that we are freezing. This is a future enhancement.</p>
+<p>Now you can import both freezeyt and pyladies_cz and start freezeyt:</p>
+
+<pre><code>$ python -m freezeyt --help</code></pre>
+<p>Loading freezeyt as a module will likely fail because of missing pyladies_cz. To overcome this, we needed to create the _build folder to store the frozen content:</p>
+
+<pre><code>$ mkdir _build
+$ python -m freezeyt pyladies_cz _build</code></pre>
+<p>Moving forward, we had to satisfy the requirements for missing libraries, which are part of the pyladies_cz code (ex. flask_frozen). These Python dependencies are included in the <a href="https://github.com/PyLadiesCZ/pyladies.cz">requirements.txt</a> file under the pyladies repository. We installed them in the same venv:</p>
+
+<pre><code>$ python -m pip install -r requirements.txt</code></pre>
+<p>Next start freezeyt again:</p>
+
+<pre><code>$ python -m freezeyt pyladies_cz _build</code></pre>
+<p>If there are any other missing Python libraries, you will have to install them by hand <code>$ pythong -m pip install &lt;lib&gt;</code></p>
+<p><strong>First result from our freezeyt</strong></p>
+<p>Starting the Python http.server module in the _build folder will start a simple webserver which will serve the frozen pyladies_cz web pages, including styles sheets (CSS). Note, some images were missing at this point of the freeze process.</p>
+
+<pre><code>$ ls _build/
+$ cd _build
+$ python -m http.server</code></pre>
+<p><strong>The Missing Images</strong></p>
+<p><em>49th minute</em></p>
+<p>To make sure that freezeyt will handle images appropriately, we created a sample demo app that serves an image file <a href="https://github.com/encukou/freezeyt/blob/master/demo_app_image.py">demo_app_image.py</a>. Next, we implemented a feature in the freezing.py, get_links_from_node() function to handle <em>src</em> tags. This will write frozen image files under the <em>static/</em> directory.
+A corresponding test for this functionality has been implemented in <a href="https://github.com/encukou/freezeyt/blob/master/test_demo.py">test</a></p>
+<h3>How can we be sure that the frozen website looks exactly as it is supposed to look like?</h3>
+<p><em>1hr:00min</em></p>
+<p>We have an advantage with the pyladies.cz website because it is already a static website. It's content was frozen using cli from the Elsa freezer which turns each page into a html file which then appears in Git on the <em>gh-pages</em> branch. Also if we upload a new html to the gh-pages branch, Github deploys it as a static web-page.</p>
+<p>This gives as an opportunity to compare the content of the pyladies.cz gh-pages and our freezeyt output for the same.</p>
+<p>How to do this step by step:</p>
+<ol>
+<li>Clone the pyladies.cz GitHub repository and check the entire history:
+<pre><code> $ gitk --all</code></pre>
+</li>
+<li>In the pyladies.cz directory switch to branch gh-pages:
+<pre><code> $ git checkout gh-pages</code></pre>
+</li>
+<li>At this point we have the actual pages created instead of the source code which makes it possible to use a tool that can compare the content with the same on freezeyt. This can be done by using a graphic diff and merge tool <a href="https://en.wikipedia.org/wiki/Meld_(software">Meld</a>) or just the terminal command:
+<pre><code> $ diff -r -U3 &lt;pyladies_cz_repository/&gt; _build</code></pre>
+### The Issue with Elsa's Commits
+<em>1hr:12min</em>
+We ran into an issue when trying to compare because when Elsa makes a change it creates a completely new commit, separate from the commit history and it saves this new commit to gh-pages without the history. Git pull would remove all previous commit history since Elsa created a new commit for every change. This way gh-pages would not show the history of commits:</li>
+</ol>
+<p>
+<img src="/article_image/elsa_commits.png" alt="Elsa&#x27;s commit history" >
+</p>
+<p>When we have an old commit locally in our gh-pages and git pull finds origin/gh-pages without any history the merge is not possible because git only merges with branches which branch out from a previous project/change:</p>
+<p>
+<img src="/article_image/merging_unrelated_histories.png" alt="Mergin unrelated histories" >
+</p>
+<p>This is why it was necessary to force the switch to the origin/gh-pages branch even if it means loosing the history:</p>
+
+<pre><code>$ git reset --hard origin/gh-pages</code></pre>
+<p>This particular command is needed to align the local and remote <em>gh-pages</em> branch. Once aligned they can be properly compared using <em>meld</em>.</p>
+<p>
+<img src="/article_image/elsa_commit_history.png" alt="Elsa&#x27;s commit history shown on the left, and the hard reset on the right side of the picture" >
+</p>
+<p><strong>*Tip</strong>: When you start meld it is better not to turn it off until finished since it takes it some time to do the comparison*</p>
+
+<pre><code>$ meld . _build</code></pre>
+<p>The following are all differences we found using Meld.</p>
+<h3>Issue#31 - broken links</h3>
+<p><em>1hr:17min</em></p>
+<p>The first difference we found, was that for some reason freezeyt processed a link reference (href tag) with an email address, as an actual page. In the pyladies.cz source code it appeared that one of the email addresses was missing the 'mailto' scheme which was the reason for the difference that appeared in meld.
+This means that the link to the email address leads to nowhere and when opened, it takes us to <em>404 file not found</em>.
+Due to the missing 'maito' scheme the browser takes the email address as a relative address which leads to nowhere and treats it as URL not found:</p>
+<p>
+<img src="/article_image/url_not_found.png" alt="URL not found" >
+</p>
+<p><strong><em>How should Freezyt react to an <code>URL not found</code>?</em></strong></p>
+<ul>
+<li>Freezeyt should write a message url not found.</li>
+<li>If there is a link to nowhere, raise ValueError, and show traceback</li>
+</ul>
+<p>Elsa did not notice this incorrect link because it only recognizes Flask<code>s functions (in this case url_for()) and does not recognize functions from any other frameworks.
+Freezeyt starts by recognizing HTML tags such as 'href' and 'src' in order to be more comprehensive and capture functions and addresses coming from a variety of frameworks and not only Flask</code>s <code>url_for()</code>.</p>
+<p><strong><em>What to do with broken links?</em></strong>
+Ideally, freezeyt should notify the user of non-existent links when trying to freeze <code>demo_app_broken_link.py</code>:</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">url_for</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;html&gt;</span>
+<span class="s2">        &lt;head&gt;</span>
+<span class="s2">            &lt;title&gt;Hello world&lt;/title&gt;</span>
+<span class="s2">        &lt;/head&gt;</span>
+<span class="s2">        &lt;body&gt;</span>
+<span class="s2">            Hello world!</span>
+<span class="s2">            &lt;a href=&quot;nowhere&quot;&gt;Link to nowhere&lt;/a&gt;</span>
+<span class="s2">        &lt;/body&gt;</span>
+<span class="s2">    &lt;/html&gt;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+</pre></div>
+<p>Our new adjustments to freezing.py need to pass a negative test. We want to test that
+calling freeze() with <em>app_broken</em> raises a ValueError:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_broken_link</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test if an app with an image works.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">freeze</span><span class="p">(</span><span class="n">app_broken_link</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
+</pre></div>
+<p><strong>Tip:</strong> Solve issue#31 by catching all status codes other than "200 OK".</p>
+<p>Again, continuing to check the differences:</p>
+
+<pre><code>$ cd ../pyladies.cz/_build
+$ meld . _build</code></pre>
+<h3>Issue#32 - Find a way for the freezer to recognize page redirections</h3>
+<p><em>1hr:31min</em></p>
+<p><strong>ex.</strong> <a href="https://pyladies.cz/brno_course/">https://pyladies.cz/brno_course/</a> redirects to pyladies.cz/brno/#meetups</p>
+<p>As seen on the <a href="https://github.com/PyladiesCZ/pyladies.cz/blob/master/pyladies_cz.py">pyladies.cz, Github page</a> a special Flask route redirects old/outdated links to pyladies.cz/brno_course:</p>
+<div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&lt;city&gt;_course/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">course_redirect</span><span class="p">(</span><span class="n">city</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;city&#39;</span><span class="p">,</span> <span class="n">city_slug</span><span class="o">=</span><span class="n">city</span><span class="p">,</span> <span class="n">_anchor</span><span class="o">=</span><span class="s1">&#39;meetups&#39;</span><span class="p">))</span>
+</pre></div>
+<p>In short, at some point pyladies.cz pages layout looked different and the content from some outdated links is now redirected to the Brno meetups page - "<a href="https://pyladies.cz/brno/#meetups">https://pyladies.cz/brno/#meetups</a>". In order for the old/outdated links to continue working, they were redirected using this <code>@app.route('/&lt;city&gt;_course/)'</code>.
+Going through the current pyladies.cz you will not find any links leading to <code>/&lt;city&gt;_course/</code>. All links are redirected to pyladies.cz/brno/#meetups which means that our freezeyt is not able to find this page <_course>. Elsa finds the <code>/&lt;city&gt;_course/</code> page by using a special generator which creates a <code>course_redirect()</code> page for each of the 'OLD-CITIES':</p>
+<p>
+<img src="/article_image/generator_for_freezer.png" alt="" >
+</p>
+<h3>Issue#33 - recognizing CSS styles</h3>
+<p><em>1hr:35min</em></p>
+<p>Another difference was in the <a href="https://github.com/PyLadiesCZ/pyladies.cz/tree/master/static">static folder</a> in which all static files are stored. The freezer recognized some but not all CSS files there.
+For example, some of the fonts are linked from the CSS file without using the <em>href</em> tag and freezeyt failed to recongnize and freeze those too. The <a href="https://pyladies.cz/static/css/bootstrap.min.css">bootstrap</a> is one long CSS file and the fonts are linked using the <em>src:url</em> syntax:</p>
+<div class="highlight"><pre><span></span>Halflings&#39;;src:url(../fonts/glyphicons-halflings-regular.eot);src:url(../fonts/glyphicons-halflings-regular.eot?#iefix) format(&#39;embedded-opentype&#39;),url(../fonts/glyphicons-halflings-regular.woff2) format(&#39;woff2&#39;),url(../fonts/glyphicons-halflings-regular.woff) format(&#39;woff&#39;),url(../fonts/glyphicons-halflings-
+</pre></div>
+<p>Other CSS links were recognized properly since they are entered as a <em>href</em> link:</p>
+<div class="highlight"><pre><span></span><span class="c">&lt;!-- Bootstrap CSS --&gt;</span>
+   <span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/static/css/bootstrap.min.css&quot;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span><span class="p">&gt;</span>
+   <span class="c">&lt;!-- Custom CSS --&gt;</span>
+   <span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/static/css/custom.css&quot;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span><span class="p">&gt;</span>
+</pre></div>
+<p>Additionally, CSS fonts linking to an external page were not a problem as freezeyt is able to recognize links going to external pages:</p>
+<div class="highlight"><pre><span></span><span class="c">&lt;!-- Custom Fonts --&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic,700&amp;subset=latin,greek,greek-ext,vietnamese,latin-ext,cyrillic&#39;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;stylesheet&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text/css&#39;</span><span class="p">&gt;</span>
+</pre></div>
+<p>We are also missing some images from the bg folder (bg-background) which are also embedded in a <a href="https://pyladies.cz/static/css/custom.css">CSS file</a>.</p>
+<h3>Good Future Issues</h3>
+<p><em>1hr:42min</em></p>
+<p>Looking at the GitHub source code, some images of the team are commented out at the moment, but the images are not deleted from pyladies.cz/static/img/brno/
+Frozenflask is integrated with Flask and it knows that all content stored in the static folders should be frozen. However, it does not recognize if there is a link to the image or if the image is used at all. The same behavior is demonstrated with images from sponsors in the past. Images have been unlinked from the HTML pages, but not from the static folder.
+Another issue is the <a href="https://github.com/PyLadiesCZ/pyladies.cz/tree/master/original/v1">folder v1</a> which contains the initial content of the page and we will need to find a way to solve this in the future.</p>
+<h3>Issue#34 - Add the possibility to generate additional files</h3>
+<p><em>1hr:46min</em></p>
+<p>All Github pages need the 'CNAME' and .nojekyl files. The CNAME file tells GitHub which domain name will be used to publish your web-page (in this case pyladies.cz). This is needed in order to publish this page on Github. If CNAME is empty than your page will be named by GitHub. We need to add/create the CNAME folder somehow in case the user wants to publish a page on to Github. Next we will also need to create an empty .nojekyl file.</p>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

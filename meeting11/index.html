@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz jedenáctý</h1>
+<h2>Review pull requestů</h2>
+<p>Sraz začal jako už klasicky review PR. První PR aktualizoval aplikaci na blog.</p>
+<p>Následně jsme se vrhli na zkoušku ohněm a přidali další článek na blog. Článek
+byl na jiném místě, takže jsme ho následně jen přesunuli, tam, kde má být.</p>
+<p>Další PR aktualizoval dokumentační řetězce ve funkcích freeze a url_to_filename.</p>
+<p>Poslední PR aktualizoval testy pro parse_absolute_url.</p>
+<h3>Odbočka ke Gitu a GitHubu</h3>
+<p>Pull requesty je možné kontrolovat i jinak než na GitHubu. Změny si můžeme také
+stáhnout k sobě a kontrolovat je lokálně, což je dobré v případě, že chceme
+například spustit testy, nebo v případě blogu jej spustit lokálně. GitHub
+v nápovědě pro merge navrhne, jak to jde udělat z příkazového řádku,
+ale bohužel se tyto instrukce zobrazí jen administrátorovi repozitáře.
+Dva základní příkazy: <code>git branch</code> - seznam všech větví v repozitáři
+a <code>git pull</code> = <code>git fetch</code> + <code>git merge</code> (stáhne změny z GitHubu a sloučí je
+s aktuálním stavem mého lokálního repozitáře). Toho se dá využít i ke stažení
+jiných větví než master. Například: <code>git fetch --all</code> stáhne všechny větve
+(aktualizuje je) ze všech remote repozitářů.</p>
+<p>Návod jak na to bez nápovědy z GitHubu:</p>
+<ul>
+<li><code>git fetch &lt;jmeno_remote&gt; &lt;nazev_vetve&gt;</code> - stáhne z GitHubu danou větev</li>
+<li><code>git fetch refs/pull/&lt;cislo_PR&gt;/head</code> (je možné zkrátit pomocí aliasu) - stáhne
+změny z daného PR</li>
+<li><code>git pull refs/pull/&lt;cislo_PR&gt;/head</code> - začlení změny z daného PR</li>
+</ul>
+<h2>Continuous Integration</h2>
+<p>Minule jsme začali s tím, aby se testy spustili pokaždé, jakmile někdo otevře PR.
+Minule jsme nakonfigurovali <a href="https://tox.readthedocs.io/en/latest/">tox</a> tak,
+aby se spustil testy se čtyřmi verzemi Pythonu, které bude projekt podporovat.
+Rozhodli jsme se, že pro to použijeme GitHub Actions.</p>
+<p>Potom nám na GitHubu testy spadly na Pytonu 3.6, 3.7 a 3.9 a tak jsme se pustili
+do debuggování. Tady končí 1. část streamu. Druhá část se věnuje debuggování
+a tomu, proč testy na GitHubu nefungovaly.  Problémem bylo, že <code>filecmp.dircmp</code>
+porovnává v základnám nastavení soubory tak, že kontroluje pouze jejich
+vlastnosti (datum uložení, velikost, oprávnění apod.), ne obsah.</p>
+<p>Napsali jsme test, který vytvořil 2 soubory s jiným obsahem ve stejný čas,
+takže tím testujeme, co neprochází. Poté jsme test začali opravovat.</p>
+<h3>Odbočka he Gitu č. 2</h3>
+<p>Jak dát změny z jednoho souboru do více commitů. <code>git add -p</code> poté se nám
+postupně ukáží části změn a my se u nich můžeme rozhodnout, zda je v daném
+commitu chceme, nebo ne.</p>
+<p>Po změně souborů byl problém s historií commitů - jakmile v Gitu měníme historii,
+můžeme to změnit při <code>git push</code> pomocí přepínače <code>--force-with-lease</code>.
+Jakmile děláte force-push, měli byste vědět, co děláte.</p>
+<h2>Plány do příště</h2>
+<p>Příští aktualizace GitHub actions by mohla být, že každý nový článek se automaticky
+přidá na blog, který by byl hostovaný na <a href="https://pages.github.com/">GH pages</a>.</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/kFaDcOU7ZQo">zde</a> a <a href="https://youtu.be/Q7ELr2clx5o">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

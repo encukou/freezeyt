@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz dvanáctý - blogový</h1>
+<p>Dnešní sraz začal jako obvykle kontrolou pull requestů, které přistály na GitHubu.
+První PR byl ten z minula, který přidával GitHub action. V komentáři se objevil
+dotaz, zda by nestačilo nastavit <code>shallow</code> na False. Tento parametr má jen <code>.cmp</code>
+a <code>.cmpfiles</code>, ale <code>.dircmp</code>, který používáme tento parametr nemá, takže
+v základnám nastavení neprovede důkladné porovnání souborů.</p>
+<p>Někdo už tu chybu reportoval a byla na to i napsána změna, ale chybí k ní testy,
+a proto v Pythonu ještě není. Tady je dobrá příležitost zapojit se do vývoje
+Pythonu samotného.</p>
+<p>Druhý PR aktualizoval aplikaci na blog. Následovalo upravování blogové aplikace.</p>
+<p>Aby se ukazovaly mezery v popisu obrázku, musel se <code>alt_text</code> dát do uvozovek
+v <a href="https://github.com/encukou/freezeyt/blob/74b0e00a49ac1f07a1906fac4f1601cbbb5f5b13/freezeyt_blog/app.py#L35">app.py</a>.
+Problém nastane, jakmile v textu budou uvozovky, to se dá vyřešit pomocí
+<a href="https://docs.python.org/3/library/html.html#html.escape">html.escape</a>.</p>
+<p>Obrázky na blogu bude potřeba ještě vylepšit, a proto bylo založeno nové issue.</p>
+<h3>Odbočka ohledně <code>imghdr</code>/<code>mimetype</code></h3>
+<p>Jak počítač pozná co je v danem souboru (jak počítač pozná že text je text nebo
+že obrázek je obrázek)? To záleží na systému, na Windows se to určuje pomocí
+přípony, na Unix se systém podívá přímo do souboru, například, pokud nejsou importy
+v souboru nepozná, že jde o <code>.py</code> soubor, protože se nedívá na přípony souboru.</p>
+<p>Když něco posíláme přes internet, kromě obsahu souboru posíláme i typ souboru
+(více informaci <a href="https://www.iana.org/assignments/media-types/media-types.xhtml">zde</a>)
+aby prohlížeč nemusel detekovat pomoci přípony nebo analyzovat obsah souboru což řeší
+nějaká knihovna která je na každém počítači jiná a není to tedy konzistentní způsob.</p>
+<p><code>imghdr</code>, které používáme, nám neříká nic o <a href="https://docs.python.org/3/library/mimetypes.html">mimetypes</a>
+<code>mimetypes.guess_type(url, strict=True)</code> - vytáhne argument z URL adresy.</p>
+<p>Python http server používá <code>mimetypes</code>. V hlavičkách vždy mimetype dostaneme,
+ale tato informace se nám ztratí (soubor uložíme na disk ale bez tohoto mimetype)
+takže jediná informace, kterou máme je přípona souboru. Takže zatím doufáme že
+server statických stránek na servírování použije stejný mimetype jako ten, který
+jsme dostali v hlavičkách od aplikace kterou se snažíme zamrazit. Takže je potřeba
+zkontrolovat že typ který dostaneme z aplikace, kterou freezujeme je stejný, tzn.
+odpovídá příponě souboru, kterou by server statických stránek vybral když chce
+servírovat soubor dané přípony. A tak jsme na to založili issue.</p>
+<p>Budeme potřebovat <a href="https://github.com/jshttp/mime-db/blob/master/db.json">db.json</a>
+z <code>mime-db</code>- pokud chceme freezovat stránky, které se budou pouštět na GitHub
+pages, tak by se měla použít tato databáze.</p>
+<p>Nastavení hlaviček je specifikováno ve
+<a href="https://flask.palletsprojects.com/en/1.1.x/api/#response-objects">Flask Response Objects</a>.
+Celé mimetypes je zabaleno do <a href="https://flask.palletsprojects.com/en/1.1.x/api/#flask.Request.content_type">content_type</a>
+a content_type se používá v hlavičkách.</p>
+<p>Mimetype se použije pokud není nastaven content_type a content_type se používá když
+není nastavena hlavička. Takže to jsou tři způsoby jak nastavit
+<a href="https://flask.palletsprojects.com/en/1.1.x/api/#flask.Response">flask.Response</a>
+a jsou tam tak aby se to lépe používalo když známe jenom jeden z nich. Je potřeba
+také zkontrolovat zda je tam kódování UTF-8, protože servery statických
+stránek vždy používají UTF-8 kódování.</p>
+<h2>Pokračování kontroly pull requestů</h2>
+<p>Další PR přesouvá testy s prefix do <code>test_expected_output</code>
+Cílem je, aby aplikace, které by měly být testovány tím, že se porovnávají
+s očekávaným výsledkem nebyly v hlavním adresáři projektu a zároveň, aby každá
+testovací aplikace měla svůj vlastní adresář ve fixtures kde bude aplikace včetně
+očekávaného výstupu.</p>
+<p>Modul daného jména se importuje standardně jen jednou.
+V <code>sys.modules</code> je databáze naimportovaných modulů.</p>
+<p>Všechny testovací aplikace se přejmenovávají na app, takže <code>module_name</code> bude
+vždy <code>app</code>, takže se bude muset smazat ze <code>sys.modules</code> aby bylo možné
+naimportovat jinou aplikaci se stejným jménem.
+Ideálně v bloku <code>try</code>/<code>finally</code> použít <code>del sys.modules['app']</code>.</p>
+<p>Další PR přidával článek z lekcí 9 a 10, problémem bylo, že se články z blogu
+mezitím přesuly, tudíž vzniklo mnoho merge konfliktů a ty bylo potřeba vyřešit.
+Také tam byl problém s obrázky, které jsou v gitu, ale v článku nejsou.
+<code>git grep &lt;something&gt;</code> hledá daný řetězec v repozitáři, pomocí toho jsme našli,
+které obrázky jsou potřebné a které nikoli. Obrázky, které v PR měly být jsme
+přidali pomocí <code>git add &lt;image&gt;</code> a ty, které tam neměly být jsme odebrali pomocí
+<code>git rm &lt;image&gt;</code> Změny a opravy pull requestu byly pushnuty rovnou do větve,
+ze které byl PR otevřen.</p>
+<h2>Jak vylepšit blog?</h2>
+<ul>
+<li><p>Bylo by dobré, kdyby se články na blog automaticky přidaly na blog.
+To by se dalo vyřešit přidáním dalšího workflow na GitHubu.</p>
+</li>
+<li><p>Přejmenovat články tak, aby byly seřazené a aby se jmenovaly "meeting" místo "lekce"</p>
+</li>
+<li><p>Bootstrap potřebuje strukturu i v html, nestačí jen přidat CSS soubor.</p>
+</li>
+<li><p>Přidáni div s class="container" kolem obsahu, aby byly okraje odsazené.</p>
+</li>
+<li><p>Podtržítka mají v Markdownu speciální význam a proto je problém s názvy některých
+pythonních metod a souborů. Dá se to vyřešit tím, že se tento kousek kódu
+dá do zpětných uvozovek.</p>
+</li>
+<li><p>Jméno funkce, kterou používáme je také dobré dát do zpětných apostrofů,
+aby se místo dvou podtržítek nezobrazovaly tučně.</p>
+</li>
+</ul>
+<p>Sraz jsme zakončili kontrolou otevřených issues a toho, co je potřeba udělat.</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/MonD2jaagK8">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

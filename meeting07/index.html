@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz sedmý</h1>
+<h2>Review pull requestů</h2>
+<p>Začali jsme tím, že jsme se koukli na pull requesty (PR),
+které přistály na GitHubu.</p>
+<p>První z nich aktualizoval dokumentační řetězce (docstringy).
+Druhý řešil <a href="https://github.com/encukou/freezeyt/issues/31">Issue #31</a>.
+Jelikož používáme metodu Test Driven Developementu (TDD),
+znamenalo to zajistit, aby prošel příslušný test.
+Díky tady tomuto PR freezeyt spadne v případě, že v dané webové aplikaci
+bude „pokažený“ odkaz, např. e-mail link bez <code>mailto:</code></p>
+<p>Komentář k tomuto PR říkal, že by bylo dobré, kdyby chybová hláška
+byla více informativní. K tomu se dostaneme později v projektu.</p>
+<blockquote><p>Poznámka ke GitHubu: chceme-li zajistit, aby se dané Issue zavřelo
+automaticky, je potřeba použít jedno
+z <a href="https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword">těchto</a>
+klíčových slov.</p>
+</blockquote>
+<p>Třetí PR přidává adresář na blog, ale jelikož je blog stále „a Work in progress“,
+tak jsme PR (zatím) do projektu nezačlenili.</p>
+<blockquote><p>Poznámka ke GitHubu: chceme-li se podívat na obrázky, které byly přidány přímo
+na GitHubu bez toho, aniž bychom si k sobě stahovali danou větev, můžeme použít
+tlačítko <em>Display the rich diff</em> vpravo v rohu u daného souboru v sekci <em>Files changed</em> na GitHubu.</p>
+<p>
+<img src="/article_image/rich_diff.png" alt="Tlačítko pro zobrazení obrázků na GitHubu" >
+</p>
+</blockquote>
+<h2>Úprava odchytávání chybných odkazů</h2>
+<p>Následně jsme zkontrolovali Issues a poté jsme se pustili do práce na samotném kódu.
+Začleněný PR na odchytávání špatných odkazů obsahoval i tuto podmínku:</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="s2">&quot;200&quot;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
+    <span class="o">...</span>
+</pre></div>
+<p>V řetězci, který obsahuje status code, se <code>"200"</code> teoreticky může vyskytovat kdekoliv,
+takže pro jistotu jsme tuto podmínku upravili, protože dle <a href="https://tools.ietf.org/html/rfc7231">standardu</a>
+je status code vždy na začátku. Podmínku jsme upravili tak, že zjišťuje, zda status začíná kódem 200.</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;200&quot;</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+<h2>Úprava slovníku <code>environ</code></h2>
+<p>Když už jsme se věnovali těm standardům, tak jsme se pustili na úpravu <code>environ</code>
+aby bylo podle WSGI standardu, tedy dle <a href="https://www.python.org/dev/peps/pep-3333/#environ-variables">PEP 3333</a>.
+Prošli jsme všechny proměnné, které environ může obsahovat a vybrali vše, co potřebujeme.</p>
+<p>Momentálně to není celá implementace protokolu WSGI a proto se k ní někdy v budoucnu vrátíme.
+Bylo na to založeno Issue.</p>
+<h3>Odbočka ke standardním výstupům</h3>
+<p>V průběhu toho jsme si udělali odbočku ke standardním vstupům, výstupům a souborům,
+kam se ukládají chybové hlášky. Ve zkratce:</p>
+<ul>
+<li><code>sys.stdout</code>, tedy standardní výstup, v základu je to příkazový řádek.</li>
+<li><code>sys.stderr</code> - standardní chybový výstup. Tento soubor není ovlivněn změnou výstupu
+(např. pomocí <code>&gt;</code> v příkazovém řádku) vypíše se jinam než na stdout.</li>
+<li><code>sys.stdin</code>, neboli standardní vstup.</li>
+</ul>
+<h2>Jiná host adresa</h2>
+<p>Momentálně freezeyt nefunguje (tak, jak bychom chtěli), když je jiná host adresa než <em>localhost:8000</em>.</p>
+<p>Jelikož používáme TDD, začali jsme napsáním testů. Upravili jsme funkce
+<code>freezeyt.freezing.freeze</code> a <code>freezeyt.freezing.url_to_filename</code>.
+Rozšířili jsme nápovědu. A zajistit, aby to fungovalo je úkol do příště.</p>
+<h3>Odbočka k doménám</h3>
+<p>Pro pokusné a testovací účely jsou rezervovány <a href="https://tools.ietf.org/html/rfc2606">jisté</a>
+domény, například doména <code>test</code> a <code>localhost</code>.</p>
+<h2>Reorganizace testů</h2>
+<p>Ke konci jsme se dostali k tomu, že většina první stránky repozitáře jsou
+testy a testovací aplikace.</p>
+<p>Testy (momentálně) fungují tak, že zkopírujeme předchozí test a něco tam upravíme
+(něco upravit zapomeneme).
+Testovací metoda <a href="https://codeclimate.com/blog/gold-master-testing/">Gold Master Testing</a>
+by mohla náš problém elegantně vyřešit. Ve zkratce: máme uložený vstup
+a správný/chtěný výstup - testovací aplikace projde vstupy, spustí je a ověří,
+že výsledky jsou stejné.
+Víme, že jakmile aplikaci zmrazíme, tak zmražení bude vždy stejné, takže testy
+nebudeme muset upravovat.</p>
+<p>V adresáři <em>fixtures</em> jsou data, která budou testy potřebovat,
+tzn. testovací aplikace V adresáři <em>test_expected_output</em> budou adresáře
+s očekávanými výstupy programu.</p>
+<p>Pro testy potřebujeme funkci, která vezme obsah dvou adresářů a porovná jejich obsah.
+Tu si buď můžeme napsat vlastní, nebo pro to můžeme použít třídu
+<a href="https://docs.python.org/3/library/filecmp.html#the-dircmp-class"><code>filecmp.dircmp</code></a>
+standardní knihovny.</p>
+<p>V reorganizaci testů budeme pokračovat příště.</p>
+<h3>Odbočka k <code>__name__</code> a <code>__file__</code></h3>
+<ul>
+<li><code>__name__</code> vrátí název modulu.</li>
+<li><code>__file__</code> vrátí název souboru s celou cestou a příponou.</li>
+</ul>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/DzpNvEarVAE">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>
