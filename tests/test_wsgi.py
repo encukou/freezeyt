@@ -60,3 +60,23 @@ def test_write():
     expected = {'index.html': b'here is the response body'}
 
     assert freeze(simple_app, config) == expected
+
+
+@pytest.mark.parametrize('iterable', (
+    (b'a', b'b'),
+    [b'a', b'b'],
+    {b'a': 1, b'b': 2},
+    (value for value in (b'a', b'b')),
+))
+def test_result_iterable_types(iterable):
+    def simple_app(environ, start_response):
+        # regular application code here
+        status = "200 OK"
+        response_headers = [("content-type", "text/html")]
+        write = start_response(status, response_headers)
+        return iterable
+
+    config = {'output': 'dict'}
+    expected = {'index.html': b'ab'}
+
+    assert freeze(simple_app, config) == expected
