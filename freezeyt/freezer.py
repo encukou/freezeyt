@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 from mimetypes import guess_type
 import io
+import itertools
+import functools
 
 from urllib.parse import urlparse, urljoin
 from werkzeug.datastructures import Headers
@@ -78,7 +80,24 @@ class Freezer:
                 self.saver.save_to_filename(filename, [content])
 
 
-    def start_response(self, status, headers, exc_info=None):
+    def start_response(
+        self, wsgi_write, status, headers, exc_info=None,
+    ):
+        """WSGI start_response hook
+
+        The application we are freezing will call this method
+        and supply the status, headers, exc_info arguments.
+        (self and wsgi_write are provided by freezeyt.)
+
+        See: https://www.python.org/dev/peps/pep-3333/#the-start-response-callable
+
+        Arguments:
+            wsgi_write: function that the application can call to output data
+            status: HTTP status line, like '200 OK'
+            headers: Dict of HTTP headers
+            exc_info: Information about a server error, if any.
+                Will be raised if given.
+        """
         if exc_info:
             exc_type, value, traceback = exc_info
             if value is not None:
@@ -90,6 +109,7 @@ class Freezer:
             print('headers', headers)
             check_mimetype(urlparse(self.url).path, headers)
             self.response_headers = Headers(headers)
+        return wsgi_write
 
     def handle_urls(self):
         prefix = self.prefix.geturl()
@@ -140,7 +160,31 @@ class Freezer:
                 'freezeyt.freezing': True,
             }
 
-            result = self.app(environ, self.start_response)
+            # The WSGI application can output data in two ways:
+            # - by a "write" function, which, in our case, will append
+            #   any data to a list, `wsgi_write_data`
+            # - (preferably) by returning an iterable object.
+
+            # See: https://www.python.org/dev/peps/pep-3333/#the-write-callable
+
+            # Set up the wsgi_write_data, and make its `append` method
+            # available to `start_response` as first argument:
+            wsgi_write_data = []
+            start_response = functools.partial(
+                self.start_response,
+                wsgi_write_data.append,
+            )
+
+            # Call the application. All calls to write (wsgi_write_data.append)
+            # must be doneas part of this call.
+            result = self.app(environ, start_response)
+
+            # Combine the list of data from write() with the returned
+            # iterable object.
+            result = itertools.chain(
+                wsgi_write_data,
+                result,
+            )
 
             self.saver.save(url_parsed, result)
 
