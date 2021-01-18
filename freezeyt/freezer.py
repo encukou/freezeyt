@@ -78,7 +78,11 @@ class Freezer:
                 self.saver.save_to_filename(filename, [content])
 
 
-    def start_response(self, status, headers):
+    def start_response(self, status, headers, exc_info=None):
+        if exc_info:
+            exc_type, value, traceback = exc_info
+            if value is not None:
+                raise value
         if not status.startswith("200"):
             raise ValueError("Found broken link.")
         else:
