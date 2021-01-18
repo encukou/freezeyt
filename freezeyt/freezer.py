@@ -177,16 +177,23 @@ class Freezer:
 
             # Call the application. All calls to write (wsgi_write_data.append)
             # must be doneas part of this call.
-            result = self.app(environ, start_response)
+            result_iterable = self.app(environ, start_response)
 
             # Combine the list of data from write() with the returned
             # iterable object.
-            result = itertools.chain(
+            full_result = itertools.chain(
                 wsgi_write_data,
-                result,
+                result_iterable,
             )
 
-            self.saver.save(url_parsed, result)
+            self.saver.save(url_parsed, full_result)
+
+            try:
+                close = result_iterable.close
+            except AttributeError:
+                pass
+            else:
+                close()
 
             with self.saver.open(url_parsed) as f:
                 cont_type, cont_encode = parse_options_header(self.response_headers.get('Content-Type'))

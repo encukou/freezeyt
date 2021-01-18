@@ -80,3 +80,40 @@ def test_result_iterable_types(iterable):
     expected = {'index.html': b'ab'}
 
     assert freeze(simple_app, config) == expected
+
+
+def test_close():
+    closed = False
+
+    class SpecialResult:
+        def __init__(self):
+            self.values = [b'body', b' ', b'content']
+            self.position = 0
+
+        def __next__(self):
+            if self.position < len(self.values):
+                value = self.values[self.position]
+                self.position += 1
+                return value
+            else:
+                raise StopIteration()
+
+        def __iter__(self):
+            return self
+
+        def close(self):
+            nonlocal closed
+            closed = True
+
+    def simple_app(environ, start_response):
+        # regular application code here
+        status = "200 OK"
+        response_headers = [("content-type", "text/html")]
+        write = start_response(status, response_headers)
+        return SpecialResult()
+
+    config = {'output': 'dict'}
+    expected = {'index.html': b'body content'}
+
+    assert freeze(simple_app, config) == expected
+    assert closed == True
