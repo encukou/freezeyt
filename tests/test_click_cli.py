@@ -88,7 +88,7 @@ def test_cli_with_fixtures_output(tmp_path, app_name):
 
 
 def test_cli_with_prefix_option(tmp_path):
-    app_name = 'demo_app_url_for_prefix'
+    app_name = 'app_url_for_prefix'
     build_dir = tmp_path / 'build'
 
     with context_for_test(app_name,) as module:
@@ -119,7 +119,7 @@ def test_cli_with_extra_page_option(tmp_path):
 
 
 def test_cli_prefix_conflict(tmp_path):
-    app_name = 'demo_app_url_for_prefix'
+    app_name = 'app_url_for_prefix'
     config_file = tmp_path / 'config.yaml'
     build_dir = tmp_path / 'build'
 

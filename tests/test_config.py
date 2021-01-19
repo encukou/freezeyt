@@ -8,7 +8,7 @@ from fixtures.app_with_extra_files.app import app, freeze_config
 
 def test_cli_to_files(tmp_path, monkeypatch):
     builddir = tmp_path / 'build'
-    app_name = 'demo_app_2pages'
+    app_name = 'app_2pages'
 
     run_freezeyt_cli(['app', str(builddir)], app_name)
 
