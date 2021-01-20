@@ -24,3 +24,22 @@ URL paths:
 
     On disk:
         use internal format
+
+
+Hostname domain:
+    Input - From HTML:
+        handle with idna (ASCII)
+        Example:
+            http://čau-☺フ.даль.рф:8000/
+            b'xn--http://au-..:8000/-0gc871nnc3hue4drjv997fp38b'
+
+    Input - prefix:
+        handle with idna (ASCII)
+        Same as from HTML
+
+    To WSGI environ (PATH_INFO):
+        ToASCII(hostname).decode('latin-1')
+
+
+    On disk:
+        we don't need handle encoding of hostname for disk usage
