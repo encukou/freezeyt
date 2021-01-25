@@ -41,22 +41,11 @@ def test_output_dict(tmp_path, monkeypatch, app_name):
         freeze_config = getattr(module, 'freeze_config', {})
         freeze_config['output'] = 'dict'
 
-        expected = app_path / 'test_expected_output'
-
         if error_path.exists():
             with pytest.raises(ValueError):
                 freeze(app, freeze_config)
         else:
             result = freeze(app, freeze_config)
-
-            if not expected.exists():
-                if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
-                    shutil.copytree(tmp_path, expected)
-                else:
-                    raise AssertionError(
-                        f'Expected output directory ({expected}) does not exist. '
-                        + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
-                    )
 
             assert result == expected_dict
 
@@ -76,6 +65,9 @@ def test_output(tmp_path, monkeypatch, app_name):
     try:
         module = importlib.import_module('app')
         app = module.app
+
+        if getattr(module, 'no_expected_directory', False):
+            pytest.skip('No directory with expected output')
 
         freeze_config = getattr(module, 'freeze_config', {})
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
