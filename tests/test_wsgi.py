@@ -73,7 +73,7 @@ def test_result_iterable_types(iterable):
         # regular application code here
         status = "200 OK"
         response_headers = [("content-type", "text/html")]
-        write = start_response(status, response_headers)
+        start_response(status, response_headers)
         return iterable
 
     config = {'output': 'dict'}
@@ -109,7 +109,7 @@ def test_close():
         # regular application code here
         status = "200 OK"
         response_headers = [("content-type", "text/html")]
-        write = start_response(status, response_headers)
+        start_response(status, response_headers)
         return SpecialResult()
 
     config = {'output': 'dict'}
