@@ -36,7 +36,7 @@ jobs:
 
       - name: Freeze blog app
         run: |
-          python -m freezeyt freezeyt_blog.app freezeyt_blog/build
+          python -m freezeyt freezeyt_blog.app freezeyt_blog/build -c freezeyt_blog/config.yaml
 
       - if: ${{ github.ref == 'refs/heads/master' }}
         name: Deploy
