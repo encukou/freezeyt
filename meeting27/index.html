@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz dvacátý sedmý - DictSaver &amp; testy konfigurace</h1>
+<p>Na začátku srazu jsme vzpomínali, kde jsme minule skončili.
+Jako první jsme smazali původní <code>freezeyt/freezing.py</code>.
+Začali jsme tvorbou rozšíření, které by „zmražené“ stránky
+místo do souboru ukládalo do slovníku.</p>
+<p>Po chvilce psaní jsme si uvědomili, že nám chybí testy, a tak jsme je dopsali,
+aby to byl správný Test Driven Development.
+Poté, co jsme napsali test, jsme se vrátili k psaní plug-inu. Metoda
+<code>get_result</code> zatím vezme jen známý výsledek, ale je možné,
+že v budoucnu budeme chtít, aby dělala něco složitějšího.</p>
+<p>Následně jsme pokračovali ve tvorbě třídy <code>DictSaver</code>.
+Potom jsme napsali testy na konfiguraci. To byly testy na freeze z CLI
+a funkce <code>freeze</code>. Ověřovali jsme ukládání výsledku do souboru a do slovníku.</p>
+<p>V průběhu úprav konfigurace jsme zjistili, že mnoho testů je špatně nakonfigurováno.</p>
+<p>Napsali jsme testy, které ověřují, že je možno uložit výstup do slovníku bez toho,
+abychom mu dali cestu, kam má soubor uložit.
+Tady tato změna rozbila spoustu testů, tak jsme pokračovali v úpravách freezeytu.</p>
+<p>Následně jsme freezeyt upravili tak, aby byl adresář, kam se má výstup uložit povinný.
+A aby nebylo možné ho zadat, když výstup budeme chtít uložit do slovníku.</p>
+<p>Na konci srazu se nám z nějakého důvodu pokazily testy, takže se k tomu vrátíme později.</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/XOf46FLt78k">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>
