@@ -17,6 +17,7 @@ from freezeyt.getlinks_css import get_links_from_css
 
 def freeze(app, config):
     freezer = Freezer(app, config)
+    freezer.prepare()
     freezer.freeze_extra_files()
     freezer.handle_urls()
     return freezer.get_result()
@@ -77,6 +78,8 @@ class Freezer:
                     content = content.encode()
                 self.saver.save_to_filename(filename, [content])
 
+    def prepare(self):
+        self.saver.prepare()
 
     def start_response(self, status, headers):
         if not status.startswith("200"):

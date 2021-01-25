@@ -38,6 +38,9 @@ class DictSaver:
 
         return tuple(encode_file_path(url_path).lstrip('/').split('/'))
 
+    def prepare(self):
+        """DictSaver doesn't need any preparation"""
+
     def save_to_filename(self, filename, content_iterable):
         parts = Path(filename).parts
         self._save_to_parts(parts, content_iterable)
