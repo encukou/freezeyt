@@ -144,7 +144,6 @@ with make_server('', 8000, app) as server:
 Naši spuštěnou aplikaci najdeme na portu 8000, proto do prohlížeče zadáme `localhost:8000`.
 
 
-_____
 ## Jak toto rozhraní funguje?
 Proto, abychom z aplikace dostali nějaký obsah, tak ji potřebujeme zavolat.
 Každá webová aplikace v Pythonu je volatelná, může to být třeba funkce nebo třída.
