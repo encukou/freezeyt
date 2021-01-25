@@ -3,6 +3,10 @@ from freezeyt.util import is_external
 from freezeyt.encoding import encode_file_path
 
 
+class DirectoryExistsError(Exception):
+    """Attempt to overwrite directory that doesn't contain freezeyt output"""
+
+
 class FileSaver:
     """Outputs frozen pages as files on the filesystem.
 
@@ -13,6 +17,17 @@ class FileSaver:
     def __init__(self, base_path, prefix):
         self.base_path = base_path
         self.prefix = prefix
+
+        exists = self.base_path.exists()
+        has_files = list(self.base_path.iterdir())
+        has_index = self.base_path.joinpath('index.html').exists()
+        if exists and has_files and not has_index:
+            raise DirectoryExistsError(
+                f'Will not overwrite directory {base_path}: it '
+                + f'contains files that do not look like a frozen website. '
+                + f'If you are sure, remove the directory before running '
+                + f'freezeyt.'
+            )
 
     def url_to_filename(self, parsed_url):
         """Return the filename to which the page is frozen.
