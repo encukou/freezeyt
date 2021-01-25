@@ -1,4 +1,4 @@
-# Freezeyt sraz dvacátý sedmý - DirSaver & testy konfigurace
+# Freezeyt sraz dvacátý sedmý - DictSaver & testy konfigurace
 
 Na začátku srazu jsme vzpomínali, kde jsme minule skončili.
 Jako první jsme smazali původní `freezeyt/freezing.py`.
