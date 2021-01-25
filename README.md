@@ -125,6 +125,12 @@ you must specify the oputput directory on the command line.
 Specifying it both on the command line and in the config file
 is an error.
 
+If there is any existing content in the output directory,
+freezeyt will either remove it (if the content looks like a previously
+frozen website) or raise an error.
+Best practice is to remove the output directory before freezing.
+
+
 
 #### Output to dict
 
