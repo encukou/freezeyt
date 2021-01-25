@@ -78,6 +78,9 @@ def test_cli_with_fixtures_output(tmp_path, app_name):
         cli_args = ['app', str(build_dir)]
         freeze_config = getattr(module, 'freeze_config', None)
 
+        if getattr(module, 'no_expected_directory', False):
+            pytest.skip('No directory with expected output')
+
         if freeze_config != None:
             with open(config_file, mode='w') as file:
                 safe_dump(freeze_config, stream=file)
