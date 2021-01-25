@@ -40,6 +40,12 @@ def test_overwrite_dir_with_index(tmp_path):
     index_path = builddir / 'index.html'
     index_path.write_text('<html></html>')
 
+    old_path = builddir / 'old.dat'
+    old_path.write_text('1234')
+
+    old_dir_path = builddir / 'dir'
+    old_dir_path.mkdir()
+
     config = {
         **freeze_config,
         'output': {'type': 'dir', 'dir': builddir},
@@ -47,3 +53,6 @@ def test_overwrite_dir_with_index(tmp_path):
 
     freeze(app, config)
     assert index_path.exists()
+
+    assert not old_path.exists()
+    assert not old_dir_path.exists()

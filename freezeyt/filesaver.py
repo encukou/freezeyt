@@ -1,3 +1,4 @@
+import shutil
 
 from freezeyt.util import is_external
 from freezeyt.encoding import encode_file_path
@@ -18,16 +19,18 @@ class FileSaver:
         self.base_path = base_path
         self.prefix = prefix
 
-        exists = self.base_path.exists()
-        has_files = list(self.base_path.iterdir())
-        has_index = self.base_path.joinpath('index.html').exists()
-        if exists and has_files and not has_index:
-            raise DirectoryExistsError(
-                f'Will not overwrite directory {base_path}: it '
-                + f'contains files that do not look like a frozen website. '
-                + f'If you are sure, remove the directory before running '
-                + f'freezeyt.'
-            )
+    def prepare(self):
+        if self.base_path.exists():
+            has_files = list(self.base_path.iterdir())
+            has_index = self.base_path.joinpath('index.html').exists()
+            if has_files and not has_index:
+                raise DirectoryExistsError(
+                    f'Will not overwrite directory {self.base_path}: it '
+                    + 'contains files that do not look like a frozen website. '
+                    + 'If you are sure, remove the directory before running '
+                    + 'freezeyt.'
+                )
+            shutil.rmtree(self.base_path)
 
     def url_to_filename(self, parsed_url):
         """Return the filename to which the page is frozen.
