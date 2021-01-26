@@ -1,5 +1,6 @@
 
 from urllib.parse import urlparse
+from werkzeug.urls import url_parse
 
 
 def is_external(parsed_url, prefix):
@@ -22,7 +23,7 @@ def parse_absolute_url(url):
     absolute HTTP and HTTPS URLs only.
     The result port is always an integer.
     """
-    parsed = urlparse(url)
+    parsed = url_parse(url)
     if not parsed.scheme or not parsed.netloc:
         raise ValueError("Need an absolute URL")
 
@@ -31,10 +32,26 @@ def parse_absolute_url(url):
 
     if parsed.port == None:
         if parsed.scheme == 'http':
-            parsed = parsed._replace(netloc=parsed.hostname + ':80')
+            parsed = parsed.replace(netloc=parsed.host + ':80')
         elif parsed.scheme == 'https':
-            parsed = parsed._replace(netloc=parsed.hostname + ':443')
+            parsed = parsed.replace(netloc=parsed.host + ':443')
         else:
             raise ValueError("URL scheme must be http or https")
 
     return parsed
+    # parsed = urlparse(url)
+    # if not parsed.scheme or not parsed.netloc:
+    #     raise ValueError("Need an absolute URL")
+
+    # if parsed.scheme not in ('http', 'https'):
+    #     raise ValueError("URL scheme must be http or https")
+
+    # if parsed.port == None:
+    #     if parsed.scheme == 'http':
+    #         parsed = parsed._replace(netloc=parsed.hostname + ':80')
+    #     elif parsed.scheme == 'https':
+    #         parsed = parsed._replace(netloc=parsed.hostname + ':443')
+    #     else:
+    #         raise ValueError("URL scheme must be http or https")
+
+    # return parsed

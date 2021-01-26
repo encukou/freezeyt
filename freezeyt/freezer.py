@@ -7,7 +7,7 @@ from urllib.parse import urlparse, urljoin
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
-from freezeyt.encoding import decode_input_path, encode_wsgi_path
+from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external
@@ -54,7 +54,7 @@ class Freezer:
         decoded_path = decode_input_path(prefix_parsed.path)
         if not decoded_path.endswith('/'):
             raise ValueError('prefix must end with /')
-        self.prefix = prefix_parsed._replace(path=decoded_path)
+        self.prefix = prefix_parsed.replace(path=decoded_path)
 
         output = config['output']
         if isinstance(output, str):
@@ -118,7 +118,7 @@ class Freezer:
                 path_info = "/" + path_info[len(self.prefix.path):]
 
             environ = {
-                'SERVER_NAME': self.prefix.hostname,
+                'SERVER_NAME': self.prefix.ascii_host,
                 'SERVER_PORT': str(self.prefix.port),
                 'REQUEST_METHOD': 'GET',
                 'PATH_INFO': encode_wsgi_path(path_info),

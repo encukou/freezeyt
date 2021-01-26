@@ -32,7 +32,7 @@ def test_port():
 
 def test_netloc():
     parsed = parse_absolute_url("http://freezeyt.test:1234/foo/")
-    assert parsed.netloc == parsed.hostname + ':1234'
+    assert parsed.netloc == parsed.host + ':1234'
 
 def test_scheme():
     parsed = parse_absolute_url("https://freezeyt.test:1234/foo/")
