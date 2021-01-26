@@ -88,7 +88,7 @@ class Freezer:
             self.response_headers = Headers(headers)
 
     def handle_urls(self):
-        prefix = self.prefix.geturl()
+        prefix = self.prefix.to_url()
         new_urls = [prefix]
         for extra in self.extra_pages:
             new_urls.append(urljoin(prefix, decode_input_path(extra)))

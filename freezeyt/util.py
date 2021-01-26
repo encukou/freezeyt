@@ -10,7 +10,7 @@ def is_external(parsed_url, prefix):
     """
     return (
         parsed_url.scheme != prefix.scheme
-        or parsed_url.hostname != prefix.hostname
+        or parsed_url.host != prefix.host
         or parsed_url.port != prefix.port
         or not parsed_url.path.startswith(prefix.path)
     )
