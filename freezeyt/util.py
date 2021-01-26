@@ -1,5 +1,3 @@
-
-from urllib.parse import urlparse
 from werkzeug.urls import url_parse
 
 
@@ -39,19 +37,3 @@ def parse_absolute_url(url):
             raise ValueError("URL scheme must be http or https")
 
     return parsed
-    # parsed = urlparse(url)
-    # if not parsed.scheme or not parsed.netloc:
-    #     raise ValueError("Need an absolute URL")
-
-    # if parsed.scheme not in ('http', 'https'):
-    #     raise ValueError("URL scheme must be http or https")
-
-    # if parsed.port == None:
-    #     if parsed.scheme == 'http':
-    #         parsed = parsed._replace(netloc=parsed.hostname + ':80')
-    #     elif parsed.scheme == 'https':
-    #         parsed = parsed._replace(netloc=parsed.hostname + ':443')
-    #     else:
-    #         raise ValueError("URL scheme must be http or https")
-
-    # return parsed

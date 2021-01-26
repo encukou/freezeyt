@@ -1,5 +1,4 @@
 from pathlib import Path
-from urllib.parse import urlparse
 from werkzeug.urls import url_parse
 
 import pytest
