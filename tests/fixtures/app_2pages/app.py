@@ -43,7 +43,7 @@ expected_dict = {
             + b"o world</title>\n        </head>\n        <body>\n"
             + b"            Hello world!\n            <br>\n"
             + b"            <a href='/second_page.html'>LINK</a> t"
-            +b"o second page.\n        </body>\n    </html>\n    ",
+            + b"o second page.\n        </body>\n    </html>\n    ",
 
     'second_page.html':
             b"\n    <html>\n        <head>\n            <title>"
