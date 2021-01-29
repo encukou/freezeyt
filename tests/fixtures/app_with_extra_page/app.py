@@ -30,3 +30,19 @@ def extra():
         </body>
     </html>
     """
+
+
+expected_dict = {
+    'index.html':
+        b'\n    <html>\n        <head>\n            <title>Hell'
+        + b'o world</title>\n        </head>\n        <body>\n'
+        + b'            Hello world!\n        </body>\n    </html>\n    ',
+
+    'extra': {
+        'index.html':
+            b"\n    <html>\n        <head>\n"
+            + b"            <title>Extra page</title>\n        </head>\n"
+            + b"        <body>\n            This is unreachable via links.\n"
+            + b"        </body>\n    </html>\n    "
+    },
+}
