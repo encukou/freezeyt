@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/freezeyt/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz dvacátý osmý - mazání adresářů</h1>
+<p>Na začátku jsme se koukli na Pull requesty od minula - první přidával článek
+na blog z 27. lekce.
+Další se pokoušel „opravit“ blog - na blogu momentálně nefungují odkazy,
+tak jak by měly, protože místo toho, aby odkaz na další článek směřoval na
+adresu <code>/freezeyt/meeting01</code>, tak odkaz směřuje na adresu <code>/meeting01/</code>,
+a proto blog vyhodí chybu 404, když se budeme chtít na článek dostat
+z hlavní stránky blogu.</p>
+<p>Další PR přejmenovával testy, aby se jmenovaly přibližně stejně,
+aby byly konzistentní.
+Před tím byly v některých názvech testů podtržítka a v jiných pomlčky.
+Některé názvy aplikací začínaly s <code>demo_</code>.
+Teď testy vypadají lépe.</p>
+<p>Dále jsme se podívali na PR s kódováním hostname.
+Následně jsme řešili, že hostname se kóduje trochu jinak, než bychom čekali.
+Tak jsme se dozvěděli, jak s PR pokračovat a chvilku jsme se zastavili u kódování.</p>
+<p>Potom jsme se dozvěděli, jak pokračovat s našimi rozpracovanými pull requesty.</p>
+<p>Následně jsme se vrátili k nastavení serveru WSGI a hledali jsme,
+jaké všechny hlavičky musíme předat dle standardu.
+Také jsme pokračovali vyhazováním příslušných chyb.
+Vypadá to, že vše z poznámek, které jsme do issue napsali před několika týdny,
+je zapracováno.</p>
+<p>Takže jsme se vrátili k rozpracovanému pull requestu.
+V průběhu commitování jsme objevili necommitnutou změnu,
+která přidávala <code>SERVER_SOFTWARE</code> s verzí freezeyt do slovníku <code>environ</code>.
+Následně jsme uvažovali, proč jsme to tam chtěli přidat.
+Tak jsme opravili změny, na které si stěžovaly pyflakes.</p>
+<p>Koukli jsme se na otevřené issues a rozhodli jsme se pracovat na tom,
+že freezeyt smaže existující adresář, před tím, než do něj začne ukládat stránku.</p>
+<p>Začali jsme, jako už klasicky dle TDD, napsáním testů.
+A pak jsme je začali opravovat.
+Poté, co jsme začali upravovat freezeyt jsme zjistili,
+že vestavěná chyba <code>FileExistsError</code> není úplně výstižná.
+Výjimky v Pythonu jsou v jisté <a href="https://docs.python.org/3/library/exceptions.html#exception-hierarchy">hierarchii</a>.
+Přesnější by bylo, kdyby se chyba jmenovala <code>DirectoryExistsError</code>.
+A tak jsme si ji vytvořili.
+Vytvoření vlastní chyby v Pythonu znamená podědit z nějaké třídy
+z výše zmiňované hierarchie.
+Následně jsme přidali možnost smazat původní adresář.
+PyFlakes si stěžovalo jen na to, že u některých formátovacích řetězců
+nevkládáme žádnou proměnnou.
+Do README jsme napsali poznámku o tom, že freezeyt smaže existující adresář.</p>
+<blockquote><p>Tip pro práci v terminálu, když píšete nějaký příkaz, ale ještě přesně nevíte,
+jak by měl končit, na začátek řádku napište <code>#</code> a tím to „zakomentujete“.
+(Ekvivalentní příkaz na Windows je <code>rem</code>.)</p>
+</blockquote>
+<p>Rozhodli jsme se z repozitáře smazat soubory s „divnými“ názvy.
+Tím jsme vyřešili jedno issue.
+Abychom nepřišli o testy, které tyto soubory používaly,
+převedli jsme je na testy pouze s výstupem do slovníku.</p>
+<p>Nakonec jsme zkontrolovali, že v repozitáři nezbyly žádné soubory s divnými jmény.</p>
+<blockquote><p>Na to jsme použili tento příkaz: <code>ls -R | grep '[^-a-zA-Z0-9._/:]'</code>.
+Tento příkaz nebude fungovat na Windows.
+<code>ls -R</code> - rekurzivně prohledá adresář (a vrátí názvy souborů).
+Pomocí <code>|</code> předáme výstup z předchozího programu dalšímu programu.
+V tomto případě je to <code>grep</code>, který najde výsledky,
+které odpovídají danému regulárnímu výrazu.
+regulární výraz <code>[^-a-zA-Z0-9._/:]</code> odpovídá všemu bez pomlčky, tečky,
+podtržítka, lomítka, dvojtečky velkých a malých písmen (bez diakritiky)
+a číslic v názvu souboru.</p>
+</blockquote>
+<p>Na chvíli jsme se zastavili u příkazu <code>git cherry-pick</code> - ten může na danou
+větev přidat i commit, ke kterému se nedostaneme z žádné větve
+(protože byla například smazána).
+Dostaneme se k němu právě proto, že známe jeho commit hash.
+V Gitu existuje <a href="https://git-scm.com/docs/git-fsck#Documentation/git-fsck.txt---no-reflogs">příkaz</a>, který by tyto commity ze „vzduchoprázdna“ dokáže vylovit.
+(V případě, že je nenajdeme v reflogu (<code>git reflog</code>).)</p>
+<p>Od <code>git cherry-pick</code> nebylo moc daleko ke <code>git rebase</code>. Tak jsme se zastavili i u toho.
+Při rebase se mění historie, a proto se mění i commit hashe daných commitů.
+A poznámka bokem, <code>git rebase</code> se používá jen u větví v pull requestech,
+rozhodně ne v těch oficiálních (ostatním to znesnadní práci).</p>
+<p>A když už jsme u toho měnění historie a věcí, které by se neměly dělat,
+tak master větve (hlavní větve) u forknutých repozitářů jsou dobré na testování
+věcí (protože by na nich nikdo neměl dále „stavět“),
+pro které je potřeba, že je to commit v masteru (například GH Actions).</p>
+<blockquote><p>A tip nakonec, už jsme se o tom na nějakém dřívějším srazu bavili,
+ale když chcete pushnout změny z jedné větve do jiné, tak to jde udělat
+třeba takto <code>git push &lt;jmeno_remote&gt; master:blog-config</code></p>
+<p>Záznam ze srazu <a href="https://youtu.be/lEIp9cmwZ88">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>
