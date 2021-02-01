@@ -1,5 +1,3 @@
-import importlib
-
 import click
 import yaml
 
