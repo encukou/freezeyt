@@ -1,6 +1,6 @@
 # Freezeyt sraz dvacátý osmý - mazání adresářů
 
-Na začátku jsme se koukli na Pull requasty od minula - první přidával článek
+Na začátku jsme se koukli na Pull requesty od minula - první přidával článek
 na blog z 27. lekce.
 Další se pokoušel „opravit“ blog - na blogu momentálně nefungují odkazy,
 tak jak by měly, protože místo toho, aby odkaz na další článek směřoval na
@@ -73,7 +73,7 @@ Na chvíli jsme se zastavili u příkazu `git cherry-pick` - ten může na danou
 větev přidat i commit, ke kterému se nedostaneme z žádné větve
 (protože byla například smazána).
 Dostaneme se k němu právě proto, že známe jeho commit hash.
-V Gitu existuje [příkaz](), který by tyto commity ze „vzduchoprázdna“ dokáže vylovit.
+V Gitu existuje [příkaz](https://git-scm.com/docs/git-fsck#Documentation/git-fsck.txt---no-reflogs), který by tyto commity ze „vzduchoprázdna“ dokáže vylovit.
 (V případě, že je nenajdeme v reflogu (`git reflog`).)
 
 Od `git cherry-pick` nebylo moc daleko ke `git rebase`. Tak jsme se zastavili i u toho.
