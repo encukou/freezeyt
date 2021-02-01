@@ -94,6 +94,7 @@ The following options are configurable:
 The module that contains the application must be given on the 
 command line.
 In it, Freezyt looks for the variable `app`.
+A different variable can be specified using `:`.
 
 Examples:
 
@@ -101,6 +102,9 @@ Examples:
 or
 
     folder1.folder2.application
+or
+
+    my_app:wsgi_application
 
 
 ### Output
