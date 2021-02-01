@@ -9,7 +9,7 @@
 
         <!-- pygments CSS -->
         <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
-        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+        <link rel="stylesheet" type="text/css" href="/freezeyt/static/pygments.css">
 
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
@@ -38,16 +38,16 @@ To continue working on it he switched to the <code>reorganize tests</code> branc
 <p>Each commit in Git represents the state of the whole project. <code>Git show</code> and <code>gitk --all</code> both display all the changes since the last commit. In the background however it actually saves the whole content/state of each commit. Saving the whole state of all commits makes it possible for Git to display all that happened within each commit. In reality, it compares the state of the previous/parent commit, and the state of the current commit by listing the <code>diff --git a/</code> of all files from both commits.</p>
 <p>To do the <code>git rebase master</code>, Git takes the diff or all changes from the commit and attempts to apply the same changes to the current master. More precisely, Git creates a new commit, goes file by file and tries to apply all changes until a conflict appears or until all changes are applied to the master.</p>
 <p>
-<img src="/article_image/rebase_commits.png" alt="Rebase commits" >
+<img src="/freezeyt/article_image/rebase_commits.png" alt="Rebase commits" >
 </p>
 <h3>Good Rebase - Conflict Example</h3>
 <p><em>00hr:21min</em></p>
 <p>
-<img src="/article_image/rebase_conflict.png" alt="Rebase conflict" >
+<img src="/freezeyt/article_image/rebase_conflict.png" alt="Rebase conflict" >
 </p>
 <p>The "modify/delete" means that <code>test_demo.py</code> changed in the master and the same file was deleted from the reorganize-tests branch which is being rebased.</p>
 <p>
-<img src="/article_image/git_status_rebase.png" alt="Git status rebase" >
+<img src="/freezeyt/article_image/git_status_rebase.png" alt="Git status rebase" >
 </p>
 <p>"Version HEAD of test_demo.py left in tree" means that the file <code>test_demo.py</code> was left in the working tree although it was deleted/renamed into <code>test_expected_output.py</code> in the reorganize-tests branch. This change was done because test_demo.py contained repetitive tests which import an app, freeze the same and than check if the app does what it was supposed to do.</p>
 <p><strong><em>Future Issue:</em></strong>
@@ -55,7 +55,7 @@ To continue working on it he switched to the <code>reorganize tests</code> branc
 <p>The new tests do not assert <code>test_flask_url_for_custom_prefix_without_port(tmp_path)</code>.</p>
 <p>After all conflicts are resolved and the changes are commited just <code>git rebase --continue</code> to complete the rebase. Finally, reorganize-tests is established on the master branch.</p>
 <p>
-<img src="/article_image/after_rebase.png" alt="After rebase" >
+<img src="/freezeyt/article_image/after_rebase.png" alt="After rebase" >
 </p>
 <h3>Add test_expected_output comparing freeze output to expected output</h3>
 <p><em>00hr:27min</em></p>
@@ -89,7 +89,7 @@ To continue working on it he switched to the <code>reorganize tests</code> branc
 <p><em>00hr:38min</em></p>
 <p>Created folders <code>same</code> and <code>testdir</code>, inside the fixtures folder. <code>testdir</code> contains a file.txt with some random text, and a sub-folder with a file inside it. Inside the fixtures folder is a <code>dirs_same</code> folder containing all possible variations of testing folders which should cause the test to fail like <code>missing_file</code>, <code>extra_file</code>, <code>extra_in_subdir</code>, <code>missing_dir</code>, <code>missing_file_in_dir</code>, <code>same</code>, <code>funny</code>, <code>diff_files</code>.</p>
 <p>
-<img src="/article_image/testing_tree2.png" alt="Testing tree" >
+<img src="/freezeyt/article_image/testing_tree2.png" alt="Testing tree" >
 </p>
 <p>At this stage <code>test_assert_dirs_same</code> compares all these possible variations to both <code>testdir</code> and <code>same</code> since these two need to be identical for the tests to pass:</p>
 <div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_assert_dirs_same</span><span class="p">():</span>
@@ -110,7 +110,7 @@ To continue working on it he switched to the <code>reorganize tests</code> branc
 <p><em>00hr:54min</em></p>
 <p>The test does not count on subdirectories so we need to find a way for each <code>subdir</code> to pass the <code>test_assert_dirs_same</code> as well. The best way to do this is to divide <code>assert_dirs_same</code> in two functions where one will be calling the other.</p>
 <p>
-<img src="/article_image/subdirs.png" alt="Testing Subdirectories" >
+<img src="/freezeyt/article_image/subdirs.png" alt="Testing Subdirectories" >
 </p>
 <p>In this case, <code>cmp</code> notes all files and folders that are within each folder using <code>filecmp.dircmp</code> and does the same again for each subfolder every time <a href="https://github.com/encukou/freezeyt/blob/0bbed56c3cc49f06451d0b89fb8537761403b976/tests/test_expected_output.py#L34%20-%20L60"><code>assert_dirs_same</code> calls ```assert_cmp_same</a>.</p>
 <h3>Future ISSUE</h3>
@@ -127,14 +127,14 @@ To continue working on it he switched to the <code>reorganize tests</code> branc
 </pre></div>
 <p>This provided the following:</p>
 <p>
-<img src="/article_image/diff_files_error_details.png" alt="diff_files_error_details" >
+<img src="/freezeyt/article_image/diff_files_error_details.png" alt="diff_files_error_details" >
 </p>
 <h3>Interactive Rebase - complete control over the branch's commit history</h3>
 <p><em>01hr:19min</em></p>
 <p>Interactive rebase was used to merge the work_in_progress commit to reorganize tests. <code>$ git rebase --interactive &lt;branch_from_where_to_start&gt;</code></p>
 <p>This way you get a list of a few commands to change your commits history:</p>
 <p>
-<img src="/article_image/interactive_rebase_commits2.png" alt="" >
+<img src="/freezeyt/article_image/interactive_rebase_commits2.png" alt="" >
 </p>
 <p>Reword lets you change the description of a commit and we squashed (melded) the two commits into one.</p>
 <h3>Making sure no commits were lost - changing commit history</h3>
@@ -143,7 +143,7 @@ To continue working on it he switched to the <code>reorganize tests</code> branc
 <pre><code>$ git --reflog</code></pre>
 <p>Shows the entire and complete history of commits which existed at any point in time, and makes it possible to retrieve lost commits:</p>
 <p>
-<img src="/article_image/git_reflog2.png" alt="Git reflog" >
+<img src="/freezeyt/article_image/git_reflog2.png" alt="Git reflog" >
 </p>
 <p>This history can be browsed using the commit name: <code>$ git show HEAD @ {3}</code> - where the history was three changes ago, or <code>$ git show HEAD@{3.weeks.ago}</code>. This way you can return to any of the changes at any point in he commit history. Also available <code>$ git log HEAD@{3.weeks.ago}</code> and <code>$ gitk --all HEAD@{3.weeks.ago}</code></p>
 <h3>Make sure something is running in a special mode in order to generate the already corrected output (directly copied from the frozen output)</h3>
@@ -171,7 +171,7 @@ This is why @pytest.mark.parametrize: parametrizing test functions was used.</p>
 <p>The function takes the <code>dir_names</code> argument, add it to the path, and than use <code>@pytest.mark.parametrize('dir_names', ['difference', 'extra'])</code> setting the <code>dir_names</code> argument to 'difference' and 'extra'. Making two tests out of a single function. More precisely, a single test function receives and tests two different parameters, 'difference' and 'extra'.</p>
 <p><a href="https://github.com/encukou/freezeyt/blob/0bbed56c3cc49f06451d0b89fb8537761403b976/tests/test_expected_output.py#L63-L74">test_assert_dirs_same</a> was changed accordingly, the fixture_path was made into a global variable named DIRS_SAME_FIXTURES and than we are able to iterate over it inside the test, which made it possible to test all of the apps from inside fixtures with this single test:</p>
 <p>
-<img src="/article_image/test_parametrized.png" alt="Test parametrization magic" >
+<img src="/freezeyt/article_image/test_parametrized.png" alt="Test parametrization magic" >
 </p>
 <h3>Homework</h3>
 <ul>

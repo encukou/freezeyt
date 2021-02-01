@@ -9,7 +9,7 @@
 
         <!-- pygments CSS -->
         <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
-        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+        <link rel="stylesheet" type="text/css" href="/freezeyt/static/pygments.css">
 
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
@@ -187,7 +187,7 @@ In case <code>get_all_links()</code> was called with a path like <code>http://lo
 <h3>Test Driven Development - Refactoring</h3>
 <p><em>22nd min</em></p>
 <p>
-<img src="/article_image/test_driven_development.png" alt="" >
+<img src="/freezeyt/article_image/test_driven_development.png" alt="" >
 </p>
 <ul>
 <li>Some variable names changed for clarity in the code. Changed 'link' to 'url' because it is a full address now, and 'new_urls' instead of 'links' since these are yet to go through the while loop check.</li>
@@ -255,18 +255,18 @@ A corresponding test for this functionality has been implemented in <a href="htt
 We ran into an issue when trying to compare because when Elsa makes a change it creates a completely new commit, separate from the commit history and it saves this new commit to gh-pages without the history. Git pull would remove all previous commit history since Elsa created a new commit for every change. This way gh-pages would not show the history of commits:</li>
 </ol>
 <p>
-<img src="/article_image/elsa_commits.png" alt="Elsa&#x27;s commit history" >
+<img src="/freezeyt/article_image/elsa_commits.png" alt="Elsa&#x27;s commit history" >
 </p>
 <p>When we have an old commit locally in our gh-pages and git pull finds origin/gh-pages without any history the merge is not possible because git only merges with branches which branch out from a previous project/change:</p>
 <p>
-<img src="/article_image/merging_unrelated_histories.png" alt="Mergin unrelated histories" >
+<img src="/freezeyt/article_image/merging_unrelated_histories.png" alt="Mergin unrelated histories" >
 </p>
 <p>This is why it was necessary to force the switch to the origin/gh-pages branch even if it means loosing the history:</p>
 
 <pre><code>$ git reset --hard origin/gh-pages</code></pre>
 <p>This particular command is needed to align the local and remote <em>gh-pages</em> branch. Once aligned they can be properly compared using <em>meld</em>.</p>
 <p>
-<img src="/article_image/elsa_commit_history.png" alt="Elsa&#x27;s commit history shown on the left, and the hard reset on the right side of the picture" >
+<img src="/freezeyt/article_image/elsa_commit_history.png" alt="Elsa&#x27;s commit history shown on the left, and the hard reset on the right side of the picture" >
 </p>
 <p><strong>*Tip</strong>: When you start meld it is better not to turn it off until finished since it takes it some time to do the comparison*</p>
 
@@ -278,7 +278,7 @@ We ran into an issue when trying to compare because when Elsa makes a change it 
 This means that the link to the email address leads to nowhere and when opened, it takes us to <em>404 file not found</em>.
 Due to the missing 'maito' scheme the browser takes the email address as a relative address which leads to nowhere and treats it as URL not found:</p>
 <p>
-<img src="/article_image/url_not_found.png" alt="URL not found" >
+<img src="/freezeyt/article_image/url_not_found.png" alt="URL not found" >
 </p>
 <p><strong><em>How should Freezyt react to an <code>URL not found</code>?</em></strong></p>
 <ul>
@@ -330,7 +330,7 @@ $ meld . _build</code></pre>
 <p>In short, at some point pyladies.cz pages layout looked different and the content from some outdated links is now redirected to the Brno meetups page - "<a href="https://pyladies.cz/brno/#meetups">https://pyladies.cz/brno/#meetups</a>". In order for the old/outdated links to continue working, they were redirected using this <code>@app.route('/&lt;city&gt;_course/)'</code>.
 Going through the current pyladies.cz you will not find any links leading to <code>/&lt;city&gt;_course/</code>. All links are redirected to pyladies.cz/brno/#meetups which means that our freezeyt is not able to find this page <_course>. Elsa finds the <code>/&lt;city&gt;_course/</code> page by using a special generator which creates a <code>course_redirect()</code> page for each of the 'OLD-CITIES':</p>
 <p>
-<img src="/article_image/generator_for_freezer.png" alt="" >
+<img src="/freezeyt/article_image/generator_for_freezer.png" alt="" >
 </p>
 <h3>Issue#33 - recognizing CSS styles</h3>
 <p><em>1hr:35min</em></p>

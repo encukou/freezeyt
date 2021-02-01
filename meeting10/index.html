@@ -9,7 +9,7 @@
 
         <!-- pygments CSS -->
         <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
-        <link rel="stylesheet" type="text/css" href="/static/pygments.css">
+        <link rel="stylesheet" type="text/css" href="/freezeyt/static/pygments.css">
 
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
@@ -114,7 +114,7 @@
 <ul>
 <li><p><strong>Github Tip</strong> 01hr:00min - to see all changes in a pull request <strong>excluding white spaces</strong>: under the 'Files changed' tab &gt; settings &gt; check-mark - 'Hide whitespace changes' or delete the 'w=1' at the end of the URL in the browser</p>
 <p>
-<img src="/article_image/hide_whitespaces.png" alt="" >
+<img src="/freezeyt/article_image/hide_whitespaces.png" alt="" >
 </p>
 </li>
 </ul>
@@ -124,12 +124,12 @@
 <li>Simplest way is to add one extra file to all sub-directories to just get past this issue.</li>
 <li><p>Considering <a href="https://docs.python.org/3/library/filecmp.html#the-dircmp-class"><code>filecmp.DEFAULT_IGNORES</code></a> can hide files which we might need, and the fact that we want our Freezeyt 'comparator' to be able to generate Git folders, it is important to <a href="https://github.com/encukou/freezeyt/blob/d9e59f0d29d72a2e1ac1375e5fe96c5858fd44c9/tests/test_expected_output.py#L47">set it up in a way that it does not ignore any files</a>.</p>
 <p>
-<img src="/article_image/default_ignores.png" alt="In the future we might need to use Freezyt for generate Git directories" >
+<img src="/freezeyt/article_image/default_ignores.png" alt="In the future we might need to use Freezyt for generate Git directories" >
 </p>
 </li>
 <li><p>In order to test this, a RCS folder (filecmp ignores all folders named RCS), was added to the test data, and test file3.txt was added to all sub-directories in fixtures and testdir:</p>
 <p>
-<img src="/article_image/test_filecmp_ignored_folders.png" alt="" >
+<img src="/freezeyt/article_image/test_filecmp_ignored_folders.png" alt="" >
 </p>
 </li>
 </ul>
@@ -151,7 +151,7 @@ This happens because python does not know to search and import the requested mod
 <h2>Searching for and importing modules</h2>
 <p>01hr:24min</p>
 <p>
-<img src="/article_image/importing_modules2.png" alt="Python is set up to search in a few places depending on the module being imported" >
+<img src="/freezeyt/article_image/importing_modules2.png" alt="Python is set up to search in a few places depending on the module being imported" >
 </p>
 <p><strong>Built-in modules are not imported from a specific file, so python does not need a path to get to them.</strong>
 Asside from built_in modules, all others are imported from a python variable named "Path" saved under <code>sys.path</code> which is a list of all directories from which you can import:</p>
@@ -175,7 +175,7 @@ Asside from built_in modules, all others are imported from a python variable nam
 <p>01hr:41min</p>
 <p>When test_expected_output needs to import a module it should search for it in the fixtures folder. This requires to import the sys module and to <code>sys.path.append(str(FIXTURES_PATH))</code>. The issue with this is that it appends the path for every test, and creates a mess in the sys.path as the same path is just appended a few times:</p>
 <p>
-<img src="/article_image/sys_path_append_mess.png" alt="" >
+<img src="/freezeyt/article_image/sys_path_append_mess.png" alt="" >
 </p>
 <p>The solution is to create another orig_path variable to record the original sys.path, and put the test_output inside a <code>try</code> block. Once the test is finished return the sys.path to it's original state before the test.</p>
 <div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">&#39;module_name&#39;</span><span class="p">,</span> <span class="n">MODULE_NAMES</span><span class="p">)</span>
