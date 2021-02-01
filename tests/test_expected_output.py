@@ -35,7 +35,7 @@ def test_output_dict(tmp_path, monkeypatch, app_name):
 
         # XXX Not all tests have expected_dict so far
         expected_dict = getattr(module, 'expected_dict', None)
-        if expected_dict is None:
+        if expected_dict is None and not error_path.exists():
             pytest.skip('No expected_dict')
 
         freeze_config = getattr(module, 'freeze_config', {})
