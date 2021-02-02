@@ -49,15 +49,6 @@ def test_output_dict(tmp_path, monkeypatch, app_name):
         else:
             result = freeze(app, freeze_config)
 
-            if not expected.exists():
-                if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
-                    shutil.copytree(tmp_path, expected)
-                else:
-                    raise AssertionError(
-                        f'Expected output directory ({expected}) does not exist. '
-                        + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
-                    )
-
             assert result == expected_dict
 
     finally:
