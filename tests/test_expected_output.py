@@ -78,14 +78,18 @@ def test_output(tmp_path, monkeypatch, app_name):
                 freeze(app, freeze_config)
         else:
             freeze(app, freeze_config)
+            expected_dict = getattr(module, 'expected_dict', None)
 
             if not expected.exists():
                 if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
                     shutil.copytree(tmp_path, expected)
+                elif expected_dict is not None:
+                    pytest.skip('Tested by expected_dict')
                 else:
                     raise AssertionError(
                         f'Expected output directory ({expected}) does not exist. '
-                        + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                        + 'To test files diff - run with '
+                        + 'TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
                     )
 
             assert_dirs_same(tmp_path, expected)
