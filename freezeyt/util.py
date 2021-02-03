@@ -4,7 +4,7 @@ from werkzeug.urls import url_parse
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
 
-    Both arguments should be results of urlparse (or parse_absolute_url)
+    Both arguments should be results of url_parse (or parse_absolute_url)
     """
     return (
         parsed_url.scheme != prefix.scheme
@@ -17,7 +17,7 @@ def is_external(parsed_url, prefix):
 def parse_absolute_url(url):
     """Parse absolute URL
 
-    Returns the same result as urllib.parse.urlparse, but works on
+    Returns the same result as werkzeug.urls.url_parse, but works on
     absolute HTTP and HTTPS URLs only.
     The result port is always an integer.
     """

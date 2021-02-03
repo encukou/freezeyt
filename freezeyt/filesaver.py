@@ -8,7 +8,7 @@ class FileSaver:
 
     base - Filesystem base path (eg. /tmp/)
     prefix - Base URL to deploy web app in production
-        (eg. urlparse('http://example.com:8000/foo/')
+        (eg. url_parse('http://example.com:8000/foo/')
     """
     def __init__(self, base_path, prefix):
         self.base_path = base_path
@@ -19,7 +19,7 @@ class FileSaver:
 
         Parameters:
         parsed_url
-            Parsed URL (eg. urlparse(http://example.com:8000/foo/second.html))
+            Parsed URL (eg. url_parse(http://example.com:8000/foo/second.html))
             to convert to filename
         """
         if is_external(parsed_url, self.prefix):

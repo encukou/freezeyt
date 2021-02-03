@@ -3,9 +3,10 @@ from pathlib import Path
 from mimetypes import guess_type
 import io
 
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
+from werkzeug.urls import url_parse
 
 from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.filesaver import FileSaver
@@ -84,7 +85,7 @@ class Freezer:
         else:
             print('status', status)
             print('headers', headers)
-            check_mimetype(urlparse(self.url).path, headers)
+            check_mimetype(url_parse(self.url).path, headers)
             self.response_headers = Headers(headers)
 
     def handle_urls(self):
