@@ -33,11 +33,6 @@ def test_output_dict(tmp_path, monkeypatch, app_name):
         module = importlib.import_module('app')
         app = module.app
 
-        # XXX Not all tests have expected_dict so far
-        expected_dict = getattr(module, 'expected_dict', None)
-        if expected_dict is None and not error_path.exists():
-            pytest.skip('No expected_dict')
-
         freeze_config = getattr(module, 'freeze_config', {})
         freeze_config['output'] = 'dict'
 
@@ -46,6 +41,10 @@ def test_output_dict(tmp_path, monkeypatch, app_name):
                 freeze(app, freeze_config)
         else:
             result = freeze(app, freeze_config)
+            expected_dict = getattr(module, 'expected_dict', None)
+
+            if expected_dict is None:
+                pytest.skip('No expected_dict')
 
             assert result == expected_dict
 
