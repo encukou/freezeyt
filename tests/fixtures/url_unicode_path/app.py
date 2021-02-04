@@ -70,7 +70,7 @@ expected_dict = {
             b'\n    <html>\n        <head>\n            <title>Ex'
             + b'tra page Pi</title>\n        </head>\n    </html>\n    '
     },
-    'index.html': 
+    'index.html':
         b'\n    <html>\n        <head>\n            <title>Hello worl'
         + b'd</title>\n        </head>\n        <body>\n            <a '
         + b'href="/\xc4\x8dau/\xe2\x98\xba\xe3\x83\x95.html">Link 1</a>\n'
