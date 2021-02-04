@@ -28,17 +28,16 @@ URL paths:
 
 Hostname domain:
     Input - From HTML:
-        handle with idna (ASCII)
-        Example:
-            http://čau-☺フ.даль.рф:8000/
-            b'xn--http://au-..:8000/-0gc871nnc3hue4drjv997fp38b'
+        handle with werkzeug.urls.url_parse
 
     Input - prefix:
-        handle with idna (ASCII)
-        Same as from HTML
+        handle with werkzeug.urls.url_parse
 
-    To WSGI environ (PATH_INFO):
-        ToASCII(hostname).decode('latin-1')
+
+    To WSGI environ (SERVER_NAME):
+        encode to 'latin-1'
+        handle with werkzeug.urls.url_parse.ascii_host
+        ASCII chars as result
 
 
     On disk:
