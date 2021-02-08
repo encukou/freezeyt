@@ -14,6 +14,7 @@ from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external
+from freezeyt.util import import_variable_from_module
 from freezeyt.getlinks_html import get_all_links
 from freezeyt.getlinks_css import get_links_from_css
 
@@ -119,7 +120,12 @@ class Freezer:
         prefix = self.prefix.to_url()
         new_urls = [prefix]
         for extra in self.extra_pages:
-            new_urls.append(urljoin(prefix, decode_input_path(extra)))
+            if isinstance(extra, dict):
+                generator = import_variable_from_module(extra['generator'])
+                for extra in generator(self.app):
+                    new_urls.append(urljoin(prefix, decode_input_path(extra)))
+            else:
+                new_urls.append(urljoin(prefix, decode_input_path(extra)))
 
         visited_urls = set()
 
