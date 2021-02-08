@@ -9,7 +9,7 @@ class DictSaver:
     """Outputs frozen pages into a dict.
 
     prefix - Base URL to deploy web app in production
-        (eg. urlparse('http://example.com:8000/foo/')
+        (eg. url_parse('http://example.com:8000/foo/')
     """
     def __init__(self, prefix):
         self.prefix = prefix
@@ -20,7 +20,7 @@ class DictSaver:
 
         Parameters:
         parsed_url
-            Parsed URL (eg. urlparse(http://example.com:8000/foo/second.html))
+            Parsed URL (eg. url_parse(http://example.com:8000/foo/second.html))
             to convert to filename
 
         Returns a tuple like ('foo', 'second.html')

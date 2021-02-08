@@ -24,3 +24,21 @@ URL paths:
 
     On disk:
         use internal format
+
+
+Hostname domain:
+    Input - From HTML:
+        ASCII chars or Unicode text, e.g. 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai' or 'čau☺フ.даль.рф'
+
+    Input - prefix:
+        ASCII chars or Unicode text, e.g. 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai' or 'čau☺フ.даль.рф'
+
+    To WSGI environ (SERVER_NAME):
+        ASCII chars, e.g. 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai'
+        result of `ascii_host` of werkzeug.urls.URL
+         
+    Internally, use werkzeug.urls.URL (result of from werkzeug.urls.url_parse).
+
+
+    On disk:
+        we don't need handle encoding of hostname for disk usage

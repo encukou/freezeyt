@@ -32,7 +32,7 @@ def test_port():
 
 def test_netloc():
     parsed = parse_absolute_url("http://freezeyt.test:1234/foo/")
-    assert parsed.netloc == parsed.hostname + ':1234'
+    assert parsed.netloc == parsed.host + ':1234'
 
 def test_scheme():
     parsed = parse_absolute_url("https://freezeyt.test:1234/foo/")
@@ -42,10 +42,6 @@ def test_path():
     parsed = parse_absolute_url("https://freezeyt.test:1234/foo/")
     assert parsed.path == '/foo/'
 
-def test_params():
-    parsed = parse_absolute_url("https://freezeyt.test:1234/foo/;param")
-    assert parsed.params == 'param'
-
 def test_query():
     parsed = parse_absolute_url("https://freezeyt.test:1234/foo/?a=123")
     assert parsed.query == 'a=123'
@@ -53,3 +49,7 @@ def test_query():
 def test_fragment():
     parsed = parse_absolute_url("https://freezeyt.test:1234/foo/#heading")
     assert parsed.fragment == 'heading'
+
+def test_unicode_host():
+    parsed = parse_absolute_url("https://čau☺フ.даль.рф:1234/foo/")
+    assert parsed.ascii_host == 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai'
