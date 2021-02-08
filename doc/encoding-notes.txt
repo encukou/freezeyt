@@ -28,16 +28,16 @@ URL paths:
 
 Hostname domain:
     Input - From HTML:
-        handle with werkzeug.urls.url_parse
+        ASCII chars or Unicode text, e.g. 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai' or 'čau☺フ.даль.рф'
 
     Input - prefix:
-        handle with werkzeug.urls.url_parse
-
+        ASCII chars or Unicode text, e.g. 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai' or 'čau☺フ.даль.рф'
 
     To WSGI environ (SERVER_NAME):
-        encode to 'latin-1'
-        handle with werkzeug.urls.url_parse.ascii_host
-        ASCII chars as result
+        ASCII chars, e.g. 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai'
+        result of `ascii_host` of werkzeug.urls.URL
+         
+    Internally, use werkzeug.urls.URL (result of from werkzeug.urls.url_parse).
 
 
     On disk:
