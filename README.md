@@ -206,6 +206,18 @@ extra_files:
       config/xyz: abc
 ```
 
+You can also specify extra files using Base64 encoding or
+a file path, like so:
+
+
+```yaml
+extra_files:
+    config.dat:
+        base64: "YWJjZAASNA=="
+    config2.dat:
+        copy_from: included/config2.dat
+```
+
 Extra files cannot be specified on the CLI.
 
 ## Examples of CLI usage
