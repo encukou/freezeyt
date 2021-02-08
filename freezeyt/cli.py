@@ -1,9 +1,8 @@
-import importlib
-
 import click
 import yaml
 
 from freezeyt.freezer import freeze
+from freezeyt.util import import_variable_from_module
 
 
 @click.command()
@@ -72,7 +71,8 @@ def main(module_name, dest_path, prefix, extra_page, config):
             raise click.UsageError('DEST_PATH argument is required')
         cli_params['output'] = {'type': 'dir', 'dir': dest_path}
 
-    module = importlib.import_module(module_name)
-    app = module.app
+    app = import_variable_from_module(
+        module_name, default_variable_name='app',
+    )
 
     freeze(app, cli_params)

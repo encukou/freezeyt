@@ -140,3 +140,21 @@ def test_cli_prefix_conflict(tmp_path):
         cli_args.extend(['--config', config_file])
 
         run_and_check(cli_args, app_name, build_dir)
+
+
+def test_nonstandard_app_name(tmp_path):
+    build_dir = tmp_path / 'build'
+    run_and_check(
+        ['application:wsgi_application', str(build_dir)],
+        'app_nonstandard_name',
+        build_dir,
+    )
+
+
+def test_nonstandard_dotted_app_name(tmp_path):
+    build_dir = tmp_path / 'build'
+    run_and_check(
+        ['application:obj.app', str(build_dir)],
+        'app_nonstandard_name',
+        build_dir,
+    )
