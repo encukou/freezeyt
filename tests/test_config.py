@@ -30,6 +30,8 @@ def test_func_to_files(tmp_path):
     assert (builddir / '.nojekyll').exists()
     assert (builddir / 'CNAME').exists()
     assert (builddir / 'smile.png').exists()
+    assert (builddir / 'bin_range.dat').exists()
+    assert (builddir / 'smile2.png').exists()
 
 
 @pytest.mark.parametrize('output', (
@@ -43,7 +45,8 @@ def test_func_to_dict(tmp_path, output):
 
     print(result)
     assert sorted(result) == [
-        '.nojekyll', 'CNAME', 'config', 'index.html', 'smile.png',
+        '.nojekyll', 'CNAME', 'bin_range.dat', 'config',
+        'index.html', 'smile.png', 'smile2.png'
     ]
 
 

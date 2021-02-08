@@ -4,6 +4,7 @@ from mimetypes import guess_type
 import io
 import itertools
 import functools
+import base64
 
 from urllib.parse import urljoin
 from werkzeug.datastructures import Headers
@@ -79,6 +80,16 @@ class Freezer:
             for filename, content in self.extra_files.items():
                 if isinstance(content, str):
                     content = content.encode()
+                elif isinstance(content, dict):
+                    if 'base64' in content:
+                        content = base64.b64decode(content['base64'])
+                    elif 'copy_from' in content:
+                        content = Path(content['copy_from']).read_bytes()
+                    else:
+                        raise ValueError(
+                            'a mapping in extra_files must contain '
+                            + '"base64" or "copy_from"'
+                        )
                 self.saver.save_to_filename(filename, [content])
 
     def prepare(self):
