@@ -53,3 +53,27 @@ def third_page():
     </html>
     """
 
+
+expected_dict = {
+    'index.html':
+        b"\n    <html>\n        <head>\n            "
+        + b"<title>Hello world</title>\n        </head>\n"
+        + b"        <body>\n            Hello world!\n"
+        + b"            <br>\n            <a href='http://freezeyt.te"
+        + b"st/foo/second_page.html'>external_True</a> to second page.\n"
+        + b"            <a href='/foo/third_page.html'>external_False</a> to "
+        + b"third page.\n        </body>\n    </html>\n    ",
+
+    'second_page.html':
+        b"\n    <html>\n        <head>\n"
+        + b"            <title>Hello world second page</title>\n"
+        + b"        </head>\n        <body>\n            Second page !!!\n"
+        + b"        </body>\n    </html>\n    ",
+
+    'third_page.html':
+        b"\n    <html>\n        <head>\n"
+        + b"            <title>Hello world third page</title>\n"
+        + b"        </head>\n        <body>\n            Third page !!!\n"
+        + b"        </body>\n    </html>\n    ",
+
+}

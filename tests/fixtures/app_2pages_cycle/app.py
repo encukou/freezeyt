@@ -43,3 +43,22 @@ def second_page():
         </body>
     </html>
     """
+
+
+expected_dict = {
+    'index.html':
+            b"\n    <html>\n        <head>\n            <title>Hell"
+            + b"o world</title>\n        </head>\n        <body>\n"
+            + b"            Hello world!\n            <br>\n"
+            + b"            <a href='/second_page.html'>LINK</a> t"
+            + b"o second page.\n            <br>\n"
+            + b"            <a href='/'>Return home</a>\n"
+            + b"        </body>\n    </html>\n    ",
+
+    'second_page.html':
+            b"\n    <html>\n        <head>\n            <title>"
+            + b"Hello world second page</title>\n        </head>\n"
+            + b"        <body>\n            Second page!\n"
+            + b"            <a href='/'>Return home</a>\n"
+            + b"        </body>\n    </html>\n    "
+}

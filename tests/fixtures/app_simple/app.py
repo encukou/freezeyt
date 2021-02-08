@@ -16,3 +16,10 @@ def index():
         </body>
     </html>
     """
+
+expected_dict = {
+    'index.html':
+        b'\n    <html>\n        <head>\n            <title>Hell'
+        + b'o world</title>\n        </head>\n        <body>\n'
+        + b'            Hello world!\n        </body>\n    </html>\n    '
+}

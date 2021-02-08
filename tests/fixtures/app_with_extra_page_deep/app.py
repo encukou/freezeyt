@@ -45,3 +45,28 @@ def extra_deep():
         </body>
     </html>
     """
+
+
+expected_dict = {
+    'index.html':
+        b'\n    <html>\n        <head>\n            <title>Hell'
+        + b'o world</title>\n        </head>\n        <body>\n'
+        + b'            Hello world!\n        </body>\n    </html>\n    ',
+
+    'extra': {
+        'index.html':
+            b"\n    <html>\n        <head>\n"
+            + b"            <title>Extra page</title>\n        </head>\n"
+            + b"        <body>\n            This is unreachable via links.\n"
+            + b"        </body>\n    </html>\n    ",
+
+        'extra_deep': {
+            'index.html':
+                b"\n    <html>\n        <head>\n            "
+                + b"<title>Extra DEEP page</title>\n        </head>\n"
+                + b"        <body>\n            This is unreachable via links.\n"
+                + b"            <strong>Extra Deep page</strong>\n        "
+                + b"</body>\n    </html>\n    "
+        },
+    },
+}
