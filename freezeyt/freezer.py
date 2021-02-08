@@ -116,16 +116,22 @@ class Freezer:
             self.response_headers = Headers(headers)
         return wsgi_write
 
+    def _add_extra_pages(self, urls, prefix, extras):
+        """Add URLs of extra pages from config.
+
+        Handles both literal URLs and generators.
+        """
+        for extra in extras:
+            if isinstance(extra, dict):
+                generator = import_variable_from_module(extra['generator'])
+                self._add_extra_pages(urls, prefix, generator(self.app))
+            else:
+                urls.append(urljoin(prefix, decode_input_path(extra)))
+
     def handle_urls(self):
         prefix = self.prefix.to_url()
         new_urls = [prefix]
-        for extra in self.extra_pages:
-            if isinstance(extra, dict):
-                generator = import_variable_from_module(extra['generator'])
-                for extra in generator(self.app):
-                    new_urls.append(urljoin(prefix, decode_input_path(extra)))
-            else:
-                new_urls.append(urljoin(prefix, decode_input_path(extra)))
+        self._add_extra_pages(new_urls, prefix, self.extra_pages)
 
         visited_urls = set()
 

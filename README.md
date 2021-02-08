@@ -186,6 +186,17 @@ Extra pages may also be give on the command line,
 e.g. `--extra-page /extra/ --extra-page /extra2.html`.
 The lists from CLI and the config file are merged together.
 
+You can also specify extra pages using a Python generator,
+specified using a module name and function name as follows:
+
+```yaml
+extra_pages:
+    - generator: my_app:generate_extra_pages
+```
+
+The `generate_extra_pages` function should take the application
+as argument and return an iterable of URLs.
+
 
 ### Extra files
 
