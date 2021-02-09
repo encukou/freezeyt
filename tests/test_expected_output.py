@@ -24,6 +24,7 @@ APP_NAMES = [
 def test_output_dict(tmp_path, monkeypatch, app_name):
     app_path = FIXTURES_PATH / app_name
     error_path = app_path / 'error.txt'
+    expected = app_path / 'test_expected_output'
 
     # Add FIXTURES_PATH to sys.path, the list of directories that `import`
     # looks in
@@ -44,7 +45,18 @@ def test_output_dict(tmp_path, monkeypatch, app_name):
             expected_dict = getattr(module, 'expected_dict', None)
 
             if expected_dict is None:
-                pytest.skip('No expected_dict')
+                if expected.exists():
+                    pytest.skip('Tested by expected output')
+
+                else:
+                    raise AssertionError(
+                        f'Neither expected output directory ({expected})'
+                        + 'nor expected dictionary exist. '
+                        + '\nTest expected directory: run with '
+                        + 'TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                        + '\nTest expected dictionary: create attribute'
+                        + '"expected_dict" with content'
+                    )
 
             assert result == expected_dict
 
