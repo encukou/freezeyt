@@ -87,9 +87,12 @@ def test_output(tmp_path, monkeypatch, app_name):
                     pytest.skip('Tested by expected_dict')
                 else:
                     raise AssertionError(
-                        f'Expected output directory ({expected}) does not exist. '
-                        + 'To test files diff - run with '
+                        f'Neither expected output directory ({expected})'
+                        + 'nor expected dictionary exist. '
+                        + '\nTest expected directory: run with '
                         + 'TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                        + '\nTest expected dictionary: create attribute'
+                        + '"expected_dict" with content'
                     )
 
             assert_dirs_same(tmp_path, expected)
