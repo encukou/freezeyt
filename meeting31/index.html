@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/freezeyt/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz třicátý první -</h1>
+<blockquote><p>Tento článek není hotový. Záznam ze srazu je<a href="https://youtu.be/5STdOQa2Mko">zde</a>.</p>
+</blockquote>
+<p>Na GitHubu bylo tento týden 8 pull requestů (PR), takže jsme začali s review.</p>
+<p>První z nich ověřoval, že v host name mohou být i ne-ASCII znaky</p>
+<p>Další pull request zapracovává detaily protokolu WSGI. Při review jsme zjistili, že v setup.py máme verzi. 0.1 a v <code>SERVER_SOFTWARE</code> byla verze 0.0</p>
+<p>Dále byla přidána konfigurace blogu, takže teď by mohly GH pages blogu fungovat. Před tím tam byly špatné odkazy. A už to funguje.
+Do budoucna by bylo fajn, kdyby na blogu byla i dokumentace. Blog by možná bylo fajn přidat nějaké CSS, aby ten blog i nějak vypadal.</p>
+<p>Pak jsme začlenili PR z minula, který zajistí, že freezeyt smaže adresář před freezem. Zde byl jen approve a žádné komentáře s dotazy, takže jsme jej jen začlenili.</p>
+<p>Další mazal soubory a adresáře s ne-ascii znaky v repozitáři. Tady bylo také review bez dotazů, také začleněn během chvilky.</p>
+<p>Další PR přidával slovníky s expected output. Problémem je, že GH actions neprocházely, protože Pyflakes narazilo na Recursion limit, protože celý soubor s očekávaným slovníkem má přes 4000 řádků.</p>
+<p>Další přidával článek na blog, zjistili jsme, že GH Actions se chovají jinak k prázdným odkazům než naposledy. Když to píšu, tak jsem zjistila, že minule závorky nebyly prázdné ale byla v nich poznámka o tom, že je potřeba přidat odkaz.</p>
+<p>Poslední PR prováděl malé změny na blogu.</p>
+<p>Nakonec jsme se podívali na to, co by bylo do budoucna dobré udělat, aby někdo mohl přejít na freezeyt.
+Tak jsme se podívali na web <a href="https://pyladies.cz/">pyladies.cz</a>.
+Přišli jsme na to, že by bylo dobré, kdyby byl freezeyt schopen vzít funkci, která vygeneruje odkazy a vrátí je.</p>
+<p>Podívali jsme se na to, aby jméno proměnné bylo nakonfigurovatelné. (Jiné než tradiční <code>app</code>.)
+Jako tradičně jsme začali testy.
+Potom jsme testy upravili.</p>
+<blockquote><p>Tady chybí část od cca 1:00 po 1:30 záznamu.</p>
+</blockquote>
+<p>Netvořil se adresář s očekávaným výstupem, pak jsme si uvědomili, že by se měl tvořit jen u modulů, kde je soubor <code>app.py</code></p>
+<p>Na chvilku jsme se zastavili u slovíček override a overwrite.</p>
+<p>Pak jsme se na chvilku zastavili u formátovacích řetězců
+{s=}
+{s!r}
+{s!a}</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/5STdOQa2Mko">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>

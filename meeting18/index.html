@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/freezeyt/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz osmnáctý</h1>
+<blockquote><p>Tento článek není hotový. Záznam ze srazu je <a href="https://youtu.be/zV0tPtqz1BM">zde</a>.</p>
+</blockquote>
+<p>Sraz, jako už klasicky, začal kontrolou pull requestů (PR), které přistály na GitHubu.</p>
+<p>První z nich odebíral <code>else</code>, ke kterému by se program nikdy neměl dostat, ale PR byl zavřen, protože, kdyby někdo upravil podmínku nad tím, tak by se to mohlo pokazit.</p>
+<p>Druhý PR přidával <code>extra_pages</code> do CLI, mělo to dva problémy, první byl, že to bylo, že je to v množném místo jednotném čísle. A druhý problém byl, že nemáme testy na CLI (a to není problém jen tohoto PR). Takže jsme založili Issue.</p>
+<p>Následně proběhla konzultace k tomu, kde jsme se u rozpracovaných pull requestů zasekli a dostali jsme rady, jak pokračovat.</p>
+<p>Vrátili jsme se k tomu, co jsme rozpracovali minule.</p>
+<p>Flask výjímky - dodat (jak nevyhazovat 404 a místo toho nějaké jiné).</p>
+<p>Potom jsme zkoumali, jak jsou cesty v URL adresách zakódovány. A zjistili jsme, že WSGI adresy kóduje pomocí UTF-8 a dekóduje pomocí Latin-1, takže v Pythonu by toto kódování mohlo vypadat nějak takto:</p>
+
+<pre><code>&gt;&gt;&gt; "čau".encode("utf-8").decode("latin-1")</code></pre>
+<p>kódovací odbočka</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/zV0tPtqz1BM">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>
