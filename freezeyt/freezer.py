@@ -15,6 +15,7 @@ from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external
+from freezeyt.util import import_variable_from_module
 from freezeyt.getlinks_html import get_all_links
 from freezeyt.getlinks_css import get_links_from_css
 
@@ -126,11 +127,22 @@ class Freezer:
             self.response_headers = Headers(headers)
         return wsgi_write
 
+    def _add_extra_pages(self, urls, prefix, extras):
+        """Add URLs of extra pages from config.
+
+        Handles both literal URLs and generators.
+        """
+        for extra in extras:
+            if isinstance(extra, dict):
+                generator = import_variable_from_module(extra['generator'])
+                self._add_extra_pages(urls, prefix, generator(self.app))
+            else:
+                urls.append(urljoin(prefix, decode_input_path(extra)))
+
     def handle_urls(self):
         prefix = self.prefix.to_url()
         new_urls = [prefix]
-        for extra in self.extra_pages:
-            new_urls.append(urljoin(prefix, decode_input_path(extra)))
+        self._add_extra_pages(new_urls, prefix, self.extra_pages)
 
         visited_urls = set()
 
