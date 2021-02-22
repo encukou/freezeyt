@@ -2,6 +2,7 @@ from flask import Flask, url_for
 
 app = Flask(__name__)
 freeze_config = {'prefix': 'http://čau-☺フ.даль.рф:8000/'}
+no_expected_directory = True
 
 
 @app.route('/')
