@@ -10,7 +10,7 @@ Druhý PR se zabývá reorganizací testů.
 Cílem PR bylo přidat logiku pro rozdělení testů na základě výstupních dat ke kontrole (soubory, dictionary).
 
 Logika byla nastavena následovně:
-* pokud nemáme definovanou proměnnou `expected_dict` je test pro kontrolu testovacích dat ve formě slovníku přeskočen a neřeší se ani povinnost mít tento slovník definován
+* Pokud nemáme definovanou proměnnou `expected_dict` je test pro kontrolu testovacích dat ve formě slovníku přeskočen a neřeší se ani povinnost mít tento slovník definován.
 * V případě kontroly vygenerovaných testovacíh souborů, je situace odlišná. Pokud není explicitně definována proměnná `no_expected_directory` s hodnotou `False`, tak je nutnost testovací soubory vygenerovat pro úspěšný průchod testů. Další možností jak říct testům, že testovací aplikace nemá být testována s vygenerovanými soubory bylo vytvořit soubor se jménem  `no_expected_directory`.
 
 Pokud vytvoříme testovací aplikaci, která nebude obsahovat proměnnou `no_expected_directory` nebo `expected_dict`, tak nedojde k žádné verifikaci zafreezovaného výstupu.
