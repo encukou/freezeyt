@@ -1,4 +1,4 @@
 html5lib
 click
-cssutils
+css-parser
 pyyaml
