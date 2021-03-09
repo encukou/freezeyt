@@ -24,7 +24,6 @@ APP_NAMES = [
 def test_output_dict(tmp_path, monkeypatch, app_name):
     app_path = FIXTURES_PATH / app_name
     error_path = app_path / 'error.txt'
-    expected = app_path / 'test_expected_output'
 
     # Add FIXTURES_PATH to sys.path, the list of directories that `import`
     # looks in
@@ -45,18 +44,7 @@ def test_output_dict(tmp_path, monkeypatch, app_name):
             expected_dict = getattr(module, 'expected_dict', None)
 
             if expected_dict is None:
-                if expected.exists():
-                    pytest.skip('Tested by expected output')
-
-                else:
-                    raise AssertionError(
-                        f'Neither expected output directory ({expected})'
-                        + 'nor expected dictionary exist. '
-                        + '\nTest expected directory: run with '
-                        + 'TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
-                        + '\nTest expected dictionary: create attribute'
-                        + '"expected_dict" with content'
-                    )
+                pytest.skip('No expected dict')
 
             assert result == expected_dict
 
@@ -77,9 +65,6 @@ def test_output(tmp_path, monkeypatch, app_name):
         module = importlib.import_module('app')
         app = module.app
 
-        if getattr(module, 'no_expected_directory', False):
-            pytest.skip('No directory with expected output')
-
         freeze_config = getattr(module, 'freeze_config', {})
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
 
@@ -90,21 +75,17 @@ def test_output(tmp_path, monkeypatch, app_name):
                 freeze(app, freeze_config)
         else:
             freeze(app, freeze_config)
-            expected_dict = getattr(module, 'expected_dict', None)
+
+            if getattr(module, 'no_expected_directory', False):
+                pytest.skip('No directory with expected output')
 
             if not expected.exists():
                 if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
                     shutil.copytree(tmp_path, expected)
-                elif expected_dict is not None:
-                    pytest.skip('Tested by expected_dict')
                 else:
                     raise AssertionError(
-                        f'Neither expected output directory ({expected})'
-                        + 'nor expected dictionary exist. '
-                        + '\nTest expected directory: run with '
-                        + 'TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
-                        + '\nTest expected dictionary: create attribute'
-                        + '"expected_dict" with content'
+                        f'Expected output directory ({expected}) does not exist. '
+                        + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
                     )
 
             assert_dirs_same(tmp_path, expected)
