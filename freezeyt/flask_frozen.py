@@ -20,8 +20,8 @@ class Freezer:
         self.generators = []
         if with_static_files:
             self.register_generator(self.static_files_urls)
-        #if with_no_argument_rules:
-        #    self.register_generator(self.no_argument_rules_urls)
+        if with_no_argument_rules:
+            self.register_generator(self.no_argument_rules_urls)
 
     def register_generator(self, function):
         self.generators.append(function)
@@ -81,6 +81,11 @@ class Freezer:
                     else:
                         endpoint, values, last_mod = generated
                     yield url_for(endpoint, **values)
+
+    def no_argument_rules_urls(self):
+        for rule in self.app.url_map.iter_rules():
+            if not rule.arguments and 'GET' in rule.methods:
+                yield rule.endpoint, {}
 
 def walk_directory(root, ignore=None):
     for path in Path(root).glob('**/*'):
