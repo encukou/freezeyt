@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/freezeyt/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz třicátý čtvrtý - adaptér na Frozen-Flask</h1>
+<p>Začali jsme review PR. První PR specifikoval verzi Pytestu
+v requirements, protože MonkeyPatch, který používáme,
+je součástí Pytestu od verze 6.2.0., takže těm,
+kdo mají nainstalovanou starší verzi Pytestu padají testy s chybou.</p>
+<p>Druhý PR se zabývá reorganizací testů.
+Řešili jsme, co se mění.
+Cílem PR bylo přidat logiku pro rozdělení testů na základě výstupních dat ke kontrole (soubory, dictionary).</p>
+<p>Logika byla nastavena následovně:</p>
+<ul>
+<li>Pokud nemáme definovanou proměnnou <code>expected_dict</code> je test pro kontrolu testovacích dat ve formě slovníku přeskočen a neřeší se ani povinnost mít tento slovník definován.</li>
+<li>V případě kontroly vygenerovaných testovacíh souborů, je situace odlišná. Pokud není explicitně definována proměnná <code>no_expected_directory</code> s hodnotou <code>False</code>, tak je nutnost testovací soubory vygenerovat pro úspěšný průchod testů. Další možností jak říct testům, že testovací aplikace nemá být testována s vygenerovanými soubory bylo vytvořit soubor se jménem  <code>no_expected_directory</code>.</li>
+</ul>
+<p>Pokud vytvoříme testovací aplikaci, která nebude obsahovat proměnnou <code>no_expected_directory</code> nebo <code>expected_dict</code>, tak nedojde k žádné verifikaci zafreezovaného výstupu.</p>
+<p>Na chvíli jsme se zastavili u cssutils.
+Testy, které ověřují odkazy v CSS vyhazují deprecation warning.
+Založili jsme na to issue. Abychom to vyřešili chtěli jsme se podívat
+do zdrojového kódu cssutils, ale ten jsme nikde nenašli,
+takže napíšeme e-mail autorovi projektu a zeptáme se ho,
+co s tím můžeme udělat.</p>
+<p>Pak jsme pořešili, kde jsme zaseklí na našich Pull Requestech.</p>
+<p>Poté Petr začal dělat adaptér na Frozen-Flask.
+Abychom zajistili, že freezeyt bude umět udělat to stejné,
+tak jsme na spustili testy Frozen-Flasku, ale vyměnili jsme importy.
+Tvorba adaptéru probíhá tak, že spustíme testy Frozen-Flasku
+a podle toho upravujeme/tvoříme adaptér ve freezeytu.
+A když jsme o některé funkci/metodě chtěli vědět více,
+tak jsme se koukli do dokumentace Frozen-Flask.</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/Gm4bO0B2r1A">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>
