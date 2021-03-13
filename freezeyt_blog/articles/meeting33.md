@@ -89,7 +89,7 @@ dle Test Driven Developement [TDD](https://developer.ibm.com/devpractices/softwa
 Testy jako např. `test_check_mimetype` kontrolují jednu funkci.
 Důležité jsou testy v `test_expected_output`, tyto testy testují kompletní
 zmrazení aplikace.
-Tady tyto testy zajišťují, že se freezeyt chová pořád stajně.
+Tady tyto testy zajišťují, že se freezeyt chová pořád stejně.
 V těchto testech je adresář fixtures a v něm jsou aplikace a očekávaný výstup.
 
 ### Blog
@@ -108,7 +108,7 @@ Poté, co se tento commit pushne do masteru, tak se blog publikuje.
 ### Continuous Integration (CI)
 
 Když na GitHub pošleme PR, tak na něm GH pustí testy.
-Testujema na 4 verzích Pythonu (3.6, 3.7, 3.8 a 3.9),
+Testujeme na 4 verzích Pythonu (3.6, 3.7, 3.8 a 3.9),
 pak tam jsou ještě testy s Pyflakes,
 které kontrolují většinou zapomenuté importy.
 Dále se automaticky zamrazí a publikuje blog.  
@@ -117,7 +117,7 @@ Nastavení GH actions je v `.github/workflows`
 
 ### Další soubory
 
-Dále je v repozitíři nějaká dokumentace s poznámkama.
+Dále je v repozitáři nějaká dokumentace s poznámkami.
 Pak tam jsou nějaké Gitové soubory, licence, README a informace o závislostech.
 Ty se dělí na závislosti pro běh, pro vývoj a pro blog.
 
@@ -156,13 +156,13 @@ Je potřeba přidat freezeyt do proměnné prostředí PYTHONPATH.
 Poté nainstalujeme závislosti (dependencies) freezeytu.
 Na statických stránkách je problém s přesměrováním. (Proč je tu tato věta?)
 Následně spustíme freezeyt.
-Potom „zmrežené“ stránky nasadíme na server,
+Potom „zmražené“ stránky nasadíme na server,
 nebo použijeme v Pythonu vestavěný `http.server`.
 V konfiguraci můžeme nastavit `freezeyt.freezing` na `True`, a to znamená,
 že některé části by se nezafreezovaly.
 Následně je potřeba přepnout se do virtuálního prostředí.
 Zjistit, jak se daná aplikace importuje.
-Potom jsme nastavili PYTHONPATH (až bude balíčk, bude to jednodušší).
+Potom jsme nastavili PYTHONPATH (až bude balíček, bude to jednodušší).
 Pak by to mělo jít uložit. (Nemám sebemenší tušení, co by mělo jít uložit.)
 (Proč mám pocit, že tu je ta část dvakrát?)
 
@@ -195,7 +195,7 @@ v adresáři a změny testů.
 Začlenění proběhlo se slovním approve za zneužití administrátorských privilegií. 😀
 
 ### Prázdné odkazy
-Další PR přidával test s prázdným odkazem, např:
+Další PR přidával test s prázdným odkazem, např.:
 ```html
 Odkaz <a href="">někam</a>, tedy spíše nikam.
 ```
@@ -223,11 +223,11 @@ Déle reorganizace testů, měnitelná hodnota `test_created_output` - neurgentn
 V jednom z issues, které dostal za úkol nový člen, je úkolem přidat možnost
 předat konfiguraci jako naimportovatelnou proměnnou.
 Pozastavili jsme se u toho, jak by se to dalo udělat.
-V CLI používáme pro configuraci proměnnou `freeze_config`,
+V CLI používáme pro konfiguraci proměnnou `freeze_config`,
 bylo by fajn, kdyby to mohl použít uživatel taky, ať nemusí tvořit soubor.
 Úkolem je přidat nový přepínač, konfigurace bude v proměnné v Pythonu.
 Dále naimportovat modul, z něj naimportovat proměnnou,
-tu použít použít to jako konfiguraci.
+tu použít to jako konfiguraci.
 (Potom přidat testy a dokumentace.)
 A samozřejmostí je, že rádi pomůžeme. 😉
 
