@@ -40,11 +40,11 @@ def test_output_dict(tmp_path, monkeypatch, app_name):
             with pytest.raises(ValueError):
                 freeze(app, freeze_config)
         else:
-            result = freeze(app, freeze_config)
-            expected_dict = getattr(module, 'expected_dict', None)
-
             if expected_dict is None:
                 pytest.skip('No expected dict')
+
+            result = freeze(app, freeze_config)
+            expected_dict = getattr(module, 'expected_dict', None)
 
             assert result == expected_dict
 
