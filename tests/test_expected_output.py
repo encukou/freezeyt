@@ -21,38 +21,6 @@ APP_NAMES = [
 ]
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
-def test_output_dict(tmp_path, monkeypatch, app_name):
-    app_path = FIXTURES_PATH / app_name
-    error_path = app_path / 'error.txt'
-
-    # Add FIXTURES_PATH to sys.path, the list of directories that `import`
-    # looks in
-    monkeypatch.syspath_prepend(str(app_path))
-    sys.modules.pop('app', None)
-    try:
-        module = importlib.import_module('app')
-        app = module.app
-
-        freeze_config = getattr(module, 'freeze_config', {})
-        freeze_config['output'] = 'dict'
-
-        if error_path.exists():
-            with pytest.raises(ValueError):
-                freeze(app, freeze_config)
-        else:
-            if expected_dict is None:
-                pytest.skip('No expected dict')
-
-            result = freeze(app, freeze_config)
-            expected_dict = getattr(module, 'expected_dict', None)
-
-            assert result == expected_dict
-
-    finally:
-        sys.modules.pop('app', None)
-
-
-@pytest.mark.parametrize('app_name', APP_NAMES)
 def test_output(tmp_path, monkeypatch, app_name):
     app_path = FIXTURES_PATH / app_name
     error_path = app_path / 'error.txt'
@@ -66,18 +34,27 @@ def test_output(tmp_path, monkeypatch, app_name):
         app = module.app
 
         freeze_config = getattr(module, 'freeze_config', {})
-        freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
+        expected_dict = getattr(module, 'expected_dict', None)
+        no_expected_dir = getattr(module, 'no_expected_directory', False)
 
-        expected = app_path / 'test_expected_output'
+        # test the output saved in dir 'test_expected_output'
+        freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
 
         if error_path.exists():
             with pytest.raises(ValueError):
                 freeze(app, freeze_config)
         else:
-            freeze(app, freeze_config)
+            if no_expected_dir:
+                if expected_dict is None:
+                    raise AssertionError(
+                        f'({app_name}) is not contain any'
+                        + 'expected output (dict or dir)'
+                    )
+                else:
+                    pytest.skip('No directory with expected output')
 
-            if getattr(module, 'no_expected_directory', False):
-                pytest.skip('No directory with expected output')
+            freeze(app, freeze_config) # freeze content to tmp_path
+            expected = app_path / 'test_expected_output'
 
             if not expected.exists():
                 if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
@@ -89,6 +66,20 @@ def test_output(tmp_path, monkeypatch, app_name):
                     )
 
             assert_dirs_same(tmp_path, expected)
+
+        # test the output saved in dictionary
+        freeze_config['output'] = 'dict'
+
+        if error_path.exists():
+            with pytest.raises(ValueError):
+                freeze(app, freeze_config)
+        else:
+            if expected_dict is None:
+                pytest.skip('No expected dict')
+
+            result = freeze(app, freeze_config) # freeze content to dict
+
+            assert result == expected_dict
 
     finally:
         sys.modules.pop('app', None)
