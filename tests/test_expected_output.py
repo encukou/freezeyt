@@ -37,13 +37,15 @@ def test_output(tmp_path, monkeypatch, app_name):
         expected_dict = getattr(module, 'expected_dict', None)
         no_expected_dir = getattr(module, 'no_expected_directory', False)
 
-        # test the output saved in dir 'test_expected_output'
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
 
         if error_path.exists():
             with pytest.raises(ValueError):
                 freeze(app, freeze_config)
+
+        # else branch is for non error app
         else:
+            # test the output saved in dir 'test_expected_output'
             if no_expected_dir:
                 if expected_dict is None:
                     raise AssertionError(
@@ -67,13 +69,8 @@ def test_output(tmp_path, monkeypatch, app_name):
 
             assert_dirs_same(tmp_path, expected)
 
-        # test the output saved in dictionary
-        freeze_config['output'] = 'dict'
-
-        if error_path.exists():
-            with pytest.raises(ValueError):
-                freeze(app, freeze_config)
-        else:
+            # test the output saved in dictionary
+            freeze_config['output'] = 'dict'
             if expected_dict is None:
                 pytest.skip('No expected dict')
 
