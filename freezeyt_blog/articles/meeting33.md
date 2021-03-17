@@ -1,7 +1,7 @@
 # Freezeyt sraz třicátý třetí - info pro nově příchozí
 
 Chcete-li se k nám také připojit, doporučujeme přečíst si před tímto článkem,
-[článek z prvního srazu](../meeting01), kde je vysvětleno, co je cílem projektu.
+[článek z prvního srazu](../meeting01/), kde je vysvětleno, co je cílem projektu.
 
 🎉 Dneska se k nám připojili noví členové,
 tak jsme na úvod zařadili info o projektu a krátké demo jeho použití.
