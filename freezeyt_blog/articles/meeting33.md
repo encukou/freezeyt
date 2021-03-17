@@ -1,9 +1,12 @@
 # Freezeyt sraz třicátý třetí - info pro nově příchozí
 
-## O čem projekt je?
+Chcete-li se k nám také připojit, doporučujeme přečíst si před tímto článkem,
+[článek z prvního srazu](../meeting01), kde je vysvětleno, co je cílem projektu.
+
 🎉 Dneska se k nám připojili noví členové,
 tak jsme na úvod zařadili info o projektu a krátké demo jeho použití.
 
+## O čem projekt je?
 Abychom shrnuli o čem projekt je: první potřebujeme vytvořit webovou aplikaci
 (třeba ve webovém fremeworku [Flask](https://flask.palletsprojects.com/en/1.1.x/).
 Příkazem `flask run` se spustí jednoduchý server.
