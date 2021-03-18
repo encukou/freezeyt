@@ -35,48 +35,47 @@ def test_output(tmp_path, monkeypatch, app_name):
 
         freeze_config = getattr(module, 'freeze_config', {})
         expected_dict = getattr(module, 'expected_dict', None)
-        no_expected_dir = getattr(module, 'no_expected_directory', False)
+        expecting_dir = not getattr(module, 'no_expected_directory', False)
 
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
 
         if error_path.exists():
             with pytest.raises(ValueError):
                 freeze(app, freeze_config)
-
-        # else branch is for non error app
         else:
-            # test the output saved in dir 'test_expected_output'
-            if no_expected_dir:
-                if expected_dict is None:
-                    raise AssertionError(
-                        f'({app_name}) is not contain any'
-                        + 'expected output (dict or dir)'
-                    )
-                else:
-                    pytest.skip('No directory with expected output')
+            # Non error app.
 
-            freeze(app, freeze_config) # freeze content to tmp_path
-            expected = app_path / 'test_expected_output'
+            # We want to check against expected data stored in a directory
+            # and/or in a dict. At least one of those must exist.
+            if not expecting_dir and expected_dict is None:
+                raise AssertionError(
+                    f'({app_name}) is not contain any'
+                    + 'expected output (dict or dir)'
+                )
 
-            if not expected.exists():
-                if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
-                    shutil.copytree(tmp_path, expected)
-                else:
-                    raise AssertionError(
-                        f'Expected output directory ({expected}) does not exist. '
-                        + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
-                    )
+            if expecting_dir:
+                # test the output saved in dir 'test_expected_output'
+                freeze(app, freeze_config) # freeze content to tmp_path
+                expected = app_path / 'test_expected_output'
 
-            assert_dirs_same(tmp_path, expected)
+                if not expected.exists():
+                    if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                        shutil.copytree(tmp_path, expected)
+                    else:
+                        raise AssertionError(
+                            f'Expected output directory ({expected}) does not exist. '
+                            + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                        )
 
-            # test the output saved in dictionary
-            freeze_config['output'] = 'dict'
-            if expected_dict is None:
-                pytest.skip('No expected dict')
+                assert_dirs_same(tmp_path, expected)
 
-            result = freeze(app, freeze_config) # freeze content to dict
+            if expected_dict is not None:
+                # test the output saved in dictionary
+                freeze_config['output'] = 'dict'
 
-            assert result == expected_dict
+                result = freeze(app, freeze_config) # freeze content to dict
+
+                assert result == expected_dict
 
     finally:
         sys.modules.pop('app', None)
