@@ -197,6 +197,20 @@ extra_pages:
 The `generate_extra_pages` function should take the application
 as argument and return an iterable of URLs.
 
+When using the Python API, a generator for extra pages can be specified
+directly as a Python object, for example:
+
+```python
+config = {
+   ...
+   'extra_pages': [{'generator': my_generator_function}],
+}
+another_config = {
+   ...
+   'extra_pages': [my_generator_function],
+}
+```
+
 
 ### Extra files
 

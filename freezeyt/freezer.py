@@ -134,10 +134,15 @@ class Freezer:
         """
         for extra in extras:
             if isinstance(extra, dict):
-                generator = import_variable_from_module(extra['generator'])
+                generator = extra['generator']
+                if isinstance(generator, str):
+                    generator = import_variable_from_module(generator)
                 self._add_extra_pages(urls, prefix, generator(self.app))
-            else:
+            elif isinstance(extra, str):
                 urls.append(urljoin(prefix, decode_input_path(extra)))
+            else:
+                generator = extra
+                self._add_extra_pages(urls, prefix, generator(self.app))
 
     def handle_urls(self):
         prefix = self.prefix.to_url()

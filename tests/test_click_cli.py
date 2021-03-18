@@ -74,6 +74,9 @@ def test_cli_with_fixtures_output(tmp_path, app_name):
         cli_args = ['app', str(build_dir)]
         freeze_config = getattr(module, 'freeze_config', None)
 
+        if not getattr(module, 'config_is_serializable', True):
+            pytest.skip('Config is not serializable')
+
         if freeze_config != None:
             with open(config_file, mode='w') as file:
                 safe_dump(freeze_config, stream=file)
