@@ -37,9 +37,13 @@ class Freezer:
     def freeze(self):
         def generator(app):
             return self.all_urls()
+        redirect_policy = self.app.config.get(
+            'FREEZER_REDIRECT_POLICY', 'follow'
+        )
         config = {
             'output': 'dict',
             'extra_pages': [generator],
+            'redirect_policy': redirect_policy,
         }
         result = freeze(self.app, config)
         print(result)
