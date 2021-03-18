@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/freezeyt/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz třicátý třetí - info pro nově příchozí</h1>
+<p>Chcete-li se k nám také připojit, doporučujeme přečíst si před tímto článkem,
+<a href="../meeting01/">článek z prvního srazu</a>, kde je vysvětleno, co je cílem projektu.</p>
+<p>🎉 Dneska se k nám připojili noví členové,
+tak jsme na úvod zařadili info o projektu a krátké demo jeho použití.</p>
+<h2>O čem projekt je?</h2>
+<p>Abychom shrnuli o čem projekt je: první potřebujeme vytvořit webovou aplikaci
+(třeba ve webovém fremeworku <a href="https://flask.palletsprojects.com/en/1.1.x/">Flask</a>).
+Příkazem <code>flask run</code> se spustí jednoduchý server.
+Chceme-li tyto stránky publikovat, existuje mnoho možností, jak to udělat.
+Jedna z těchto možností je nasadit ji na server statických stránek.
+Na takovém serveru žádná aplikace neběží.
+Tento server jen „naservíruje“ stránky, které jsou někde uložené na disku.
+Na takové stránce nemůžeme mít třeba přihlašování, protože to je dynamická věc.
+To, že máme statické stránky přináší pár výhod, jednou z nich je to,
+že nemusíme platit drahé servery, na kterých něco běží.</p>
+<h2>Co se skrývá v kódu freezeyt?</h2>
+<p>Následovala exkurze kódem projektu.</p>
+<h3>Freezeyt</h3>
+<p>V základu zmrazení stránky začne zmrazením hlavní stránky.
+Pak freezeyt tuto stránku projde a najde na ní odkazy,
+ty si uloží a následně zmrazí stránky, které jsou na těchto odkazech.
+Ta se projde, tam se najdou odkazy a zmrazí se stránky na hlavních odkazech.</p>
+<p>Poté jsme prošli kód po jednotlivých souborech.</p>
+<p>Začali jsme v souboru <em>freezer.py</em>.
+V něm je třída <code>Freezer</code>, při inicializaci objektu třídy se vytvoří objekt s konfigurací.
+Následně se vytvoří seznam stránek, o kterých freezer ví a ještě je nenavštívil.
+Zavolá se freezer dle toho, jak chceme stránky zamrazit
+(buď do souboru nebo do slovníku).
+Vrátí se informace z těch stránek. Ty se uloží a pak se ty stránky projdou
+a najdou se na nich všechny odkazy. Ty se přidají do seznamu nenavštívených odkazů.
+V tomto souboru je i funkce <code>freeze</code>, která vytvoří instanci třídy,
+a zavolá potřebné metody, tahle funkce slouží pro používání z Pythonu.</p>
+<p>Soubor <em>__init__.py</em> dává k dispozici třídu <code>Freezer</code> a funkci <code>freeze</code>.</p>
+<p>Dále <em>freezer.py</em> obsahuje funkci <code>check_mimetype</code>, která kontroluje,
+že přípona souboru odpovídá typu souboru, který poslala aplikace.</p>
+<p>Následně jsme se podívali na konfiguraci freezeytu.
+Tu můžeme dodat buď pomocí slovníku, nebo pomocí souboru.
+Jedna z důležitých věcí, kterou můžeme nakonfigurovat je <code>prefix</code> aplikace,
+ten zajistí, že odkazy budou odkazovat tam, kam mají.
+Také se dle něj dá poznat, zda je odkaz externí, nebo ne.
+Další možností konfigurace je to, kam se bude výsledek ukládat a to zda do
+adresáře na disk, nebo do slovníku. Ukládání do slovníku je hlavně kvůli testům,
+při ukládání do slovníku je tam také metoda, která umožní výsledek
+dostat zpět.</p>
+<p>Je tam také interní funkce <code>_add_extra_pages</code>, která přidá stránky,
+na které nevedou žádné odkazy z aplikace.</p>
+<p>Na chvíli jsme se zastavili u WSGI.
+Je to rozhraní, které je definováno v <a href="https://www.python.org/dev/peps/pep-3333/">PEP 3333</a>.
+Všechny Pythonní webové aplikace by měly být kompatibilní s tímto rozhraním.
+My vlastně píšeme nový server, náš freezer musí být schopen spolupracovat
+s tímto rozhraním.
+To hlavní je, že máme aplikaci, kterou zavoláme jako funkci.
+Předáme jí slovník s požadavky a funkci <code>start_response</code>.
+V této funkci jsou hlavičky, typ souboru apod.
+Ve freezeytu máme metodu na uložení hlaviček a kontrolu status kódu.</p>
+<p>Z hlaviček zjistíme, jaký je to dokument, pokud je to soubor typu HTML,
+nebo CSS, podíváme se do těchto souborů a zkontrolujeme,
+zda v nich nejsou další odkazy.
+Funkce <code>get_all_links</code> a <code>get_all_links_css</code> jsou definovány jinde.</p>
+<p>Dále jsme se podívali do souboru <em>filesaver.py</em>, což je nástroj,
+který ukládá dokumenty na disk.
+Obsahuje třídu <code>FileSaver</code> a v ní metodu <code>url_to_filename</code>,
+která z URL adres udělá názvy souborů.
+Třída <code>DictSaver</code> v <em>dictsaver.py</em> zajišťuje ukládání do slovníku.</p>
+<p>V souboru <em>encoding.py</em> jsou složitosti ohledně kódování.</p>
+<p>V souboru <em>cli.py</em> je definováno rozhraní pro příkazovou řádku (CLI).
+Tady se volá funkce <code>main</code> a díky tomu můžeme freezeyt použít pomocí <code>python -m freezeyt</code>.</p>
+<p>V souboru <em>util.py</em> jsou pomocné funkce a to je veškerý kód. 🎉</p>
+<h3>Testy</h3>
+<p>Většina testů se přidává spolu s novou funkcionalitou,
+dle Test Driven Developement <a href="https://developer.ibm.com/devpractices/software-development/articles/5-steps-of-test-driven-development/">TDD</a>
+Testy jako např. <code>test_check_mimetype</code> kontrolují jednu funkci.
+Důležité jsou testy v <code>test_expected_output</code>, tyto testy testují kompletní
+zmrazení aplikace.
+Tady tyto testy zajišťují, že se freezeyt chová pořád stejně.
+V těchto testech je adresář fixtures a v něm jsou aplikace a očekávaný výstup.</p>
+<h3>Blog</h3>
+<p>Krom samotného projektu máme i blog, který slouží částečně i jako dokumentace.
+Hledá se v něm snáze než ve videích na YouTube.
+Ve článcích jsou shrnutí ze srazů.
+Blog sídlí <a href="../">zde</a> na GH pages.
+Nasazení blogu se děje automaticky.
+Články se posílají přes PR na GitHub.
+Články přijdou do adresáře <code>freezeyt_blog/articles</code>.
+Při každém PR se blog „zamrazí“ pomocí freezeytu.
+Někdo ten PR musí začlenit (ideálně to před tím i schválí).
+Poté, co se tento commit pushne do masteru, tak se blog publikuje.</p>
+<h3>Continuous Integration (CI)</h3>
+<p>Když na GitHub pošleme PR, tak na něm GH pustí testy.
+Testujeme na 4 verzích Pythonu (3.6, 3.7, 3.8 a 3.9),
+pak tam jsou ještě testy s Pyflakes,
+které kontrolují většinou zapomenuté importy.
+Dále se automaticky zamrazí a publikuje blog.</p>
+<p>Nastavení GH actions je v <code>.github/workflows</code>.</p>
+<h3>Další soubory</h3>
+<p>Dále je v repozitáři nějaká dokumentace s poznámkami.
+Pak tam jsou nějaké Gitové soubory, licence, README a informace o závislostech.
+Ty se dělí na závislosti pro běh, pro vývoj a pro blog.</p>
+<p>Soubor <code>setup.py</code> z toho udělá Pythonní balíček a je tam ještě konfigrace Toxu,
+který slouží pro to, abychom testy mohli spustit na více verzích Pythonu.</p>
+<h2>Blog</h2>
+<p>Na chvíli jsme se pozastavili u toho, jak se píší články na blog.
+(Články na blog klidně přidávejte, Pull Requesty jsou velice vítány. 😉)
+Pokud nějaký článek píšete/chcete napsat,
+hlašte se <a href="https://github.com/encukou/freezeyt/issues/1">zde</a> nebo na Slacku.</p>
+<h2>Popis konfigurace</h2>
+<p>Informace o tom, co všechno se dá nastavit v konfiguraci by měla být napsána
+v README (chybí-li tam něco, určitě pošlete PR s opravou, nebo otevřte issue.)
+Dá se tam nastavit adresář, do kterého se výstup zamrazí.
+Následně prefix aplikace, to je adresa, na které bude stránka „sídlit“.
+Pak můžeme specifikovat stránky, na které nevedou žádné odkazy z aplikace.
+Takovými stránkami by mohly být například přesměrovávací stránky.
+Dále můžeme specifikovat extra soubory typu <code>.nojekyll</code> apod.</p>
+<h2>Jak dostat Flask app z defaultního Flask serveru?</h2>
+<p>Chceme-li dostat Flask aplikaci z defaultního Flask serveru,
+budeme ji muset nainstalovat.
+Poté si vytvoříme <a href="https://naucse.python.cz/course/mi-pyt/fast-track/install/">virtuální prostředí</a>.
+V příkazové řádce zadáme (na Windows místo <code>export</code> použijte <code>set</code>):</p>
+<div class="highlight"><pre><span></span>$ <span class="nb">export</span> <span class="nv">FLASK_APP</span><span class="o">=</span>app.py
+$ <span class="nb">export</span> <span class="nv">FLASK_ENV</span><span class="o">=</span>developement
+$ flask run
+</pre></div>
+<p>Jen tak mimochodem jsme došli k tomu, že na blog by bylo fajn přidat styly!</p>
+<p>Pak jsme v README hledali (a našli), jak se freezeyt používá.
+Je potřeba přidat freezeyt do proměnné prostředí PYTHONPATH.
+Poté nainstalujeme závislosti (dependencies) freezeytu.
+(Aplikace se kterou jsme to zkoušeli používala přesměrování, což server
+statických stránek neumí.
+Tak jsme udělali odbočku a přesměrování v této aplikaci zrušili.)
+Následně spustíme freezeyt.
+Potom „zmražené“ stránky nasadíme na server,
+nebo použijeme v Pythonu vestavěný <code>http.server</code>.
+V konfiguraci můžeme nastavit <code>freezeyt.freezing</code> na <code>True</code>.
+Na základě toho může aplikace např. vynechat dynamické stránky (a odkazy na ně).
+Následně je potřeba přepnout se do virtuálního prostředí.
+Zjistit, jak se daná aplikace importuje.
+Potom jsme nastavili PYTHONPATH (až bude balíček, bude to jednodušší).
+Pak jde freezeyt spustit a aplikaci „zamrazit" – uložit na disk.</p>
+<h2>Kontrola PRs</h2>
+<p>Každý sraz začínáme procházením Pull Requestů (PR) na GitHubu (GH).
+Dnes jsme se k tomu dostali trochu později.
+Většinou pokecáme o otevřených PRs, řekneme si co nás blokuje
+a jak by se s tím dalo pohnout.
+Dnes se jich tam sešlo trochu více než obvykle.</p>
+<h3>Článek z meetingu 32</h3>
+<p>První PR přidával článek z minulého meetingu.
+Ten jsme začlenili v průběhu ukázky GH actions.</p>
+<h3>Rozepsané články na blog</h3>
+<p>Dále byly na blog přidány historické draft PRs z předchozích srazů.
+Rozepsané články jsou lepší než nic.
+Po začlenění PR se články za chvíli objeví na <a href="../">blogu</a>.</p>
+<h3>Odebrání WSGI demo</h3>
+<p>Demo aplikace pro rozhraní WSGI už v repozitáři není potřeba, a navíc
+celý její kód je v <a href="/meeting01">článku z prvního srazu</a>.</p>
+<h3>Možnost přidat extra soubory jako base64 nebo cestu k souboru</h3>
+<p>Nově bude soubory navíc specifikovat jako cestu, odkud se to má zkopírovat
+nebo přidat v base64, to jest soubor binární, méně čitelné, ale také funkční.
+PR přidává dokumentaci, samotnou implementaci (probrali jsme jak to funguje),
+dále demo aplikaci, očekávaný výstup ve slovníku, očekávaný výstup
+v adresáři a změny testů.
+Začlenění proběhlo se slovním approve za zneužití administrátorských privilegií. 😀</p>
+<h3>Prázdné odkazy</h3>
+<p>Další PR přidával test s prázdným odkazem, např.:</p>
+<div class="highlight"><pre><span></span>Odkaz <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">&gt;</span>někam<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>, tedy spíše nikam.
+</pre></div>
+<p>Není to ideální, ale není to chyba.
+Approve už tam byl, takže PR byl začleněn.
+Na chvilku jsme se u toho zastavili.
+Prohlížeč chybu nevyhodí, asi to bere jako relativní URL na tu konkrétní stránku.
+Ta prázdná adresa není přesně dle standardu, dělat by se to nemělo.
+My buď můžeme vyhodit chybu, nebo se chovat jako prohlížeč.
+Přidání testu zdůvodňuje rozhodnutí a zároveň to zaručí,
+že neměníme chování nástroje.</p>
+<h3>Specifikace stránek pomocí generátoru</h3>
+<p>Poslední PR přidává možnost specifikovat extra stránky pomocí generátoru,
+i když na ně nevede žádný odkaz.
+Je to funkce která přidá extra pages, když je tam generátor tak jej spustí a přidá dané URL.
+Přidána byla také aplikace s testy, kde ve slovníku <code>freeze_config</code>
+je konfigurace pro aplikaci v testech.
+Opět proběhlo sofistikované slovní approve.</p>
+<h2>Issues</h2>
+<p>V issues jsou věci, které je ještě potřeba udělat.
+Je tam například kompatibilita s Frozen Flask, na tu se pravděpodobně podíváme příště.
+Déle reorganizace testů, měnitelná hodnota <code>test_created_output</code> - neurgentní.
+V jednom z issues, které dostal za úkol nový člen, je úkolem přidat možnost
+předat konfiguraci jako naimportovatelnou proměnnou.
+Pozastavili jsme se u toho, jak by se to dalo udělat.
+V CLI používáme pro konfiguraci proměnnou <code>freeze_config</code>,
+bylo by fajn, kdyby to mohl použít uživatel taky, ať nemusí tvořit soubor.
+Úkolem je přidat nový přepínač, konfigurace bude v proměnné v Pythonu.
+Dále naimportovat modul, z něj naimportovat proměnnou,
+tu použít to jako konfiguraci.
+(Potom přidat testy a dokumentace.)
+A samozřejmostí je, že rádi pomůžeme. 😉</p>
+<h2>Padající testy na Windows</h2>
+<p>Na konci jsme se koukli na testy na Windows, které neprocházejí.
+První problém byl způsobený verzí Pytestu, to opravuje specifikace v requirements.
+Druhý problém je ve WSGI static middleware,
+to se vyřeší to až budeme umět kopírovat statické soubory.</p>
+<p>Příští týden začíná týmový začátečnický kurz Pythonu, takže se příště sejdeme v úterý.</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/RKRogH-NepY">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>
