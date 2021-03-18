@@ -3,6 +3,9 @@ from collections.abc import Mapping
 
 from flask import Flask, Blueprint, url_for
 
+from freezeyt import freeze
+
+
 def unwrap_method(method):
     """Return the function object for the given method object."""
     try:
@@ -32,7 +35,15 @@ class Freezer:
             app.config.setdefault('FREEZER_STATIC_IGNORE', [])
 
     def freeze(self):
-        pass
+        def generator(app):
+            return self.all_urls()
+        config = {
+            'output': 'dict',
+            'extra_pages': [generator],
+        }
+        result = freeze(self.app, config)
+        print(result)
+        return result
 
     def _static_rules_endpoints(self):
         """
