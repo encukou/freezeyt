@@ -8,7 +8,7 @@ tak jsme na úvod zařadili info o projektu a krátké demo jeho použití.
 
 ## O čem projekt je?
 Abychom shrnuli o čem projekt je: první potřebujeme vytvořit webovou aplikaci
-(třeba ve webovém fremeworku [Flask](https://flask.palletsprojects.com/en/1.1.x/).
+(třeba ve webovém fremeworku [Flask](https://flask.palletsprojects.com/en/1.1.x/)).
 Příkazem `flask run` se spustí jednoduchý server.
 Chceme-li tyto stránky publikovat, existuje mnoho možností, jak to udělat.
 Jedna z těchto možností je nasadit ji na server statických stránek.
@@ -125,7 +125,7 @@ Pak tam jsou nějaké Gitové soubory, licence, README a informace o závisloste
 Ty se dělí na závislosti pro běh, pro vývoj a pro blog.
 
 Soubor `setup.py` z toho udělá Pythonní balíček a je tam ještě konfigrace Toxu,
-který slouží pro to, abychom testy mohly spustit na více verzích Pythonu.
+který slouží pro to, abychom testy mohli spustit na více verzích Pythonu.
 
 ## Blog
 Na chvíli jsme se pozastavili u toho, jak se píší články na blog.
@@ -217,7 +217,7 @@ Přidání testu zdůvodňuje rozhodnutí a zároveň to zaručí,
 ### Specifikace stránek pomocí generátoru
 Poslední PR přidává možnost specifikovat extra stránky pomocí generátoru,
 i když na ně nevede žádný odkaz.
-Je to funkce která přidá extra pages, když je tam generátor tak jej spustí a přidá dané URL. (snad?)
+Je to funkce která přidá extra pages, když je tam generátor tak jej spustí a přidá dané URL.
 Přidána byla také aplikace s testy, kde ve slovníku `freeze_config`
 je konfigurace pro aplikaci v testech.
 Opět proběhlo sofistikované slovní approve.
