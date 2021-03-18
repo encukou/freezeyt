@@ -1,5 +1,4 @@
 import importlib
-import os
 import sys
 from contextlib import contextmanager
 
@@ -8,7 +7,13 @@ from yaml import safe_dump
 from click.testing import CliRunner
 
 from freezeyt.cli import main
-from test_expected_output import APP_NAMES, FIXTURES_PATH, assert_dirs_same
+from test_expected_output import FIXTURES_PATH, assert_dirs_same
+
+APP_NAMES = [
+    p.name
+    for p in FIXTURES_PATH.iterdir()
+    if (p / 'app.py').exists() and (p / 'test_expected_output').exists()
+]
 
 
 def run_freezeyt_cli(cli_args, app_name, check=True):
@@ -40,22 +45,11 @@ def run_and_check(cli_args, app_name, build_dir):
         assert result.exit_code != 0
 
     else:
-        if not expected.exists():
-            if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
-                pytest.skip('Expected output is created in other tests')
-            elif app_name == 'url_unicode_hostname':
-                pytest.skip('NEED TO BE SOLVED, see https://github.com/encukou/freezeyt/issues/144')
-            else:
-                raise AssertionError(
-                    f'Expected output directory ({expected}) does not exist. '
-                    + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
-                )
-        else:
-            if result.exception is not None:
-                raise result.exception
-            assert result.exit_code == 0
+        if result.exception is not None:
+            raise result.exception
+        assert result.exit_code == 0
 
-            assert_dirs_same(build_dir, expected)
+        assert_dirs_same(build_dir, expected)
 
 
 @contextmanager
@@ -79,9 +73,6 @@ def test_cli_with_fixtures_output(tmp_path, app_name):
     with context_for_test(app_name) as module:
         cli_args = ['app', str(build_dir)]
         freeze_config = getattr(module, 'freeze_config', None)
-
-        if getattr(module, 'no_expected_directory', False):
-            pytest.skip('No directory with expected output')
 
         if freeze_config != None:
             with open(config_file, mode='w') as file:

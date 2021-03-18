@@ -21,38 +21,6 @@ APP_NAMES = [
 ]
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
-def test_output_dict(tmp_path, monkeypatch, app_name):
-    app_path = FIXTURES_PATH / app_name
-    error_path = app_path / 'error.txt'
-
-    # Add FIXTURES_PATH to sys.path, the list of directories that `import`
-    # looks in
-    monkeypatch.syspath_prepend(str(app_path))
-    sys.modules.pop('app', None)
-    try:
-        module = importlib.import_module('app')
-        app = module.app
-
-        freeze_config = getattr(module, 'freeze_config', {})
-        freeze_config['output'] = 'dict'
-
-        if error_path.exists():
-            with pytest.raises(ValueError):
-                freeze(app, freeze_config)
-        else:
-            result = freeze(app, freeze_config)
-            expected_dict = getattr(module, 'expected_dict', None)
-
-            if expected_dict is None:
-                pytest.skip('No expected_dict')
-
-            assert result == expected_dict
-
-    finally:
-        sys.modules.pop('app', None)
-
-
-@pytest.mark.parametrize('app_name', APP_NAMES)
 def test_output(tmp_path, monkeypatch, app_name):
     app_path = FIXTURES_PATH / app_name
     error_path = app_path / 'error.txt'
@@ -65,34 +33,49 @@ def test_output(tmp_path, monkeypatch, app_name):
         module = importlib.import_module('app')
         app = module.app
 
-        if getattr(module, 'no_expected_directory', False):
-            pytest.skip('No directory with expected output')
-
         freeze_config = getattr(module, 'freeze_config', {})
-        freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
+        expected_dict = getattr(module, 'expected_dict', None)
+        expecting_dir = not getattr(module, 'no_expected_directory', False)
 
-        expected = app_path / 'test_expected_output'
+        freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
 
         if error_path.exists():
             with pytest.raises(ValueError):
                 freeze(app, freeze_config)
         else:
-            freeze(app, freeze_config)
-            expected_dict = getattr(module, 'expected_dict', None)
+            # Non error app.
 
-            if not expected.exists():
-                if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
-                    shutil.copytree(tmp_path, expected)
-                elif expected_dict is not None:
-                    pytest.skip('Tested by expected_dict')
-                else:
-                    raise AssertionError(
-                        f'Expected output directory ({expected}) does not exist. '
-                        + 'To test files diff - run with '
-                        + 'TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
-                    )
+            # We want to check against expected data stored in a directory
+            # and/or in a dict. At least one of those must exist.
+            if not expecting_dir and expected_dict is None:
+                raise AssertionError(
+                    f'({app_name}) is not contain any'
+                    + 'expected output (dict or dir)'
+                )
 
-            assert_dirs_same(tmp_path, expected)
+            if expecting_dir:
+                # test the output saved in dir 'test_expected_output'
+                freeze(app, freeze_config) # freeze content to tmp_path
+                expected = app_path / 'test_expected_output'
+
+                if not expected.exists():
+                    if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                        shutil.copytree(tmp_path, expected)
+                    else:
+                        raise AssertionError(
+                            f'Expected output directory ({expected}) does not exist. '
+                            + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                        )
+
+                assert_dirs_same(tmp_path, expected)
+
+            if expected_dict is not None:
+                # test the output saved in dictionary
+                freeze_config['output'] = 'dict'
+
+                result = freeze(app, freeze_config) # freeze content to dict
+
+                assert result == expected_dict
 
     finally:
         sys.modules.pop('app', None)
