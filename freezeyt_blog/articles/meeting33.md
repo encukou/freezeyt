@@ -52,8 +52,8 @@ ten zajistí, že odkazy budou odkazovat tam, kam mají.
 Také se dle něj dá poznat, zda je odkaz externí, nebo ne.
 Další možností konfigurace je to, kam se bude výsledek ukládat a to zda do
 adresáře na disk, nebo do slovníku. Ukládání do slovníku je hlavně kvůli testům,
-při ukládání do slovníku je tam také metoda, která kontroluje, že výsledek
-dostaneme zpět.
+při ukládání do slovníku je tam také metoda, která umožní výsledek
+dostat zpět.
 
 Je tam také interní funkce `_add_extra_pages`, která přidá stránky,
 na které nevedou žádné odkazy z aplikace.
@@ -116,7 +116,7 @@ pak tam jsou ještě testy s Pyflakes,
 které kontrolují většinou zapomenuté importy.
 Dále se automaticky zamrazí a publikuje blog.  
 
-Nastavení GH actions je v `.github/workflows`
+Nastavení GH actions je v `.github/workflows`.
 
 ### Další soubory
 
@@ -127,13 +127,15 @@ Ty se dělí na závislosti pro běh, pro vývoj a pro blog.
 Soubor `setup.py` z toho udělá Pythonní balíček a je tam ještě konfigrace Toxu,
 který slouží pro to, abychom testy mohly spustit na více verzích Pythonu.
 
-## TODO nadpis
+## Blog
 Na chvíli jsme se pozastavili u toho, jak se píší články na blog.
 (Články na blog klidně přidávejte, Pull Requesty jsou velice vítány. 😉)
 Pokud nějaký článek píšete/chcete napsat,
 hlašte se [zde](https://github.com/encukou/freezeyt/issues/1) nebo na Slacku.
 
-Informace o tom, co všechno se dá nastavit v konfiiguraci by měla být napsána
+## Popis konfigurace
+
+Informace o tom, co všechno se dá nastavit v konfiguraci by měla být napsána
 v README (chybí-li tam něco, určitě pošlete PR s opravou, nebo otevřte issue.)
 Dá se tam nastavit adresář, do kterého se výstup zamrazí.
 Následně prefix aplikace, to je adresa, na které bude stránka „sídlit“.
@@ -157,17 +159,18 @@ Jen tak mimochodem jsme došli k tomu, že na blog by bylo fajn přidat styly!
 Pak jsme v README hledali (a našli), jak se freezeyt používá.
 Je potřeba přidat freezeyt do proměnné prostředí PYTHONPATH.
 Poté nainstalujeme závislosti (dependencies) freezeytu.
-Na statických stránkách je problém s přesměrováním. (Proč je tu tato věta?)
+(Aplikace se kterou jsme to zkoušeli používala přesměrování, což server
+statických stránek neumí.
+Tak jsme udělali odbočku a přesměrování v této aplikaci zrušili.)
 Následně spustíme freezeyt.
 Potom „zmražené“ stránky nasadíme na server,
 nebo použijeme v Pythonu vestavěný `http.server`.
-V konfiguraci můžeme nastavit `freezeyt.freezing` na `True`, a to znamená,
-že některé části by se nezafreezovaly.
+V konfiguraci můžeme nastavit `freezeyt.freezing` na `True`.
+Na základě toho může aplikace např. vynechat dynamické stránky (a odkazy na ně).
 Následně je potřeba přepnout se do virtuálního prostředí.
 Zjistit, jak se daná aplikace importuje.
 Potom jsme nastavili PYTHONPATH (až bude balíček, bude to jednodušší).
-Pak by to mělo jít uložit. (Nemám sebemenší tušení, co by mělo jít uložit.)
-(Proč mám pocit, že tu je ta část dvakrát?)
+Pak jde freezeyt spustit a aplikaci „zamrazit" – uložit na disk.
 
 ## Kontrola PRs
 Každý sraz začínáme procházením Pull Requestů (PR) na GitHubu (GH).
@@ -185,7 +188,7 @@ Dále byly na blog přidány historické draft PRs z předchozích srazů.
 Rozepsané články jsou lepší než nic.
 Po začlenění PR se články za chvíli objeví na [blogu](../).
 
-### Odebrní WSGI demo
+### Odebrání WSGI demo
 Demo aplikace pro rozhraní WSGI už v repozitáři není potřeba, a navíc
 celý její kód je v [článku z prvního srazu](/meeting01).
 
