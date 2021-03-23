@@ -245,6 +245,24 @@ extra_files:
 
 Extra files cannot be specified on the CLI.
 
+
+### Redirect policy
+
+The `redirect_policy` option specifies the policy for handling redirects.
+It can be:
+* `'error'` (default): When a redirect response is encountered,
+  `freezeyt` will abort.
+* `'save'`: `freezeyt` will save the body of the redirect page, as if
+  the response was `200`.
+  This is meant to be used with redirects in the HTML `<meta>` tag.
+
+For example:
+
+```yaml
+redirect_policy: save
+```
+
+
 ## Examples of CLI usage
 
 ```shell

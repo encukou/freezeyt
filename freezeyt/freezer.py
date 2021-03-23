@@ -118,6 +118,10 @@ class Freezer:
             exc_type, value, traceback = exc_info
             if value is not None:
                 raise value
+        if status.startswith("3"):
+            redirect_policy = self.config.get('redirect_policy', 'error')
+            if redirect_policy == 'save':
+                status = "200"
         if not status.startswith("200"):
             raise ValueError("Found broken link.")
         else:
