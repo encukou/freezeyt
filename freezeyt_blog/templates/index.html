@@ -6,9 +6,9 @@
 Všechny články k projektu:
 </div>
 <ul class="list-unstyled">
-{% for post_name in post_names %}
+{% for post_slug, post_name in post_info %}
     <li>
-        <a href={{ url_for('post', slug=post_name) }}>Článek {{ post_name }}</a>
+        <a href={{ url_for('post', slug=post_slug) }}>{{ post_name }}</a>
     </li>
 {% endfor %}
 <ul>

@@ -49,11 +49,16 @@ class BlogRenderer(mistune.Renderer):
 @app.route('/')
 def index():
     """Start page with list of articles."""
-    post_names = [a.stem for a in sorted(ARTICLES_PATH.glob('*.md'))]
+    post_slugs = [a.stem for a in sorted(ARTICLES_PATH.glob('*.md'))]
+    post_names = []
+    for article in sorted(ARTICLES_PATH.glob('*.md')):
+        with open(article, encoding='utf-8') as a:
+            post_names.append(a.readline()[2:])
+    post_info = zip(post_slugs, post_names)
 
     return render_template(
         'index.html',
-        post_names=post_names,
+        post_info=post_info
     )
 
 
