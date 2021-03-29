@@ -7,9 +7,15 @@ Všechny články k projektu:
 </div>
 <ul class="list-unstyled">
 {% for post_slug, post_name in post_info %}
-    <li>
-        <a href={{ url_for('post', slug=post_slug) }}>{{ post_name }}</a>
-    </li>
+    {% if post_slug == "meeting01" or post_slug == "meeting33" %}
+        <li>
+            <a href={{ url_for('post', slug=post_slug) }}><b>{{ post_name }}</b></a>
+        </li>
+    {% else %}
+        <li>
+            <a href={{ url_for('post', slug=post_slug) }}>{{ post_name }}</a>
+        </li>
+    {% endif %}
 {% endfor %}
 <ul>
 
