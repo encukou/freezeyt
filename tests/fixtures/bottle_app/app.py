@@ -29,7 +29,7 @@ def second_page():
         </head>
         <body>
             <h3>Hello world! This is a second page of app.</h3>
-            <a href="/image_page.html">LINK to image page</a>
+            <a href='/image_page.html'>LINK to image page</a>
         </body>
     </html>
     """
@@ -67,6 +67,7 @@ expected_dict = {
         b"\n    <html>\n        <head>\n            "
         + b"<title>Hello world app</title>\n        </head>\n        <body>\n"
         + b"            <h3>Hello world! This is a second page of app.</h3>\n"
+        + b"            <a href='/image_page.html'>LINK to image page</a>"
         + b"        </body>\n"
         + b"    </html>\n    ",
 
@@ -84,7 +85,7 @@ expected_dict = {
         + b'            <h3>Hello world! This is a image page of app.</h3>\n'
         + b'            <img src="images/smile.png" alt="smile">\n'
         + b'            <a href="/">LINK to homepage</a>\n'
-        + b'        </body>'
+        + b'        </body>\n'
         + b'    </html>\n    ',
 
 }
