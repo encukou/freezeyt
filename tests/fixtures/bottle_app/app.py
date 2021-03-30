@@ -1,4 +1,4 @@
-from bottle import Bottle, route, run, static_file, template
+from bottle import Bottle, static_file
 from pathlib import Path
 
 app = Bottle()
