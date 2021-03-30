@@ -17,7 +17,6 @@ def encode_wsgi_path(s):
     """Encodes an URL path from internal format for use in WSGI"""
 
     bytestring = s.encode('utf-8', errors='surrogateescape')
-    print(bytestring)
     return bytestring.decode('latin-1')
 
 
