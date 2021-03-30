@@ -361,7 +361,7 @@ $ python -m pytest
 ```
 
 To run tests with multiple Python versions (if you have them installed),
-install `tox` using `python -m pip install tox` and tun it:
+install `tox` using `python -m pip install tox` and run it:
 
 ```
 $ tox
