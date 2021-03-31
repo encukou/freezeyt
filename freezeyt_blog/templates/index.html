@@ -9,7 +9,7 @@ Všechny články k projektu:
 {% for post_slug, post_name in post_info %}
     {% if post_slug == "meeting01" or post_slug == "meeting33" %}
         <li>
-            <a href={{ url_for('post', slug=post_slug) }}><b>{{ post_name }}</b></a>
+            <a href={{ url_for('post', slug=post_slug) }}><strong>{{ post_name }}</strong></a>
         </li>
     {% else %}
         <li>
