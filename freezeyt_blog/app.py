@@ -53,7 +53,11 @@ def index():
     post_names = []
     for article in sorted(ARTICLES_PATH.glob('*.md')):
         with open(article, encoding='utf-8') as a:
-            post_names.append(a.readline()[2:])
+            title = a.readline()
+            if title.startswith("# "):
+                post_names.append(title[2:])
+            else:
+                raise ValueError("Post must begin with a title.")
     post_info = zip(post_slugs, post_names)
 
     return render_template(
