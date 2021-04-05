@@ -119,7 +119,7 @@ class Freezer:
             if value is not None:
                 raise value
         if not status.startswith("200"):
-            raise ValueError(f"Found broken link.")
+            raise ValueError("Found broken link.")
         else:
             print('status', status)
             print('headers', headers)
