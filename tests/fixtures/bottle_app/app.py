@@ -1,8 +1,10 @@
 from bottle import Bottle, static_file
 from pathlib import Path
 
+STATIC_PATH = Path(__file__).parent / 'static'
+
 app = Bottle()
-no_expected_directory = True
+
 
 @app.route('/')
 def index():
@@ -36,8 +38,7 @@ def second_page():
 
 @app.route('/images/<filename>')
 def send_image(filename):
-    static_path = Path(__file__).parent / 'static'
-    return static_file(filename, root=static_path, mimetype='image/png')
+    return static_file(filename, root=STATIC_PATH, mimetype='image/png')
 
 @app.route('/image_page.html')
 def image():
