@@ -47,6 +47,25 @@ def check_mimetype(url_path, headers):
         )
 
 
+def url_to_path(prefix, parsed_url):
+    if is_external(parsed_url, prefix):
+        raise ValueError(f'external url {parsed_url}')
+
+    url_path = parsed_url.path
+
+    if url_path.startswith(prefix.path):
+        url_path = url_path[len(prefix.path):]
+
+    if url_path.endswith('/') or not url_path:
+        url_path = url_path + 'index.html'
+
+    result = PurePosixPath(encode_file_path(url_path))
+
+    assert not result.is_absolute(), result
+
+    return result
+
+
 @dataclasses.dataclass
 class Task:
     path: Path
@@ -101,7 +120,7 @@ class Freezer:
         if is_external(url, self.prefix):
             return None
 
-        path = self.url_to_path(url)
+        path = url_to_path(self.prefix, url)
 
         if path in self.pending_tasks:
             task = self.pending_tasks[path]
@@ -115,24 +134,6 @@ class Freezer:
             task = Task(path, {url})
             self.pending_tasks[path] = task
             return task
-
-    def url_to_path(self, parsed_url):
-        if is_external(parsed_url, self.prefix):
-            raise ValueError(f'external url {parsed_url}')
-
-        url_path = parsed_url.path
-
-        if url_path.startswith(self.prefix.path):
-            url_path = url_path[len(self.prefix.path):]
-
-        if url_path.endswith('/') or not url_path:
-            url_path = url_path + 'index.html'
-
-        result = PurePosixPath(encode_file_path(url_path))
-
-        assert not result.is_absolute(), result
-
-        return result
 
     def freeze_extra_files(self):
         if self.extra_files is not None:
@@ -277,7 +278,7 @@ class Freezer:
                 result_iterable,
             )
 
-            self.saver.save(url_parsed, full_result)
+            self.saver.save_to_filename(task.path, full_result)
 
             try:
                 close = result_iterable.close
@@ -286,7 +287,7 @@ class Freezer:
             else:
                 close()
 
-            with self.saver.open(url_parsed) as f:
+            with self.saver.open_filename(task.path) as f:
                 cont_type, cont_encode = parse_options_header(self.response_headers.get('Content-Type'))
                 if cont_type == "text/html":
                     links = get_all_links(f, url_string, self.response_headers)
