@@ -16,7 +16,7 @@ class FileSaver:
         (eg. url_parse('http://example.com:8000/foo/')
     """
     def __init__(self, base_path, prefix):
-        self.base_path = base_path
+        self.base_path = base_path.resolve()
         self.prefix = prefix
 
     def prepare(self):
@@ -34,6 +34,7 @@ class FileSaver:
 
     def save_to_filename(self, filename, content_iterable):
         absolute_filename = self.base_path / filename
+        assert self.base_path in absolute_filename.parents
 
         print(f'Saving to {absolute_filename}')
         absolute_filename.parent.mkdir(parents=True, exist_ok=True)
@@ -42,4 +43,7 @@ class FileSaver:
                 f.write(item)
 
     def open_filename(self, filename):
-        return open(self.base_path / filename, 'rb')
+        absolute_filename = self.base_path / filename
+        assert self.base_path in absolute_filename.parents
+
+        return open(absolute_filename, 'rb')
