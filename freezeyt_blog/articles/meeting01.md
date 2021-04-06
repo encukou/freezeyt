@@ -1,4 +1,4 @@
-# Freezeyt sraz první
+# Freezeyt sraz první - úvodní
 
 ## Co je úkolem projektu?
 Vytvořit generátor statických webových stránek, tedy vzít kód webové stránky

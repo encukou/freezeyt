@@ -1,4 +1,4 @@
-# Freezeyt - sraz druhý (13. 7. 2020)
+# Freezeyt sraz druhý
 
 > Tento článek není hotový - poznámky jsou napsány do 37. minuty [záznamu](https://youtu.be/xmtqV7PfbD4?t=2219).
 
