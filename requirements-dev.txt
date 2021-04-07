@@ -3,3 +3,4 @@ flask
 pyflakes
 Django
 wsgi-static-middleware
+bottle
