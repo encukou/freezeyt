@@ -7,6 +7,7 @@ import functools
 import base64
 import dataclasses
 from typing import Optional
+import enum
 
 from urllib.parse import urljoin
 from werkzeug.datastructures import Headers
@@ -71,6 +72,10 @@ def url_to_path(prefix, parsed_url):
 
     return result
 
+class TaskStatus(enum.Enum):
+    PENDING = "Not started"
+    REQUESTED = "Currently being handled"
+    DONE = "Saved"
 
 @dataclasses.dataclass
 class Task:
@@ -79,7 +84,10 @@ class Task:
     redirect: "Task" = None
     response_headers: Headers = None
     redirects_to: "Task" = None
+    status: TaskStatus = TaskStatus.PENDING
 
+    def __repr__(self):
+        return f"<Task for {self.path}, {self.status.name}>"
 
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
@@ -251,6 +259,7 @@ class Freezer:
             self.done_tasks[task.path] = task
 
             print('task:', task)
+            task.status = TaskStatus.REQUESTED
 
             path_info = url_parsed.path
 
@@ -326,6 +335,7 @@ class Freezer:
                     for new_url in get_links_from_css(f, url_string):
                         self.add_task(parse_absolute_url(new_url))
 
+            task.status = TaskStatus.DONE
 
     def handle_redirects(self):
         print('handle_redirects', self.redirecting_tasks)
