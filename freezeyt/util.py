@@ -14,7 +14,7 @@ def is_external(parsed_url, prefix):
                 f'URL for is_external must have port set; got {url}'
             )
     prefix_path = prefix.path
-    if not prefix.path.endswith('/'):
+    if not prefix_path.endswith('/'):
         raise ValueError('prefix must end with /')
     if prefix_path == '/':
         prefix_path = ''
