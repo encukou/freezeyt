@@ -62,8 +62,11 @@ def url_to_path(prefix, parsed_url):
     result = PurePosixPath(encode_file_path(url_path))
 
     assert not result.is_absolute(), result
-    assert '..' not in result.parts
     assert '.' not in result.parts
+    if '..' in result.parts:
+        raise ValueError(
+            f"URL may not contain /../ segment: {parsed_url.to_url()}"
+        )
 
     return result
 
