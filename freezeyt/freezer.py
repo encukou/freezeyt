@@ -76,6 +76,7 @@ class Task:
     path: Path
     urls: "set[URL]"
     redirect: "Task" = None
+    response_headers: Headers = None
 
 
 class Freezer:
@@ -161,7 +162,7 @@ class Freezer:
         self.saver.prepare()
 
     def start_response(
-        self, wsgi_write, status, headers, exc_info=None,
+        self, task, wsgi_write, status, headers, exc_info=None,
     ):
         """WSGI start_response hook
 
@@ -182,9 +183,10 @@ class Freezer:
             exc_type, value, traceback = exc_info
             if value is not None:
                 raise value
-        self.response_headers = Headers(headers)
+        task.response_headers = Headers(headers)
         if status.startswith("3"):
-            print(f"Redirect {self.url.to_url()} to {self.response_headers['Location']}")
+            location = task.response_headers['Location']
+            print(f"Redirect {self.url.to_url()} to {location}")
             redirect_policy = self.config.get('redirect_policy', 'error')
             if redirect_policy == 'save':
                 status = "200"
@@ -269,6 +271,7 @@ class Freezer:
             wsgi_write_data = []
             start_response = functools.partial(
                 self.start_response,
+                task,
                 wsgi_write_data.append,
             )
 
@@ -293,9 +296,9 @@ class Freezer:
                 close()
 
             with self.saver.open_filename(task.path) as f:
-                cont_type, cont_encode = parse_options_header(self.response_headers.get('Content-Type'))
+                cont_type, cont_encode = parse_options_header(task.response_headers.get('Content-Type'))
                 if cont_type == "text/html":
-                    links = get_all_links(f, url_string, self.response_headers)
+                    links = get_all_links(f, url_string, task.response_headers)
                     for new_url in links:
                         self.add_task(parse_absolute_url(new_url))
                 elif cont_type == "text/css":
