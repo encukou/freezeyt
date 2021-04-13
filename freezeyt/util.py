@@ -6,13 +6,23 @@ from werkzeug.urls import url_parse
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
 
-    Both arguments should be results of url_parse (or parse_absolute_url)
+    Both arguments should be results of parse_absolute_url
     """
+    for url in parsed_url, prefix:
+        if url.port is None:
+            raise ValueError(
+                f'URL for is_external must have port set; got {url}'
+            )
+    prefix_path = prefix.path
+    if not prefix_path.endswith('/'):
+        raise ValueError('prefix must end with /')
+    if prefix_path == '/':
+        prefix_path = ''
     return (
         parsed_url.scheme != prefix.scheme
         or parsed_url.ascii_host != prefix.ascii_host
         or parsed_url.port != prefix.port
-        or not parsed_url.path.startswith(prefix.path)
+        or not parsed_url.path.startswith(prefix_path)
     )
 
 
