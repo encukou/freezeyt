@@ -50,7 +50,7 @@ def check_mimetype(url_path, headers):
 @dataclasses.dataclass
 class Task:
     path: Path
-    urls: set[URL]
+    urls: "set[URL]"
     redirect: "Task" = None
 
 
