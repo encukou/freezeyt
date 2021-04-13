@@ -28,6 +28,7 @@ def freeze(app, config):
     freezer.prepare()
     freezer.freeze_extra_files()
     freezer.handle_urls()
+    freezer.handle_redirects()
     return freezer.get_result()
 
 
@@ -77,7 +78,11 @@ class Task:
     urls: "set[URL]"
     redirect: "Task" = None
     response_headers: Headers = None
+    redirects_to: "Task" = None
 
+
+class IsARedirect(BaseException):
+    """Raised when a page redirects and freezing it should be postponed"""
 
 class Freezer:
     def __init__(self, app, config):
@@ -107,6 +112,7 @@ class Freezer:
             self.saver = FileSaver(Path(output['dir']), self.prefix)
 
         self.done_tasks = {}
+        self.redirecting_tasks = {}
 
         self.pending_tasks = {}
         self.add_task(prefix_parsed)
@@ -190,6 +196,18 @@ class Freezer:
             redirect_policy = self.config.get('redirect_policy', 'error')
             if redirect_policy == 'save':
                 status = "200"
+            elif redirect_policy == 'follow':
+                target_task = self.add_task(parse_absolute_url(location))
+                task.redirects_to = target_task
+                self.redirecting_tasks[task.path] = task
+                raise IsARedirect()
+            elif redirect_policy == 'error':
+                # handled below
+                pass
+            else:
+                raise ValueError(
+                    f'redirect policy {redirect_policy} not supported'
+                )
         if not status.startswith("200"):
             raise ValueError(f"Found broken link: {self.url.to_url()}, status {status}")
         else:
@@ -277,7 +295,10 @@ class Freezer:
 
             # Call the application. All calls to write (wsgi_write_data.append)
             # must be doneas part of this call.
-            result_iterable = self.app(environ, start_response)
+            try:
+                result_iterable = self.app(environ, start_response)
+            except IsARedirect:
+                continue
 
             # Combine the list of data from write() with the returned
             # iterable object.
@@ -304,5 +325,9 @@ class Freezer:
                 elif cont_type == "text/css":
                     for new_url in get_links_from_css(f, url_string):
                         self.add_task(parse_absolute_url(new_url))
-                else:
-                    continue
+
+
+    def handle_redirects(self):
+        print('handle_redirects', self.redirecting_tasks)
+        for task in self.redirecting_tasks.values():
+            print(task, task.redirects_to)
