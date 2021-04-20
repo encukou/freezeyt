@@ -4,7 +4,7 @@ import shutil
 
 import pytest
 
-from freezeyt import freeze
+from freezeyt import freeze, InfiniteRedirection
 from testutil import FIXTURES_PATH, context_for_test, assert_dirs_same
 
 
@@ -79,3 +79,14 @@ def test_redirect_policy_follow(tmp_path, monkeypatch):
         result = freeze(module.app, freeze_config) # freeze content to dict
 
         assert result == module.expected_dict_follow
+
+
+def test_circular_redirect(tmp_path, monkeypatch):
+    with context_for_test('circular_redirect') as module:
+        freeze_config = module.freeze_config
+
+        freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
+        freeze_config['redirect_policy'] = 'follow'
+
+        with pytest.raises(InfiniteRedirection):
+            freeze(module.app, freeze_config)

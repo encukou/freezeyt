@@ -89,8 +89,15 @@ class Task:
     def __repr__(self):
         return f"<Task for {self.path}, {self.status.name}>"
 
+    def get_a_url(self):
+        """Get an arbitrary one of the task's URLs."""
+        return next(iter(self.urls))
+
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
+
+class InfiniteRedirection(Exception):
+    """Infinite redirection was detected with redirect_policy='follow'"""
 
 class Freezer:
     def __init__(self, app, config):
@@ -248,7 +255,7 @@ class Freezer:
             file_path, task = self.pending_tasks.popitem()
 
             # Get an URL from the task's set of URLs
-            url_parsed = next(iter(task.urls))
+            url_parsed = task.get_a_url()
             url = url_parsed
 
             # url_string should not be needed (except for debug messages)
@@ -343,5 +350,9 @@ class Freezer:
         """Save copies of target pages for redirect_policy='follow'"""
         print('handle_redirects', self.redirecting_tasks)
         for task in self.redirecting_tasks.values():
+            if task.redirects_to.status != TaskStatus.DONE:
+                raise InfiniteRedirection(
+                    f'{task.get_a_url()} redirects to {task.redirects_to.get_a_url()}, which was not frozen (most likely because of infinite redirection)'
+                )
             with self.saver.open_filename(task.redirects_to.path) as f:
                 self.saver.save_to_filename(task.path, f)

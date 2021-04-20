@@ -1,5 +1,5 @@
-from freezeyt.freezer import freeze
+from freezeyt.freezer import freeze, InfiniteRedirection
 from freezeyt.filesaver import DirectoryExistsError
 
 
-__all__ = ['freeze', 'DirectoryExistsError']
+__all__ = ['freeze', 'DirectoryExistsError', 'InfiniteRedirection']
