@@ -81,6 +81,37 @@ def test_output(tmp_path, monkeypatch, app_name):
         sys.modules.pop('app', None)
 
 
+def test_redirect_policy_follow(tmp_path, monkeypatch):
+    app_name = 'app_redirects'
+    app_path = FIXTURES_PATH / app_name
+
+    # Add FIXTURES_PATH to sys.path, the list of directories that `import`
+    # looks in
+    monkeypatch.syspath_prepend(str(app_path))
+    sys.modules.pop('app', None)
+    try:
+        module = importlib.import_module('app')
+        app = module.app
+
+        freeze_config = getattr(module, 'freeze_config', {})
+        expected_dict = module.expected_dict_follow
+
+        freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
+        freeze_config['redirect_policy'] = 'follow'
+
+        if expected_dict is not None:
+            # test the output saved in dictionary
+            freeze_config['output'] = 'dict'
+
+            result = freeze(app, freeze_config) # freeze content to dict
+
+            assert result == expected_dict
+
+    finally:
+        sys.modules.pop('app', None)
+
+
+
 def assert_dirs_same(got: Path, expected: Path):
     cmp = filecmp.dircmp(got, expected, ignore=[])
     cmp.report_full_closure()

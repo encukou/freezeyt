@@ -176,7 +176,7 @@ class Freezer:
         self.saver.prepare()
 
     def start_response(
-        self, task, wsgi_write, status, headers, exc_info=None,
+        self, task, url, wsgi_write, status, headers, exc_info=None,
     ):
         """WSGI start_response hook
 
@@ -200,12 +200,13 @@ class Freezer:
         task.response_headers = Headers(headers)
         if status.startswith("3"):
             location = task.response_headers['Location']
-            print(f"Redirect {self.url.to_url()} to {location}")
+            print(f"Redirect {url.to_url()} to {location}")
             redirect_policy = self.config.get('redirect_policy', 'error')
             if redirect_policy == 'save':
                 status = "200"
             elif redirect_policy == 'follow':
-                target_task = self.add_task(parse_absolute_url(location))
+                location = url.join(location)
+                target_task = self.add_task(location)
                 task.redirects_to = target_task
                 self.redirecting_tasks[task.path] = task
                 raise IsARedirect()
@@ -217,11 +218,11 @@ class Freezer:
                     f'redirect policy {redirect_policy} not supported'
                 )
         if not status.startswith("200"):
-            raise ValueError(f"Found broken link: {self.url.to_url()}, status {status}")
+            raise ValueError(f"Found broken link: {url.to_url()}, status {status}")
         else:
             print('status', status)
             print('headers', headers)
-            check_mimetype(self.url.path, headers)
+            check_mimetype(url.path, headers)
         return wsgi_write
 
     def _add_extra_pages(self, prefix, extras):
@@ -248,7 +249,7 @@ class Freezer:
 
             # Get an URL from the task's set of URLs
             url_parsed = next(iter(task.urls))
-            self.url = url_parsed
+            url = url_parsed
 
             # url_string should not be needed (except for debug messages)
             url_string = url_parsed.to_url()
@@ -299,6 +300,7 @@ class Freezer:
             start_response = functools.partial(
                 self.start_response,
                 task,
+                url,
                 wsgi_write_data.append,
             )
 
@@ -338,6 +340,8 @@ class Freezer:
             task.status = TaskStatus.DONE
 
     def handle_redirects(self):
+        """Save copies of target pages for redirect_policy='follow'"""
         print('handle_redirects', self.redirecting_tasks)
         for task in self.redirecting_tasks.values():
-            print(task, task.redirects_to)
+            with self.saver.open_filename(task.redirects_to.path) as f:
+                self.saver.save_to_filename(task.path, f)

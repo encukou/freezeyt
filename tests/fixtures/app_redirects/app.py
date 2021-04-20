@@ -59,8 +59,9 @@ def app(environ, start_response):
 
     elif redirect_type == 'relative':
         url = (
-            '/' + quote(environ.get('SCRIPT_NAME', ''))
+            quote(environ.get('SCRIPT_NAME', '/'))
         )
+        assert url.startswith('/')
     else:
         return respond_404()
     try:
@@ -90,5 +91,16 @@ expected_dict = {
     },
     "relative": {
         str(code): {"index.html": b'Redirecting...'} for code in REDIRECT_CODES
+    },
+}
+
+
+expected_dict_follow = {
+    'index.html': b"All OK",
+    "absolute": {
+        str(code): {"index.html": b'All OK'} for code in REDIRECT_CODES
+    },
+    "relative": {
+        str(code): {"index.html": b'All OK'} for code in REDIRECT_CODES
     },
 }
