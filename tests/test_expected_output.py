@@ -1,19 +1,13 @@
 import importlib
-from pathlib import Path
-import filecmp
 import os
 import shutil
-import sys
 
 import pytest
 
 from freezeyt import freeze
+from testutil import FIXTURES_PATH, context_for_test, assert_dirs_same
 
 
-FIXTURES_PATH = Path(__file__).parent / 'fixtures'
-DIRS_SAME_FIXTURES = Path(__file__).parent / 'fixtures' / 'dirs_same'
-
-DIRS_SAME_CASES = [p.name for p in DIRS_SAME_FIXTURES.iterdir()]
 APP_NAMES = [
     p.name
     for p in FIXTURES_PATH.iterdir()
@@ -25,11 +19,7 @@ def test_output(tmp_path, monkeypatch, app_name):
     app_path = FIXTURES_PATH / app_name
     error_path = app_path / 'error.txt'
 
-    # Add FIXTURES_PATH to sys.path, the list of directories that `import`
-    # looks in
-    monkeypatch.syspath_prepend(str(app_path))
-    sys.modules.pop('app', None)
-    try:
+    with context_for_test(app_name) as module:
         module = importlib.import_module('app')
         app = module.app
 
@@ -77,101 +67,15 @@ def test_output(tmp_path, monkeypatch, app_name):
 
                 assert result == expected_dict
 
-    finally:
-        sys.modules.pop('app', None)
-
 
 def test_redirect_policy_follow(tmp_path, monkeypatch):
-    app_name = 'app_redirects'
-    app_path = FIXTURES_PATH / app_name
-
-    # Add FIXTURES_PATH to sys.path, the list of directories that `import`
-    # looks in
-    monkeypatch.syspath_prepend(str(app_path))
-    sys.modules.pop('app', None)
-    try:
-        module = importlib.import_module('app')
-        app = module.app
-
-        freeze_config = getattr(module, 'freeze_config', {})
-        expected_dict = module.expected_dict_follow
+    with context_for_test('app_redirects') as module:
+        freeze_config = module.freeze_config
 
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
+        freeze_config['output'] = 'dict'
         freeze_config['redirect_policy'] = 'follow'
 
-        if expected_dict is not None:
-            # test the output saved in dictionary
-            freeze_config['output'] = 'dict'
+        result = freeze(module.app, freeze_config) # freeze content to dict
 
-            result = freeze(app, freeze_config) # freeze content to dict
-
-            assert result == expected_dict
-
-    finally:
-        sys.modules.pop('app', None)
-
-
-
-def assert_dirs_same(got: Path, expected: Path):
-    cmp = filecmp.dircmp(got, expected, ignore=[])
-    cmp.report_full_closure()
-    assert_cmp_same(cmp)
-
-
-def assert_cmp_same(cmp):
-    print('assert_cmp_same', cmp.left, cmp.right)
-
-    if cmp.left_only:
-        raise AssertionError(f'Extra files frozen: {cmp.left_only}')
-
-    if cmp.right_only:
-        raise AssertionError(f'Files not frozen: {cmp.right_only}')
-
-    if cmp.common_funny:
-        raise AssertionError(f'Funny differences: {cmp.common_funny}')
-
-    # dircmp does "shallow comparison"; it only looks at file size and
-    # similar attributes. So, files in "same_files" might actually
-    # be different, and we need to check their contents.
-    # Files in "diff_files" are checked first, so failures are reported
-    # early.
-    for filename in list(cmp.diff_files) + list(cmp.same_files):
-        path1 = Path(cmp.left) / filename
-        path2 = Path(cmp.right) / filename
-        content1 = path1.read_bytes()
-        content2 = path2.read_bytes()
-        assert content1 == content2
-
-    if cmp.diff_files:
-        raise AssertionError(f'Files do not have expected content: {cmp.diff_files}')
-
-    for subcmp in cmp.subdirs.values():
-        assert_cmp_same(subcmp)
-
-
-@pytest.mark.parametrize('dir_name', DIRS_SAME_CASES)
-def test_assert_dirs_same(dir_name):
-    path = DIRS_SAME_FIXTURES / dir_name
-
-    if path.name in ('testdir', 'same'):
-        assert_dirs_same(path, DIRS_SAME_FIXTURES / 'testdir')
-    else:
-        with pytest.raises(AssertionError):
-            assert_dirs_same(path, DIRS_SAME_FIXTURES / 'testdir')
-
-
-def test_files_with_same_signature(tmp_path):
-    dir1 = tmp_path / 'dir1'
-    dir2 = tmp_path / 'dir2'
-
-    dir1.mkdir()
-    dir2.mkdir()
-
-    path1 = dir1 / 'file.txt'
-    path2 = dir2 / 'file.txt'
-
-    path1.write_text('A')
-    path2.write_text('B')
-
-    with pytest.raises(AssertionError):
-        assert_dirs_same(dir1, dir2)
+        assert result == module.expected_dict_follow
