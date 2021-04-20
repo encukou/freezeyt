@@ -1,8 +1,10 @@
 from wsgiref.simple_server import make_server
 from urllib.parse import quote
 
+REDIRECT_CODES = 301, 308, 302, 303, 307, 300, 304
+
 def generate_urls(app):
-    for code in 301, 308, 302, 303, 307, 300, 304:
+    for code in REDIRECT_CODES:
         yield f'absolute/{code}/'
         yield f'relative/{code}/'
 
@@ -79,3 +81,14 @@ if __name__ == '__main__':
     with make_server('', 5000, app) as httpd:
         print("Serving HTTP on port 5000...")
         httpd.serve_forever()
+
+
+expected_dict = {
+    'index.html': b"All OK",
+    "absolute": {
+        str(code): {"index.html": b'Redirecting...'} for code in REDIRECT_CODES
+    },
+    "relative": {
+        str(code): {"index.html": b'Redirecting...'} for code in REDIRECT_CODES
+    },
+}
