@@ -1,9 +1,6 @@
 from io import BytesIO
 from pathlib import Path
 
-from freezeyt.util import is_external
-from freezeyt.encoding import encode_file_path
-
 
 class DictSaver:
     """Outputs frozen pages into a dict.

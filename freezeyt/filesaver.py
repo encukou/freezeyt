@@ -1,8 +1,5 @@
 import shutil
 
-from freezeyt.util import is_external
-from freezeyt.encoding import encode_file_path
-
 
 class DirectoryExistsError(Exception):
     """Attempt to overwrite directory that doesn't contain freezeyt output"""
