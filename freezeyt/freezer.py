@@ -7,6 +7,7 @@ import functools
 import base64
 import dataclasses
 from typing import Optional
+import enum
 
 from urllib.parse import urljoin
 from werkzeug.datastructures import Headers
@@ -28,6 +29,7 @@ def freeze(app, config):
     freezer.prepare()
     freezer.freeze_extra_files()
     freezer.handle_urls()
+    freezer.handle_redirects()
     return freezer.get_result()
 
 
@@ -47,12 +49,55 @@ def check_mimetype(url_path, headers):
         )
 
 
+def url_to_path(prefix, parsed_url):
+    if is_external(parsed_url, prefix):
+        raise ValueError(f'external url {parsed_url}')
+
+    url_path = parsed_url.path
+
+    if url_path.startswith(prefix.path):
+        url_path = url_path[len(prefix.path):]
+
+    if url_path.endswith('/') or not url_path:
+        url_path = url_path + 'index.html'
+
+    result = PurePosixPath(encode_file_path(url_path))
+
+    assert not result.is_absolute(), result
+    assert '.' not in result.parts
+    if '..' in result.parts:
+        raise ValueError(
+            f"URL may not contain /../ segment: {parsed_url.to_url()}"
+        )
+
+    return result
+
+class TaskStatus(enum.Enum):
+    PENDING = "Not started"
+    REQUESTED = "Currently being handled"
+    DONE = "Saved"
+
 @dataclasses.dataclass
 class Task:
     path: Path
     urls: "set[URL]"
     redirect: "Task" = None
+    response_headers: Headers = None
+    redirects_to: "Task" = None
+    status: TaskStatus = TaskStatus.PENDING
 
+    def __repr__(self):
+        return f"<Task for {self.path}, {self.status.name}>"
+
+    def get_a_url(self):
+        """Get an arbitrary one of the task's URLs."""
+        return next(iter(self.urls))
+
+class IsARedirect(BaseException):
+    """Raised when a page redirects and freezing it should be postponed"""
+
+class InfiniteRedirection(Exception):
+    """Infinite redirection was detected with redirect_policy='follow'"""
 
 class Freezer:
     def __init__(self, app, config):
@@ -82,6 +127,7 @@ class Freezer:
             self.saver = FileSaver(Path(output['dir']), self.prefix)
 
         self.done_tasks = {}
+        self.redirecting_tasks = {}
 
         self.pending_tasks = {}
         self.add_task(prefix_parsed)
@@ -101,7 +147,7 @@ class Freezer:
         if is_external(url, self.prefix):
             return None
 
-        path = self.url_to_path(url)
+        path = url_to_path(self.prefix, url)
 
         if path in self.pending_tasks:
             task = self.pending_tasks[path]
@@ -115,24 +161,6 @@ class Freezer:
             task = Task(path, {url})
             self.pending_tasks[path] = task
             return task
-
-    def url_to_path(self, parsed_url):
-        if is_external(parsed_url, self.prefix):
-            raise ValueError(f'external url {parsed_url}')
-
-        url_path = parsed_url.path
-
-        if url_path.startswith(self.prefix.path):
-            url_path = url_path[len(self.prefix.path):]
-
-        if url_path.endswith('/') or not url_path:
-            url_path = url_path + 'index.html'
-
-        result = PurePosixPath(encode_file_path(url_path))
-
-        assert not result.is_absolute(), result
-
-        return result
 
     def freeze_extra_files(self):
         if self.extra_files is not None:
@@ -155,7 +183,7 @@ class Freezer:
         self.saver.prepare()
 
     def start_response(
-        self, wsgi_write, status, headers, exc_info=None,
+        self, task, url, wsgi_write, status, headers, exc_info=None,
     ):
         """WSGI start_response hook
 
@@ -176,18 +204,32 @@ class Freezer:
             exc_type, value, traceback = exc_info
             if value is not None:
                 raise value
-        self.response_headers = Headers(headers)
+        task.response_headers = Headers(headers)
         if status.startswith("3"):
-            print(f"Redirect {self.url.to_url()} to {self.response_headers['Location']}")
+            location = task.response_headers['Location']
+            print(f"Redirect {url.to_url()} to {location}")
             redirect_policy = self.config.get('redirect_policy', 'error')
             if redirect_policy == 'save':
                 status = "200"
+            elif redirect_policy == 'follow':
+                location = url.join(location)
+                target_task = self.add_task(location)
+                task.redirects_to = target_task
+                self.redirecting_tasks[task.path] = task
+                raise IsARedirect()
+            elif redirect_policy == 'error':
+                # handled below
+                pass
+            else:
+                raise ValueError(
+                    f'redirect policy {redirect_policy} not supported'
+                )
         if not status.startswith("200"):
-            raise ValueError(f"Found broken link: {self.url.to_url()}, status {status}")
+            raise ValueError(f"Found broken link: {url.to_url()}, status {status}")
         else:
             print('status', status)
             print('headers', headers)
-            check_mimetype(self.url.path, headers)
+            check_mimetype(url.path, headers)
         return wsgi_write
 
     def _add_extra_pages(self, prefix, extras):
@@ -213,8 +255,8 @@ class Freezer:
             file_path, task = self.pending_tasks.popitem()
 
             # Get an URL from the task's set of URLs
-            url_parsed = next(iter(task.urls))
-            self.url = url_parsed
+            url_parsed = task.get_a_url()
+            url = url_parsed
 
             # url_string should not be needed (except for debug messages)
             url_string = url_parsed.to_url()
@@ -225,6 +267,7 @@ class Freezer:
             self.done_tasks[task.path] = task
 
             print('task:', task)
+            task.status = TaskStatus.REQUESTED
 
             path_info = url_parsed.path
 
@@ -263,12 +306,17 @@ class Freezer:
             wsgi_write_data = []
             start_response = functools.partial(
                 self.start_response,
+                task,
+                url,
                 wsgi_write_data.append,
             )
 
             # Call the application. All calls to write (wsgi_write_data.append)
             # must be doneas part of this call.
-            result_iterable = self.app(environ, start_response)
+            try:
+                result_iterable = self.app(environ, start_response)
+            except IsARedirect:
+                continue
 
             # Combine the list of data from write() with the returned
             # iterable object.
@@ -277,7 +325,7 @@ class Freezer:
                 result_iterable,
             )
 
-            self.saver.save(url_parsed, full_result)
+            self.saver.save_to_filename(task.path, full_result)
 
             try:
                 close = result_iterable.close
@@ -286,14 +334,25 @@ class Freezer:
             else:
                 close()
 
-            with self.saver.open(url_parsed) as f:
-                cont_type, cont_encode = parse_options_header(self.response_headers.get('Content-Type'))
+            with self.saver.open_filename(task.path) as f:
+                cont_type, cont_encode = parse_options_header(task.response_headers.get('Content-Type'))
                 if cont_type == "text/html":
-                    links = get_all_links(f, url_string, self.response_headers)
+                    links = get_all_links(f, url_string, task.response_headers)
                     for new_url in links:
                         self.add_task(parse_absolute_url(new_url))
                 elif cont_type == "text/css":
                     for new_url in get_links_from_css(f, url_string):
                         self.add_task(parse_absolute_url(new_url))
-                else:
-                    continue
+
+            task.status = TaskStatus.DONE
+
+    def handle_redirects(self):
+        """Save copies of target pages for redirect_policy='follow'"""
+        print('handle_redirects', self.redirecting_tasks)
+        for task in self.redirecting_tasks.values():
+            if task.redirects_to.status != TaskStatus.DONE:
+                raise InfiniteRedirection(
+                    f'{task.get_a_url()} redirects to {task.redirects_to.get_a_url()}, which was not frozen (most likely because of infinite redirection)'
+                )
+            with self.saver.open_filename(task.redirects_to.path) as f:
+                self.saver.save_to_filename(task.path, f)

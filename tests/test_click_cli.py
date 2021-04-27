@@ -1,13 +1,9 @@
-import importlib
-import sys
-from contextlib import contextmanager
-
 import pytest
 from yaml import safe_dump
 from click.testing import CliRunner
 
 from freezeyt.cli import main
-from test_expected_output import FIXTURES_PATH, assert_dirs_same
+from testutil import FIXTURES_PATH, context_for_test, assert_dirs_same
 
 APP_NAMES = [
     p.name
@@ -50,19 +46,6 @@ def run_and_check(cli_args, app_name, build_dir):
         assert result.exit_code == 0
 
         assert_dirs_same(build_dir, expected)
-
-
-@contextmanager
-def context_for_test(app_name):
-    app_dir = FIXTURES_PATH / app_name
-    sys.modules.pop('app', None)
-    try:
-        with pytest.MonkeyPatch.context() as monkeypatch:
-            monkeypatch.syspath_prepend(app_dir)
-            module = importlib.import_module('app')
-        yield module
-    finally:
-        sys.modules.pop('app', None)
 
 
 @pytest.mark.parametrize('app_name', APP_NAMES)

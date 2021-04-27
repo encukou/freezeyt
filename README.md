@@ -255,6 +255,7 @@ It can be:
 * `'save'`: `freezeyt` will save the body of the redirect page, as if
   the response was `200`.
   This is meant to be used with redirects in the HTML `<meta>` tag.
+* `'follow'`: `freezeyt` will save content from the redirected location.
 
 For example:
 
