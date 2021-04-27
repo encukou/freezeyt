@@ -246,6 +246,33 @@ extra_files:
 Extra files cannot be specified on the CLI.
 
 
+### Hooks
+
+It is possible to register *hooks*, functions that are called when
+specific events happen in the freezing process.
+
+For example:
+
+```yaml
+hooks:
+    page_frozen:
+        mymodule:page_frozen
+```
+
+This will call the user-defined function `page_frozen` (from the module
+`mymodule`) whenever a page is saved.
+It is passed a `TaskInfo` object as argument.
+The object has the following attributes:
+
+* `get_a_url()`: returns a URL of the page, including `prefix`.
+  Note that a page may be reachable via several URLs; this function returns
+  an arbitrary one.
+* `path`: the relative path the content is saved to.
+
+When using the Python API, a function can be used instead of a name
+like `mymodule:page_frozen`.
+
+
 ### Redirect policy
 
 The `redirect_policy` option specifies the policy for handling redirects.

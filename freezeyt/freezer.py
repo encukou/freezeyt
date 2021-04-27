@@ -22,6 +22,7 @@ from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.getlinks_html import get_all_links
 from freezeyt.getlinks_css import get_links_from_css
+from freezeyt import hooks
 
 
 def freeze(app, config):
@@ -132,6 +133,12 @@ class Freezer:
         self.pending_tasks = {}
         self.add_task(prefix_parsed)
         self._add_extra_pages(prefix, self.extra_pages)
+
+        self.hooks = {}
+        for name, func in config.get('hooks', {}).items():
+            if isinstance(func, str):
+                func = import_variable_from_module(func)
+            self.hooks[name] = func
 
 
     def get_result(self):
@@ -345,6 +352,10 @@ class Freezer:
                         self.add_task(parse_absolute_url(new_url))
 
             task.status = TaskStatus.DONE
+
+            hook = self.hooks.get('page_frozen')
+            if hook:
+                hook(hooks.TaskInfo(task, self))
 
     def handle_redirects(self):
         """Save copies of target pages for redirect_policy='follow'"""
