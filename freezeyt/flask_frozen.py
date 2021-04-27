@@ -40,14 +40,23 @@ class Freezer:
         redirect_policy = self.app.config.get(
             'FREEZER_REDIRECT_POLICY', 'follow'
         )
+        recorded_urls = set()
+        def record_url(task_info):
+            recorded_urls.add(task_info.get_a_url())
+        prefix = 'http://example.com:8000/'
         config = {
+            'prefix': prefix,
             'output': 'dict',
             'extra_pages': [generator],
             'redirect_policy': redirect_policy,
+            'hooks': {'page_frozen': record_url},
         }
         result = freeze(self.app, config)
-        print(result)
-        return result
+        relative_urls = set()
+        for url in recorded_urls:
+            assert url.startswith(prefix), (url, prefix)
+            relative_urls.add('/' + url[len(prefix):])
+        return relative_urls
 
     def _static_rules_endpoints(self):
         """
