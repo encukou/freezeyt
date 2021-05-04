@@ -2,6 +2,7 @@ from pathlib import Path
 from collections.abc import Mapping
 
 from flask import Flask, Blueprint, url_for
+from werkzeug.urls import url_parse
 
 from freezeyt import freeze
 
@@ -40,9 +41,23 @@ class Freezer:
         redirect_policy = self.app.config.get(
             'FREEZER_REDIRECT_POLICY', 'follow'
         )
+
+        # Frozen-flask's freeze function returns a set of relative URLs
+        # without query or fragment parts
         recorded_urls = set()
         def record_url(task_info):
-            recorded_urls.add(task_info.get_a_url())
+            url = task_info.get_a_url()
+
+            # make the URL relative
+            assert url.startswith(prefix), (url, prefix)
+            url = '/' + url[len(prefix):]
+
+            # Remove query & fragment
+            parsed = url_parse(url)
+            parsed = parsed.replace(query='', fragment='')
+
+            recorded_urls.add(parsed.to_url())
+
         prefix = 'http://example.com:8000/'
         config = {
             'prefix': prefix,
@@ -53,10 +68,7 @@ class Freezer:
         }
         result = freeze(self.app, config)
         relative_urls = set()
-        for url in recorded_urls:
-            assert url.startswith(prefix), (url, prefix)
-            relative_urls.add('/' + url[len(prefix):])
-        return relative_urls
+        return recorded_urls
 
     def _static_rules_endpoints(self):
         """
