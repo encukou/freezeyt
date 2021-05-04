@@ -7,8 +7,10 @@ def generate_urls(app):
     for code in REDIRECT_CODES:
         yield f'absolute/{code}/'
         yield f'relative/{code}/'
+        yield f'no_port/{code}/'
 
 freeze_config = {
+    'prefix': 'http://example.test/',
     'extra_pages': [{'generator': 'app:generate_urls'}],
     'redirect_policy': 'save',
 }
@@ -62,6 +64,9 @@ def app(environ, start_response):
             quote(environ.get('SCRIPT_NAME', '/'))
         )
         assert url.startswith('/')
+    elif redirect_type == 'no_port':
+        # Redirest to "prefix" without the port number
+        url = 'http://example.test/'
     else:
         return respond_404()
     try:
@@ -92,6 +97,9 @@ expected_dict = {
     "relative": {
         str(code): {"index.html": b'Redirecting...'} for code in REDIRECT_CODES
     },
+    "no_port": {
+        str(code): {"index.html": b'Redirecting...'} for code in REDIRECT_CODES
+    },
 }
 
 
@@ -101,6 +109,9 @@ expected_dict_follow = {
         str(code): {"index.html": b'All OK'} for code in REDIRECT_CODES
     },
     "relative": {
+        str(code): {"index.html": b'All OK'} for code in REDIRECT_CODES
+    },
+    "no_port": {
         str(code): {"index.html": b'All OK'} for code in REDIRECT_CODES
     },
 }

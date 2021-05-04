@@ -40,16 +40,21 @@ def parse_absolute_url(url):
     if parsed.scheme not in ('http', 'https'):
         raise ValueError("URL scheme must be http or https")
 
-    if parsed.port == None:
-        if parsed.scheme == 'http':
-            parsed = parsed.replace(netloc=parsed.host + ':80')
-        elif parsed.scheme == 'https':
-            parsed = parsed.replace(netloc=parsed.host + ':443')
-        else:
-            raise ValueError("URL scheme must be http or https")
+    parsed = add_port(parsed)
 
     return parsed
 
+
+def add_port(url):
+    """Returns url with the port set, using the default for HTTP or HTTPS scheme"""
+    if url.port == None:
+        if url.scheme == 'http':
+            url = url.replace(netloc=url.host + ':80')
+        elif url.scheme == 'https':
+            url = url.replace(netloc=url.host + ':443')
+        else:
+            raise ValueError("URL scheme must be http or https")
+    return url
 
 def import_variable_from_module(name, *, default_variable_name=None):
     """Import a variable from a named module

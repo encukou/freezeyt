@@ -18,7 +18,7 @@ from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
-from freezeyt.util import parse_absolute_url, is_external
+from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.getlinks_html import get_all_links
 from freezeyt.getlinks_css import get_links_from_css
@@ -212,7 +212,7 @@ class Freezer:
             if redirect_policy == 'save':
                 status = "200"
             elif redirect_policy == 'follow':
-                location = url.join(location)
+                location = add_port(url.join(location))
                 target_task = self.add_task(location)
                 task.redirects_to = target_task
                 self.redirecting_tasks[task.path] = task
