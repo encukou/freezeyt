@@ -1,5 +1,6 @@
 from pathlib import Path
 from collections.abc import Mapping
+from threading import RLock
 
 from flask import Flask, Blueprint, url_for
 from werkzeug.urls import url_parse
@@ -16,6 +17,7 @@ def unwrap_method(method):
         return method
 
 class Freezer:
+    """Replacement form Frozen-flask's Freezer"""
     def __init__(
         self,
         with_static_files=True,
@@ -36,8 +38,31 @@ class Freezer:
             app.config.setdefault('FREEZER_STATIC_IGNORE', [])
 
     def freeze(self):
+        freeze_info = None
+        handling_url_for = False
+
+        def start_hook(new_freeze_info):
+            nonlocal freeze_info, handling_url_for
+            freeze_info = new_freeze_info
+            handling_url_for = True
+
+        lock = RLock()
+        def handle_url_for(endpoint, values):
+            nonlocal handling_url_for
+            with lock:
+                if handling_url_for:
+                    handling_url_for = False
+                    values = {**values, '_external': True}
+                    freeze_info.add_url(url_for(endpoint, **values))
+                    handling_url_for = True
+
+        # Do not use app.url_defaults() as we want to insert at the front
+        # of the list to get unmodifies values.
+        self.app.url_default_functions.setdefault(None, []).insert(0, handle_url_for)
+
         def generator(app):
             return self.all_urls()
+
         redirect_policy = self.app.config.get(
             'FREEZER_REDIRECT_POLICY', 'follow'
         )
@@ -64,10 +89,12 @@ class Freezer:
             'output': 'dict',
             'extra_pages': [generator],
             'redirect_policy': redirect_policy,
-            'hooks': {'page_frozen': record_url},
+            'hooks': {
+                'page_frozen': record_url,
+                'start': start_hook,
+            },
         }
-        result = freeze(self.app, config)
-        relative_urls = set()
+        freeze(self.app, config)
         return recorded_urls
 
     def _static_rules_endpoints(self):
