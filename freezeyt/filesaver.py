@@ -33,7 +33,6 @@ class FileSaver:
         absolute_filename = self.base_path / filename
         assert self.base_path in absolute_filename.parents
 
-        print(f'Saving to {absolute_filename}')
         absolute_filename.parent.mkdir(parents=True, exist_ok=True)
         with open(absolute_filename, "wb") as f:
             for item in content_iterable:

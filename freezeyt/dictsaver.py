@@ -18,7 +18,6 @@ class DictSaver:
     def save_to_filename(self, filename, content_iterable):
         parts = Path(filename).parts
 
-        print(f'Saving to {parts}')
         target = self.contents
         for part in parts[:-1]:
             target = target.setdefault(part, {})

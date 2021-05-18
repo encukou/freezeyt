@@ -232,7 +232,6 @@ class Freezer:
         task.response_headers = Headers(headers)
         if status.startswith("3"):
             location = task.response_headers['Location']
-            print(f"Redirect {url.to_url()} to {location}")
             redirect_policy = self.config.get('redirect_policy', 'error')
             if redirect_policy == 'save':
                 status = "200"
@@ -297,7 +296,6 @@ class Freezer:
 
             self.done_tasks[task.path] = task
 
-            print('task:', task)
             task.status = TaskStatus.REQUESTED
 
             path_info = url_parsed.path
@@ -383,7 +381,6 @@ class Freezer:
 
     def handle_redirects(self):
         """Save copies of target pages for redirect_policy='follow'"""
-        print('handle_redirects', self.redirecting_tasks)
         for task in self.redirecting_tasks.values():
             if task.redirects_to.status != TaskStatus.DONE:
                 raise InfiniteRedirection(
