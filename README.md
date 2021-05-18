@@ -251,16 +251,33 @@ Extra files cannot be specified on the CLI.
 It is possible to register *hooks*, functions that are called when
 specific events happen in the freezing process.
 
-For example:
+For example, if `mymodule` defines functions `start` and `page_frozen`,
+you can make freezeyt call them using this configuration:
 
 ```yaml
 hooks:
+    start:
+        mymodule:start
     page_frozen:
         mymodule:page_frozen
 ```
 
-This will call the user-defined function `page_frozen` (from the module
-`mymodule`) whenever a page is saved.
+When using the Python API, a function can be used instead of a name
+like `mymodule:start`.
+
+#### `start`
+
+The function will be called whenever a page is saved.
+
+It is passed a `FreezeInfo` object as argument.
+The object has the following method:
+
+* `add_url(url)`: Add the URL to the set of pages to be frozen.
+  If that URL was frozen already, or is outside the `prefix`, does nothing.
+
+#### `page_frozen`
+
+The function will be called whenever a page is saved.
 It is passed a `TaskInfo` object as argument.
 The object has the following attributes:
 
@@ -268,9 +285,6 @@ The object has the following attributes:
   Note that a page may be reachable via several URLs; this function returns
   an arbitrary one.
 * `path`: the relative path the content is saved to.
-
-When using the Python API, a function can be used instead of a name
-like `mymodule:page_frozen`.
 
 
 ### Redirect policy

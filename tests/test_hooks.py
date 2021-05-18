@@ -50,3 +50,21 @@ def test_page_frozen_hook_by_name():
         assert len(_recorded_hook_calls) == 2
 
 
+def test_freezeinfo_add_url():
+    hook_called = False
+    def start_hook(freezeinfo):
+        nonlocal hook_called
+        hook_called = True
+
+        freezeinfo.add_url('http://example.com/extra/')
+
+    with context_for_test('app_with_extra_page') as module:
+        config = {
+            'output': 'dict',
+            'prefix': 'http://example.com/',
+            'hooks': {'start': start_hook},
+        }
+
+        output = freeze(module.app, config)
+        assert hook_called
+        assert output == module.expected_dict

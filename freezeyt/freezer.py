@@ -28,6 +28,11 @@ from freezeyt import hooks
 def freeze(app, config):
     freezer = Freezer(app, config)
     freezer.prepare()
+
+    hook = freezer.hooks.get('start')
+    if hook:
+        hook(freezer.freeze_info)
+
     freezer.freeze_extra_files()
     freezer.handle_urls()
     freezer.handle_redirects()
@@ -104,6 +109,8 @@ class Freezer:
     def __init__(self, app, config):
         self.app = app
         self.config = config
+
+        self.freeze_info = hooks.FreezeInfo(self)
 
         self.extra_pages = config.get('extra_pages', ())
         self.extra_files = config.get('extra_files', None)
