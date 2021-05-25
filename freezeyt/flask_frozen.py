@@ -96,6 +96,9 @@ class Freezer:
                 'start': start_hook,
             },
         }
+        default_mimetype = self.app.config.get('FREEZER_DEFAULT_MIMETYPE')
+        if default_mimetype:
+            config['default_mimetype'] = default_mimetype
         freeze(self.app, config)
         return recorded_urls
 
