@@ -267,7 +267,8 @@ like `mymodule:start`.
 
 #### `start`
 
-The function will be called whenever a page is saved.
+The function will be called when the freezing process starts,
+before any other hooks.
 
 It is passed a `FreezeInfo` object as argument.
 The object has the following method:
