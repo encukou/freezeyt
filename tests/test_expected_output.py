@@ -61,7 +61,7 @@ def test_output(tmp_path, monkeypatch, app_name):
 
             if expected_dict is not None:
                 # test the output saved in dictionary
-                freeze_config['output'] = 'dict'
+                freeze_config['output'] = {'type': 'dict'}
 
                 result = freeze(app, freeze_config) # freeze content to dict
 
@@ -72,8 +72,7 @@ def test_redirect_policy_follow(tmp_path, monkeypatch):
     with context_for_test('app_redirects') as module:
         freeze_config = module.freeze_config
 
-        freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
-        freeze_config['output'] = 'dict'
+        freeze_config['output'] = {'type': 'dict'}
         freeze_config['redirect_policy'] = 'follow'
 
         result = freeze(module.app, freeze_config) # freeze content to dict

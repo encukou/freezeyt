@@ -14,7 +14,7 @@ def test_page_frozen_hook():
 
     with context_for_test('app_2pages') as module:
         config = {
-            'output': 'dict',
+            'output': {'type': 'dict'},
             'prefix': 'http://example.com/',
             'hooks': {'page_frozen': record_page},
         }
@@ -40,7 +40,7 @@ def hook(task_info):
 def test_page_frozen_hook_by_name():
     with context_for_test('app_2pages') as module:
         config = {
-            'output': 'dict',
+            'output': {'type': 'dict'},
             'prefix': 'http://example.com/',
             'hooks': {'page_frozen': f'{__name__}:hook'},
         }
@@ -60,7 +60,7 @@ def test_freezeinfo_add_url():
 
     with context_for_test('app_with_extra_page') as module:
         config = {
-            'output': 'dict',
+            'output': {'type': 'dict'},
             'prefix': 'http://example.com/',
             'hooks': {'start': start_hook},
         }

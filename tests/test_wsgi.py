@@ -26,7 +26,7 @@ def test_exc_info():
             start_response(status, response_headers, sys.exc_info())
             return [b"error body goes here"]
 
-    config = {'output': 'dict'}
+    config = {'output': {'type': 'dict'}}
 
     with pytest.raises(InternalServerError):
         freeze(simple_app, config)
@@ -40,7 +40,7 @@ def test_exc_info_none():
         start_response(status, response_headers, (None, None, None))
         return [b"normal body goes here"]
 
-    config = {'output': 'dict'}
+    config = {'output': {'type': 'dict'}}
     expected = {'index.html': b'normal body goes here'}
 
     assert freeze(simple_app, config) == expected
@@ -56,7 +56,7 @@ def test_write():
         write(b'is the ')
         return [b'response ', b'body']
 
-    config = {'output': 'dict'}
+    config = {'output': {'type': 'dict'}}
     expected = {'index.html': b'here is the response body'}
 
     assert freeze(simple_app, config) == expected
@@ -76,7 +76,7 @@ def test_result_iterable_types(iterable):
         start_response(status, response_headers)
         return iterable
 
-    config = {'output': 'dict'}
+    config = {'output': {'type': 'dict'}}
     expected = {'index.html': b'ab'}
 
     assert freeze(simple_app, config) == expected
@@ -112,7 +112,7 @@ def test_close():
         start_response(status, response_headers)
         return SpecialResult()
 
-    config = {'output': 'dict'}
+    config = {'output': {'type': 'dict'}}
     expected = {'index.html': b'body content'}
 
     assert freeze(simple_app, config) == expected

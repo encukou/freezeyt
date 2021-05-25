@@ -127,12 +127,18 @@ class Freezer:
 
         output = config['output']
         if isinstance(output, str):
-            output = {'type': output}
+            output = {'type': 'dir', 'dir': output}
 
         if output['type'] == 'dict':
             self.saver = DictSaver(self.prefix)
+        elif output['type'] == 'dir':
+            try:
+                output_dir = output['dir']
+            except KeyError:
+                raise ValueError(f"output directory not specified")
+            self.saver = FileSaver(Path(output_dir), self.prefix)
         else:
-            self.saver = FileSaver(Path(output['dir']), self.prefix)
+            raise ValueError(f"unknown output type {output['type']}")
 
         self.done_tasks = {}
         self.redirecting_tasks = {}
