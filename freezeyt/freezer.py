@@ -138,7 +138,7 @@ class Freezer:
             try:
                 output_dir = output['dir']
             except KeyError:
-                raise ValueError(f"output directory not specified")
+                raise ValueError("output directory not specified")
             self.saver = FileSaver(Path(output_dir), self.prefix)
         else:
             raise ValueError(f"unknown output type {output['type']}")
