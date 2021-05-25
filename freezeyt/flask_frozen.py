@@ -38,6 +38,9 @@ class Freezer:
         if app:
             app.config.setdefault('FREEZER_STATIC_IGNORE', [])
 
+            root = app.config.get('FREEZER_DESTINATION', 'build')
+            self.root = str(Path(app.root_path).resolve() / root)
+
     def freeze(self):
         freeze_info = None
         handling_url_for = False
@@ -88,7 +91,7 @@ class Freezer:
         prefix = 'http://example.com:8000/'
         config = {
             'prefix': prefix,
-            'output': 'dict',
+            'output': self.root,
             'extra_pages': [generator],
             'redirect_policy': redirect_policy,
             'hooks': {
