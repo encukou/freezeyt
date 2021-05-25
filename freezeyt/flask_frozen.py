@@ -1,6 +1,7 @@
 from pathlib import Path
 from collections.abc import Mapping
 from threading import RLock
+from urllib.parse import unquote
 
 from flask import Flask, Blueprint, url_for
 from werkzeug.urls import url_parse
@@ -81,7 +82,8 @@ class Freezer:
             parsed = url_parse(url)
             parsed = parsed.replace(query='', fragment='')
 
-            recorded_urls.add(parsed.to_url())
+            url = unquote(parsed.to_url())
+            recorded_urls.add(url)
 
         prefix = 'http://example.com:8000/'
         config = {
