@@ -90,7 +90,7 @@ class Freezer:
             url = unquote(parsed.to_url())
             recorded_urls.add(url)
 
-        prefix = 'http://example.com:8000/'
+        prefix = 'http://localhost:80/'
         config = {
             'prefix': prefix,
             'output': self.root,
@@ -159,6 +159,7 @@ class Freezer:
         for rule in self.app.url_map.iter_rules():
             if not rule.arguments and 'GET' in rule.methods:
                 yield rule.endpoint, {}
+
 
 def walk_directory(root, ignore=None):
     for path in Path(root).glob('**/*'):
