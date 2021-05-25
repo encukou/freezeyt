@@ -38,8 +38,10 @@ class Freezer:
         if app:
             app.config.setdefault('FREEZER_STATIC_IGNORE', [])
 
-            root = app.config.get('FREEZER_DESTINATION', 'build')
-            self.root = str(Path(app.root_path).resolve() / root)
+    @property
+    def root(self):
+        root = self.app.config.get('FREEZER_DESTINATION', 'build')
+        return str(Path(self.app.root_path).resolve() / root)
 
     def freeze(self):
         freeze_info = None
