@@ -39,13 +39,13 @@ def freeze(app, config):
     return freezer.get_result()
 
 
-def check_mimetype(url_path, headers):
+def check_mimetype(url_path, headers, default='application/octet-stream'):
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
     f_type, f_encode = guess_type(url_path)
     if not f_type:
-        f_type = 'application/octet-stream'
+        f_type = default
     headers = Headers(headers)
     cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
     if f_type.lower() != cont_type.lower():
@@ -241,9 +241,12 @@ class Freezer:
         if not status.startswith("200"):
             raise ValueError(f"Found broken link: {url.to_url()}, status {status}")
         else:
-            print('status', status)
-            print('headers', headers)
-            check_mimetype(url.path, headers)
+            check_mimetype(
+                url.path, headers,
+                default=self.config.get(
+                    'default_mimetype', 'application/octet-stream',
+                ),
+            )
         return wsgi_write
 
     def _add_extra_pages(self, prefix, extras):
