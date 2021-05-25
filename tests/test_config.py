@@ -109,3 +109,27 @@ def test_no_output_dir(tmp_path):
 
         with pytest.raises(ValueError):
             freeze(module.app, freeze_config)
+
+
+def test_external_extra_files(tmp_path):
+    with context_for_test('app_2pages') as module:
+        freeze_config = {
+            'output': {'type': 'dict'},
+            'extra_pages': ['http://external.example/foo.html'],
+        }
+
+        with pytest.raises(ValueError):
+            freeze(module.app, freeze_config)
+
+
+def test_external_extra_files_generator(tmp_path):
+    def gen(app):
+        yield 'http://external.example/foo.html'
+    with context_for_test('app_2pages') as module:
+        freeze_config = {
+            'output': {'type': 'dict'},
+            'extra_pages': [gen],
+        }
+
+        with pytest.raises(ValueError):
+            freeze(module.app, freeze_config)
