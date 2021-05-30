@@ -49,7 +49,8 @@ def test_output(tmp_path, monkeypatch, app_name):
                 expected = app_path / 'test_expected_output'
 
                 if not expected.exists():
-                    if 'TEST_CREATE_EXPECTED_OUTPUT' in os.environ:
+                    make_output = os.environ.get('TEST_CREATE_EXPECTED_OUTPUT')
+                    if make_output == '1':
                         shutil.copytree(tmp_path, expected)
                     else:
                         raise AssertionError(
