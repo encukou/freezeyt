@@ -6,7 +6,7 @@ from urllib.parse import unquote
 from flask import Flask, Blueprint, url_for
 from werkzeug.urls import url_parse
 
-from freezeyt import freeze, ExternalURLError, RelativeURLError
+from freezeyt import freeze, ExternalURLError, RelativeURLError, UnexpectedStatus
 
 
 def unwrap_method(method):
@@ -77,17 +77,7 @@ class Freezer:
         # without query or fragment parts
         recorded_urls = set()
         def record_url(task_info):
-            url = task_info.get_a_url()
-
-            # make the URL relative
-            assert url.startswith(prefix), (url, prefix)
-            url = '/' + url[len(prefix):]
-
-            # Remove query & fragment
-            parsed = url_parse(url)
-            parsed = parsed.replace(query='', fragment='')
-
-            url = unquote(parsed.to_url())
+            url = make_relative_url(prefix, task_info.get_a_url())
             recorded_urls.add(url)
 
         prefix = 'http://localhost:80/'
@@ -108,6 +98,9 @@ class Freezer:
             freeze(self.app, config)
         except (ExternalURLError, RelativeURLError):
             raise ValueError('External URLs not supported')
+        except UnexpectedStatus as e:
+            relative_url = make_relative_url(prefix, e.url.to_url())
+            raise ValueError(f"Unexpected status '{e.status}' on URL {relative_url}")
         return recorded_urls
 
     def _static_rules_endpoints(self):
@@ -162,6 +155,19 @@ class Freezer:
         for rule in self.app.url_map.iter_rules():
             if not rule.arguments and 'GET' in rule.methods:
                 yield rule.endpoint, {}
+
+
+def make_relative_url(prefix: str, url: str):
+    # make the URL relative
+    assert url.startswith(prefix), (url, prefix)
+    url = '/' + url[len(prefix):]
+
+    # Remove query & fragment
+    parsed = url_parse(url)
+    parsed = parsed.replace(query='', fragment='')
+
+    url = unquote(parsed.to_url())
+    return url
 
 
 def walk_directory(root, ignore=None):
