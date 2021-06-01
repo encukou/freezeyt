@@ -3,6 +3,12 @@ import importlib
 from werkzeug.urls import url_parse
 
 
+class InfiniteRedirection(Exception):
+    """Infinite redirection was detected with redirect_policy='follow'"""
+
+class ExternalURLError(ValueError):
+    """Unexpected external URL specified"""
+
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
 
