@@ -91,7 +91,7 @@ The following options are configurable:
 
 ### Module Name
 
-The module that contains the application must be given on the 
+The module that contains the application must be given on the
 command line.
 In it, Freezyt looks for the variable `app`.
 A different variable can be specified using `:`.
@@ -450,10 +450,14 @@ Other communication channels and info can be found here:
 * [Google doc in Czech](https://tinyurl.com/freezeyt)
 
 
-#### Development blog
+### Freezeyt Blog
 
 We keep a blog about the development of Freezeyt.
-Be warned: some of it is in the Czech language.
+It is available [here](https://encukou.github.io/freezeyt/).
+
+**Be warned:** some of it is in the Czech language.
+
+#### Blog development
 
 The blog was tested on Python version 3.8.
 
