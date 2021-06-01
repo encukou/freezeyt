@@ -101,6 +101,11 @@ class Freezer:
         except UnexpectedStatus as e:
             relative_url = make_relative_url(prefix, e.url.to_url())
             raise ValueError(f"Unexpected status '{e.status}' on URL {relative_url}")
+        finally:
+            # Frozen-Flask always creates the output directory;
+            # Freezeyt may remove it on errors.
+            Path(self.root).mkdir(exist_ok=True)
+
         return recorded_urls
 
     def _static_rules_endpoints(self):
