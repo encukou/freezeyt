@@ -15,6 +15,7 @@ def index():
         </head>
         <body>
             <a href="/čau/☺フ.html">Link 1</a>
+            <a href="/%C4%8Dau/%E2%98%BA%E3%83%95.html">Link 1, encoded</a>
             <a href="{url_for('extra2')}">Link 2</a>
         </body>
     </html>
@@ -74,6 +75,7 @@ expected_dict = {
         b'\n    <html>\n        <head>\n            <title>Hello worl'
         + b'd</title>\n        </head>\n        <body>\n            <a '
         + b'href="/\xc4\x8dau/\xe2\x98\xba\xe3\x83\x95.html">Link 1</a>\n'
+        + b'            <a href="/%C4%8Dau/%E2%98%BA%E3%83%95.html">Link 1, encoded</a>\n'
         + b'            <a href="/%E2%98%BA%E3%83%95/%C4%8Dau.html">Link'
         + b' 2</a>\n        </body>\n    </html>\n    ',
     'éxtrą': {
