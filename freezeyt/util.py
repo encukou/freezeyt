@@ -9,6 +9,9 @@ class InfiniteRedirection(Exception):
 class ExternalURLError(ValueError):
     """Unexpected external URL specified"""
 
+class RelativeURLError(ValueError):
+    """Absolute URL was expected"""
+
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
 
@@ -41,10 +44,10 @@ def parse_absolute_url(url):
     """
     parsed = url_parse(url)
     if not parsed.scheme or not parsed.netloc:
-        raise ValueError("Need an absolute URL")
+        raise RelativeURLError(f"Expected an absolute URL, not {url}")
 
     if parsed.scheme not in ('http', 'https'):
-        raise ValueError("URL scheme must be http or https")
+        raise ValueError(f"URL scheme must be http or https: {url}")
 
     parsed = add_port(parsed)
 
