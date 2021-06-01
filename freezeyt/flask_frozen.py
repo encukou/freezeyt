@@ -6,7 +6,7 @@ from urllib.parse import unquote
 from flask import Flask, Blueprint, url_for
 from werkzeug.urls import url_parse
 
-from freezeyt import freeze, ExternalURLError
+from freezeyt import freeze, ExternalURLError, RelativeURLError
 
 
 def unwrap_method(method):
@@ -106,7 +106,7 @@ class Freezer:
             config['default_mimetype'] = default_mimetype
         try:
             freeze(self.app, config)
-        except ExternalURLError:
+        except (ExternalURLError, RelativeURLError):
             raise ValueError('External URLs not supported')
         return recorded_urls
 
