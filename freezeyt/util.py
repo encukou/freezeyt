@@ -12,6 +12,13 @@ class ExternalURLError(ValueError):
 class RelativeURLError(ValueError):
     """Absolute URL was expected"""
 
+class UnexpectedStatus(ValueError):
+    """The application returned an unexpected status code for a page"""
+    def __init__(self, url, status):
+        self.url = url
+        self.status = status
+        super().__init__(f"Unexpected status '{status}' on URL {url.to_url()}")
+
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
 
