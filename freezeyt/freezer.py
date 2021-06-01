@@ -20,7 +20,7 @@ from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
-from freezeyt.util import InfiniteRedirection, ExternalURLError
+from freezeyt.util import InfiniteRedirection, ExternalURLError, UnexpectedStatus
 from freezeyt.getlinks_html import get_all_links
 from freezeyt.getlinks_css import get_links_from_css
 from freezeyt import hooks
@@ -245,7 +245,7 @@ class Freezer:
                     f'redirect policy {redirect_policy} not supported'
                 )
         if not status.startswith("200"):
-            raise ValueError(f"Found broken link: {url.to_url()}, status {status}")
+            raise UnexpectedStatus(url, status)
         else:
             check_mimetype(
                 url.path, headers,
