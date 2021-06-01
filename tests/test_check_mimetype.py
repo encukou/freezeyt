@@ -110,3 +110,49 @@ def test_directory():
             ('Content-Type', 'text/html'),
         ]
     )
+
+
+def test_missing_file_default():
+    check_mimetype(
+        'http://localhost:8000/index',
+        [
+            ('Content-Type', 'image/png'),
+            ('Content-Length', '164'),
+        ],
+        default='image/png'
+    )
+
+
+def test_default_ignored():
+    check_mimetype(
+        'http://localhost:8000/picture.jpg',
+        [
+            ('Content-Type', 'image/jpeg'),
+            ('Content-Length', '164'),
+        ],
+        default='image/png'
+    )
+
+
+def test_missing_file_default_fail():
+    with pytest.raises(ValueError):
+        check_mimetype(
+            'http://localhost:8000/index',
+            [
+                ('Content-Type', 'text/html'),
+                ('Content-Length', '164'),
+            ],
+            default='image/png'
+        )
+
+
+def test_default_ignored_fail():
+    with pytest.raises(ValueError):
+        check_mimetype(
+            'http://localhost:8000/picture.jpg',
+            [
+                ('Content-Type', 'image/png'),
+                ('Content-Length', '164'),
+            ],
+            default='image/png'
+        )

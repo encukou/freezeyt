@@ -246,6 +246,22 @@ extra_files:
 Extra files cannot be specified on the CLI.
 
 
+### Default MIME type
+
+Freezeyt checks whether the file extensions in its output
+correspond to the MIME types served by the app.
+If there's a mismatch, freezeyt fails, because this means a server
+wouldn't be able to serve the page correctly.
+
+It is possible to specify the MIME type used for files without an extension.
+For example, if your server of static pages defaults to plain text files,
+use:
+
+```yaml
+default_mimetype=text/plain
+```
+
+
 ### Hooks
 
 It is possible to register *hooks*, functions that are called when

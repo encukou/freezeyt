@@ -4,6 +4,7 @@ from freezeyt import freeze
 
 from test_click_cli import run_freezeyt_cli
 from fixtures.app_with_extra_files.app import app, freeze_config
+from testutil import context_for_test, assert_dirs_same, FIXTURES_PATH
 
 
 def test_cli_to_files(tmp_path, monkeypatch):
@@ -34,12 +35,8 @@ def test_func_to_files(tmp_path):
     assert (builddir / 'smile2.png').exists()
 
 
-@pytest.mark.parametrize('output', (
-    'dict',
-    {'type': 'dict'},
-))
-def test_func_to_dict(tmp_path, output):
-    config = {**freeze_config, 'output': output}
+def test_func_to_dict(tmp_path):
+    config = {**freeze_config, 'output': {'type': 'dict'}}
 
     result = freeze(app, config)
 
@@ -84,3 +81,55 @@ def test_cli_without_path_and_output(tmp_path, monkeypatch):
 
     result = run_freezeyt_cli(['app'], app_name, check=False)
     assert result.exit_code != 0
+
+
+def test_simple_output_specification(tmp_path):
+    app_path = FIXTURES_PATH / 'app_2pages'
+    expected = app_path / 'test_expected_output'
+
+    with context_for_test('app_2pages') as module:
+        freeze_config = {'output': str(tmp_path)}
+
+        freeze(module.app, freeze_config)
+
+        assert_dirs_same(tmp_path, expected)
+
+
+def test_invalid_output_type(tmp_path):
+    with context_for_test('app_2pages') as module:
+        freeze_config = {'output': {'type': 'bad output type'}}
+
+        with pytest.raises(ValueError):
+            freeze(module.app, freeze_config)
+
+
+def test_no_output_dir(tmp_path):
+    with context_for_test('app_2pages') as module:
+        freeze_config = {'output': {'type': 'dir'}}
+
+        with pytest.raises(ValueError):
+            freeze(module.app, freeze_config)
+
+
+def test_external_extra_files(tmp_path):
+    with context_for_test('app_2pages') as module:
+        freeze_config = {
+            'output': {'type': 'dict'},
+            'extra_pages': ['http://external.example/foo.html'],
+        }
+
+        with pytest.raises(ValueError):
+            freeze(module.app, freeze_config)
+
+
+def test_external_extra_files_generator(tmp_path):
+    def gen(app):
+        yield 'http://external.example/foo.html'
+    with context_for_test('app_2pages') as module:
+        freeze_config = {
+            'output': {'type': 'dict'},
+            'extra_pages': [gen],
+        }
+
+        with pytest.raises(ValueError):
+            freeze(module.app, freeze_config)

@@ -39,13 +39,13 @@ def freeze(app, config):
     return freezer.get_result()
 
 
-def check_mimetype(url_path, headers):
+def check_mimetype(url_path, headers, default='application/octet-stream'):
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
     f_type, f_encode = guess_type(url_path)
     if not f_type:
-        f_type = 'application/octet-stream'
+        f_type = default
     headers = Headers(headers)
     cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
     if f_type.lower() != cont_type.lower():
@@ -105,6 +105,9 @@ class IsARedirect(BaseException):
 class InfiniteRedirection(Exception):
     """Infinite redirection was detected with redirect_policy='follow'"""
 
+class ExternalURLError(ValueError):
+    """Unexpected external URL specified"""
+
 class Freezer:
     def __init__(self, app, config):
         self.app = app
@@ -127,12 +130,18 @@ class Freezer:
 
         output = config['output']
         if isinstance(output, str):
-            output = {'type': output}
+            output = {'type': 'dir', 'dir': output}
 
         if output['type'] == 'dict':
             self.saver = DictSaver(self.prefix)
+        elif output['type'] == 'dir':
+            try:
+                output_dir = output['dir']
+            except KeyError:
+                raise ValueError("output directory not specified")
+            self.saver = FileSaver(Path(output_dir), self.prefix)
         else:
-            self.saver = FileSaver(Path(output['dir']), self.prefix)
+            raise ValueError(f"unknown output type {output['type']}")
 
         self.done_tasks = {}
         self.redirecting_tasks = {}
@@ -153,13 +162,15 @@ class Freezer:
         if get_result is not None:
             return self.saver.get_result()
 
-    def add_task(self, url: URL) -> Optional[Task]:
+    def add_task(self, url: URL, *, external_ok: bool = False) -> Optional[Task]:
         """Add a task to freeze the given URL
 
         If no task is added (e.g. for external URLs), return None.
         """
         if is_external(url, self.prefix):
-            return None
+            if external_ok:
+                return None
+            raise ExternalURLError(f'Unexpected external URL: {url}')
 
         path = url_to_path(self.prefix, url)
 
@@ -227,7 +238,7 @@ class Freezer:
                 status = "200"
             elif redirect_policy == 'follow':
                 location = add_port(url.join(location))
-                target_task = self.add_task(location)
+                target_task = self.add_task(location, external_ok=True)
                 task.redirects_to = target_task
                 self.redirecting_tasks[task.path] = task
                 raise IsARedirect()
@@ -241,9 +252,12 @@ class Freezer:
         if not status.startswith("200"):
             raise ValueError(f"Found broken link: {url.to_url()}, status {status}")
         else:
-            print('status', status)
-            print('headers', headers)
-            check_mimetype(url.path, headers)
+            check_mimetype(
+                url.path, headers,
+                default=self.config.get(
+                    'default_mimetype', 'application/octet-stream',
+                ),
+            )
         return wsgi_write
 
     def _add_extra_pages(self, prefix, extras):
@@ -258,8 +272,11 @@ class Freezer:
                     generator = import_variable_from_module(generator)
                 self._add_extra_pages(prefix, generator(self.app))
             elif isinstance(extra, str):
-                url = urljoin(prefix, decode_input_path(extra))
-                self.add_task(parse_absolute_url(url))
+                url = parse_absolute_url(urljoin(prefix, decode_input_path(extra)))
+                try:
+                    self.add_task(url)
+                except ExternalURLError:
+                    raise ExternalURLError(f'External URL specified in extra_pages: {url}')
             else:
                 generator = extra
                 self._add_extra_pages(prefix, generator(self.app))
@@ -353,10 +370,10 @@ class Freezer:
                 if cont_type == "text/html":
                     links = get_all_links(f, url_string, task.response_headers)
                     for new_url in links:
-                        self.add_task(parse_absolute_url(new_url))
+                        self.add_task(parse_absolute_url(new_url), external_ok=True)
                 elif cont_type == "text/css":
                     for new_url in get_links_from_css(f, url_string):
-                        self.add_task(parse_absolute_url(new_url))
+                        self.add_task(parse_absolute_url(new_url), external_ok=True)
 
             task.status = TaskStatus.DONE
 
