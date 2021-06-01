@@ -20,6 +20,7 @@ from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
+from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.getlinks_html import get_all_links
 from freezeyt.getlinks_css import get_links_from_css
 from freezeyt import hooks
@@ -101,12 +102,6 @@ class Task:
 
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
-
-class InfiniteRedirection(Exception):
-    """Infinite redirection was detected with redirect_policy='follow'"""
-
-class ExternalURLError(ValueError):
-    """Unexpected external URL specified"""
 
 class Freezer:
     def __init__(self, app, config):
