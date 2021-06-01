@@ -457,7 +457,7 @@ Freezeyt blog is available [here](https://encukou.github.io/freezeyt/)
 
 **Be warned:** some of it is in the Czech language.
 
-#### Development blog
+#### Blog development
 
 The blog was tested on Python version 3.8.
 
