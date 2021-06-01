@@ -453,7 +453,7 @@ Other communication channels and info can be found here:
 ### Freezeyt Blog
 
 We keep a blog about the development of Freezeyt.
-Freezeyt blog is available [here](https://encukou.github.io/freezeyt/)
+It is available [here](https://encukou.github.io/freezeyt/).
 
 **Be warned:** some of it is in the Czech language.
 
