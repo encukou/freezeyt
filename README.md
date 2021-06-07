@@ -444,6 +444,26 @@ install `tox` using `python -m pip install tox` and run it:
 $ tox
 ```
 
+#### Environ variables for tests
+
+Some test scenarios need to create files to pass it. It is necessary to set environ variable `TEST_CREATE_EXPECTED_OUTPUT` if we want to allow creation of files by tests.
+
+To allow create a files set environ variable to value '1'.
+
+**Unix**
+
+```shell
+$ export TEST_CREATE_EXPECTED_OUTPUT=1
+```
+
+**Windows**
+
+```shell
+> set TEST_CREATE_EXPECTED_OUTPUT=1
+```
+
+If you set the environ variable to any different value or the variable does not exist at all then the creation of files is not allowed.
+
 
 ### Tools and technologies used
 
