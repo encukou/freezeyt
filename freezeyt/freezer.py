@@ -243,6 +243,11 @@ class Freezer:
                 raise ValueError(
                     f'redirect policy {redirect_policy} not supported'
                 )
+        elif status.startswith("404"):
+            handler = self.config.get('404_handler')
+            task_info = hooks.TaskInfo(task, self)
+            if handler and handler(task_info, status, headers):
+                status = "200"
         if not status.startswith("200"):
             raise UnexpectedStatus(url, status)
         else:
