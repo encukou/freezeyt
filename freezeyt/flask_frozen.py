@@ -2,6 +2,9 @@ from pathlib import Path
 from collections.abc import Mapping
 from threading import RLock
 from urllib.parse import unquote
+import shutil
+import tempfile
+from fnmatch import fnmatch
 
 from flask import Flask, Blueprint, url_for
 from werkzeug.urls import url_parse
@@ -73,6 +76,16 @@ class Freezer:
             'FREEZER_REDIRECT_POLICY', 'follow'
         )
 
+        if not self.app.config.get('FREEZER_REMOVE_EXTRA_FILES', True):
+            kept_file_patterns = ['*']
+        else:
+            kept_file_patterns = self.app.config.get('FREEZER_DESTINATION_IGNORE', [])
+
+        if kept_file_patterns:
+            kept_file_dir = save_kept_files(self.root, kept_file_patterns)
+        else:
+            kept_file_dir = None
+
         # Frozen-flask's freeze function returns a set of relative URLs
         # without query or fragment parts
         recorded_urls = set()
@@ -95,6 +108,8 @@ class Freezer:
         if default_mimetype:
             config['default_mimetype'] = default_mimetype
         try:
+            if Path(self.root).exists():
+                shutil.rmtree(self.root)
             freeze(self.app, config)
         except (ExternalURLError, RelativeURLError):
             raise ValueError('External URLs not supported')
@@ -105,6 +120,8 @@ class Freezer:
             # Frozen-Flask always creates the output directory;
             # Freezeyt may remove it on errors.
             Path(self.root).mkdir(exist_ok=True)
+            if kept_file_dir:
+                restore_kept_files(kept_file_dir, self.root)
 
         return recorded_urls
 
@@ -174,6 +191,41 @@ def make_relative_url(prefix: str, url: str):
     url = unquote(parsed.to_url())
     return url
 
+
+def save_kept_files(root, kept_file_patterns):
+    """Copy all files named by "kept_file_patterns" to a temporary directory"""
+
+    root_path = Path(root)
+    temp_dir = tempfile.TemporaryDirectory()
+    temp_path = Path(temp_dir.name)
+
+    def keep(filename):
+        src = root_path / filename
+        dest = temp_path / filename
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dest)
+
+    basename_kept = [n for n in kept_file_patterns if '/' not in n]
+    path_kept = [n.strip('/') for n in kept_file_patterns if '/' in n]
+    for filename in walk_directory(root):
+        name = Path(filename).name
+        if any(fnmatch(name, pattern) for pattern in basename_kept):
+            keep(filename)
+        elif any(fnmatch(filename, pattern) for pattern in path_kept):
+            keep(filename)
+
+    return temp_dir
+
+def restore_kept_files(kept_file_dir, root):
+    """Restore files saved by save_kept_files."""
+    root_path = Path(root)
+    temp_path = Path(kept_file_dir.name)
+    for filename in walk_directory(kept_file_dir.name):
+        src = temp_path / filename
+        dest = root_path / filename
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dest)
+    kept_file_dir.cleanup()
 
 def walk_directory(root, ignore=None):
     for path in Path(root).glob('**/*'):
