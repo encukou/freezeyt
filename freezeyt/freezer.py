@@ -12,7 +12,7 @@ import enum
 from urllib.parse import urljoin
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
-from werkzeug.urls import URL
+from werkzeug.urls import URL, url_unquote
 
 from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.encoding import encode_file_path
@@ -68,7 +68,7 @@ def url_to_path(prefix, parsed_url):
     if url_path.endswith('/') or not url_path:
         url_path = url_path + 'index.html'
 
-    result = PurePosixPath(encode_file_path(url_path))
+    result = PurePosixPath(encode_file_path(url_unquote(url_path)))
 
     assert not result.is_absolute(), result
     assert '.' not in result.parts
