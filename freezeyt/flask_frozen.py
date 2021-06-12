@@ -30,12 +30,14 @@ class Freezer:
         app=None,
         with_static_files=True,
         with_no_argument_rules=True,
+        log_url_for=True,
     ):
         self.generators = []
         if with_static_files:
             self.register_generator(self.static_files_urls)
         if with_no_argument_rules:
             self.register_generator(self.no_argument_rules_urls)
+        self.log_url_for = log_url_for
         if app:
             self.init_app(app)
 
@@ -61,19 +63,21 @@ class Freezer:
             freeze_info = new_freeze_info
             handling_url_for = True
 
-        lock = RLock()
-        def handle_url_for(endpoint, values):
-            nonlocal handling_url_for
-            with lock:
-                if handling_url_for:
-                    handling_url_for = False
-                    values = {**values, '_external': True}
-                    freeze_info.add_url(url_for(endpoint, **values))
-                    handling_url_for = True
+        if self.log_url_for:
+            lock = RLock()
+            def handle_url_for(endpoint, values):
+                nonlocal handling_url_for
+                with lock:
+                    if handling_url_for:
+                        handling_url_for = False
+                        values = {**values, '_external': True}
+                        freeze_info.add_url(url_for(endpoint, **values))
+                        handling_url_for = True
 
-        # Do not use app.url_defaults() as we want to insert at the front
-        # of the list to get unmodifies values.
-        self.app.url_default_functions.setdefault(None, []).insert(0, handle_url_for)
+            # Do not use app.url_defaults() as we want to insert at the front
+            # of the list to get unmodifies values.
+            default_funcs = self.app.url_default_functions
+            default_funcs.setdefault(None, []).insert(0, handle_url_for)
 
         def generator(app):
             return self.all_urls()
