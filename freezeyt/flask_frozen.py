@@ -5,12 +5,15 @@ from urllib.parse import unquote
 import shutil
 import tempfile
 from fnmatch import fnmatch
+import mimetypes
 
-from flask import Flask, Blueprint, url_for
+from flask import Flask, Blueprint, url_for, request, send_from_directory
 from werkzeug.urls import url_parse
 
-from freezeyt import freeze, ExternalURLError, RelativeURLError, UnexpectedStatus
+from freezeyt import freeze, url_to_path
+from freezeyt import ExternalURLError, RelativeURLError, UnexpectedStatus
 
+PREFIX = 'http://localhost:80/'
 
 def unwrap_method(method):
     """Return the function object for the given method object."""
@@ -24,6 +27,7 @@ class Freezer:
     """Replacement form Frozen-flask's Freezer"""
     def __init__(
         self,
+        app=None,
         with_static_files=True,
         with_no_argument_rules=True,
     ):
@@ -32,6 +36,8 @@ class Freezer:
             self.register_generator(self.static_files_urls)
         if with_no_argument_rules:
             self.register_generator(self.no_argument_rules_urls)
+        if app:
+            self.init_app(app)
 
     def register_generator(self, function):
         self.generators.append(function)
@@ -93,12 +99,11 @@ class Freezer:
         # without query or fragment parts
         recorded_urls = set()
         def record_url(task_info):
-            url = make_relative_url(prefix, task_info.get_a_url())
+            url = make_relative_url(PREFIX, task_info.get_a_url())
             recorded_urls.add(url)
 
-        prefix = 'http://localhost:80/'
         config = {
-            'prefix': prefix,
+            'prefix': PREFIX,
             'output': self.root,
             'extra_pages': [generator],
             'redirect_policy': redirect_policy,
@@ -117,7 +122,7 @@ class Freezer:
         except (ExternalURLError, RelativeURLError):
             raise ValueError('External URLs not supported')
         except UnexpectedStatus as e:
-            relative_url = make_relative_url(prefix, e.url.to_url())
+            relative_url = make_relative_url(PREFIX, e.url.to_url())
             raise ValueError(f"Unexpected status '{e.status}' on URL {relative_url}")
         finally:
             # Frozen-Flask always creates the output directory;
@@ -184,6 +189,25 @@ class Freezer:
             if not rule.arguments and 'GET' in rule.methods:
                 yield rule.endpoint, {}
 
+    def make_static_app(self):
+        """Return a Flask application serving the build destination."""
+        root = self.root
+
+        def dispatch_request():
+            print(request)
+            filename = url_to_path(PREFIX, request.url)
+
+            # Override the default mimeype from settings
+            guessed_type, guessed_encoding = mimetypes.guess_type(filename)
+            if not guessed_type:
+                guessed_type = self.app.config['FREEZER_DEFAULT_MIMETYPE']
+
+            return send_from_directory(root, filename, mimetype=guessed_type)
+
+        app = Flask(__name__)
+        # Do not use the URL map
+        app.dispatch_request = dispatch_request
+        return app
 
 def make_relative_url(prefix: str, url: str):
     # make the URL relative
