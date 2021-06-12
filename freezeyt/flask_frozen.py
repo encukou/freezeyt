@@ -81,6 +81,9 @@ class Freezer:
         else:
             kept_file_patterns = self.app.config.get('FREEZER_DESTINATION_IGNORE', [])
 
+        if self.app.config.get('FREEZER_SKIP_EXISTING', False):
+            kept_file_patterns = ['*']
+
         if kept_file_patterns:
             kept_file_dir = save_kept_files(self.root, kept_file_patterns)
         else:
@@ -121,7 +124,10 @@ class Freezer:
             # Freezeyt may remove it on errors.
             Path(self.root).mkdir(exist_ok=True)
             if kept_file_dir:
-                restore_kept_files(kept_file_dir, self.root)
+                restore_kept_files(
+                    kept_file_dir, self.root,
+                    restore_all=self.app.config.get('FREEZER_SKIP_EXISTING', False),
+                )
 
         return recorded_urls
 
@@ -216,15 +222,16 @@ def save_kept_files(root, kept_file_patterns):
 
     return temp_dir
 
-def restore_kept_files(kept_file_dir, root):
+def restore_kept_files(kept_file_dir, root, restore_all=False):
     """Restore files saved by save_kept_files."""
     root_path = Path(root)
     temp_path = Path(kept_file_dir.name)
     for filename in walk_directory(kept_file_dir.name):
         src = temp_path / filename
         dest = root_path / filename
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(src, dest)
+        if restore_all or not dest.exists():
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dest)
     kept_file_dir.cleanup()
 
 def walk_directory(root, ignore=None):
