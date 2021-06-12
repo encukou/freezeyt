@@ -6,6 +6,7 @@ import shutil
 import tempfile
 from fnmatch import fnmatch
 import mimetypes
+import warnings
 
 from flask import Flask, Blueprint, url_for, request, send_from_directory
 from werkzeug.urls import url_parse
@@ -119,6 +120,8 @@ class Freezer:
         default_mimetype = self.app.config.get('FREEZER_DEFAULT_MIMETYPE')
         if default_mimetype:
             config['default_mimetype'] = default_mimetype
+        if self.app.config.get('FREEZER_IGNORE_404_NOT_FOUND', False):
+            config['404_handler'] = self.ignore_404
         try:
             if Path(self.root).exists():
                 shutil.rmtree(self.root)
@@ -139,6 +142,10 @@ class Freezer:
                 )
 
         return recorded_urls
+
+    def ignore_404(self, task, status, headers):
+        warnings.warn(f'Page not found: {task.get_a_url()}!', NotFoundWarning)
+        return True
 
     def _static_rules_endpoints(self):
         """
