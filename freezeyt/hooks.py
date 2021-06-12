@@ -1,4 +1,5 @@
 from freezeyt.util import parse_absolute_url
+from freezeyt import freezer
 
 class TaskInfo:
     """Public information about a task that's being saved"""
@@ -22,3 +23,9 @@ class FreezeInfo:
 
     def add_url(self, url):
         self._freezer.add_task(parse_absolute_url(url))
+
+def url_to_path(prefix, url):
+    return freezer.url_to_path(
+        parse_absolute_url(prefix),
+        parse_absolute_url(url),
+    )
