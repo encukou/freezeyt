@@ -444,6 +444,32 @@ install `tox` using `python -m pip install tox` and run it:
 $ tox
 ```
 
+#### Environ variables for tests
+
+Some test scenarios compare freezeyt's results with expected output.
+When the files with expected output don't exist yet,
+they can be created by setting the environment variable
+`TEST_CREATE_EXPECTED_OUTPUT` to `1`:
+
+**Unix**
+
+```shell
+$ export TEST_CREATE_EXPECTED_OUTPUT=1
+```
+
+**Windows**
+
+```shell
+> set TEST_CREATE_EXPECTED_OUTPUT=1
+```
+
+If you set the variable to any different value or leave it unset
+then the files will not be recreated
+(tests will fail if the files are not up to date).
+
+When output changes, you need to first delete the expected output,
+regenerate it by running tests with `TEST_CREATE_EXPECTED_OUTPUT=1`,
+and check that the difference is correct.
 
 ### Tools and technologies used
 
