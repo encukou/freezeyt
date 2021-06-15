@@ -1,6 +1,7 @@
 from flask import Flask
+import pytest
 
-from freezeyt import freeze
+from freezeyt import freeze, ExternalURLError
 from testutil import context_for_test
 
 
@@ -68,3 +69,22 @@ def test_freezeinfo_add_url():
         output = freeze(module.app, config)
         assert hook_called
         assert output == module.expected_dict
+
+
+def test_freezeinfo_add_external_url():
+    hook_called = False
+    def start_hook(freezeinfo):
+        nonlocal hook_called
+        hook_called = True
+
+        freezeinfo.add_url('http://different-domain.example/extra/')
+
+    with context_for_test('app_with_extra_page') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {'start': start_hook},
+        }
+
+        with pytest.raises(ExternalURLError):
+            freeze(module.app, config)
