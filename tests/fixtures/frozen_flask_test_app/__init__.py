@@ -45,7 +45,8 @@ def create_app(defer_init_app=False, freezer_kwargs=None):
     def page(name):
         url_for('product', product_id='3')  # Pretend we’re adding a link
         url_for('product', product_id='4')  # Another link
-        return u'Hello\xa0World! ' + name
+        from werkzeug.urls import url_unquote
+        return u'Hello\xa0World! ' + url_unquote(name)
 
     @app.route('/where_am_i/')
     def where_am_i():
