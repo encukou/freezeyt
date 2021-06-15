@@ -444,11 +444,12 @@ install `tox` using `python -m pip install tox` and run it:
 $ tox
 ```
 
-#### Environ variables for tests
+#### Environ variables for tests
 
-Some test scenarios need to create files to pass it. It is necessary to set environ variable `TEST_CREATE_EXPECTED_OUTPUT` if we want to allow creation of files by tests.
-
-To allow create a files set environ variable to value '1'.
+Some test scenarios compare freezeyt's results with expected output.
+When the files with expected output don't exist yet,
+they can be created by setting the environment variable
+`TEST_CREATE_EXPECTED_OUTPUT` to `1`:
 
 **Unix**
 
@@ -462,8 +463,13 @@ $ export TEST_CREATE_EXPECTED_OUTPUT=1
 > set TEST_CREATE_EXPECTED_OUTPUT=1
 ```
 
-If you set the environ variable to any different value or the variable does not exist at all then the creation of files is not allowed.
+If you set the variable to any different value or leave it unset
+then the files will not be recreated
+(tests will fail if the files are not up to date).
 
+When output changes, you need to first delete the expected output,
+regenerate it by running tests with `TEST_CREATE_EXPECTED_OUTPUT=1`,
+and check that the difference is correct.
 
 ### Tools and technologies used
 
