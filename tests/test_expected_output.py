@@ -30,8 +30,11 @@ def test_output(tmp_path, monkeypatch, app_name):
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
 
         if error_path.exists():
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError) as exc:
                 freeze(app, freeze_config)
+            exception_name = exc.type.__name__
+            expected_name = error_path.read_text().strip()
+            assert exception_name == expected_name
         else:
             # Non error app.
 
