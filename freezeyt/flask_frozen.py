@@ -162,6 +162,8 @@ class Freezer:
             view = self.app.view_functions[rule.endpoint]
             if unwrap_method(view) is send_static_file:
                 yield rule.endpoint
+            elif rule.endpoint == 'static':
+                yield rule.endpoint
 
     def static_files_urls(self):
         """
@@ -170,7 +172,7 @@ class Freezer:
         for endpoint in self._static_rules_endpoints():
             # endpoint = 'static'
             view = self.app.view_functions[endpoint]
-            app_or_blueprint = view.__self__
+            app_or_blueprint = getattr(view, '__self__', self.app)
             root = app_or_blueprint.static_folder
             ignore = self.app.config['FREEZER_STATIC_IGNORE']
             if root is None or not Path(root).is_dir():
