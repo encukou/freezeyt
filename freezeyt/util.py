@@ -19,6 +19,14 @@ class UnexpectedStatus(ValueError):
         self.status = status
         super().__init__(f"Unexpected status '{status}' on URL {url.to_url()}")
 
+class WrongMimetypeError(ValueError):
+    """MIME type does not match file extension"""
+    def __init__(self, expected, got, url_path):
+        super().__init__(
+            f"Content-type '{got}' is different from filetype '{expected}'"
+            + f" guessed from '{url_path}'"
+        )
+
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
 
