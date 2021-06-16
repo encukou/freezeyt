@@ -20,6 +20,7 @@ from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
+from freezeyt.util import InfiniteRedirection, ExternalURLError, UnexpectedStatus, WrongMimetypeError
 from freezeyt.getlinks_html import get_all_links
 from freezeyt.getlinks_css import get_links_from_css
 from freezeyt import hooks
@@ -49,10 +50,7 @@ def check_mimetype(url_path, headers, default='application/octet-stream'):
     headers = Headers(headers)
     cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
     if f_type.lower() != cont_type.lower():
-        raise ValueError(
-            f"Content-type '{cont_type}' is different from filetype '{f_type}'"
-            + f" guessed from '{url_path}'"
-        )
+        raise WrongMimetypeError(f_type, cont_type, url_path)
 
 
 def url_to_path(prefix, parsed_url):
@@ -101,12 +99,6 @@ class Task:
 
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
-
-class InfiniteRedirection(Exception):
-    """Infinite redirection was detected with redirect_policy='follow'"""
-
-class ExternalURLError(ValueError):
-    """Unexpected external URL specified"""
 
 class Freezer:
     def __init__(self, app, config):
@@ -250,7 +242,7 @@ class Freezer:
                     f'redirect policy {redirect_policy} not supported'
                 )
         if not status.startswith("200"):
-            raise ValueError(f"Found broken link: {url.to_url()}, status {status}")
+            raise UnexpectedStatus(url, status)
         else:
             check_mimetype(
                 url.path, headers,

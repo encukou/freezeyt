@@ -3,6 +3,30 @@ import importlib
 from werkzeug.urls import url_parse
 
 
+class InfiniteRedirection(Exception):
+    """Infinite redirection was detected with redirect_policy='follow'"""
+
+class ExternalURLError(ValueError):
+    """Unexpected external URL specified"""
+
+class RelativeURLError(ValueError):
+    """Absolute URL was expected"""
+
+class UnexpectedStatus(ValueError):
+    """The application returned an unexpected status code for a page"""
+    def __init__(self, url, status):
+        self.url = url
+        self.status = status
+        super().__init__(f"Unexpected status '{status}' on URL {url.to_url()}")
+
+class WrongMimetypeError(ValueError):
+    """MIME type does not match file extension"""
+    def __init__(self, expected, got, url_path):
+        super().__init__(
+            f"Content-type '{got}' is different from filetype '{expected}'"
+            + f" guessed from '{url_path}'"
+        )
+
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
 
@@ -35,10 +59,10 @@ def parse_absolute_url(url):
     """
     parsed = url_parse(url)
     if not parsed.scheme or not parsed.netloc:
-        raise ValueError("Need an absolute URL")
+        raise RelativeURLError(f"Expected an absolute URL, not {url}")
 
     if parsed.scheme not in ('http', 'https'):
-        raise ValueError("URL scheme must be http or https")
+        raise ValueError(f"URL scheme must be http or https: {url}")
 
     parsed = add_port(parsed)
 

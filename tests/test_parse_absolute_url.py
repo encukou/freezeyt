@@ -1,22 +1,28 @@
 import pytest
 
+from freezeyt import RelativeURLError
 from freezeyt.util import parse_absolute_url
 
 def test_absolute():
-    with pytest.raises(ValueError):
+    with pytest.raises(RelativeURLError):
         parse_absolute_url("/a/b/c")
 
 def test_no_scheme():
-    with pytest.raises(ValueError):
+    with pytest.raises(RelativeURLError):
         parse_absolute_url("pyladies.cz/")
 
 def test_no_netloc():
-    with pytest.raises(ValueError):
+    with pytest.raises(RelativeURLError):
         parse_absolute_url("pyladies.cz/foo")
 
 def test_url_scheme():
+    """Absolute URLs with bad scheme raise ValueError, but not RelativeURLError
+    """
     with pytest.raises(ValueError):
-        parse_absolute_url("ftp://localhost:8000/second_page.html")
+        try:
+            parse_absolute_url("ftp://localhost:8000/second_page.html")
+        except RelativeURLError:
+            raise AssertionError('should not raise RelativeURLError')
 
 def test_no_port_http():
     parsed = parse_absolute_url("http://pyladies.cz/")

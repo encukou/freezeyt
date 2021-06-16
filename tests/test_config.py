@@ -1,6 +1,6 @@
 import pytest
 
-from freezeyt import freeze
+from freezeyt import freeze, ExternalURLError
 
 from test_click_cli import run_freezeyt_cli
 from fixtures.app_with_extra_files.app import app, freeze_config
@@ -118,7 +118,7 @@ def test_external_extra_files(tmp_path):
             'extra_pages': ['http://external.example/foo.html'],
         }
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ExternalURLError):
             freeze(module.app, freeze_config)
 
 
@@ -131,5 +131,5 @@ def test_external_extra_files_generator(tmp_path):
             'extra_pages': [gen],
         }
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ExternalURLError):
             freeze(module.app, freeze_config)
