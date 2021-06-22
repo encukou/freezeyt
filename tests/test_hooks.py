@@ -1,6 +1,5 @@
 from flask import Flask
 import pytest
-from pathlib import PurePosixPath
 
 from freezeyt import freeze, ExternalURLError
 from testutil import context_for_test
