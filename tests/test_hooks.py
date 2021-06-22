@@ -88,3 +88,28 @@ def test_freezeinfo_add_external_url():
 
         with pytest.raises(ExternalURLError):
             freeze(module.app, config)
+
+
+def test_taskinfo_has_freezeinfo():
+    freezeinfos = []
+
+    def start_hook(freezeinfo):
+        freezeinfos.append(freezeinfo)
+
+    def page_frozen_hook(pageinfo):
+        freezeinfos.append(pageinfo.freeze_info)
+
+    with context_for_test('app_simple') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {
+                'start': start_hook,
+                'page_frozen': page_frozen_hook,
+            },
+        }
+
+        freeze(module.app, config)
+
+    a, b = freezeinfos
+    assert a is b
