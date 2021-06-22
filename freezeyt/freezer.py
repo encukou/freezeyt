@@ -29,11 +29,7 @@ from freezeyt import hooks
 def freeze(app, config):
     freezer = Freezer(app, config)
     freezer.prepare()
-
-    hook = freezer.hooks.get('start')
-    if hook:
-        hook(freezer.freeze_info)
-
+    freezer.call_hook('start', freezer.freeze_info)
     freezer.freeze_extra_files()
     freezer.handle_urls()
     freezer.handle_redirects()
@@ -367,9 +363,7 @@ class Freezer:
 
             task.status = TaskStatus.DONE
 
-            hook = self.hooks.get('page_frozen')
-            if hook:
-                hook(hooks.TaskInfo(task, self))
+            self.call_hook('page_frozen', hooks.TaskInfo(task, self))
 
     def handle_redirects(self):
         """Save copies of target pages for redirect_policy='follow'"""
@@ -380,6 +374,9 @@ class Freezer:
                 )
             with self.saver.open_filename(task.redirects_to.path) as f:
                 self.saver.save_to_filename(task.path, f)
-            hook = self.hooks.get('page_frozen')
-            if hook:
-                hook(hooks.TaskInfo(task, self))
+            self.call_hook('page_frozen', hooks.TaskInfo(task, self))
+
+    def call_hook(self, hook_name, *arguments):
+        hook = self.hooks.get(hook_name)
+        if hook:
+            hook(*arguments)
