@@ -380,3 +380,6 @@ class Freezer:
                 )
             with self.saver.open_filename(task.redirects_to.path) as f:
                 self.saver.save_to_filename(task.path, f)
+            hook = self.hooks.get('page_frozen')
+            if hook:
+                hook(hooks.TaskInfo(task, self))
