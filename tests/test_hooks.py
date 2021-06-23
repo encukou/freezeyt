@@ -88,3 +88,32 @@ def test_freezeinfo_add_external_url():
 
         with pytest.raises(ExternalURLError):
             freeze(module.app, config)
+
+
+@pytest.mark.parametrize('policy', ('save', 'follow'))
+def test_page_frozen_hook_with_redirects(policy):
+    recorded_tasks = []
+
+    def record_page(task_info):
+        recorded_tasks.append(task_info.path)
+
+    with context_for_test('app_redirects') as module:
+        config = dict(module.freeze_config)
+        config['output'] = {'type': 'dict'}
+        config['hooks'] = {'page_frozen': record_page}
+        config['redirect_policy'] = policy
+        output = freeze(module.app, config)
+
+    output_paths = []
+    def add_output_to_output_paths(dict_to_add, path_so_far):
+        for key, value in dict_to_add.items():
+            if isinstance(value, bytes):
+                output_paths.append(path_so_far + key)
+            else:
+                add_output_to_output_paths(value, path_so_far + key + '/')
+    add_output_to_output_paths(output, '')
+
+    recorded_tasks.sort()
+    output_paths.sort()
+
+    assert recorded_tasks == output_paths
