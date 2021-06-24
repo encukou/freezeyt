@@ -19,7 +19,7 @@ def test_get_links():
                 <p>
                     <a href='/third_page'>LINK</a> to third page.
                 </p>
-                <a href='fourth_page/'>LINK</a> to third page.
+                <a href='fourth_page/'>LINK</a> to fourth page.
                 <img src="blabla.png">
             </body>
         </html>
@@ -46,7 +46,7 @@ def test_get_links_path():
                 <p>
                     <a href='/third_page'>LINK</a> to third page.
                 </p>
-                <a href='fourth_page/'>LINK</a> to third page.
+                <a href='fourth_page/'>LINK</a> to fourth page.
             </body>
         </html>
     """, 'http://localhost:8000/path1/path2/')
