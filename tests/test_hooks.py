@@ -117,3 +117,28 @@ def test_page_frozen_hook_with_redirects(policy):
     output_paths.sort()
 
     assert recorded_tasks == output_paths
+
+    
+def test_taskinfo_has_freezeinfo():
+    freezeinfos = []
+
+    def start_hook(freezeinfo):
+        freezeinfos.append(freezeinfo)
+
+    def page_frozen_hook(pageinfo):
+        freezeinfos.append(pageinfo.freeze_info)
+
+    with context_for_test('app_simple') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {
+                'start': start_hook,
+                'page_frozen': page_frozen_hook,
+            },
+        }
+
+        freeze(module.app, config)
+
+    a, b = freezeinfos
+    assert a is b

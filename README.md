@@ -302,6 +302,7 @@ The object has the following attributes:
   Note that a page may be reachable via several URLs; this function returns
   an arbitrary one.
 * `path`: the relative path the content is saved to.
+* `freeze_info`: a `FreezeInfo` object. See the `start` hook for details.
 
 
 ### Redirect policy

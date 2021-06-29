@@ -15,6 +15,10 @@ class TaskInfo:
         """The relative path the content is saved to"""
         return str(self._task.path)
 
+    @property
+    def freeze_info(self):
+        return self._freezer.freeze_info
+
 
 class FreezeInfo:
     def __init__(self, freezer):
