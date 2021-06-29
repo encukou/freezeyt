@@ -58,7 +58,7 @@ def test_cli_to_dict_without_path(tmp_path, monkeypatch):
     config_path = tmp_path / 'freezeyt.conf'
     app_name = 'app_with_extra_files'
 
-    config_path.write_text('output: dict')
+    config_path.write_text('output: {type: dict}')
 
     run_freezeyt_cli(['app', '-c', config_path], app_name)
 
