@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/freezeyt/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz devátý - testovací</h1>
+<h2>Review PR</h2>
+<p>Opět jsme začali tím, že jsme se podívali na PR, které na GitHubu přistály.</p>
+<p>První PR opravoval článek z 6. lekce.
+Některé obrázky by byly lepší textově než obrázkově,
+například, jedná-li se o příklad nějaké funkce.</p>
+<p>Druhý přidával unit testy pro funkci <code>freezeyt.freezing.parse_absolute_url</code>,
+PR obsahoval pozitivní i negativní testy, takže zadání bylo splněno.</p>
+<p>Třetí PR aktualizoval README a docstringy (dokumentační řetězce),
+které rozšiřoval o přidané parametry.</p>
+<p>Čtvrtý přidával uvozovky do README.</p>
+<p>Následně byl čas na dotazy, kdy jsme přišli na to,
+že jeden test nebyl pojmenován ideálně.</p>
+<h2>Návrat k testům</h2>
+<p>Jelikož jsme se rozhodli pro testovací metodu
+<a href="https://codeclimate.com/blog/gold-master-testing/">Gold Master Testing</a>,
+testy budou fungovat tak, že výstup z testů porovnáme s očekávaným výsledkem.</p>
+<h2>Rebase větve <code>reorganize_tests</code></h2>
+<p>Vrátili jsme se k testům, které jsme chtěli přepracovat z předminulého srazu.
+Jelikož se mezi touto změnou, která byla pouze na Petrově počítači,
+hlavní větev vcelku posunula, podívali jsme se na <code>git rebase</code>.
+Cíl je vzít změny z naší větve a aplikovat je na současný master.
+Může nastat merge conflict, který musíme vyřešit ručně.
+(Jakmile to nastane, můžeme se rozhodnout pro více variant,
+více info v chybové hlášce gitu.)
+<code>git rebase master</code> se pokusí dát změny z naší větve „nad“ aktuální master.
+Jelikož merge/rebase conflict nastal, tak jsme se chvilku zastavili u toho,
+jak tento konflikt vyřešit.
+Pokud nastane konflikt, rebase se zastaví, problém musíme vyřešit manuálně,
+udělat commit a následně, tak jak nám radí git, použít <code>git rebase --continue</code>.</p>
+<h2>Porovnávání obsahů dvou adresářů</h2>
+<p>Ujasnili jsme si, jak mají testy fungovat.
+Následně jsme se vrátili do
+<a href="https://docs.python.org/3/library/filecmp.html#filecmp.dircmp">dokumentace</a>
+knihovny <code>filemcp</code> a zjišťovali, jaké všechny metody třída <code>dircmp</code> obsahuje,
+a které budeme potřebovat.
+Protože tato logika byla složitější,
+tak jsme se rozhodli pro to porovnání vytvořit oddělenou funkci.</p>
+<h2>Testování testů</h2>
+<p>A protože se v této logice mohly vyskytnout chyby,
+napsali jsme testy na tuto funkci.
+V adresáři fixtures jsme přidali adresář s dalšími adresáři,
+které se částečně liší od sebe.
+A následně jsme přidali funkci, která testuje funkci, která bude v testech.</p>
+<p>Když do <code>assert</code> dáme podmínku, která neplatí, vyhodí AssertionError.
+Když je podmínka platná, tak se nic nestane.</p>
+<p>A jelikož je potřeba procházet i podadresáře,
+tak jsme funkci rozdělili a vrátili se k rekurzi.</p>
+<p>Máme tedy test, který umí porovnat obsah dvou adresářů.</p>
+<h3>Odbočka ke Gitu</h3>
+<p>A teď máme 2 commity, ale jeden z nich nechceme,
+chceme změny z těchto commitů sloučit do jedné.</p>
+<p>A tak jsme se vrátili ke gitu a došli k interaktivnímu rebase.</p>
+
+<pre><code>git rebase --interactive master</code></pre>
+<p>Stejně jako normální rebase se pokusí aplikovat změny z daných commitů.
+Oproti klasickému rebase můžeme ale commity upravit.
+(Např. změnit commit message, zbavit se commitu apod.)
+Všechny možnosti, které můžeme s danými commity udělat jsou vypsány dole
+v nápovědě interaktivního rebase.
+U <code>squash</code> máme možnost upravit i commit message.</p>
+<p><code>git reflog</code> nám ukazuje, jak jsme se posouvali v gitu.
+Tady můžeme najít i „ztracené“ commity.</p>
+<p>Historie gitu se dá procházet i pomocí <code>HEAD@{3}</code>
+(kde byla historie před třemi změnami),
+případně <code>HEAD@{3.weeks.ago}</code> před třemi týdny.</p>
+<h2>Příprava očekávaných výstupů</h2>
+<p>Bylo by dobré, kdybychom si testy nemuseli připravovat plně manuálně,
+a proto pomocí proměnné prostředí vyřešíme to,
+že si testy očekávané výsledky připraví samy.
+Test momentálně zvládne projít jen 1 aplikaci na jednou.
+Není dobré, aby test obsahoval for cyklus,
+protože jakmile nastane chyba, testy spadnou.</p>
+<h2>Parametrizace v testech</h2>
+<p>Postupně zavoláme daný test s více argumenty pomocí dekorátoru
+<code>@pytest.mark.parametrize()</code>.</p>
+<h2>Kontrola Issues</h2>
+<p>Ke konci jsme se podívali na issues, které je potřeba vyřešit,
+a které mají vyšší prioritu.</p>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/JQMvylmLs2Q">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>
