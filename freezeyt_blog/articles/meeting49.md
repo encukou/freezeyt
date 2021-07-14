@@ -1,4 +1,4 @@
-# Freezeyt sraz čtyřicátý devátý - kódování
+# Freezeyt sraz čtyřicátý devátý
 
 Sraz začal tím, že jsme se podívali na otevřené PR.
 Jeden jsme začlenili a o druhém jsme diskutovali, jak dál.
