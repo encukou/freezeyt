@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- pygments CSS -->
+        <!-- command to create pygments.css: $ pygmentize -S default -f html > pygments.css-->
+        <link rel="stylesheet" type="text/css" href="/freezeyt/static/pygments.css">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <title>Freezeyt blog</title>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            
+
+<h1>Freezeyt sraz čtyřicátý devátý</h1>
+<p>Sraz začal tím, že jsme se podívali na otevřené PR.
+Jeden jsme začlenili a o druhém jsme diskutovali, jak dál.</p>
+<p>Při review PR jsme došli k tomu, že testy na získávání odkazů z CSS dělají
+pořád to stejné, takže by se daly parametrizovat.
+Z testovacích dat jsme udělali slovník, aby testy měli normální názvy.
+(Místo zdrojového kódu aplikace jako názvu testu.)</p>
+<p>Při tom jsme přišli na to, že v této funkci je chyba,
+protože jakmile je v aplikaci jiné kódování,
+tak funkce skončí s UnicodeDecodeError, místo toho aby vrátila výsledek.
+Freezeyt spadne, přestože dostane validní aplikaci.</p>
+<p>Přišli jsme na to, že podobný problém by mohl nastat i v případě,
+že HTML hlavičky budou obsahovat jiný charset než UTF-8</p>
+<p>Následně jsme se podívali na issues.
+Jedno nově otevřené issue jsme prodiskutovali a zavřeli.</p>
+<p>Podívali jsme se na issue,
+které žádá možnost zkopírovat celý adresář statických souborů.
+Začali jsme dokumentací s představou, jak by se to dalo používat.</p>
+<p>Na konci jsme si dali odbočku k <a href="https://docs.python.org/3/reference/datamodel.html?highlight=__subclasscheck__#class.__subclasscheck__"><code>__subclasscheck__</code></a>
+a <a href="https://docs.python.org/3/library/abc.html?highlight=__subclasshook#abc.ABCMeta.__subclasshook__"><code>__subclasshook__</code></a></p>
+<p>Zde je demo kód:</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__subclasscheck__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">maybe_subclass</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">maybe_subclass</span> <span class="o">==</span> <span class="n">Trifid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__subclasscheck__</span><span class="p">(</span><span class="n">maybe_subclass</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Zviratko</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">Meta</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">Kotatko</span><span class="p">(</span><span class="n">Zviratko</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">Rostlina</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">Trifid</span><span class="p">(</span><span class="n">Rostlina</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="nb">issubclass</span><span class="p">(</span><span class="n">Kotatko</span><span class="p">,</span> <span class="n">Zviratko</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">Kotatko</span><span class="p">(),</span> <span class="n">Zviratko</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="nb">issubclass</span><span class="p">(</span><span class="n">Kotatko</span><span class="p">,</span> <span class="n">Rostlina</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">Kotatko</span><span class="p">(),</span> <span class="n">Rostlina</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="nb">issubclass</span><span class="p">(</span><span class="n">Trifid</span><span class="p">,</span> <span class="n">Zviratko</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">Trifid</span><span class="p">(),</span> <span class="n">Zviratko</span><span class="p">))</span>
+</pre></div>
+<p>A zde je další:</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Container</span>
+
+<span class="k">class</span> <span class="nc">K</span><span class="p">:</span>
+  <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">element</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">k</span> <span class="o">=</span> <span class="n">K</span><span class="p">()</span>
+<span class="n">pritn</span><span class="p">(</span><span class="mi">1</span> <span class="ow">in</span> <span class="n">k</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">12</span> <span class="ow">in</span> <span class="n">k</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="nb">issubclass</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">Container</span><span class="p">))</span>
+</pre></div>
+<blockquote><p>Záznam ze srazu <a href="https://youtu.be/FAQjBZlveJU">zde</a>.
+Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
+</blockquote>
+
+
+
+        </div>
+
+        <!-- Bootstrap JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </body>
+
+</html>
