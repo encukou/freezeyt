@@ -230,8 +230,7 @@ class Freezer:
                 self.redirecting_tasks[task.path] = task
                 raise IsARedirect()
             elif redirect_policy == 'error':
-                # handled below
-                pass
+                raise UnexpectedStatus(url, status)
             else:
                 raise ValueError(
                     f'redirect policy {redirect_policy} not supported'
