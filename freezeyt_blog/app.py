@@ -94,7 +94,6 @@ def article_image(filename):
     (mimetype, encoding) = mimetypes.guess_type(img_path)
     if mimetype:
         img_bytes = img_path.read_bytes()
-        print(mimetype)
 
         return Response(img_bytes, mimetype=mimetype)
 
