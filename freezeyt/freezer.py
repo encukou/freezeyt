@@ -6,7 +6,7 @@ import itertools
 import functools
 import base64
 import dataclasses
-from typing import Optional
+from typing import Optional, Mapping, Callable
 import enum
 
 from urllib.parse import urljoin
@@ -21,9 +21,11 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError, UnexpectedStatus, WrongMimetypeError
-from freezeyt.getlinks_html import get_all_links
-from freezeyt.getlinks_css import get_links_from_css
 from freezeyt import hooks
+from freezeyt import url_finders
+
+
+SCAN_FALLBACKS = list(filter(lambda s: not "__" in s, dir(url_finders)))
 
 
 def freeze(app, config):
@@ -47,6 +49,27 @@ def check_mimetype(url_path, headers, default='application/octet-stream'):
     cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
     if f_type.lower() != cont_type.lower():
         raise WrongMimetypeError(f_type, cont_type, url_path)
+
+
+def parse_scanners(scanners: Mapping) -> Callable:
+    result = {}
+    for cont_type, scanner in scanners.items():
+        if isinstance(scanner, str):
+            try:
+                scanner = import_variable_from_module(scanner)
+            except ValueError:
+                if scanner in SCAN_FALLBACKS:
+                    fb_module = url_finders.__name__
+                    scanner = import_variable_from_module(
+                                            f"{fb_module}:{scanner}"
+                                        )
+                else:
+                    raise ValueError(f"Scanner {scanner!r} can not be found")
+        elif not hasattr(scanner, '__call__'):
+            raise TypeError("Unknown type of scanner, must be str or callable")
+        result[cont_type] = scanner
+
+    return result
 
 
 def url_to_path(prefix, parsed_url):
@@ -105,6 +128,14 @@ class Freezer:
 
         self.extra_pages = config.get('extra_pages', ())
         self.extra_files = config.get('extra_files', None)
+
+        default_scanners = {
+            'text/html': 'get_html_links',
+            'text/css': 'get_css_links'
+        }
+
+        self.links_scanners = parse_scanners(
+                                    config.get('url_finders', default_scanners))
 
         prefix = config.get('prefix', 'http://localhost:8000/')
 
@@ -217,6 +248,7 @@ class Freezer:
             exc_type, value, traceback = exc_info
             if value is not None:
                 raise value
+
         task.response_headers = Headers(headers)
         if status.startswith("3"):
             location = task.response_headers['Location']
@@ -350,15 +382,15 @@ class Freezer:
             else:
                 close()
 
-            with self.saver.open_filename(task.path) as f:
-                cont_type, cont_encode = parse_options_header(task.response_headers.get('Content-Type'))
-                if cont_type == "text/html":
-                    links = get_all_links(f, url_string, task.response_headers)
+            with self.saver.open_filename(file_path) as f:
+                content_type = task.response_headers.get('Content-Type')
+                cont_type, cont_encode = parse_options_header(content_type)
+                scanner = self.links_scanners.get(cont_type, None)
+                if scanner:
+                    links = scanner(f, url_string, task.response_headers)
                     for new_url in links:
-                        self.add_task(parse_absolute_url(new_url), external_ok=True)
-                elif cont_type == "text/css":
-                    for new_url in get_links_from_css(f, url_string):
-                        self.add_task(parse_absolute_url(new_url), external_ok=True)
+                        self.add_task(
+                            parse_absolute_url(new_url), external_ok=True)
 
             task.status = TaskStatus.DONE
 
@@ -369,7 +401,10 @@ class Freezer:
         for task in self.redirecting_tasks.values():
             if task.redirects_to.status != TaskStatus.DONE:
                 raise InfiniteRedirection(
-                    f'{task.get_a_url()} redirects to {task.redirects_to.get_a_url()}, which was not frozen (most likely because of infinite redirection)'
+                    f'{task.get_a_url()} redirects to'
+                    + f' {task.redirects_to.get_a_url()},'
+                    + ' which was not frozen (most likely because'
+                    + ' of infinite redirection)'
                 )
             with self.saver.open_filename(task.redirects_to.path) as f:
                 self.saver.save_to_filename(task.path, f)
