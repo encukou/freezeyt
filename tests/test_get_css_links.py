@@ -2,7 +2,7 @@ from io import BytesIO
 
 import pytest
 
-from freezeyt.getlinks_css import get_links_from_css
+from freezeyt.url_finders import get_css_links
 
 TEST_DATA = {
     "basic": (
@@ -91,5 +91,5 @@ TEST_DATA = {
 def test_links_css(test_name):
     input, expected = TEST_DATA[test_name]
     f = BytesIO(input)
-    links = get_links_from_css(f, 'http://localhost:8000')
+    links = get_css_links(f, 'http://localhost:8000')
     assert sorted(links) == expected

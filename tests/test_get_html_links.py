@@ -1,13 +1,13 @@
-from freezeyt.getlinks_html import get_all_links
+from freezeyt.url_finders import get_html_links
 
 
 def test_get_links():
-    """Test if the get_all_links function returns all links from a page.
+    """Test if the get_html_links function returns all links from a page.
 
-    The get_all_links function should return all links
+    The get_html_links function should return all links
     even when the links are deeper in the page.
     """
-    links = get_all_links(b"""
+    links = get_html_links(b"""
         <html>
             <head>
                 <title>Hello world</title>
@@ -34,7 +34,7 @@ def test_get_links():
 
 
 def test_get_links_path():
-    links = get_all_links(b"""
+    links = get_html_links(b"""
         <html>
             <head>
                 <title>Hello world</title>
@@ -60,7 +60,7 @@ def test_get_links_path():
 
 def test_get_links_utf8():
     # Test that links are parsed according to the content encoding (UTF-8)
-    links = get_all_links(
+    links = get_html_links(
         b"""
             <html>
                 <head>
@@ -82,7 +82,7 @@ def test_get_links_utf8():
 
 def test_get_links_cp1253():
     # Test that links are parsed according to the content encoding (Greek)
-    links = get_all_links(
+    links = get_html_links(
         b"""
             <html>
                 <head>
