@@ -84,8 +84,7 @@ def test_cli_without_path_and_output(tmp_path, monkeypatch):
 
 
 def test_simple_output_specification(tmp_path):
-    app_path = FIXTURES_PATH / 'app_2pages'
-    expected = app_path / 'test_expected_output'
+    expected = FIXTURES_PATH / 'app_2pages' / 'test_expected_output'
 
     with context_for_test('app_2pages') as module:
         freeze_config = {'output': str(tmp_path)}
