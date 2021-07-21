@@ -81,6 +81,16 @@ def test_cli_with_prefix_option(tmp_path):
         run_and_check(cli_args, app_name, build_dir)
 
 
+def test_cli_with_config_variable(tmp_path):
+    app_name = 'app_with_extra_files'
+    build_dir = tmp_path / 'build'
+
+    with context_for_test(app_name,):
+        cli_args = ['app', str(build_dir), '--import-config', 'app:freeze_config']
+
+        run_and_check(cli_args, app_name, build_dir)
+
+
 def test_cli_with_extra_page_option(tmp_path):
     app_name = 'app_with_extra_page_deep'
     build_dir = tmp_path / 'build'

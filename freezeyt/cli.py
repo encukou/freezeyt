@@ -13,7 +13,9 @@ from freezeyt.util import import_variable_from_module
               help='Pages without any link in application')
 @click.option('-c', '--config', 'config_file', type=click.File(),
               help='YAML file of configuration')
-def main(module_name, dest_path, prefix, extra_pages, config_file):
+@click.option('-C', '--import-config', 'config_var',
+              help='Variable with configuration')
+def main(module_name, dest_path, prefix, extra_pages, config_file, config_var):
     """
     MODULE_NAME
         Name of the Python web app module which will be frozen.
@@ -31,17 +33,29 @@ def main(module_name, dest_path, prefix, extra_pages, config_file):
     -c / --config
         Path to configuration YAML file
 
+    -C / --import-config
+        Dictionary with the configuration
+
     Example use:
         python -m freezeyt demo_app build --prefix 'http://localhost:8000/' --extra-page /extra/
 
         python -m freezeyt demo_app build -c config.yaml
     """
-    if config_file != None:
+    if config_file and config_var:
+        raise click.UsageError(
+            "Can't pass configuration both in a file and in a variable."
+        )
+
+    elif config_file != None:
         config = yaml.safe_load(config_file)
         if not isinstance(config, dict):
             raise SyntaxError(
                     f'File {config_file.name} is not a YAML dictionary.'
                     )
+
+    elif config_var is not None:
+        config = import_variable_from_module(config_var)
+
     else:
         config = {}
 

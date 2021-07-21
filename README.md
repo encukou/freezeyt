@@ -78,13 +78,21 @@ file (see Configuration below).
 ## Configuration
 
 While common options can be given on the command line,
-you can full control over the freezing process with a YAML
-configuration file.
-You can specify a config wile using the `-c/--config` option,
+you can have full control over the freezing process with a YAML
+configuration file or a variable with the configuration.
+You can specify a config file using the `-c/--config` option,
 for example:
 
 ```shell
 $ python -m freezeyt my_app _build -c freezeyt.yaml
+```
+
+The configuration variable should be a dictionary.
+To pass the config variable, use the `-C/--import-config` option,
+for example:
+
+```shell
+$ python -m freezeyt my_app _build -C my_app:freezeyt_config
 ```
 
 The following options are configurable:
