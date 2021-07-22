@@ -190,7 +190,7 @@ Po začlenění PR se články za chvíli objeví na [blogu](../).
 
 ### Odebrání WSGI demo
 Demo aplikace pro rozhraní WSGI už v repozitáři není potřeba, a navíc
-celý její kód je v [článku z prvního srazu](/meeting01).
+celý její kód je v [článku z prvního srazu](../meeting01/).
 
 ### Možnost přidat extra soubory jako base64 nebo cestu k souboru
 Nově bude soubory navíc specifikovat jako cestu, odkud se to má zkopírovat

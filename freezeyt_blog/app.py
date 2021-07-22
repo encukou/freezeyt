@@ -91,7 +91,7 @@ def post(slug):
 def article_image(filename):
     """Route to returns images saved in static/images"""
     img_path = IMAGES_PATH / filename
-    (mimetype, encoding) = mimetypes.guess_type(img_path)
+    (mimetype, encoding) = mimetypes.guess_type(filename)
     if mimetype:
         img_bytes = img_path.read_bytes()
 
