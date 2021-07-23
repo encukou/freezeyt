@@ -80,19 +80,29 @@ def add_port(url):
             raise ValueError("URL scheme must be http or https")
     return url
 
-def import_variable_from_module(name, *, default_variable_name=None):
+def import_variable_from_module(
+    name, *, default_module=None, default_variable=None):
     """Import a variable from a named module
 
     Given a name like "package.module:namespace.variable":
     - import module "package.module"
     - get the attribute "namespace" from the module
     - return the attribute "variable" from the "namespace" object
+
+    Parameter name can be set as module or variable. The missing one
+    must be set as default.
     """
+
     module_name, sep, variable_name = name.partition(':')
+
     if not sep:
-        variable_name = default_variable_name
-    if not variable_name:
-        raise ValueError(f'Missing variable name: {name!r}')
+        if default_variable is not None:
+            variable_name = default_variable
+        else:
+            module_name, variable_name = default_module, module_name
+
+    if not variable_name or not module_name:
+        raise ValueError(f'Missing variable or module name: {name!r}')
 
     module = importlib.import_module(module_name)
 

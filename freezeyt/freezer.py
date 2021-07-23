@@ -6,7 +6,7 @@ import itertools
 import functools
 import base64
 import dataclasses
-from typing import Optional, Mapping, Callable
+from typing import Optional, Mapping
 import enum
 
 from urllib.parse import urljoin
@@ -22,10 +22,6 @@ from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError, UnexpectedStatus, WrongMimetypeError
 from freezeyt import hooks
-from freezeyt import url_finders
-
-
-SCAN_FALLBACKS = list(filter(lambda s: not "__" in s, dir(url_finders)))
 
 
 def freeze(app, config):
@@ -36,6 +32,12 @@ def freeze(app, config):
     freezer.handle_urls()
     freezer.handle_redirects()
     return freezer.get_result()
+
+
+DEF_URL_FINDERS = {
+            'text/html': 'get_html_links',
+            'text/css': 'get_css_links'
+        }
 
 
 def check_mimetype(url_path, headers, default='application/octet-stream'):
@@ -51,22 +53,19 @@ def check_mimetype(url_path, headers, default='application/octet-stream'):
         raise WrongMimetypeError(f_type, cont_type, url_path)
 
 
-def parse_scanners(scanners: Mapping) -> Callable:
+def parse_scanners(scanners: Mapping) -> Mapping:
     result = {}
     for cont_type, scanner in scanners.items():
         if isinstance(scanner, str):
-            try:
-                scanner = import_variable_from_module(scanner)
-            except ValueError:
-                if scanner in SCAN_FALLBACKS:
-                    fb_module = url_finders.__name__
-                    scanner = import_variable_from_module(
-                                            f"{fb_module}:{scanner}"
-                                        )
-                else:
-                    raise ValueError(f"Scanner {scanner!r} can not be found")
+            scanner = import_variable_from_module(
+                scanner, default_module='freezeyt.url_finders'
+            )
         elif not hasattr(scanner, '__call__'):
-            raise TypeError("Unknown type of scanner, must be str or callable")
+            raise TypeError(
+                "Scanner in configuration must be a string or a callable,"
+                + f" not {type(scanner)}!"
+            )
+
         result[cont_type] = scanner
 
     return result
@@ -385,8 +384,8 @@ class Freezer:
             with self.saver.open_filename(file_path) as f:
                 content_type = task.response_headers.get('Content-Type')
                 cont_type, cont_encode = parse_options_header(content_type)
-                scanner = self.links_scanners.get(cont_type, None)
-                if scanner:
+                scanner = self.links_scanners.get(cont_type)
+                if scanner is not None:
                     links = scanner(f, url_string, task.response_headers)
                     for new_url in links:
                         self.add_task(
