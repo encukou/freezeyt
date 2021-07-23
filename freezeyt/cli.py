@@ -62,7 +62,7 @@ def main(module_name, dest_path, prefix, extra_pages, config_file):
         config['output'] = {'type': 'dir', 'dir': dest_path}
 
     app = import_variable_from_module(
-        module_name, default_variable_name='app',
+        module_name, default_variable='app',
     )
 
     freeze(app, config)
