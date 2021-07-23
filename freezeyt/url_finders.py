@@ -1,5 +1,5 @@
 import xml.dom.minidom
-from typing import Iterable, BinaryIO
+from typing import Iterable, BinaryIO, List, Tuple
 from urllib.parse import urljoin
 
 import html5lib
@@ -12,7 +12,7 @@ from freezeyt.encoding import decode_input_path
 
 
 def get_css_links(
-    css_file: BinaryIO, base_url: str, headers: Headers = None
+    css_file: BinaryIO, base_url: str, headers: List[Tuple[str]]=None
 )  -> Iterable[str]:
     """Get all links from a CSS file."""
     result = []
@@ -25,7 +25,7 @@ def get_css_links(
 
 
 def get_html_links(
-    page_content: bytes, base_url: str, headers: Headers = None
+    page_content: bytes, base_url: str, headers: List[Tuple[str]]=None
 ) -> Iterable[str]:
     """Get all links from "page_content".
 
