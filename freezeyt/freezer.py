@@ -381,7 +381,9 @@ class Freezer:
                 mime_type, encoding = parse_options_header(content_type)
                 url_finder = self.url_finders.get(mime_type)
                 if url_finder is not None:
-                    links = url_finder(f, url_string, task.response_headers)
+                    links = url_finder(
+                        f, url_string, task.response_headers.to_wsgi_list()
+                    )
                     for new_url in links:
                         self.add_task(
                             parse_absolute_url(new_url), external_ok=True)

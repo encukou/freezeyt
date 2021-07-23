@@ -53,7 +53,7 @@ def get_html_links(
     if headers == None:
         cont_charset = None
     else:
-        content_type_header = headers.get('Content-Type')
+        content_type_header = Headers(headers).get('Content-Type')
         cont_type, cont_options = parse_options_header(content_type_header)
         cont_charset = cont_options.get('charset')
     document = html5lib.parse(page_content, transport_encoding=cont_charset)
