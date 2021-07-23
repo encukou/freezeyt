@@ -1,7 +1,7 @@
 import pytest
 
 from freezeyt import freeze
-from freezeyt.freezer import parse_scanners
+from freezeyt.freezer import parse_url_finders
 from freezeyt.url_finders import get_html_links
 from freezeyt.url_finders import get_css_links
 from testutil import context_for_test
@@ -22,16 +22,16 @@ TEST_DATA = {
 
 
 @pytest.mark.parametrize("test_name", TEST_DATA)
-def test_parse_scanners(test_name):
+def test_parse_url_finders(test_name):
     key, config, expected = TEST_DATA[test_name]
-    result = parse_scanners(config)[key]
+    result = parse_url_finders(config)[key]
 
     assert (result.__module__, result.__name__, result) == expected
 
 
-def test_get_no_scanners():
+def test_get_no_url_finders():
     config = {}
-    result = parse_scanners(config)
+    result = parse_url_finders(config)
 
     assert result == {}
 
@@ -81,7 +81,7 @@ def test_get_only_links_from_css(tmp_path):
 
 
 def test_get_no_links(tmp_path):
-    """Test configuration of no scanners.
+    """Test configuration of no url_finders.
     We should get just root page.
     """
     builddir = tmp_path / 'build'
@@ -98,10 +98,10 @@ def test_get_no_links(tmp_path):
     assert not (builddir / 'second_page.html').exists()
 
 
-def test_get_only_links_from_self_made_scanner(tmp_path):
-    """Test if we freezer parse scanner inserted as func type.
+def test_get_only_links_from_self_made_url_finder(tmp_path):
+    """Test if we freezer parse url_finder inserted as func type.
     """
-    def my_scanner(page_content, base_url, headers=None):
+    def my_url_finder(page_content, base_url, headers=None):
         return []
 
 
@@ -110,7 +110,7 @@ def test_get_only_links_from_self_made_scanner(tmp_path):
     with context_for_test('app_2pages') as module:
         freeze_config = {
             'output': str(builddir),
-            'url_finders': {'text/html': my_scanner},
+            'url_finders': {'text/html': my_url_finder},
         }
 
         freeze(module.app, freeze_config)

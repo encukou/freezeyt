@@ -53,20 +53,20 @@ def check_mimetype(url_path, headers, default='application/octet-stream'):
         raise WrongMimetypeError(f_type, cont_type, url_path)
 
 
-def parse_scanners(scanners: Mapping) -> Mapping:
+def parse_url_finders(url_finders: Mapping) -> Mapping:
     result = {}
-    for cont_type, scanner in scanners.items():
-        if isinstance(scanner, str):
-            scanner = import_variable_from_module(
-                scanner, default_module='freezeyt.url_finders'
+    for cont_type, url_finder in url_finders.items():
+        if isinstance(url_finder, str):
+            url_finder = import_variable_from_module(
+                url_finder, default_module='freezeyt.url_finders'
             )
-        elif not hasattr(scanner, '__call__'):
+        elif not hasattr(url_finder, '__call__'):
             raise TypeError(
-                "Scanner in configuration must be a string or a callable,"
-                + f" not {type(scanner)}!"
+                "Url-finder in configuration must be a string or a callable,"
+                + f" not {type(url_finder)}!"
             )
 
-        result[cont_type] = scanner
+        result[cont_type] = url_finder
 
     return result
 
@@ -128,13 +128,8 @@ class Freezer:
         self.extra_pages = config.get('extra_pages', ())
         self.extra_files = config.get('extra_files', None)
 
-        default_scanners = {
-            'text/html': 'get_html_links',
-            'text/css': 'get_css_links'
-        }
-
-        self.links_scanners = parse_scanners(
-                                    config.get('url_finders', default_scanners))
+        self.url_finders = parse_url_finders(
+                                    config.get('url_finders', DEF_URL_FINDERS))
 
         prefix = config.get('prefix', 'http://localhost:8000/')
 
@@ -384,9 +379,9 @@ class Freezer:
             with self.saver.open_filename(file_path) as f:
                 content_type = task.response_headers.get('Content-Type')
                 cont_type, cont_encode = parse_options_header(content_type)
-                scanner = self.links_scanners.get(cont_type)
-                if scanner is not None:
-                    links = scanner(f, url_string, task.response_headers)
+                url_finder = self.url_finders.get(cont_type)
+                if url_finder is not None:
+                    links = url_finder(f, url_string, task.response_headers)
                     for new_url in links:
                         self.add_task(
                             parse_absolute_url(new_url), external_ok=True)
