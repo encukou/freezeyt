@@ -44,18 +44,18 @@ def check_mimetype(url_path, headers, default='application/octet-stream'):
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
-    f_type, f_encode = guess_type(url_path)
-    if not f_type:
-        f_type = default
+    file_type, file_encoding = guess_type(url_path)
+    if not file_type:
+        file_type = default
     headers = Headers(headers)
-    cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
-    if f_type.lower() != cont_type.lower():
-        raise WrongMimetypeError(f_type, cont_type, url_path)
+    mime_type, encoding = parse_options_header(headers.get('Content-Type'))
+    if file_type.lower() != mime_type.lower():
+        raise WrongMimetypeError(file_type, mime_type, url_path)
 
 
 def parse_url_finders(url_finders: Mapping) -> Mapping:
     result = {}
-    for cont_type, url_finder in url_finders.items():
+    for content_type, url_finder in url_finders.items():
         if isinstance(url_finder, str):
             url_finder = import_variable_from_module(
                 url_finder, default_module='freezeyt.url_finders'
@@ -66,7 +66,7 @@ def parse_url_finders(url_finders: Mapping) -> Mapping:
                 + f" not {type(url_finder)}!"
             )
 
-        result[cont_type] = url_finder
+        result[content_type] = url_finder
 
     return result
 
@@ -378,8 +378,8 @@ class Freezer:
 
             with self.saver.open_filename(file_path) as f:
                 content_type = task.response_headers.get('Content-Type')
-                cont_type, cont_encode = parse_options_header(content_type)
-                url_finder = self.url_finders.get(cont_type)
+                mime_type, encoding = parse_options_header(content_type)
+                url_finder = self.url_finders.get(mime_type)
                 if url_finder is not None:
                     links = url_finder(f, url_string, task.response_headers)
                     for new_url in links:
