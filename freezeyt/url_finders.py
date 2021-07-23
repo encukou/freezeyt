@@ -1,5 +1,5 @@
 import xml.dom.minidom
-from typing import Iterable
+from typing import Iterable, BinaryIO
 from urllib.parse import urljoin
 
 import html5lib
@@ -12,7 +12,7 @@ from freezeyt.encoding import decode_input_path
 
 
 def get_css_links(
-    css_file: bytes, base_url: str, headers: Headers = None
+    css_file: BinaryIO, base_url: str, headers: Headers = None
 )  -> Iterable[str]:
     """Get all links from a CSS file."""
     result = []
