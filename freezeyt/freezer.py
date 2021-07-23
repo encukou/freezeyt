@@ -399,12 +399,8 @@ class Freezer:
         """Save copies of target pages for redirect_policy='follow'"""
         for task in self.redirecting_tasks.values():
             if task.redirects_to.status != TaskStatus.DONE:
-                raise InfiniteRedirection(
-                    f'{task.get_a_url()} redirects to'
-                    + f' {task.redirects_to.get_a_url()},'
-                    + ' which was not frozen (most likely because'
-                    + ' of infinite redirection)'
-                )
+                raise InfiniteRedirection(task)
+
             with self.saver.open_filename(task.redirects_to.path) as f:
                 self.saver.save_to_filename(task.path, f)
             self.call_hook('page_frozen', hooks.TaskInfo(task, self))

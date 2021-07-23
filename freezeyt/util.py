@@ -5,6 +5,11 @@ from werkzeug.urls import url_parse
 
 class InfiniteRedirection(Exception):
     """Infinite redirection was detected with redirect_policy='follow'"""
+    def __init__(self, task):
+        super().__init__(
+            f'{task.get_a_url()} redirects to {task.redirects_to.get_a_url()},'
+            + ' which was not frozen (most likely becaus of infinite redirection)'
+        )
 
 class ExternalURLError(ValueError):
     """Unexpected external URL specified"""
