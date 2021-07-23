@@ -98,8 +98,8 @@ def test_get_no_links(tmp_path):
     assert not (builddir / 'second_page.html').exists()
 
 
-def test_get_only_links_from_self_made_url_finder(tmp_path):
-    """Test if we freezer parse url_finder inserted as func type.
+def test_get_url_finder_callable_defined_by_user(tmp_path):
+    """Test if we freezer parse url_finder inserted as func type by user.
     """
     def my_url_finder(page_content, base_url, headers=None):
         return []
@@ -111,6 +111,27 @@ def test_get_only_links_from_self_made_url_finder(tmp_path):
         freeze_config = {
             'output': str(builddir),
             'url_finders': {'text/html': my_url_finder},
+        }
+
+        freeze(module.app, freeze_config)
+
+    assert (builddir / 'index.html').exists()
+    assert not (builddir / 'second_page.html').exists()
+
+
+def url_finder(page_content, base_url, headers=None):
+    return []
+
+def test_get_url_finder_by_name_defined_by_user(tmp_path):
+    """Test if we freezer parse url_finder inserted as func type.
+    """
+
+    builddir = tmp_path / 'build'
+
+    with context_for_test('app_2pages') as module:
+        freeze_config = {
+            'output': str(builddir),
+            'url_finders': {'text/html': f'{__name__}:url_finder'},
         }
 
         freeze(module.app, freeze_config)
