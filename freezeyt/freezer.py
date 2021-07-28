@@ -81,7 +81,6 @@ class TaskStatus(enum.Enum):
 class Task:
     path: Path
     urls: "set[URL]"
-    redirect: "Task" = None
     response_headers: Headers = None
     redirects_to: "Task" = None
     status: TaskStatus = TaskStatus.PENDING
