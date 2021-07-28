@@ -119,6 +119,9 @@ class Task:
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
 
+class IgnorePage(BaseException):
+    """Raised when freezing a page should be ignored"""
+
 class Freezer:
     def __init__(self, app, config):
         self.app = app
@@ -257,6 +260,8 @@ class Freezer:
                 task.redirects_to = target_task
                 self.redirecting_tasks[task.path] = task
                 raise IsARedirect()
+            elif redirect_policy == 'ignore':
+                raise IgnorePage()
             elif redirect_policy == 'error':
                 raise UnexpectedStatus(url, status)
             else:
@@ -360,6 +365,8 @@ class Freezer:
             try:
                 result_iterable = self.app(environ, start_response)
             except IsARedirect:
+                continue
+            except IgnorePage:
                 continue
 
             # Combine the list of data from write() with the returned

@@ -323,6 +323,7 @@ It can be:
   the response was `200`.
   This is meant to be used with redirects in the HTML `<meta>` tag.
 * `'follow'`: `freezeyt` will save content from the redirected location.
+* `'ignore'`: `freezeyt` will not save any content for pages that redirect.
 
 For example:
 
