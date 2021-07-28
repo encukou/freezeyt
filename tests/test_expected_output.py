@@ -84,6 +84,18 @@ def test_redirect_policy_follow(tmp_path, monkeypatch):
         assert result == module.expected_dict_follow
 
 
+def test_redirect_policy_ignore(tmp_path, monkeypatch):
+    with context_for_test('app_redirects') as module:
+        freeze_config = module.freeze_config
+
+        freeze_config['output'] = {'type': 'dict'}
+        freeze_config['redirect_policy'] = 'ignore'
+
+        result = freeze(module.app, freeze_config) # freeze content to dict
+
+        assert result == module.expected_dict_ignore
+
+
 def test_circular_redirect(tmp_path, monkeypatch):
     with context_for_test('circular_redirect') as module:
         freeze_config = module.freeze_config

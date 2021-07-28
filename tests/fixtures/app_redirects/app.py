@@ -115,3 +115,8 @@ expected_dict_follow = {
         str(code): {"index.html": b'All OK'} for code in REDIRECT_CODES
     },
 }
+
+
+expected_dict_ignore = {
+    'index.html': b"All OK",
+}
