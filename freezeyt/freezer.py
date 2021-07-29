@@ -60,9 +60,9 @@ def parse_url_finders(url_finders: Mapping) -> Mapping:
             url_finder = import_variable_from_module(
                 url_finder, default_module='freezeyt.url_finders'
             )
-        elif not hasattr(url_finder, '__call__'):
+        elif not callable(url_finder):
             raise TypeError(
-                "Url-finder in configuration must be a string or a callable,"
+                "Url-finder for {content_type!r} in configuration must be a string or a callable,"
                 + f" not {type(url_finder)}!"
             )
 
