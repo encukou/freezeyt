@@ -34,7 +34,7 @@ def freeze(app, config):
     return freezer.get_result()
 
 
-DEF_URL_FINDERS = {
+DEFAULT_URL_FINDERS = {
             'text/html': 'get_html_links',
             'text/css': 'get_css_links'
         }
@@ -129,7 +129,8 @@ class Freezer:
         self.extra_files = config.get('extra_files', None)
 
         self.url_finders = parse_url_finders(
-                                    config.get('url_finders', DEF_URL_FINDERS))
+                                config.get('url_finders', DEFAULT_URL_FINDERS)
+                            )
 
         prefix = config.get('prefix', 'http://localhost:8000/')
 
