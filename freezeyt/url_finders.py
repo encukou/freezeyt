@@ -1,5 +1,5 @@
-import xml.dom.minidom
-from typing import Iterable, BinaryIO, List, Tuple
+import xml.etree.ElementTree
+from typing import Iterable, BinaryIO, List, Optional, Tuple
 from urllib.parse import urljoin
 
 import html5lib
@@ -12,20 +12,23 @@ from freezeyt.encoding import decode_input_path
 
 
 def get_css_links(
-    css_file: BinaryIO, base_url: str, headers: List[Tuple[str]]=None
+    css_file: BinaryIO,
+    base_url: str,
+    headers: Optional[List[Tuple[str, str]]]=None,
 )  -> Iterable[str]:
     """Get all links from a CSS file."""
-    result = []
     text = css_file.read()
     parsed = css_parser.parseString(text)
     all_urls = css_parser.getUrls(parsed)
     for url in all_urls:
-        result.append(urljoin(base_url, url))
-    return result
+        yield urljoin(base_url, url)
+
 
 
 def get_html_links(
-    page_content: bytes, base_url: str, headers: List[Tuple[str]]=None
+    page_content: bytes,
+    base_url: str,
+    headers: Optional[List[Tuple[str, str]]]=None,
 ) -> Iterable[str]:
     """Get all links from "page_content".
 
@@ -34,7 +37,10 @@ def get_html_links(
     base_url is the URL of the page.
     """
 
-    def get_links_from_node(node: xml.dom.minidom.Node, base_url) -> list:
+    def get_links_from_node(
+        node: xml.etree.ElementTree.Element,
+        base_url: str,
+    ) -> list:
         """Get all links from xml.dom.minidom Node."""
         result = []
         if 'href' in node.attrib:
