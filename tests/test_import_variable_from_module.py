@@ -9,12 +9,12 @@ def test_basic():
 
 
 def test_default_variable():
-    cos = import_variable_from_module("math", default_variable='cos')
+    cos = import_variable_from_module("math", default_variable_name='cos')
     assert cos.__name__ == 'cos'
 
 
 def test_overridden_default_variable():
-    sin = import_variable_from_module("math:sin", default_variable='cos')
+    sin = import_variable_from_module("math:sin", default_variable_name='cos')
     assert sin.__name__ == 'sin'
 
 
@@ -43,7 +43,7 @@ def test_missing_variable_with_default_variable():
     Error is raised by import_variable_from_module.
     """
     with pytest.raises(ValueError):
-        import_variable_from_module("math:", default_variable='cos')
+        import_variable_from_module("math:", default_variable_name='cos')
 
 
 def test_empty():
@@ -56,7 +56,7 @@ def test_empty_with_default_variable():
     Error is raised by importlib.import_module.
     """
     with pytest.raises(ValueError):
-        import_variable_from_module("", default_variable='cos')
+        import_variable_from_module("", default_variable_name='cos')
 
 
 def test_empty_with_default_module():
@@ -64,7 +64,7 @@ def test_empty_with_default_module():
     Error is raised by import_variable_from_module.
     """
     with pytest.raises(ValueError):
-        import_variable_from_module("", default_module='math')
+        import_variable_from_module("", default_module_name='math')
 
 
 def test_missing_module_with_default_module():
@@ -72,18 +72,20 @@ def test_missing_module_with_default_module():
     Error is raised by import_variable_from_module.
     """
     with pytest.raises(ValueError):
-        import_variable_from_module(":cos", default_module='math')
+        import_variable_from_module(":cos", default_module_name='math')
 
 
 def test_overridden_default_module():
     joinpath = import_variable_from_module(
-        "pathlib:Path.joinpath", default_module='os'
+        "pathlib:Path.joinpath", default_module_name='os'
     )
     assert joinpath.__name__ == 'joinpath'
 
 
 def test_default_module():
-    joinpath = import_variable_from_module("Path.joinpath", default_module='pathlib')
+    joinpath = import_variable_from_module(
+        "Path.joinpath", default_module_name='pathlib'
+    )
     assert joinpath.__name__ == 'joinpath'
 
 

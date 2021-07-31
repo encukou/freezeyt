@@ -58,7 +58,7 @@ def parse_url_finders(url_finders: Mapping) -> Mapping:
     for content_type, url_finder in url_finders.items():
         if isinstance(url_finder, str):
             url_finder = import_variable_from_module(
-                url_finder, default_module='freezeyt.url_finders'
+                url_finder, default_module_name='freezeyt.url_finders'
             )
         elif not callable(url_finder):
             raise TypeError(

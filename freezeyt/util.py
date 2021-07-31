@@ -86,7 +86,7 @@ def add_port(url):
     return url
 
 def import_variable_from_module(
-    name, *, default_module=None, default_variable=None):
+    name, *, default_module_name=None, default_variable_name=None):
     """Import a variable from a named module
 
     Given a name like "package.module:namespace.variable":
@@ -101,10 +101,10 @@ def import_variable_from_module(
     module_name, sep, variable_name = name.partition(':')
 
     if not sep:
-        if default_variable is not None:
-            variable_name = default_variable
+        if default_variable_name is not None:
+            variable_name = default_variable_name
         else:
-            module_name, variable_name = default_module, module_name
+            module_name, variable_name = default_module_name, module_name
 
     if not variable_name or not module_name:
         raise ValueError(f'Missing variable or module name: {name!r}')
