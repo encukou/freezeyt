@@ -11,12 +11,12 @@ TEST_DATA = {
     'html_links_fallback':
         (   'text/html',
             {'text/html': 'get_html_links'},
-            ('freezeyt.url_finders', 'get_html_links', get_html_links)
+            (get_html_links)
         ),
     'css_links_fallback':
         (   'text/css',
             {'text/css': 'get_css_links'},
-            ('freezeyt.url_finders', 'get_css_links', get_css_links)
+            (get_css_links)
         ),
 }
 
@@ -24,16 +24,14 @@ TEST_DATA = {
 @pytest.mark.parametrize("test_name", TEST_DATA)
 def test_parse_url_finders(test_name):
     key, config, expected = TEST_DATA[test_name]
-    result = parse_url_finders(config)[key]
 
-    assert (result.__module__, result.__name__, result) == expected
+    assert parse_url_finders(config)[key] == expected
 
 
 def test_get_no_url_finders():
-    config = {}
-    result = parse_url_finders(config)
+    url_finders = {}
 
-    assert result == {}
+    assert parse_url_finders(url_finders) == {}
 
 
 def test_get_only_links_from_html(tmp_path):
@@ -72,12 +70,13 @@ def test_get_only_links_from_css(tmp_path):
             'url_finders': {'text/css': 'get_css_links'},
         }
 
+        freeze_config['extra_pages'] += ["/static/style.css"]
         freeze(module.app, freeze_config)
 
     assert (builddir / 'index.html').exists()
     assert (builddir / 'static' / 'OFL.txt').exists()
-    assert not (builddir / 'static' / 'style.css').exists()
-    assert not (builddir / 'static' / 'TurretRoad-Regular.ttf').exists()
+    assert (builddir / 'static' / 'style.css').exists()
+    assert (builddir / 'static' / 'TurretRoad-Regular.ttf').exists()
 
 
 def test_get_no_links(tmp_path):
@@ -102,12 +101,12 @@ def test_get_url_finder_callable_defined_by_user(tmp_path):
     """Test if we freezer parse url_finder inserted as func type by user.
     """
     def my_url_finder(page_content, base_url, headers=None):
-        return []
+        return ['http://localhost:8000/third_page.html']
 
 
     builddir = tmp_path / 'build'
 
-    with context_for_test('app_2pages') as module:
+    with context_for_test('app_3pages_deep') as module:
         freeze_config = {
             'output': str(builddir),
             'url_finders': {'text/html': my_url_finder},
@@ -117,6 +116,7 @@ def test_get_url_finder_callable_defined_by_user(tmp_path):
 
     assert (builddir / 'index.html').exists()
     assert not (builddir / 'second_page.html').exists()
+    assert (builddir / 'third_page.html').exists()
 
 
 def url_finder(page_content, base_url, headers=None):
@@ -128,7 +128,7 @@ def test_get_url_finder_by_name_defined_by_user(tmp_path):
 
     builddir = tmp_path / 'build'
 
-    with context_for_test('app_2pages') as module:
+    with context_for_test('app_3pages_deep') as module:
         freeze_config = {
             'output': str(builddir),
             'url_finders': {'text/html': f'{__name__}:url_finder'},
@@ -138,3 +138,4 @@ def test_get_url_finder_by_name_defined_by_user(tmp_path):
 
     assert (builddir / 'index.html').exists()
     assert not (builddir / 'second_page.html').exists()
+    assert not (builddir / 'third_page.html').exists()
