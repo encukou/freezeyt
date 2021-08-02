@@ -51,6 +51,7 @@ def test_get_only_links_from_html(tmp_path):
         freeze(module.app, freeze_config)
 
     assert (builddir / 'index.html').exists()
+    assert (builddir / 'second_page.html').exists()
     assert (builddir / 'static' / 'OFL.txt').exists()
     assert (builddir / 'static' / 'style.css').exists()
     assert not (builddir / 'static' / 'TurretRoad-Regular.ttf').exists()
@@ -74,6 +75,7 @@ def test_get_only_links_from_css(tmp_path):
         freeze(module.app, freeze_config)
 
     assert (builddir / 'index.html').exists()
+    assert not (builddir / 'second_page.html').exists()
     assert (builddir / 'static' / 'OFL.txt').exists()
     assert (builddir / 'static' / 'style.css').exists()
     assert (builddir / 'static' / 'TurretRoad-Regular.ttf').exists()
