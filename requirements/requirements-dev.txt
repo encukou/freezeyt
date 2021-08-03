@@ -4,4 +4,3 @@ pyflakes
 Django
 wsgi-static-middleware
 bottle
-mypy
