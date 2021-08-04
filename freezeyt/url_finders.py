@@ -42,18 +42,16 @@ def get_html_links(
         base_url: str,
     ) -> list:
         """Get all links from xml.dom.minidom Node."""
-        result = []
         if 'href' in node.attrib:
             href = decode_input_path(node.attrib['href'])
             full_url = urljoin(base_url, href)
-            result.append(full_url)
+            yield full_url
         if 'src' in node.attrib:
             href = decode_input_path(node.attrib['src'])
             full_url = urljoin(base_url, href)
-            result.append(full_url)
+            yield full_url
         for child in node:
-            result.extend(get_links_from_node(child, base_url))
-        return result
+            yield from get_links_from_node(child, base_url)
 
 
     if headers == None:
