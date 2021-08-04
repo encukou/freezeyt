@@ -1,3 +1,5 @@
 mypy
 types-click
 types-PyYAML
+types-Werkzeug
+types-html5lib
