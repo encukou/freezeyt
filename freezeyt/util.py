@@ -5,6 +5,11 @@ from werkzeug.urls import url_parse
 
 class InfiniteRedirection(Exception):
     """Infinite redirection was detected with redirect_policy='follow'"""
+    def __init__(self, task):
+        super().__init__(
+            f'{task.get_a_url()} redirects to {task.redirects_to.get_a_url()},'
+            + ' which was not frozen (most likely becaus of infinite redirection)'
+        )
 
 class ExternalURLError(ValueError):
     """Unexpected external URL specified"""
@@ -80,19 +85,29 @@ def add_port(url):
             raise ValueError("URL scheme must be http or https")
     return url
 
-def import_variable_from_module(name, *, default_variable_name=None):
+def import_variable_from_module(
+    name, *, default_module_name=None, default_variable_name=None):
     """Import a variable from a named module
 
     Given a name like "package.module:namespace.variable":
     - import module "package.module"
     - get the attribute "namespace" from the module
     - return the attribute "variable" from the "namespace" object
+
+    Parameter name can be set as module or variable. The missing one
+    must be set as default.
     """
+
     module_name, sep, variable_name = name.partition(':')
+
     if not sep:
-        variable_name = default_variable_name
-    if not variable_name:
-        raise ValueError(f'Missing variable name: {name!r}')
+        if default_variable_name is not None:
+            variable_name = default_variable_name
+        else:
+            module_name, variable_name = default_module_name, module_name
+
+    if not variable_name or not module_name:
+        raise ValueError(f'Missing variable or module name: {name!r}')
 
     module = importlib.import_module(module_name)
 

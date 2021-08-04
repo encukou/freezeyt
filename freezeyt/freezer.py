@@ -6,7 +6,7 @@ import itertools
 import functools
 import base64
 import dataclasses
-from typing import Optional
+from typing import Optional, Mapping
 import enum
 
 from urllib.parse import urljoin
@@ -21,8 +21,6 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError, UnexpectedStatus, WrongMimetypeError
-from freezeyt.getlinks_html import get_all_links
-from freezeyt.getlinks_css import get_links_from_css
 from freezeyt import hooks
 
 
@@ -36,17 +34,41 @@ def freeze(app, config):
     return freezer.get_result()
 
 
+DEFAULT_URL_FINDERS = {
+            'text/html': 'get_html_links',
+            'text/css': 'get_css_links'
+        }
+
+
 def check_mimetype(url_path, headers, default='application/octet-stream'):
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
-    f_type, f_encode = guess_type(url_path)
-    if not f_type:
-        f_type = default
+    file_type, file_encoding = guess_type(url_path)
+    if not file_type:
+        file_type = default
     headers = Headers(headers)
-    cont_type, cont_encode = parse_options_header(headers.get('Content-Type'))
-    if f_type.lower() != cont_type.lower():
-        raise WrongMimetypeError(f_type, cont_type, url_path)
+    mime_type, encoding = parse_options_header(headers.get('Content-Type'))
+    if file_type.lower() != mime_type.lower():
+        raise WrongMimetypeError(file_type, mime_type, url_path)
+
+
+def parse_url_finders(url_finders: Mapping) -> Mapping:
+    result = {}
+    for content_type, url_finder in url_finders.items():
+        if isinstance(url_finder, str):
+            url_finder = import_variable_from_module(
+                url_finder, default_module_name='freezeyt.url_finders'
+            )
+        elif not callable(url_finder):
+            raise TypeError(
+                "Url-finder for {content_type!r} in configuration must be a string or a callable,"
+                + f" not {type(url_finder)}!"
+            )
+
+        result[content_type] = url_finder
+
+    return result
 
 
 def url_to_path(prefix, parsed_url):
@@ -104,6 +126,10 @@ class Freezer:
 
         self.extra_pages = config.get('extra_pages', ())
         self.extra_files = config.get('extra_files', None)
+
+        self.url_finders = parse_url_finders(
+                                config.get('url_finders', DEFAULT_URL_FINDERS)
+                            )
 
         prefix = config.get('prefix', 'http://localhost:8000/')
 
@@ -216,6 +242,7 @@ class Freezer:
             exc_type, value, traceback = exc_info
             if value is not None:
                 raise value
+
         task.response_headers = Headers(headers)
         if status.startswith("3"):
             location = task.response_headers['Location']
@@ -349,15 +376,17 @@ class Freezer:
             else:
                 close()
 
-            with self.saver.open_filename(task.path) as f:
-                cont_type, cont_encode = parse_options_header(task.response_headers.get('Content-Type'))
-                if cont_type == "text/html":
-                    links = get_all_links(f, url_string, task.response_headers)
+            with self.saver.open_filename(file_path) as f:
+                content_type = task.response_headers.get('Content-Type')
+                mime_type, encoding = parse_options_header(content_type)
+                url_finder = self.url_finders.get(mime_type)
+                if url_finder is not None:
+                    links = url_finder(
+                        f, url_string, task.response_headers.to_wsgi_list()
+                    )
                     for new_url in links:
-                        self.add_task(parse_absolute_url(new_url), external_ok=True)
-                elif cont_type == "text/css":
-                    for new_url in get_links_from_css(f, url_string):
-                        self.add_task(parse_absolute_url(new_url), external_ok=True)
+                        self.add_task(
+                            parse_absolute_url(new_url), external_ok=True)
 
             task.status = TaskStatus.DONE
 
@@ -367,9 +396,8 @@ class Freezer:
         """Save copies of target pages for redirect_policy='follow'"""
         for task in self.redirecting_tasks.values():
             if task.redirects_to.status != TaskStatus.DONE:
-                raise InfiniteRedirection(
-                    f'{task.get_a_url()} redirects to {task.redirects_to.get_a_url()}, which was not frozen (most likely because of infinite redirection)'
-                )
+                raise InfiniteRedirection(task)
+
             with self.saver.open_filename(task.redirects_to.path) as f:
                 self.saver.save_to_filename(task.path, f)
             self.call_hook('page_frozen', hooks.TaskInfo(task, self))

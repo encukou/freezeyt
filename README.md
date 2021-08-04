@@ -331,6 +331,42 @@ redirect_policy: save
 ```
 
 
+### URL finding
+
+`freezeyt` discovers pages in the application it freezes by scanning
+the application's pages for links.
+By default, HTML and CSS pages are scanned this way.
+It is possible to customize the scanning or turn it off by setting
+`url_finders` in the configuration.
+For example, the default scanners would be specified as:
+
+```yaml
+url_finders:
+    text/html: get_html_links
+    text/css: get_css_links
+```
+
+Keys in the `url_finders` dict are MIME types; the values can be:
+* strings in the form `"module:function"`, which name the scanning
+  function to call,
+* strings like `get_html_links`, which name a function from the
+  `freezeyt.url_finders` module, or
+* Python functions (if configuring `freezeyt` from Python rather than
+  YAML).
+
+A scanning function gets these arguments:
+* an open file with the page's contents (call `read` to get the contents
+  as bytes),
+* the URL of the page, as a string, and
+* the HTTP headers, as a list of (name, value) tuples (as in WSGI).
+
+The function should return an iterator of URLs (as strings) found
+in the page's contents.
+
+The `freezeyt.url_finders` module includes the functions `get_html_links`
+and `get_css_links`, which you can call (for example, as fallbacks).
+
+
 ## Examples of CLI usage
 
 ```shell
