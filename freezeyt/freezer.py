@@ -55,18 +55,20 @@ def check_mimetype(url_path, headers, default='application/octet-stream'):
 
 def parse_url_finders(url_finders: Mapping) -> Mapping:
     result = {}
-    for content_type, url_finder in url_finders.items():
-        if isinstance(url_finder, str):
-            url_finder = import_variable_from_module(
-                url_finder, default_module_name='freezeyt.url_finders'
+    for content_type, finder_or_name in url_finders.items():
+        if isinstance(finder_or_name, str):
+            finder = import_variable_from_module(
+                finder_or_name, default_module_name='freezeyt.url_finders'
             )
-        elif not callable(url_finder):
+        else:
+            finder = finder_or_name
+        if not callable(finder):
             raise TypeError(
                 "Url-finder for {content_type!r} in configuration must be a string or a callable,"
-                + f" not {type(url_finder)}!"
+                + f" not {type(finder)}!"
             )
 
-        result[content_type] = url_finder
+        result[content_type] = finder
 
     return result
 
