@@ -103,8 +103,8 @@ class TaskStatus(enum.Enum):
 class Task:
     path: Path
     urls: "set[URL]"
-    response_headers: Headers = None
-    redirects_to: "Task" = None
+    response_headers: Optional[Headers] = None
+    redirects_to: "Optional[Task]" = None
     status: TaskStatus = TaskStatus.PENDING
 
     def __repr__(self):
