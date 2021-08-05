@@ -92,3 +92,12 @@ def test_default_module():
 def test_only_module():
     with pytest.raises(ValueError):
         import_variable_from_module("math")
+
+
+def test_both_defaults():
+    with pytest.raises(ValueError):
+        import_variable_from_module(
+            "math",
+            default_module_name='math',
+            default_variable_name='cos',
+        )
