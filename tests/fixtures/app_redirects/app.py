@@ -6,6 +6,7 @@ REDIRECT_CODES = 301, 308, 302, 303, 307, 300, 304
 def generate_urls(app):
     for code in REDIRECT_CODES:
         yield f'absolute/{code}/'
+        yield f'no_host/{code}/'
         yield f'relative/{code}/'
         yield f'no_port/{code}/'
 
@@ -22,8 +23,12 @@ freeze_config = {
 # / : returns 200 response with "All OK" in the body
 # /absolute/<code> : redirects to / with the given HTTP code
 #                    using an absolute URL for /
+# /no_host/<code> : redirects to / with the given HTTP code
+#                    using a URL without a host
 # /relative/<code> : redirects to / with the given HTTP code
-#                    using a relative URL for /
+#                    using the URL '../..'
+# /no_port/<code> :  redirects to / with the given HTTP code
+#                    using a absolute URL with no port number
 
 
 def app(environ, start_response):
@@ -57,12 +62,13 @@ def app(environ, start_response):
             url += environ['SERVER_NAME']
             url += ':' + environ['SERVER_PORT']
         url += quote(environ.get('SCRIPT_NAME', ''))
-
-    elif redirect_type == 'relative':
+    elif redirect_type == 'no_host':
         url = (
             quote(environ.get('SCRIPT_NAME', '/'))
         )
         assert url.startswith('/')
+    elif redirect_type == 'relative':
+        url = '../../'
     elif redirect_type == 'no_port':
         # Redirest to "prefix" without the port number
         url = 'http://example.test/'
@@ -93,6 +99,9 @@ expected_dict = {
     "absolute": {
         str(code): {"index.html": b'Redirecting...'} for code in REDIRECT_CODES
     },
+    "no_host": {
+        str(code): {"index.html": b'Redirecting...'} for code in REDIRECT_CODES
+    },
     "relative": {
         str(code): {"index.html": b'Redirecting...'} for code in REDIRECT_CODES
     },
@@ -105,6 +114,9 @@ expected_dict = {
 expected_dict_follow = {
     'index.html': b"All OK",
     "absolute": {
+        str(code): {"index.html": b'All OK'} for code in REDIRECT_CODES
+    },
+    "no_host": {
         str(code): {"index.html": b'All OK'} for code in REDIRECT_CODES
     },
     "relative": {
