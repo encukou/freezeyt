@@ -33,7 +33,6 @@ def app(environ, start_response):
             ('Content-Type', 'text/html'),
         ])
         return [b'All OK']
-    path_parts = path.split('/')
 
     def respond_404():
         start_response('404 Not Found', [])
@@ -41,7 +40,7 @@ def app(environ, start_response):
 
     try:
         # path is e.g. '/relative/300/'
-        empty1, redirect_type, code, empty2 = path_parts
+        empty1, redirect_type, code, empty2 = path.split('/')
     except ValueError:
         # more or less than 4 parts
         return respond_404()
