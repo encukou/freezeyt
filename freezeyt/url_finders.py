@@ -40,7 +40,7 @@ def get_html_links(
     def get_links_from_node(
         node: xml.etree.ElementTree.Element,
         base_url: str,
-    ) -> list:
+    ) -> Iterable[str]:
         """Get all links from xml.dom.minidom Node."""
         if 'href' in node.attrib:
             href = decode_input_path(node.attrib['href'])
