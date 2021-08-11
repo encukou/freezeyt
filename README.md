@@ -368,6 +368,29 @@ The `freezeyt.url_finders` module includes the functions `get_html_links`
 and `get_css_links`, which you can call (for example, as fallbacks).
 
 
+### Path generation
+
+It is possible to customize the filenames that URLs are saved under
+using the `path_to_url` configuration key, for example:
+
+```yaml
+path_to_url: my_module:path_to_url
+```
+
+The value can be:
+* a strings in the form `"module:function"`, which names the
+  function to call (the function can be omitted along with the colon,
+  and defaults to `url_to_path`), or
+* a Python function (if configuring `freezeyt` from Python rather than
+  YAML).
+
+The function receives the *path* of the URL to save, relative to the `prefix`,
+and should return a path to the saved file, relative to the build directory.
+
+The default function, available as `freezeyt.url_to_path`, adds `index.html`
+if the URL path ends with `/`.
+
+
 ## Examples of CLI usage
 
 ```shell
