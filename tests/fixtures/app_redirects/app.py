@@ -52,26 +52,16 @@ def app(environ, start_response):
     if empty1 != '' or empty2 != '':
         return respond_404()
     if redirect_type == 'absolute':
-
-        # URL reconstruction from
-        # https://www.python.org/dev/peps/pep-3333/#url-reconstruction
-        url = environ['wsgi.url_scheme']+'://'
-        if environ.get('HTTP_HOST'):
-            url += environ['HTTP_HOST']
-        else:
-            url += environ['SERVER_NAME']
-            url += ':' + environ['SERVER_PORT']
-        url += quote(environ.get('SCRIPT_NAME', ''))
+        url = reconstruct_url(environ)
     elif redirect_type == 'no_host':
-        url = (
-            quote(environ.get('SCRIPT_NAME', '/'))
-        )
-        assert url.startswith('/')
+        url = quote(environ.get('SCRIPT_NAME', '/'))
+        if url == '':
+            url = '/'
     elif redirect_type == 'relative':
         url = '../../'
     elif redirect_type == 'no_port':
         # Redirest to "prefix" without the port number
-        url = 'http://example.test/'
+        url = reconstruct_url(environ, include_port=False)
     else:
         return respond_404()
     try:
@@ -86,6 +76,26 @@ def app(environ, start_response):
         ]
     )
     return [b'Redirecting...']
+
+
+def reconstruct_url(environ, include_port=True):
+    # URL reconstruction from
+    # https://www.python.org/dev/peps/pep-3333/#url-reconstruction
+    # but we either always or never include the port number.
+    url = environ['wsgi.url_scheme']+'://'
+    url += environ['SERVER_NAME']
+    if environ['wsgi.url_scheme'] == 'https':
+        default_port = '443'
+    else:
+        default_port = '80'
+    if include_port:
+        url += ':' + environ['SERVER_PORT']
+    else:
+        if environ['SERVER_PORT'] != default_port:
+            raise ValueError(
+                'For no_port, the default port (80 or 443) must be used')
+    url += quote(environ.get('SCRIPT_NAME', ''))
+    return url
 
 
 if __name__ == '__main__':
