@@ -33,24 +33,30 @@ freeze_config = {
 
 def app(environ, start_response):
     path = environ['PATH_INFO']
+
+    # Handle the "home page" to which everything redirects
     if path == '/':
         start_response('200 OK', [
             ('Content-Type', 'text/html'),
         ])
         return [b'All OK']
 
+    # Helper for pages we don't handle
     def respond_404():
         start_response('404 Not Found', [])
         return [b'Not found']
 
+    # Parse the request's path to get the redirect URL type and code
+    # path is e.g. '/relative/300/'
     try:
-        # path is e.g. '/relative/300/'
         empty1, redirect_type, code, empty2 = path.split('/')
     except ValueError:
         # more or less than 4 parts
         return respond_404()
     if empty1 != '' or empty2 != '':
         return respond_404()
+
+    # Get the URL to put in the Location header
     if redirect_type == 'absolute':
         url = reconstruct_url(environ)
     elif redirect_type == 'no_host':
@@ -64,10 +70,16 @@ def app(environ, start_response):
         url = reconstruct_url(environ, include_port=False)
     else:
         return respond_404()
+
+    # Verify the status code
     try:
         code = int(code)
     except ValueError:
         return respond_404()
+    if not (300 <= code <= 399):
+        return respond_404()
+
+    # Construct the response headers and body
     start_response(
         f'{code} SOME REDIRECT',
         [
