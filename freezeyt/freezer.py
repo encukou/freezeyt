@@ -73,25 +73,33 @@ def parse_url_finders(url_finders: Mapping) -> Mapping:
     return result
 
 
-def url_to_path(prefix, parsed_url):
-    if is_external(parsed_url, prefix):
-        raise ValueError(f'external url {parsed_url}')
+def default_url_to_path(path):
+    if path.endswith('/') or not path:
+        path = path + 'index.html'
+    return encode_file_path(path)
 
-    url_path = parsed_url.path
 
-    if url_path.startswith(prefix.path):
-        url_path = url_path[len(prefix.path):]
+def get_path_from_url(prefix, url, url_to_path):
+    if is_external(url, prefix):
+        raise ValueError(f'external url {url}')
 
-    if url_path.endswith('/') or not url_path:
-        url_path = url_path + 'index.html'
+    path = url.path
 
-    result = PurePosixPath(encode_file_path(url_path))
+    if path.startswith(prefix.path):
+        path = path[len(prefix.path):]
 
-    assert not result.is_absolute(), result
+    result = url_to_path(path)
+
+    result = PurePosixPath(result)
+
+    if result.is_absolute():
+        raise ValueError(
+            f"Path may not be absolute: {result}(from {url.to_url()})"
+        )
     assert '.' not in result.parts
     if '..' in result.parts:
         raise ValueError(
-            f"URL may not contain /../ segment: {parsed_url.to_url()}"
+            f"Path may not contain /../ segment: {result}(from {url.to_url()})"
         )
 
     return result
@@ -161,6 +169,10 @@ class Freezer:
         else:
             raise ValueError(f"unknown output type {output['type']}")
 
+        self.url_to_path = config.get('url_to_path', default_url_to_path)
+        if isinstance(self.url_to_path, str):
+            self.url_to_path = import_variable_from_module(self.url_to_path)
+
         self.done_tasks = {}
         self.redirecting_tasks = {}
 
@@ -190,7 +202,7 @@ class Freezer:
                 return None
             raise ExternalURLError(f'Unexpected external URL: {url}')
 
-        path = url_to_path(self.prefix, url)
+        path = get_path_from_url(self.prefix, url, self.url_to_path)
 
         if path in self.pending_tasks:
             task = self.pending_tasks[path]

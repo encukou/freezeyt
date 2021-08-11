@@ -1,3 +1,5 @@
+import pathlib
+
 import pytest
 
 from freezeyt import freeze, ExternalURLError
@@ -132,3 +134,38 @@ def test_external_extra_files_generator(tmp_path):
 
         with pytest.raises(ExternalURLError):
             freeze(module.app, freeze_config)
+
+def my_url_to_path(path):
+    return {
+        '': 'new-index.html',
+        'users/': 'users/new-index.html',
+        'users/a/': pathlib.PurePosixPath('users', 'a-user'),
+        'users/b/': 'b-user/index-page',
+    }[path]
+
+@pytest.mark.parametrize('function_spec', [
+    f'{__name__}:my_url_to_path',  # "module:name" string
+    my_url_to_path, # Python function
+])
+def test_url_to_path(function_spec):
+
+    with context_for_test('app_structured') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'url_to_path': function_spec,
+        }
+
+        result = freeze(module.app, config)
+
+    expected = {
+        'new-index.html': module.expected_dict['index.html'],
+        'users': {
+            'new-index.html': module.expected_dict['users']['index.html'],
+            'a-user': module.expected_dict['users']['a']['index.html'],
+        },
+        'b-user': {
+            'index-page': module.expected_dict['users']['b']['index.html'],
+        },
+    }
+
+    assert result == expected

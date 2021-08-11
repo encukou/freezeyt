@@ -3,7 +3,8 @@ from werkzeug.urls import url_parse
 
 import pytest
 
-from freezeyt.freezer import url_to_path
+from freezeyt.freezer import get_path_from_url
+import freezeyt
 
 
 POSITIVE_TEST_CASES = {
@@ -53,7 +54,7 @@ POSITIVE_TEST_CASES = {
 def test_positive(case):
     prefix_string, url_string, expected = POSITIVE_TEST_CASES[case]
     prefix = url_parse(prefix_string)
-    result = url_to_path(prefix, url_parse(url_string))
+    result = get_path_from_url(prefix, url_parse(url_string), freezeyt.url_to_path)
     assert result == PurePosixPath(expected)
 
 
@@ -89,4 +90,32 @@ def test_negative(case):
     prefix_string, url_string = NEGATIVE_TEST_CASES[case]
     prefix = url_parse(prefix_string)
     with pytest.raises(ValueError):
-        url_to_path(prefix, url_parse(url_string))
+        get_path_from_url(prefix, url_parse(url_string), freezeyt.url_to_path)
+
+
+@pytest.mark.parametrize('bad_input', ['..', 'a/../b', '/a', '//b'])
+def test_bad_url_to_path(bad_input):
+    def bad_path(path):
+        return bad_input
+
+    with pytest.raises(ValueError):
+        get_path_from_url(
+            url_parse('http://localhost:80/'),
+            url_parse('http://localhost:80/'),
+            bad_path,
+        )
+
+@pytest.mark.parametrize(['input', 'expected'],[
+    ('.', '.'),
+    ('a/./b', 'a/b'),
+])
+def test_url_to_path_removes_dots(input, expected):
+    def bad_path(path):
+        return input
+
+    path = get_path_from_url(
+        url_parse('http://localhost:80/'),
+        url_parse('http://localhost:80/'),
+        bad_path,
+    )
+    assert str(path) == expected
