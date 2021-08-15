@@ -8,8 +8,8 @@ import base64
 import dataclasses
 from typing import Optional, Mapping
 import enum
-
 from urllib.parse import urljoin
+
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 from werkzeug.urls import URL
