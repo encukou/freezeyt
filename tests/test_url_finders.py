@@ -1,6 +1,6 @@
 import pytest
 
-from freezeyt import freeze
+from freezeyt import freeze, RelativeURLError
 from freezeyt.freezer import parse_url_finders
 from freezeyt.url_finders import get_html_links
 from freezeyt.url_finders import get_css_links
@@ -141,3 +141,22 @@ def test_get_url_finder_by_name_defined_by_user(tmp_path):
     assert (builddir / 'index.html').exists()
     assert not (builddir / 'second_page.html').exists()
     assert not (builddir / 'third_page.html').exists()
+
+
+
+def test_url_finder_returning_relative_url(tmp_path):
+    """Test if we freezer parse url_finder inserted as func type by user.
+    """
+    def my_url_finder(page_content, base_url, headers=None):
+        return ['/third_page.html']
+
+    builddir = tmp_path / 'build'
+
+    with context_for_test('app_3pages_deep') as module:
+        freeze_config = {
+            'output': str(builddir),
+            'url_finders': {'text/html': my_url_finder},
+        }
+
+        with pytest.raises(RelativeURLError):
+            freeze(module.app, freeze_config)
