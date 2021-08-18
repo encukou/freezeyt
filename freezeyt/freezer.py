@@ -408,7 +408,7 @@ class Freezer:
                         f, url_string, task.response_headers.to_wsgi_list()
                     )
                     for new_url_text in links:
-                        new_url = url.join(new_url_text)
+                        new_url = url.join(decode_input_path(new_url_text))
                         try:
                             new_url = add_port(new_url)
                         except UnsupportedSchemeError:

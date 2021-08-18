@@ -7,8 +7,6 @@ import css_parser
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
-from freezeyt.encoding import decode_input_path
-
 
 def get_css_links(
     css_file: BinaryIO,
@@ -40,9 +38,10 @@ def get_html_links(
     ) -> Iterable[str]:
         """Get all links from an element."""
         if 'href' in node.attrib:
-            yield decode_input_path(node.attrib['href'])
+            print(node.attrib['href'], type(node.attrib['href']))
+            yield node.attrib['href']
         if 'src' in node.attrib:
-            yield decode_input_path(node.attrib['src'])
+            yield node.attrib['src']
         for child in node:
             yield from get_links_from_node(child, base_url)
 
