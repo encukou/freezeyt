@@ -41,7 +41,7 @@ def get_html_links(
         node: xml.etree.ElementTree.Element,
         base_url: str,
     ) -> Iterable[str]:
-        """Get all links from xml.dom.minidom Node."""
+        """Get all links from an element."""
         if 'href' in node.attrib:
             href = decode_input_path(node.attrib['href'])
             full_url = urljoin(base_url, href)
