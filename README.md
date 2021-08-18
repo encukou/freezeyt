@@ -497,7 +497,7 @@ $ git push <your_remote> <your_new_branch>
 For testing the project it's necessary to install additional requirements:
 
 ```
-$ python -m pip install -r requirements-dev.txt
+$ python -m pip install .[dev]
 ```
 
 To run tests in your current environment, use pytest:
@@ -571,8 +571,8 @@ It is available [here](https://encukou.github.io/freezeyt/).
 The blog was tested on Python version 3.8.
 
 The blog is a Flask application.
-To run it, install additional dependecies mentioned in
-`requirements-blog.txt`.
+To run it, install additional dependecies with
+`python -m pip install .[blog]`.
 Then, set the environment variable `FLASK_APP` to the path of the
 blog app.
 Also set `FLASK_ENV` to "development" for easier debugging.
@@ -581,7 +581,7 @@ Then, run the Flask server.
 1. On Microsoft Windows:
 
 ```shell
-> python -m pip install -r requirements-blog.txt
+> python -m pip install .[blog]
 > set FLASK_APP=freezeyt_blog/app.py
 > set FLASK_ENV=development
 > flask run
@@ -590,7 +590,7 @@ Then, run the Flask server.
 2. On UNIX:
 
 ```shell
-$ python -m pip install -r requirements-blog.txt
+$ python -m pip install .[blog]
 $ export FLASK_APP=freezeyt_blog/app.py
 $ export FLASK_ENV=development
 $ flask run
