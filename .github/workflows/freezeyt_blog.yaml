@@ -31,8 +31,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install -r requirements/requirements-blog.txt
-          python -m pip install .
+          python -m pip install .[blog]
 
       - name: Freeze blog app
         run: |
