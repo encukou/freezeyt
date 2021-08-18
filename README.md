@@ -30,10 +30,10 @@ of virtual environment.
 
 [`venv`]: https://docs.python.org/3/library/venv.html?highlight=venv#module-venv
 
-The needed requirements can be installed using:
+The tool can be installed using:
 
 ```
-$ python -m pip install -r requirements.txt
+$ python -m pip install .
 ```
 
 
@@ -546,8 +546,6 @@ and check that the difference is correct.
 * [flask](https://flask.palletsprojects.com/en/1.1.x/)
 * [pytest](https://docs.pytest.org/en/latest/)
 * [html5lib](https://html5lib.readthedocs.io/en/latest/)
-
-And others – see `requirements.txt`.
 
 
 ### How to watch progress

@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install -r requirements/requirements-blog.txt
-          python -m pip install -r requirements/requirements.txt
+          python -m pip install .
 
       - name: Freeze blog app
         run: |
