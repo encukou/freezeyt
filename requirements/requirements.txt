@@ -1,6 +1,0 @@
-html5lib
-click
-css-parser
-pyyaml
-dataclasses;python_version<"3.7"
-Werkzeug
