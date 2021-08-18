@@ -88,7 +88,7 @@ def add_port(url):
         elif url.scheme == 'https':
             url = url.replace(netloc=url.host + ':443')
         else:
-            raise ValueError("URL scheme must be http or https")
+            raise UnsupportedSchemeError("URL scheme must be http or https")
     return url
 
 def import_variable_from_module(

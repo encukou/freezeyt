@@ -17,7 +17,7 @@ TEST_DATA = {
                 font-family: 'TurretRoad';
             }
         """,
-        ['http://localhost:8000/TurretRoad-Regular.ttf'],
+        ['TurretRoad-Regular.ttf'],
     ),
     "two_links": (
         b"""
@@ -33,8 +33,8 @@ TEST_DATA = {
             }
         """,
         [
-            'http://localhost:8000/TurretRoad-Regular.ttf',
-            'http://localhost:8000/some-image.png'
+            'TurretRoad-Regular.ttf',
+            'some-image.png'
         ],
     ),
     "without_links": (
@@ -52,7 +52,7 @@ TEST_DATA = {
                 background-color: #C2F5FF;
             }
         """,
-        ['http://localhost:8000/static/style.css']
+        ['static/style.css']
     ),
     "one_external": (
         b"""
@@ -68,7 +68,7 @@ TEST_DATA = {
             }
         """,
         [
-            'http://localhost:8000/TurretRoad-Regular.ttf',
+            'TurretRoad-Regular.ttf',
             'https://www.example.com/some-image.png'
         ]
     ),

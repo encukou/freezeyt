@@ -26,10 +26,10 @@ def test_get_links():
     """, 'http://localhost:8000')
 
     assert sorted(links) == [
-        'http://localhost:8000/blabla.png',
-        'http://localhost:8000/fourth_page/',
-        'http://localhost:8000/second_page',
-        'http://localhost:8000/third_page',
+        '/second_page',
+        '/third_page',
+        'blabla.png',
+        'fourth_page/',
     ]
 
 
@@ -52,9 +52,9 @@ def test_get_links_path():
     """, 'http://localhost:8000/path1/path2/')
 
     assert sorted(links) == [
-        'http://localhost:8000/path1/path2/fourth_page/',
-        'http://localhost:8000/second_page',
-        'http://localhost:8000/third_page',
+        '/second_page',
+        '/third_page',
+        'fourth_page/',
     ]
 
 
@@ -76,7 +76,7 @@ def test_get_links_utf8():
     )
 
     assert sorted(links) == [
-        'http://localhost:8000/čau',
+        '/čau',
     ]
 
 
@@ -98,5 +98,5 @@ def test_get_links_cp1253():
     )
 
     assert sorted(links) == [
-        'http://localhost:8000/π',
+        '/π',
     ]

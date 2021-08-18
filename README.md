@@ -361,8 +361,8 @@ A scanning function gets these arguments:
 * the URL of the page, as a string, and
 * the HTTP headers, as a list of (name, value) tuples (as in WSGI).
 
-The function should return an iterator of absolute URLs (as strings) found
-in the page's contents.
+The function should return an iterator of URLs (as strings) found
+in the page's contents. These URLs can be relative.
 
 The `freezeyt.url_finders` module includes the functions `get_html_links`
 and `get_css_links`, which you can call (for example, as fallbacks).

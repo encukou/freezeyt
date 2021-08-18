@@ -408,11 +408,15 @@ class Freezer:
                         f, url_string, task.response_headers.to_wsgi_list()
                     )
                     for new_url_text in links:
+                        new_url = url.join(new_url_text)
                         try:
-                            new_url = parse_absolute_url(new_url_text)
+                            new_url = add_port(new_url)
                         except UnsupportedSchemeError:
+                            # If this has a scheme other than http and https,
+                            # it's an external url and we don't follow it.
                             pass
-                        self.add_task(new_url, external_ok=True)
+                        else:
+                            self.add_task(new_url, external_ok=True)
 
             task.status = TaskStatus.DONE
 
