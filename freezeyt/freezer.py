@@ -20,7 +20,9 @@ from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
-from freezeyt.util import InfiniteRedirection, ExternalURLError, UnexpectedStatus, WrongMimetypeError
+from freezeyt.util import InfiniteRedirection, ExternalURLError
+from freezeyt.util import UnexpectedStatus, WrongMimetypeError
+from freezeyt.util import UnsupportedSchemeError
 from freezeyt import hooks
 
 
@@ -405,9 +407,12 @@ class Freezer:
                     links = url_finder(
                         f, url_string, task.response_headers.to_wsgi_list()
                     )
-                    for new_url in links:
-                        self.add_task(
-                            parse_absolute_url(new_url), external_ok=True)
+                    for new_url_text in links:
+                        try:
+                            new_url = parse_absolute_url(new_url_text)
+                        except UnsupportedSchemeError:
+                            pass
+                        self.add_task(new_url, external_ok=True)
 
             task.status = TaskStatus.DONE
 
