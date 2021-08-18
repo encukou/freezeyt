@@ -1,6 +1,6 @@
 import pytest
 
-from freezeyt import freeze, RelativeURLError
+from freezeyt import freeze
 from freezeyt.freezer import parse_url_finders
 from freezeyt.url_finders import get_html_links
 from freezeyt.url_finders import get_css_links
