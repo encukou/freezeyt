@@ -1,15 +1,12 @@
-from pathlib import Path
-from wsgi_static_middleware import StaticMiddleware
+import os
+
+from werkzeug.middleware.shared_data import SharedDataMiddleware
 
 from demo_project.wsgi import application as django_wsgi_app
 
-BASE_PATH = Path(__file__).parent
-STATIC_DIRS = [BASE_PATH / 'static']
-
-
-app = StaticMiddleware(
-    django_wsgi_app, static_root='/static', static_dirs=STATIC_DIRS
-)
+app = SharedDataMiddleware(django_wsgi_app, {
+    '/static': os.path.join(os.path.dirname(__file__), 'static')
+})
 
 freeze_config = {'extra_pages': ['/extra/']}
 
