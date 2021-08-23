@@ -101,13 +101,20 @@ def import_variable_from_module(
     module_name, sep, variable_name = name.partition(':')
 
     if not sep:
-        if default_variable_name is not None:
+        if default_variable_name:
+            if default_module_name:
+                raise ValueError(
+                        "Both default values can not be used simultaneously"
+                        )
             variable_name = default_variable_name
-        else:
+        elif default_module_name:
             module_name, variable_name = default_module_name, module_name
 
-    if not variable_name or not module_name:
-        raise ValueError(f'Missing variable or module name: {name!r}')
+    if not variable_name:
+        raise ValueError(f"Missing variable name: {name!r}")
+
+    if not module_name:
+        raise ValueError(f"Missing module name: {name!r}")
 
     module = importlib.import_module(module_name)
 

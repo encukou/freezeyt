@@ -2,93 +2,93 @@ import pytest
 
 from freezeyt.util import import_variable_from_module
 
+INPUT_DATA = {
+    'basic': ("math:sin", {}, "sin"),
+    'dotted_module': ("urllib.parse:urlparse", {}, "urlparse"),
+    'dotted_variable': ("pathlib:Path.joinpath", {}, "joinpath"),
+    'default_variable': ("math", {"default_variable_name": 'cos'}, "cos"),
+    'default_module': (
+        "Path.joinpath", {"default_module_name": 'pathlib'}, "joinpath"
+    ),
+    'overridden_default_variable': (
+        "math:sin", {"default_variable_name": 'cos'}, "sin"
+    ),
+    'overridden_default_module': (
+        "pathlib:Path.joinpath", {"default_module_name": 'os'}, "joinpath"
+    ),
+}
 
-def test_basic():
-    sin = import_variable_from_module("math:sin")
-    assert sin.__name__ == 'sin'
-
-
-def test_default_variable():
-    cos = import_variable_from_module("math", default_variable_name='cos')
-    assert cos.__name__ == 'cos'
-
-
-def test_overridden_default_variable():
-    sin = import_variable_from_module("math:sin", default_variable_name='cos')
-    assert sin.__name__ == 'sin'
-
-
-def test_dotted_module():
-    urlparse = import_variable_from_module("urllib.parse:urlparse")
-    assert urlparse.__name__ == 'urlparse'
-
-
-def test_dotted_variable():
-    joinpath = import_variable_from_module("pathlib:Path.joinpath")
-    assert joinpath.__name__ == 'joinpath'
+@pytest.mark.parametrize('testname', INPUT_DATA)
+def test_valid_data(testname):
+    name, kwargs, expected = INPUT_DATA[testname]
+    imported = import_variable_from_module(name, **kwargs)
+    assert imported.__name__ == expected
 
 
-def test_missing_variable():
-    with pytest.raises(ValueError):
-        import_variable_from_module("math:")
+INPUT_ERROR_DATA = {
+    'empty_name': ("", {}, "Missing variable name: ''"),
 
+    'empty_name_with_default_variable':
+        ("", {'default_variable_name': 'cos'}, "Missing module name: ''"),
 
-def test_missing_module():
-    with pytest.raises(ValueError):
-        import_variable_from_module(":sin")
+    'empty_name_with_default_module':
+        ("", {'default_module_name': 'math'}, "Missing variable name: ''"),
 
+    'empty_name_with_both_default':
+        (
+            "",
+            {
+                'default_module_name': 'math',
+                'default_variable_name': 'cos'
+            },
+            "Both default values can not be used simultaneously"
+        ),
 
-def test_missing_variable_with_default_variable():
-    """ValueError of empty module.
-    Error is raised by import_variable_from_module.
-    """
-    with pytest.raises(ValueError):
-        import_variable_from_module("math:", default_variable_name='cos')
+    'missing_variable': ("math:", {}, "Missing variable name: 'math:'"),
 
+    'missing_module': (":sin", {}, "Missing module name: ':sin'"),
 
-def test_empty():
-    with pytest.raises(ValueError):
-        import_variable_from_module("")
+    'only_module': ("math", {}, "Missing variable name: 'math'"),
 
+    'missing_variable_with_default_variable':
+        (
+            "math:",
+            {'default_variable_name': 'cos'},
+            "Missing variable name: 'math:'"
+        ),
 
-def test_empty_with_default_variable():
-    """ValueError of empty module.
-    Error is raised by importlib.import_module.
-    """
-    with pytest.raises(ValueError):
-        import_variable_from_module("", default_variable_name='cos')
+    'missing_module_with_default_module':
+        (
+            ":cos",
+            {'default_module_name': 'math'},
+            "Missing module name: ':cos'"
+        ),
 
+    'inserted_both_defaults':
+        (
+            "math",
+            {
+                'default_module_name': 'math',
+                'default_variable_name': 'cos'
+            },
+            "Both default values can not be used simultaneously"
+        ),
 
-def test_empty_with_default_module():
-    """ValueError of empty module.
-    Error is raised by import_variable_from_module.
-    """
-    with pytest.raises(ValueError):
-        import_variable_from_module("", default_module_name='math')
+    'inserted_both_defaults_with_sep':
+        (
+            "math:",
+            {
+                'default_module_name': 'math',
+                'default_variable_name': 'cos'
+            },
+            "Missing variable name: 'math:'"
+        ),
+}
 
+@pytest.mark.parametrize('testname', INPUT_ERROR_DATA)
+def test_errors(testname):
+    name, kwargs, error_message = INPUT_ERROR_DATA[testname]
+    with pytest.raises(ValueError) as excinfo:
+        import_variable_from_module(name, **kwargs)
 
-def test_missing_module_with_default_module():
-    """ValueError of empty module.
-    Error is raised by import_variable_from_module.
-    """
-    with pytest.raises(ValueError):
-        import_variable_from_module(":cos", default_module_name='math')
-
-
-def test_overridden_default_module():
-    joinpath = import_variable_from_module(
-        "pathlib:Path.joinpath", default_module_name='os'
-    )
-    assert joinpath.__name__ == 'joinpath'
-
-
-def test_default_module():
-    joinpath = import_variable_from_module(
-        "Path.joinpath", default_module_name='pathlib'
-    )
-    assert joinpath.__name__ == 'joinpath'
-
-
-def test_only_module():
-    with pytest.raises(ValueError):
-        import_variable_from_module("math")
+    assert  excinfo.value.args[0] == error_message
