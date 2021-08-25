@@ -23,6 +23,7 @@ from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, WrongMimetypeError
 from freezeyt.util import UnsupportedSchemeError
+from freezeyt.util import FileWrapper
 from freezeyt import hooks
 
 
@@ -353,6 +354,7 @@ class Freezer:
                 'wsgi.multithread': False,
                 'wsgi.multiprocess': False,
                 'wsgi.run_once': False,
+                'wsgi.file_wrapper': FileWrapper,
 
                 'freezeyt.freezing': True,
             }
@@ -383,12 +385,15 @@ class Freezer:
             except IgnorePage:
                 continue
 
-            # Combine the list of data from write() with the returned
-            # iterable object.
-            full_result = itertools.chain(
-                wsgi_write_data,
-                result_iterable,
-            )
+            if wsgi_write_data:
+                # Combine the list of data from write() with the returned
+                # iterable object.
+                full_result = itertools.chain(
+                    wsgi_write_data,
+                    result_iterable,
+                )
+            else:
+                full_result = result_iterable
 
             self.saver.save_to_filename(task.path, full_result)
 
