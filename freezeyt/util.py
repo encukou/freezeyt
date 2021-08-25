@@ -139,6 +139,7 @@ class FileWrapper:
     """
     def __init__(self, file, block_size=8192):
         self.read_func = functools.partial(file.read, block_size)
+        self.file = file
         if hasattr(file, 'close'):
             self.close = file.close
 

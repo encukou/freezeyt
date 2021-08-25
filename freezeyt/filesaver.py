@@ -1,4 +1,7 @@
 import shutil
+import os
+import sys
+from freezeyt.util import FileWrapper
 
 
 class DirectoryExistsError(Exception):
@@ -34,7 +37,18 @@ class FileSaver:
         assert self.base_path in absolute_filename.parents
 
         absolute_filename.parent.mkdir(parents=True, exist_ok=True)
+
         with open(absolute_filename, "wb") as f:
+            if isinstance(content_iterable, FileWrapper):
+                try:
+                    fileno_method = content_iterable.file.fileno
+                except AttributeError:
+                    pass
+                else:
+                    fileno = fileno_method()
+                    os.sendfile(f.fileno(), fileno, None, sys.maxsize)
+                    return
+
             for item in content_iterable:
                 f.write(item)
 
