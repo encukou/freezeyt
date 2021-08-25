@@ -315,24 +315,70 @@ The object has the following attributes:
 * `freeze_info`: a `FreezeInfo` object. See the `start` hook for details.
 
 
-### Redirect policy
+### Status handling
 
-The `redirect_policy` option specifies the policy for handling redirects.
-It can be:
-* `'error'` (default): When a redirect response is encountered,
-  `freezeyt` will abort.
-* `'save'`: `freezeyt` will save the body of the redirect page, as if
-  the response was `200`.
-  This is meant to be used with redirects in the HTML `<meta>` tag.
-* `'follow'`: `freezeyt` will save content from the redirected location.
-* `'ignore'`: `freezeyt` will not save any content for pages that redirect.
-
-For example:
+The `status_handlers` option defines the way to handle HTTP statuses.
+For example, the default reaction to a `404 NOT FOUND` status is to quit with an error,
+but you can use make `freezeyt` ignore the error instead using this configuration:
 
 ```yaml
-redirect_policy: save
+status_handlers:
+    '404': ignore
+```
+`freezeyt` contains some pre-defined handlers
+* `'warn'`: warn message to stdout and skip
+* `'save'`: `freezeyt` will save the body of the redirect page, as if
+  the response was `200`.
+* `'follow'`: `freezeyt` will save content from the redirected location
+  (this requires a `Location` header, which is usually added for redirects – `3xx` statuses).
+* `'ignore'`: `freezeyt` will not save any content for the page
+* `'error'`: abort with an error
+
+The user can also define a custom handler as:
+* a string in the form `my_module:custom_handler`, which names a handler
+  function to call,
+* a Python function (if configuring `freezeyt` from Python rather than from
+  YAML).
+  
+The handler function takes these arguments:
+* `url` (str): freezing url
+* `status` (str): HTTP status
+* `task` (TaskInfo): information about the freezing task. See the `page_frozen` hook for a description.
+
+Freezeyt's default functions, like `follow`, can be imported from `freezeyt.status_handlers` and used
+from the custom handlers.
+
+For example, `status_handlers` would be specified as:
+
+```yaml
+status_handlers:
+    '202': warn
+    '301': follow
+    '404': ignore
+    '418': my_module:custom_handler
+    '429': ignore
+    '5xx': error
 ```
 
+Note that the status code must be a string, so it needs to be quoted in the YAML file.
+
+A range of statuses can be specified as a number (`1-5`) followed by lowercase `xx`.
+
+#### Custom status handler interface
+
+User is able to design his own handler. User handler shall meet certain interface.
+
+Interface shall be
+
+```
+Parameters:
+    url (str): freezing url
+    status (str): HTTP status
+    task (TaskInfo): hook object
+
+Returns:
+    status code as string
+```
 
 ### URL finding
 
