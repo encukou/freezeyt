@@ -99,11 +99,16 @@ def test_get_no_links(tmp_path):
     assert not (builddir / 'second_page.html').exists()
 
 
-def test_get_url_finder_callable_defined_by_user(tmp_path):
+@pytest.mark.parametrize('found_url', (
+    'http://localhost:8000/third_page.html',
+    '/third_page.html',
+    'third_page.html',
+))
+def test_get_url_finder_callable_defined_by_user(found_url, tmp_path):
     """Test if we freezer parse url_finder inserted as func type by user.
     """
     def my_url_finder(page_content, base_url, headers=None):
-        return ['http://localhost:8000/third_page.html']
+        return [found_url]
 
 
     builddir = tmp_path / 'build'

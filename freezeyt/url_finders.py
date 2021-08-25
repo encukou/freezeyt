@@ -1,14 +1,11 @@
 import xml.etree.ElementTree
 from typing import Iterable, BinaryIO, List, Optional, Tuple
-from urllib.parse import urljoin
 
 import html5lib
 import css_parser
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
-
-from freezeyt.encoding import decode_input_path
 
 
 def get_css_links(
@@ -19,9 +16,7 @@ def get_css_links(
     """Get all links from a CSS file."""
     text = css_file.read()
     parsed = css_parser.parseString(text)
-    all_urls = css_parser.getUrls(parsed)
-    for url in all_urls:
-        yield urljoin(base_url, url)
+    yield from css_parser.getUrls(parsed)
 
 
 
@@ -41,15 +36,12 @@ def get_html_links(
         node: xml.etree.ElementTree.Element,
         base_url: str,
     ) -> Iterable[str]:
-        """Get all links from xml.dom.minidom Node."""
+        """Get all links from an element."""
         if 'href' in node.attrib:
-            href = decode_input_path(node.attrib['href'])
-            full_url = urljoin(base_url, href)
-            yield full_url
+            print(node.attrib['href'], type(node.attrib['href']))
+            yield node.attrib['href']
         if 'src' in node.attrib:
-            href = decode_input_path(node.attrib['src'])
-            full_url = urljoin(base_url, href)
-            yield full_url
+            yield node.attrib['src']
         for child in node:
             yield from get_links_from_node(child, base_url)
 

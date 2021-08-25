@@ -17,6 +17,9 @@ class ExternalURLError(ValueError):
 class RelativeURLError(ValueError):
     """Absolute URL was expected"""
 
+class UnsupportedSchemeError(ValueError):
+    """Raised for URLs with unsupported schemes"""
+
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
     def __init__(self, url, status):
@@ -63,11 +66,14 @@ def parse_absolute_url(url):
     The result port is always an integer.
     """
     parsed = url_parse(url)
-    if not parsed.scheme or not parsed.netloc:
+    if not parsed.scheme:
         raise RelativeURLError(f"Expected an absolute URL, not {url}")
 
     if parsed.scheme not in ('http', 'https'):
-        raise ValueError(f"URL scheme must be http or https: {url}")
+        raise UnsupportedSchemeError(f"URL scheme must be http or https: {url}")
+
+    if not parsed.netloc:
+        raise RelativeURLError(f"Expected an absolute URL, not {url}")
 
     parsed = add_port(parsed)
 
@@ -82,7 +88,7 @@ def add_port(url):
         elif url.scheme == 'https':
             url = url.replace(netloc=url.host + ':443')
         else:
-            raise ValueError("URL scheme must be http or https")
+            raise UnsupportedSchemeError("URL scheme must be http or https")
     return url
 
 def import_variable_from_module(
