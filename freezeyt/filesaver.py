@@ -42,6 +42,7 @@ class FileSaver:
             shutil.rmtree(self.base_path)
 
     def save_to_filename(self, filename, content_iterable):
+        global sendfile
         absolute_filename = self.base_path / filename
         assert self.base_path in absolute_filename.parents
 
@@ -60,8 +61,16 @@ class FileSaver:
                     else:
                         offset = content_iterable.file.tell()
                     fileno = fileno_method()
-                    sendfile(f.fileno(), fileno, offset, sys.maxsize)
-                    return
+                    try:
+                        sendfile(f.fileno(), fileno, offset, sys.maxsize)
+                    except OSError:
+                        # This system probably doesn't support copying
+                        # regular files with os.sendfile.
+                        # Don't try it in the future.
+                        sendfile = None
+                    else:
+                        # Done!
+                        return
 
             for item in content_iterable:
                 f.write(item)
