@@ -1,7 +1,17 @@
 from flask import Flask
 
 app = Flask(__name__)
-freeze_config = {'ignore_404_not_found': True}
+freeze_config = {
+        'status_handlers':
+            {
+                '202': 'warn',
+                '301': 'follow',
+                '404': 'ignore',
+                '418': 'my_module:custom_handler',
+                '429': 'ignore',
+                '5xx': 'error',
+            },
+    }
 
 @app.route('/')
 def index():
@@ -17,7 +27,7 @@ def index():
         <body>
             Hello world!
             <br>
-            <a href='/not_found.html'>LINK</a> to second page.
+            <a href='/not_found.html'>LINK</a> to page with status '404 NOT FOUND'.
         </body>
     </html>
     """
@@ -28,11 +38,7 @@ expected_dict = {
             + b"o world</title>\n        </head>\n        <body>\n"
             + b"            Hello world!\n            <br>\n"
             + b"            <a href='/not_found.html'>LINK</a> t"
-            + b"o second page.\n        </body>\n    </html>\n    ",
+            + b"o page with status '404 NOT FOUND'.\n        "
+            + b"</body>\n    </html>\n    ",
 
-    'not_found.html':
-            b"\n    <html>\n        <head>\n            <title>404"
-            + b"not found</title>\n        </head>\n        <body>\n"
-            + b"            404 - Page not found\n"
-            + b"        </body>\n    </html>\n    ",
 }
