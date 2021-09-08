@@ -300,7 +300,13 @@ class Freezer:
         """
         for extra in extras:
             if isinstance(extra, dict):
-                generator = extra['generator']
+                try:
+                    generator = extra['generator']
+                except KeyError:
+                    raise ValueError(
+                        'extra_pages must be strings or dicts with '
+                        + f'a "generator" key, not `{extra}`'
+                    )
                 if isinstance(generator, str):
                     generator = import_variable_from_module(generator)
                 self._add_extra_pages(prefix, generator(self.app))
