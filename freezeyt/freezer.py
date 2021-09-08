@@ -118,6 +118,7 @@ class Task:
     response_headers: Optional[Headers] = None
     redirects_to: "Optional[Task]" = None
     status: TaskStatus = TaskStatus.PENDING
+    reasons: set = dataclasses.field(default_factory=set)
 
     def __repr__(self):
         return f"<Task for {self.path}, {self.status.name}>"
@@ -194,7 +195,7 @@ class Freezer:
         if get_result is not None:
             return self.saver.get_result()
 
-    def add_task(self, url: URL, *, external_ok: bool = False) -> Optional[Task]:
+    def add_task(self, url: URL, *, external_ok: bool = False, reason: str = None) -> Optional[Task]:
         """Add a task to freeze the given URL
 
         If no task is added (e.g. for external URLs), return None.
@@ -209,15 +210,15 @@ class Freezer:
         if path in self.pending_tasks:
             task = self.pending_tasks[path]
             task.urls.add(url)
-            return task
         elif path in self.done_tasks:
             task = self.done_tasks[path]
             task.urls.add(url)
-            return task
         else:
             task = Task(path, {url})
             self.pending_tasks[path] = task
-            return task
+        if reason:
+            task.reasons.add(reason)
+        return task
 
     def freeze_extra_files(self):
         if self.extra_files is not None:
@@ -277,13 +278,13 @@ class Freezer:
             elif redirect_policy == 'ignore':
                 raise IgnorePage()
             elif redirect_policy == 'error':
-                raise UnexpectedStatus(url, status)
+                raise UnexpectedStatus(url, status, task.reasons)
             else:
                 raise ValueError(
                     f'redirect policy {redirect_policy} not supported'
                 )
         if not status.startswith("200"):
-            raise UnexpectedStatus(url, status)
+            raise UnexpectedStatus(url, status, task.reasons)
         else:
             check_mimetype(
                 url.path, headers,
@@ -416,7 +417,10 @@ class Freezer:
                             # it's an external url and we don't follow it.
                             pass
                         else:
-                            self.add_task(new_url, external_ok=True)
+                            self.add_task(
+                                new_url, external_ok=True,
+                                reason=f'linked from {url}',
+                            )
 
             task.status = TaskStatus.DONE
 
