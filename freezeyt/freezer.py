@@ -55,22 +55,24 @@ def check_mimetype(url_path, headers, default='application/octet-stream'):
         raise WrongMimetypeError(file_type, mime_type, url_path)
 
 
-def parse_url_finders(url_finders: Mapping) -> Mapping:
+def parse_handlers(
+    handlers: Mapping, default_module: Optional[str]=None
+) -> Mapping:
     result = {}
-    for content_type, finder_or_name in url_finders.items():
-        if isinstance(finder_or_name, str):
-            finder = import_variable_from_module(
-                finder_or_name, default_module_name='freezeyt.url_finders'
+    for key, handler_or_name in handlers.items():
+        if isinstance(handler_or_name, str):
+            handler = import_variable_from_module(
+                handler_or_name, default_module_name=default_module
             )
         else:
-            finder = finder_or_name
-        if not callable(finder):
+            handler = handler_or_name
+        if not callable(handler):
             raise TypeError(
-                "Url-finder for {content_type!r} in configuration must be a string or a callable,"
-                + f" not {type(finder)}!"
+                "Handler for {key!r} in configuration must be a string or a callable,"
+                + f" not {type(handler)}!"
             )
 
-        result[content_type] = finder
+        result[key] = handler
 
     return result
 
@@ -143,8 +145,9 @@ class Freezer:
         self.extra_pages = config.get('extra_pages', ())
         self.extra_files = config.get('extra_files', None)
 
-        self.url_finders = parse_url_finders(
-                                config.get('url_finders', DEFAULT_URL_FINDERS)
+        self.url_finders = parse_handlers(
+                                config.get('url_finders', DEFAULT_URL_FINDERS),
+                                default_module='freezeyt.url_finders'
                             )
 
         prefix = config.get('prefix', 'http://localhost:8000/')
