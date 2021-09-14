@@ -297,8 +297,10 @@ before any other hooks.
 It is passed a `FreezeInfo` object as argument.
 The object has the following method:
 
-* `add_url(url)`: Add the URL to the set of pages to be frozen.
+* `add_url(url, reason=None)`: Add the URL to the set of pages to be frozen.
   If that URL was frozen already, or is outside the `prefix`, does nothing.
+  If you add a `reason` string, it will be used in error messages as the reason
+  why the added URL is being handled.
 
 #### `page_frozen`
 
