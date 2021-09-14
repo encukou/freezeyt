@@ -180,7 +180,7 @@ class Freezer:
         self.redirecting_tasks = {}
 
         self.pending_tasks = {}
-        self.add_task(prefix_parsed)
+        self.add_task(prefix_parsed, reason='site root (homepage)')
         self._add_extra_pages(prefix, self.extra_pages)
 
         self.hooks = {}
@@ -271,7 +271,11 @@ class Freezer:
                 status = "200"
             elif redirect_policy == 'follow':
                 location = add_port(url.join(location))
-                target_task = self.add_task(location, external_ok=True)
+                target_task = self.add_task(
+                    location,
+                    external_ok=True,
+                    reason='redirecting from {url}',
+                )
                 task.redirects_to = target_task
                 self.redirecting_tasks[task.path] = task
                 raise IsARedirect()
@@ -308,7 +312,10 @@ class Freezer:
             elif isinstance(extra, str):
                 url = parse_absolute_url(urljoin(prefix, decode_input_path(extra)))
                 try:
-                    self.add_task(url)
+                    self.add_task(
+                        url,
+                        reason='extra page',
+                    )
                 except ExternalURLError:
                     raise ExternalURLError(f'External URL specified in extra_pages: {url}')
             else:

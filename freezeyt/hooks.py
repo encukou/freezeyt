@@ -24,5 +24,5 @@ class FreezeInfo:
     def __init__(self, freezer):
         self._freezer = freezer
 
-    def add_url(self, url):
-        self._freezer.add_task(parse_absolute_url(url))
+    def add_url(self, url, reason=None):
+        self._freezer.add_task(parse_absolute_url(url), reason=reason)
