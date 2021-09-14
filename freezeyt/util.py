@@ -22,10 +22,15 @@ class UnsupportedSchemeError(ValueError):
 
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
-    def __init__(self, url, status):
+    def __init__(self, url, status, reasons=None):
         self.url = url
         self.status = status
-        super().__init__(f"Unexpected status '{status}' on URL {url.to_url()}")
+        self.reasons = sorted(reasons)
+        message = f"Unexpected status '{status}' on URL {url.to_url()}"
+        if reasons:
+            for reason in self.reasons:
+                message += f'\n-  {reason}'
+        super().__init__(message)
 
 class WrongMimetypeError(ValueError):
     """MIME type does not match file extension"""

@@ -118,6 +118,7 @@ class Task:
     response_headers: Optional[Headers] = None
     redirects_to: "Optional[Task]" = None
     status: TaskStatus = TaskStatus.PENDING
+    reasons: set = dataclasses.field(default_factory=set)
 
     def __repr__(self):
         return f"<Task for {self.path}, {self.status.name}>"
@@ -179,7 +180,7 @@ class Freezer:
         self.redirecting_tasks = {}
 
         self.pending_tasks = {}
-        self.add_task(prefix_parsed)
+        self.add_task(prefix_parsed, reason='site root (homepage)')
         self._add_extra_pages(prefix, self.extra_pages)
 
         self.hooks = {}
@@ -194,7 +195,7 @@ class Freezer:
         if get_result is not None:
             return self.saver.get_result()
 
-    def add_task(self, url: URL, *, external_ok: bool = False) -> Optional[Task]:
+    def add_task(self, url: URL, *, external_ok: bool = False, reason: str = None) -> Optional[Task]:
         """Add a task to freeze the given URL
 
         If no task is added (e.g. for external URLs), return None.
@@ -209,15 +210,15 @@ class Freezer:
         if path in self.pending_tasks:
             task = self.pending_tasks[path]
             task.urls.add(url)
-            return task
         elif path in self.done_tasks:
             task = self.done_tasks[path]
             task.urls.add(url)
-            return task
         else:
             task = Task(path, {url})
             self.pending_tasks[path] = task
-            return task
+        if reason:
+            task.reasons.add(reason)
+        return task
 
     def freeze_extra_files(self):
         if self.extra_files is not None:
@@ -270,20 +271,24 @@ class Freezer:
                 status = "200"
             elif redirect_policy == 'follow':
                 location = add_port(url.join(location))
-                target_task = self.add_task(location, external_ok=True)
+                target_task = self.add_task(
+                    location,
+                    external_ok=True,
+                    reason=f'target of redirect from {url}',
+                )
                 task.redirects_to = target_task
                 self.redirecting_tasks[task.path] = task
                 raise IsARedirect()
             elif redirect_policy == 'ignore':
                 raise IgnorePage()
             elif redirect_policy == 'error':
-                raise UnexpectedStatus(url, status)
+                raise UnexpectedStatus(url, status, task.reasons)
             else:
                 raise ValueError(
                     f'redirect policy {redirect_policy} not supported'
                 )
         if not status.startswith("200"):
-            raise UnexpectedStatus(url, status)
+            raise UnexpectedStatus(url, status, task.reasons)
         else:
             check_mimetype(
                 url.path, headers,
@@ -313,7 +318,10 @@ class Freezer:
             elif isinstance(extra, str):
                 url = parse_absolute_url(urljoin(prefix, decode_input_path(extra)))
                 try:
-                    self.add_task(url)
+                    self.add_task(
+                        url,
+                        reason='extra page',
+                    )
                 except ExternalURLError:
                     raise ExternalURLError(f'External URL specified in extra_pages: {url}')
             else:
@@ -422,7 +430,10 @@ class Freezer:
                             # it's an external url and we don't follow it.
                             pass
                         else:
-                            self.add_task(new_url, external_ok=True)
+                            self.add_task(
+                                new_url, external_ok=True,
+                                reason=f'linked from {url}',
+                            )
 
             task.status = TaskStatus.DONE
 
