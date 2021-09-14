@@ -354,107 +354,109 @@ class Freezer:
         while self.pending_tasks:
             file_path, task = self.pending_tasks.popitem()
             self.inprogress_tasks[task.path] = task
+            self.handle_one_task(task)
 
-            # Get an URL from the task's set of URLs
-            url_parsed = task.get_a_url()
-            url = url_parsed
+    def handle_one_task(self, task):
+        # Get an URL from the task's set of URLs
+        url_parsed = task.get_a_url()
+        url = url_parsed
 
-            # url_string should not be needed (except for debug messages)
-            url_string = url_parsed.to_url()
+        # url_string should not be needed (except for debug messages)
+        url_string = url_parsed.to_url()
 
-            path_info = url_parsed.path
+        path_info = url_parsed.path
 
-            if path_info.startswith(self.prefix.path):
-                path_info = "/" + path_info[len(self.prefix.path):]
+        if path_info.startswith(self.prefix.path):
+            path_info = "/" + path_info[len(self.prefix.path):]
 
-            environ = {
-                'SERVER_NAME': self.prefix.ascii_host,
-                'SERVER_PORT': str(self.prefix.port),
-                'REQUEST_METHOD': 'GET',
-                'PATH_INFO': encode_wsgi_path(path_info),
-                'SCRIPT_NAME': encode_wsgi_path(self.prefix.path),
-                'SERVER_PROTOCOL': 'HTTP/1.1',
-                'SERVER_SOFTWARE': 'freezeyt/0.1',
+        environ = {
+            'SERVER_NAME': self.prefix.ascii_host,
+            'SERVER_PORT': str(self.prefix.port),
+            'REQUEST_METHOD': 'GET',
+            'PATH_INFO': encode_wsgi_path(path_info),
+            'SCRIPT_NAME': encode_wsgi_path(self.prefix.path),
+            'SERVER_PROTOCOL': 'HTTP/1.1',
+            'SERVER_SOFTWARE': 'freezeyt/0.1',
 
-                'wsgi.version': (1, 0),
-                'wsgi.url_scheme': 'http',
-                'wsgi.input': io.BytesIO(),
-                'wsgi.errors': sys.stderr,
-                'wsgi.multithread': False,
-                'wsgi.multiprocess': False,
-                'wsgi.run_once': False,
+            'wsgi.version': (1, 0),
+            'wsgi.url_scheme': 'http',
+            'wsgi.input': io.BytesIO(),
+            'wsgi.errors': sys.stderr,
+            'wsgi.multithread': False,
+            'wsgi.multiprocess': False,
+            'wsgi.run_once': False,
 
-                'freezeyt.freezing': True,
-            }
+            'freezeyt.freezing': True,
+        }
 
-            # The WSGI application can output data in two ways:
-            # - by a "write" function, which, in our case, will append
-            #   any data to a list, `wsgi_write_data`
-            # - (preferably) by returning an iterable object.
+        # The WSGI application can output data in two ways:
+        # - by a "write" function, which, in our case, will append
+        #   any data to a list, `wsgi_write_data`
+        # - (preferably) by returning an iterable object.
 
-            # See: https://www.python.org/dev/peps/pep-3333/#the-write-callable
+        # See: https://www.python.org/dev/peps/pep-3333/#the-write-callable
 
-            # Set up the wsgi_write_data, and make its `append` method
-            # available to `start_response` as first argument:
-            wsgi_write_data = []
-            start_response = functools.partial(
-                self.start_response,
-                task,
-                url,
-                wsgi_write_data.append,
-            )
+        # Set up the wsgi_write_data, and make its `append` method
+        # available to `start_response` as first argument:
+        wsgi_write_data = []
+        start_response = functools.partial(
+            self.start_response,
+            task,
+            url,
+            wsgi_write_data.append,
+        )
 
-            # Call the application. All calls to write (wsgi_write_data.append)
-            # must be doneas part of this call.
-            try:
-                result_iterable = self.app(environ, start_response)
-            except IsARedirect:
-                continue
-            except IgnorePage:
-                continue
+        # Call the application. All calls to write (wsgi_write_data.append)
+        # must be doneas part of this call.
+        try:
+            result_iterable = self.app(environ, start_response)
+        except IsARedirect:
+            return
+        except IgnorePage:
+            return
 
-            # Combine the list of data from write() with the returned
-            # iterable object.
-            full_result = itertools.chain(
-                wsgi_write_data,
-                result_iterable,
-            )
+        # Combine the list of data from write() with the returned
+        # iterable object.
+        full_result = itertools.chain(
+            wsgi_write_data,
+            result_iterable,
+        )
 
-            self.saver.save_to_filename(task.path, full_result)
+        self.saver.save_to_filename(task.path, full_result)
 
-            try:
-                close = result_iterable.close
-            except AttributeError:
-                pass
-            else:
-                close()
+        try:
+            close = result_iterable.close
+        except AttributeError:
+            pass
+        else:
+            close()
 
-            with self.saver.open_filename(file_path) as f:
-                content_type = task.response_headers.get('Content-Type')
-                mime_type, encoding = parse_options_header(content_type)
-                url_finder = self.url_finders.get(mime_type)
-                if url_finder is not None:
-                    links = url_finder(
-                        f, url_string, task.response_headers.to_wsgi_list()
-                    )
-                    for new_url_text in links:
-                        new_url = url.join(decode_input_path(new_url_text))
-                        try:
-                            new_url = add_port(new_url)
-                        except UnsupportedSchemeError:
-                            # If this has a scheme other than http and https,
-                            # it's an external url and we don't follow it.
-                            pass
-                        else:
-                            self.add_task(
-                                new_url, external_ok=True,
-                                reason=f'linked from {url}',
-                            )
+        with self.saver.open_filename(task.path) as f:
+            content_type = task.response_headers.get('Content-Type')
+            mime_type, encoding = parse_options_header(content_type)
+            url_finder = self.url_finders.get(mime_type)
+            if url_finder is not None:
+                links = url_finder(
+                    f, url_string, task.response_headers.to_wsgi_list()
+                )
+                for new_url_text in links:
+                    new_url = url.join(decode_input_path(new_url_text))
+                    try:
+                        new_url = add_port(new_url)
+                    except UnsupportedSchemeError:
+                        # If this has a scheme other than http and https,
+                        # it's an external url and we don't follow it.
+                        pass
+                    else:
+                        self.add_task(
+                            new_url, external_ok=True,
+                            reason=f'linked from {url}',
+                        )
 
-            del self.inprogress_tasks[task.path]
-            self.done_tasks[task.path] = task
+        del self.inprogress_tasks[task.path]
+        self.done_tasks[task.path] = task
 
-            self.call_hook('page_frozen', hooks.TaskInfo(task, self))
+        self.call_hook('page_frozen', hooks.TaskInfo(task, self))
 
     def handle_redirects(self):
         """Save copies of target pages for redirect_policy='follow'"""
