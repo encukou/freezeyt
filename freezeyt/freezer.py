@@ -274,7 +274,7 @@ class Freezer:
                 target_task = self.add_task(
                     location,
                     external_ok=True,
-                    reason='redirecting from {url}',
+                    reason=f'target of redirect from {url}',
                 )
                 task.redirects_to = target_task
                 self.redirecting_tasks[task.path] = task

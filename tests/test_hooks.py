@@ -1,7 +1,7 @@
 from flask import Flask
 import pytest
 
-from freezeyt import freeze, ExternalURLError
+from freezeyt import freeze, ExternalURLError, UnexpectedStatus
 from testutil import context_for_test
 
 
@@ -88,6 +88,36 @@ def test_freezeinfo_add_external_url():
 
         with pytest.raises(ExternalURLError):
             freeze(module.app, config)
+
+
+@pytest.mark.parametrize(
+    ['reason', 'expected_reasons'],
+    (
+        ('added for the test', ['added for the test']),
+        (None, []),
+    ),
+)
+def test_freezeinfo_add_404_url(reason, expected_reasons):
+    hook_called = False
+    def start_hook(freezeinfo):
+        nonlocal hook_called
+        hook_called = True
+
+        freezeinfo.add_url(
+            'http://example.com/404-page.html',
+            reason=reason,
+        )
+
+    with context_for_test('app_with_extra_page') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {'start': start_hook},
+        }
+
+        with pytest.raises(UnexpectedStatus) as e:
+            freeze(module.app, config)
+        assert e.value.reasons == expected_reasons
 
 
 @pytest.mark.parametrize('policy', ('save', 'follow'))
