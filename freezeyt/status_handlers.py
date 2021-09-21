@@ -19,6 +19,7 @@ def follow(status: str, task: TaskInfo) -> None:
         reason=f'target of redirect from {task._task.get_a_url()}',
     )
     task._task.redirects_to = target_task
+    del task._freezer.inprogress_tasks[task._task.path]
     task._freezer.redirecting_tasks[task._task.path] = task._task
     raise IsARedirect()
 
