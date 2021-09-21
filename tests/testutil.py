@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import sys
 import importlib
 import filecmp
+import difflib
 
 import pytest
 
@@ -58,8 +59,22 @@ def assert_cmp_same(cmp):
     for filename in list(cmp.diff_files) + list(cmp.same_files):
         path1 = Path(cmp.left) / filename
         path2 = Path(cmp.right) / filename
-        content1 = path1.read_bytes()
-        content2 = path2.read_bytes()
+        try:
+            content1 = path1.read_text()
+            content2 = path2.read_text()
+        except UnicodeDecodeError:
+            content1 = path1.read_bytes()
+            content2 = path2.read_bytes()
+        else:
+            # Show a diff between actual and expected output
+            diff = difflib.unified_diff(
+                content1.splitlines(keepends=True),
+                content2.splitlines(keepends=True),
+                fromfile='actual',
+                tofile='expected',
+            )
+            for line in diff:
+                print(line.rstrip('\n'))
         assert content1 == content2
 
     if cmp.diff_files:
