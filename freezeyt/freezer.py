@@ -118,16 +118,17 @@ def get_path_from_url(prefix, url, url_to_path):
 
 class TaskStatus(enum.Enum):
     PENDING = "Not started"
-    REQUESTED = "Currently being handled"
+    IN_PROGRESS = "Currently being handled"
+    REDIRECTING = "Waiting for target of redirection"
     DONE = "Saved"
 
 @dataclasses.dataclass
 class Task:
     path: Path
     urls: "set[URL]"
+    freezer: "Freezer"
     response_headers: Optional[Headers] = None
     redirects_to: "Optional[Task]" = None
-    status: TaskStatus = TaskStatus.PENDING
     reasons: set = dataclasses.field(default_factory=set)
 
     def __repr__(self):
@@ -136,6 +137,13 @@ class Task:
     def get_a_url(self):
         """Get an arbitrary one of the task's URLs."""
         return next(iter(self.urls))
+
+    @property
+    def status(self):
+        for status, queue in self.freezer.task_queues.items():
+            if self.path in queue:
+                return status
+        raise ValueError(f'Task not registered with freezer: {self}')
 
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
@@ -194,10 +202,20 @@ class Freezer:
         if isinstance(self.url_to_path, str):
             self.url_to_path = import_variable_from_module(self.url_to_path)
 
+        # The tasks for individual pages are tracked in the followng sets
+        # (actually dictionaries: {task.path: task})
+        # Each task must be in exactly in one of these.
         self.done_tasks = {}
         self.redirecting_tasks = {}
-
         self.pending_tasks = {}
+        self.inprogress_tasks = {}
+        self.task_queues = {
+            TaskStatus.PENDING: self.pending_tasks,
+            TaskStatus.DONE: self.done_tasks,
+            TaskStatus.REDIRECTING: self.redirecting_tasks,
+            TaskStatus.IN_PROGRESS: self.inprogress_tasks,
+        }
+
         self.add_task(prefix_parsed, reason='site root (homepage)')
         self._add_extra_pages(prefix, self.extra_pages)
 
@@ -225,14 +243,16 @@ class Freezer:
 
         path = get_path_from_url(self.prefix, url, self.url_to_path)
 
-        if path in self.pending_tasks:
-            task = self.pending_tasks[path]
-            task.urls.add(url)
-        elif path in self.done_tasks:
-            task = self.done_tasks[path]
-            task.urls.add(url)
+        for queue in self.task_queues.values():
+            if path in queue:
+                task = queue[path]
+                task.urls.add(url)
+                break
         else:
-            task = Task(path, {url})
+            # The `else` branch is entered if the loop ended normally
+            # (not with `break`, or exception, return, etc.)
+            # Here, this means the task wasn't found.
+            task = Task(path, {url}, self)
             self.pending_tasks[path] = task
         if reason:
             task.reasons.add(reason)
@@ -333,6 +353,7 @@ class Freezer:
     def handle_urls(self):
         while self.pending_tasks:
             file_path, task = self.pending_tasks.popitem()
+            self.inprogress_tasks[task.path] = task
 
             # Get an URL from the task's set of URLs
             url_parsed = task.get_a_url()
@@ -340,13 +361,6 @@ class Freezer:
 
             # url_string should not be needed (except for debug messages)
             url_string = url_parsed.to_url()
-
-            if task.path in self.done_tasks:
-                continue
-
-            self.done_tasks[task.path] = task
-
-            task.status = TaskStatus.REQUESTED
 
             path_info = url_parsed.path
 
@@ -437,7 +451,8 @@ class Freezer:
                                 reason=f'linked from {url}',
                             )
 
-            task.status = TaskStatus.DONE
+            del self.inprogress_tasks[task.path]
+            self.done_tasks[task.path] = task
 
             self.call_hook('page_frozen', hooks.TaskInfo(task, self))
 
@@ -452,12 +467,14 @@ class Freezer:
                 with self.saver.open_filename(task.redirects_to.path) as f:
                     self.saver.save_to_filename(task.path, f)
                 self.call_hook('page_frozen', hooks.TaskInfo(task, self))
-                task.status = TaskStatus.DONE
                 del self.redirecting_tasks[key]
+                self.done_tasks[task.path] = task
                 saved_something = True
             if not saved_something:
-                key, task = self.redirecting_tasks.popitem()
-                raise InfiniteRedirection(task)
+                # Get some task (the first one we get by iteration) for the
+                # error message.
+                for task in self.redirecting_tasks.values():
+                    raise InfiniteRedirection(task)
 
     def call_hook(self, hook_name, *arguments):
         hook = self.hooks.get(hook_name)
