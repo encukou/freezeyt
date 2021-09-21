@@ -443,13 +443,21 @@ class Freezer:
 
     def handle_redirects(self):
         """Save copies of target pages for redirect_policy='follow'"""
-        for task in self.redirecting_tasks.values():
-            if task.redirects_to.status != TaskStatus.DONE:
-                raise InfiniteRedirection(task)
+        while self.redirecting_tasks:
+            saved_something = False
+            for key, task in list(self.redirecting_tasks.items()):
+                if task.redirects_to.status != TaskStatus.DONE:
+                    continue
 
-            with self.saver.open_filename(task.redirects_to.path) as f:
-                self.saver.save_to_filename(task.path, f)
-            self.call_hook('page_frozen', hooks.TaskInfo(task, self))
+                with self.saver.open_filename(task.redirects_to.path) as f:
+                    self.saver.save_to_filename(task.path, f)
+                self.call_hook('page_frozen', hooks.TaskInfo(task, self))
+                task.status = TaskStatus.DONE
+                del self.redirecting_tasks[key]
+                saved_something = True
+            if not saved_something:
+                key, task = self.redirecting_tasks.popitem()
+                raise InfiniteRedirection(task)
 
     def call_hook(self, hook_name, *arguments):
         hook = self.hooks.get(hook_name)
