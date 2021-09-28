@@ -13,7 +13,10 @@ def generate_urls(app):
 freeze_config = {
     'prefix': 'http://example.test/',
     'extra_pages': [{'generator': 'app:generate_urls'}],
-    'redirect_policy': 'save',
+    'status_handlers':
+        {
+            '3xx': 'save',
+        }
 }
 
 # Flask always rewrites "Location:" headers to be absolute

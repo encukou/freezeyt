@@ -1,7 +1,9 @@
 from flask import Flask, redirect, url_for
 
 app = Flask(__name__)
-freeze_config = {}
+freeze_config = {
+    'status_handlers': {'302': 'error'}
+}
 
 
 @app.route('/')

@@ -31,12 +31,12 @@ def test_reason_redirect():
     config = {
         'prefix': 'http://localhost/',
         'output': {'type': 'dict'},
-        'redirect_policy': 'follow',
+        'status_handlers': {'3xx': 'follow'},
     }
 
     with pytest.raises(UnexpectedStatus) as e:
         freeze(app, config)
-    print(e)
+
     assert str(e.value.url) == 'http://localhost:80/404'
     assert e.value.status[:3] == '404'
     assert e.value.reasons == ['target of redirect from http://localhost:80/']
