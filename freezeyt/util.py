@@ -26,7 +26,7 @@ class UnexpectedStatus(ValueError):
         self.url = url
         self.status = status
         self.reasons = sorted(reasons)
-        message = f"Unexpected status '{status}' on URL {url.to_url()}"
+        message = f"Unexpected status '{status}' on URL {url}"
         if reasons:
             for reason in self.reasons:
                 message += f'\n-  {reason}'
