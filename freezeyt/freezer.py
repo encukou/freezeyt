@@ -21,7 +21,7 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
-from freezeyt.util import UnexpectedStatus, WrongMimetypeError
+from freezeyt.util import WrongMimetypeError
 from freezeyt.util import UnsupportedSchemeError
 from freezeyt import hooks
 
@@ -40,6 +40,14 @@ DEFAULT_URL_FINDERS = {
             'text/html': 'get_html_links',
             'text/css': 'get_css_links'
         }
+
+DEFAULT_STATUS_HANDLERS = {
+    '1xx': 'error',
+    '2xx': 'save',
+    '3xx': 'error',
+    '4xx': 'error',
+    '5xx': 'error',
+}
 
 
 def check_mimetype(url_path, headers, default='application/octet-stream'):
@@ -150,6 +158,13 @@ class Freezer:
                                 default_module='freezeyt.url_finders'
                             )
 
+        _status_handlers = dict(
+            DEFAULT_STATUS_HANDLERS, **config.get('status_handlers', {})
+        )
+        self.status_handlers = parse_handlers(
+            _status_handlers, default_module='freezeyt.status_handlers'
+        )
+
         prefix = config.get('prefix', 'http://localhost:8000/')
 
         # Decode path in the prefix URL.
@@ -243,6 +258,7 @@ class Freezer:
     def prepare(self):
         self.saver.prepare()
 
+
     def start_response(
         self, task, url, wsgi_write, status, headers, exc_info=None,
     ):
@@ -266,39 +282,22 @@ class Freezer:
             if value is not None:
                 raise value
 
+        if self.status_handlers.get(status[:3]):
+            status_handler = self.status_handlers.get(status[:3])
+
+        elif self.status_handlers.get(status[0] + 'xx'):
+            status_handler = self.status_handlers.get(status[0] + 'xx')
+
         task.response_headers = Headers(headers)
-        if status.startswith("3"):
-            location = task.response_headers['Location']
-            redirect_policy = self.config.get('redirect_policy', 'error')
-            if redirect_policy == 'save':
-                status = "200"
-            elif redirect_policy == 'follow':
-                location = add_port(url.join(location))
-                target_task = self.add_task(
-                    location,
-                    external_ok=True,
-                    reason=f'target of redirect from {url}',
-                )
-                task.redirects_to = target_task
-                self.redirecting_tasks[task.path] = task
-                raise IsARedirect()
-            elif redirect_policy == 'ignore':
-                raise IgnorePage()
-            elif redirect_policy == 'error':
-                raise UnexpectedStatus(url, status, task.reasons)
-            else:
-                raise ValueError(
-                    f'redirect policy {redirect_policy} not supported'
-                )
-        if not status.startswith("200"):
-            raise UnexpectedStatus(url, status, task.reasons)
-        else:
-            check_mimetype(
-                url.path, headers,
-                default=self.config.get(
-                    'default_mimetype', 'application/octet-stream',
-                ),
-            )
+
+        status_handler(status, hooks.TaskInfo(task, self))
+
+        check_mimetype(
+            url.path, headers,
+            default=self.config.get(
+                'default_mimetype', 'application/octet-stream',
+            ),
+        )
         return wsgi_write
 
     def _add_extra_pages(self, prefix, extras):
