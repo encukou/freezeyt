@@ -5,7 +5,7 @@ from freezeyt.util import UnexpectedStatus, add_port
 
 def warn(status: str, task: TaskInfo) -> None:
     print(
-        f"WARNING: URL {task.get_a_url()}, status code: {status} was freezed"
+        f"WARNING: URL {task.get_a_url()}, status code: {status[:3]} was freezed"
     )
 
 
