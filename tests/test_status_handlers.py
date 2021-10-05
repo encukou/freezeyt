@@ -47,7 +47,7 @@ def test_warn_handler(capsys, response_status):
     freeze(app, config)
     captured = capsys.readouterr()
 
-    assert captured.out == expected_output
+    assert expected_output in captured.out
 
 
 @pytest.mark.parametrize('response_status', ('100', '301', '404', '500'))
