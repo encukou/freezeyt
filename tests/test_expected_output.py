@@ -77,7 +77,7 @@ def test_redirect_policy_follow(tmp_path, monkeypatch):
         freeze_config = module.freeze_config
 
         freeze_config['output'] = {'type': 'dict'}
-        freeze_config['redirect_policy'] = 'follow'
+        freeze_config['status_handlers'] = {'3xx': 'follow'}
 
         result = freeze(module.app, freeze_config) # freeze content to dict
 
@@ -89,7 +89,7 @@ def test_redirect_policy_ignore(tmp_path, monkeypatch):
         freeze_config = module.freeze_config
 
         freeze_config['output'] = {'type': 'dict'}
-        freeze_config['redirect_policy'] = 'ignore'
+        freeze_config['status_handlers'] = {'3xx': 'ignore'}
 
         result = freeze(module.app, freeze_config) # freeze content to dict
 
@@ -101,7 +101,7 @@ def test_circular_redirect(tmp_path, monkeypatch):
         freeze_config = module.freeze_config
 
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
-        freeze_config['redirect_policy'] = 'follow'
+        freeze_config['status_handlers'] = {'3xx': 'follow'}
 
         with pytest.raises(InfiniteRedirection):
             freeze(module.app, freeze_config)

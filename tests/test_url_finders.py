@@ -1,7 +1,7 @@
 import pytest
 
 from freezeyt import freeze
-from freezeyt.freezer import parse_url_finders
+from freezeyt.freezer import parse_handlers as parse_url_finders
 from freezeyt.url_finders import get_html_links
 from freezeyt.url_finders import get_css_links
 from testutil import context_for_test
@@ -25,13 +25,15 @@ TEST_DATA = {
 def test_parse_url_finders(test_name):
     key, config, expected = TEST_DATA[test_name]
 
-    assert parse_url_finders(config)[key] == expected
+    assert parse_url_finders(
+        config, default_module='freezeyt.url_finders')[key] == expected
 
 
 def test_get_no_url_finders():
     url_finders = {}
 
-    assert parse_url_finders(url_finders) == {}
+    assert parse_url_finders(
+        url_finders, default_module='freezeyt.url_finders') == {}
 
 
 def test_get_only_links_from_html(tmp_path):
