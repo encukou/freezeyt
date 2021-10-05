@@ -10,10 +10,7 @@ def warn(status: str, task: TaskInfo) -> None:
 
 
 def follow(status: str, task: TaskInfo) -> None:
-    try:
-        location = task._task.response_headers['Location']
-    except KeyError:
-        raise UnexpectedStatus(task.get_a_url(), status, task._task.reasons)
+    location = task._task.response_headers['Location']
 
     location = add_port(task._task.get_a_url().join(location))
     target_task = task._freezer.add_task(

@@ -23,7 +23,7 @@ class UnsupportedSchemeError(ValueError):
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
     def __init__(self, url, status, reasons=None):
-        self.url = url
+        self.url = str(url)
         self.status = status
         self.reasons = sorted(reasons)
         message = f"Unexpected status '{status}' on URL {url}"

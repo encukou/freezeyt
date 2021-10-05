@@ -1,12 +1,11 @@
 from flask import Flask, Response
 
 from freezeyt.freezer import IgnorePage
-from freezeyt.util import parse_absolute_url
 from freezeyt.hooks import TaskInfo
 
 
 def custom_status_handler(status: str, task: TaskInfo) -> None:
-    task._freezer.add_task(parse_absolute_url('http://localhost:8000/404.html'))
+    task.freeze_info.add_url('http://localhost:8000/404.html')
     raise IgnorePage()
 
 
