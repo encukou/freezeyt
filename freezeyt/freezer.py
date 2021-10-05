@@ -9,6 +9,7 @@ import dataclasses
 from typing import Optional, Mapping
 import enum
 from urllib.parse import urljoin
+import asyncio
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -31,7 +32,7 @@ def freeze(app, config):
     freezer.prepare()
     freezer.call_hook('start', freezer.freeze_info)
     freezer.freeze_extra_files()
-    freezer.handle_urls()
+    asyncio.run(freezer.handle_urls())
     freezer.handle_redirects()
     return freezer.get_result()
 
@@ -350,13 +351,22 @@ class Freezer:
                 generator = extra
                 self._add_extra_pages(prefix, generator(self.app))
 
-    def handle_urls(self):
+    async def handle_urls(self):
+        tasks = []
         while self.pending_tasks:
-            file_path, task = self.pending_tasks.popitem()
-            self.inprogress_tasks[task.path] = task
-            self.handle_one_task(task)
+            while self.pending_tasks:
+                file_path, task = self.pending_tasks.popitem()
+                self.inprogress_tasks[task.path] = task
 
-    def handle_one_task(self, task):
+                async_task = asyncio.create_task(
+                    self.handle_one_task(task),
+                    name=task.path,
+                )
+                tasks.append(async_task)
+            for task in tasks:
+                await task
+
+    async def handle_one_task(self, task):
         # Get an URL from the task's set of URLs
         url_parsed = task.get_a_url()
         url = url_parsed

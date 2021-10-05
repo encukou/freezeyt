@@ -8,7 +8,7 @@ class InfiniteRedirection(Exception):
     def __init__(self, task):
         super().__init__(
             f'{task.get_a_url()} redirects to {task.redirects_to.get_a_url()},'
-            + ' which was not frozen (most likely becaus of infinite redirection)'
+            + ' which was not frozen (most likely because of infinite redirection)'
         )
 
 class ExternalURLError(ValueError):
