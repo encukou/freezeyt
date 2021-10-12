@@ -4,7 +4,7 @@ from freezeyt.freezer import IgnorePage
 from freezeyt.hooks import TaskInfo
 
 
-def custom_status_handler(status: str, task: TaskInfo) -> None:
+def custom_status_handler(task: TaskInfo) -> None:
     task.freeze_info.add_url('http://localhost:8000/404.html')
     raise IgnorePage()
 
