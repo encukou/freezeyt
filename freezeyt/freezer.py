@@ -28,11 +28,15 @@ from freezeyt import hooks
 
 
 def freeze(app, config):
+    return asyncio.run(freeze_async(app, config))
+
+
+async def freeze_async(app, config):
     freezer = Freezer(app, config)
     freezer.prepare()
     freezer.call_hook('start', freezer.freeze_info)
     freezer.freeze_extra_files()
-    asyncio.run(freezer.handle_urls())
+    await freezer.handle_urls()
     freezer.handle_redirects()
     return freezer.get_result()
 
@@ -118,7 +122,6 @@ def get_path_from_url(prefix, url, url_to_path):
     return result
 
 class TaskStatus(enum.Enum):
-    PENDING = "Not started"
     IN_PROGRESS = "Currently being handled"
     REDIRECTING = "Waiting for target of redirection"
     DONE = "Saved"
@@ -131,6 +134,7 @@ class Task:
     response_headers: Optional[Headers] = None
     redirects_to: "Optional[Task]" = None
     reasons: set = dataclasses.field(default_factory=set)
+    asyncio_task: asyncio.Task = None
 
     def __repr__(self):
         return f"<Task for {self.path}, {self.status.name}>"
@@ -208,10 +212,8 @@ class Freezer:
         # Each task must be in exactly in one of these.
         self.done_tasks = {}
         self.redirecting_tasks = {}
-        self.pending_tasks = {}
         self.inprogress_tasks = {}
         self.task_queues = {
-            TaskStatus.PENDING: self.pending_tasks,
             TaskStatus.DONE: self.done_tasks,
             TaskStatus.REDIRECTING: self.redirecting_tasks,
             TaskStatus.IN_PROGRESS: self.inprogress_tasks,
@@ -254,7 +256,11 @@ class Freezer:
             # (not with `break`, or exception, return, etc.)
             # Here, this means the task wasn't found.
             task = Task(path, {url}, self)
-            self.pending_tasks[path] = task
+            task.asyncio_task = asyncio.create_task(
+                self.handle_one_task(task),
+                name=task.path,
+            )
+            self.inprogress_tasks[path] = task
         if reason:
             task.reasons.add(reason)
         return task
@@ -352,19 +358,17 @@ class Freezer:
                 self._add_extra_pages(prefix, generator(self.app))
 
     async def handle_urls(self):
-        tasks = []
-        while self.pending_tasks:
-            while self.pending_tasks:
-                file_path, task = self.pending_tasks.popitem()
-                self.inprogress_tasks[task.path] = task
-
-                async_task = asyncio.create_task(
-                    self.handle_one_task(task),
-                    name=task.path,
-                )
-                tasks.append(async_task)
-            for task in tasks:
-                await task
+        while self.inprogress_tasks:
+            # Get an item from self.inprogress_tasks.
+            # Since this is a dict, we can't do self.inprogress_tasks[0];
+            # and since we don't want to change it we can't use pop().
+            # So, start iterating over it, and break the loop immediately
+            # when we get the first item.
+            for path, task in self.inprogress_tasks.items():
+                break
+            await task.asyncio_task
+            if path in self.inprogress_tasks:
+                raise ValueError(f'{task} is in_progress after it was handled')
 
     async def handle_one_task(self, task):
         # Get an URL from the task's set of URLs
@@ -423,6 +427,8 @@ class Freezer:
         except IsARedirect:
             return
         except IgnorePage:
+            del self.inprogress_tasks[task.path]
+            self.done_tasks[task.path] = task
             return
 
         # Combine the list of data from write() with the returned
