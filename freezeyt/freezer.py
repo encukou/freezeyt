@@ -24,11 +24,12 @@ from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import WrongMimetypeError
 from freezeyt.util import UnsupportedSchemeError
+from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 
 
 def freeze(app, config):
-    return asyncio.run(freeze_async(app, config))
+    return asyncio_run(freeze_async(app, config))
 
 
 async def freeze_async(app, config):
@@ -134,7 +135,7 @@ class Task:
     response_headers: Optional[Headers] = None
     redirects_to: "Optional[Task]" = None
     reasons: set = dataclasses.field(default_factory=set)
-    asyncio_task: asyncio.Task = None
+    asyncio_task: "Optional[asyncio.Task]" = None
 
     def __repr__(self):
         return f"<Task for {self.path}, {self.status.name}>"
@@ -256,7 +257,7 @@ class Freezer:
             # (not with `break`, or exception, return, etc.)
             # Here, this means the task wasn't found.
             task = Task(path, {url}, self)
-            task.asyncio_task = asyncio.create_task(
+            task.asyncio_task = asyncio_create_task(
                 self.handle_one_task(task),
                 name=task.path,
             )
