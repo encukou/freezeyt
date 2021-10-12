@@ -7,9 +7,9 @@ from flask import Flask, Response
 from freezeyt import freeze, UnexpectedStatus
 
 
-STATUSES = ('100', '201', '204', '301', '406', '503')
+STATUSES = ('100', '201', '204', '301', '406', '503', '600', '709', '888')
 
-@pytest.mark.parametrize('response_status', STATUSES)
+@pytest.mark.parametrize('response_status', STATUSES )
 def test_error_handler(response_status):
     app = Flask(__name__)
     config = {

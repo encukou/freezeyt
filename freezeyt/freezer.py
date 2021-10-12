@@ -306,9 +306,10 @@ class Freezer:
 
         if self.status_handlers.get(status[:3]):
             status_handler = self.status_handlers.get(status[:3])
-
         elif self.status_handlers.get(status[0] + 'xx'):
             status_handler = self.status_handlers.get(status[0] + 'xx')
+        else:
+            raise UnexpectedStatus(url, status, task.reasons)
 
         task.response_headers = Headers(headers)
         task.response_status = status
