@@ -43,7 +43,8 @@ DEFAULT_URL_FINDERS = {
 
 DEFAULT_STATUS_HANDLERS = {
     '1xx': 'error',
-    '2xx': 'save',
+    '200': 'save',
+    '2xx': 'error',
     '3xx': 'error',
     '4xx': 'error',
     '5xx': 'error',

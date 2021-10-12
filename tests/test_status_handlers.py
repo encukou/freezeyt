@@ -1,4 +1,4 @@
-"""Test that the "reasons" attribute of UnexpectedStatus is set properly."""
+"""Test that the configuration of status_handlers work properly"""
 
 import pytest
 
@@ -7,7 +7,7 @@ from flask import Flask, Response
 from freezeyt import freeze, UnexpectedStatus
 
 
-STATUSES = ('100', '204', '301', '406', '503')
+STATUSES = ('100', '201', '204', '301', '406', '503')
 
 @pytest.mark.parametrize('response_status', STATUSES)
 def test_error_handler(response_status):
@@ -50,7 +50,7 @@ def test_warn_handler(capsys, response_status):
     assert expected_output in captured.out
 
 
-@pytest.mark.parametrize('response_status', ('100', '301', '404', '500'))
+@pytest.mark.parametrize('response_status', STATUSES)
 def test_default_handlers(response_status):
     app = Flask(__name__)
     config = {
