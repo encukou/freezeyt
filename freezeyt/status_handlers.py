@@ -8,7 +8,7 @@ def warn(task: TaskInfo) -> str:
         + f" status code: {task._task.response_status[:3]} was freezed"
     )
 
-    return 'warn'
+    return 'save'
 
 
 def follow(task: TaskInfo) -> str:

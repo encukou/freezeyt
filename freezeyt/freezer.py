@@ -316,20 +316,21 @@ class Freezer:
 
         status_action = status_handler(hooks.TaskInfo(task, self))
 
-        if status_action == 'follow':
-            raise IsARedirect()
+        if status_action == 'save':
+            check_mimetype(
+                url.path, headers,
+                default=self.config.get(
+                    'default_mimetype', 'application/octet-stream',
+                ),
+            )
+            return wsgi_write
         elif status_action == 'ignore':
             raise IgnorePage()
-        elif status_action == 'error':
+        elif status_action == 'follow':
+            raise IsARedirect()
+        else:
             raise UnexpectedStatus(url, status, task.reasons)
 
-        check_mimetype(
-            url.path, headers,
-            default=self.config.get(
-                'default_mimetype', 'application/octet-stream',
-            ),
-        )
-        return wsgi_write
 
     def _add_extra_pages(self, prefix, extras):
         """Add URLs of extra pages from config.

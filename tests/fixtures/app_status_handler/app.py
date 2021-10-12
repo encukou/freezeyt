@@ -3,8 +3,9 @@ from flask import Flask, Response
 from freezeyt.hooks import TaskInfo
 
 
-def custom_status_handler(task: TaskInfo) -> None:
+def custom_status_handler(task: TaskInfo) -> str:
     task.freeze_info.add_url('http://localhost:8000/EXTRA.html')
+    return 'save'
 
 
 app = Flask(__name__)

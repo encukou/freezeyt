@@ -65,3 +65,20 @@ def test_default_handlers(response_status):
         freeze(app, config)
 
     assert e.value.status[:3] == f'{response_status}'
+
+def custom_handler(task):
+    return "non_sense"
+
+def test_error_custom_handler():
+    app = Flask(__name__)
+    config = {
+        'output': {'type': 'dict'},
+        'status_handlers': {'200': custom_handler}
+    }
+
+    @app.route('/')
+    def index():
+        return 'Hello world!'
+
+    with pytest.raises(UnexpectedStatus):
+        freeze(app, config)
