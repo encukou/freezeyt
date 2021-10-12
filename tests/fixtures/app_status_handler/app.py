@@ -1,12 +1,10 @@
 from flask import Flask, Response
 
-from freezeyt.freezer import IgnorePage
 from freezeyt.hooks import TaskInfo
 
 
 def custom_status_handler(task: TaskInfo) -> None:
-    task.freeze_info.add_url('http://localhost:8000/404.html')
-    raise IgnorePage()
+    task.freeze_info.add_url('http://localhost:8000/EXTRA.html')
 
 
 app = Flask(__name__)
@@ -15,7 +13,8 @@ freeze_config = {
             {
                 '204': 'ignore',
                 '418': 'warn',
-                '404': f'{__name__}:custom_status_handler',
+                '404': 'ignore',
+                '600': f'{__name__}:custom_status_handler',
             },
     }
 
@@ -39,7 +38,7 @@ def index():
 
 @app.route('/second_page.html')
 def second_page():
-    return """
+    response_content = """
     <html>
         <head>
             <title>Hello world second page</title>
@@ -49,6 +48,10 @@ def second_page():
         </body>
     </html>
     """
+    return Response(
+        response=response_content, status='600 Custom Handler Used'
+    )
+
 
 @app.route('/third_page.html')
 def third_page():
@@ -58,15 +61,15 @@ def third_page():
 def teapot_page():
     return Response(response='I am a teapot...', status="418 I'm a teapot")
 
-@app.route('/404.html')
+@app.route('/EXTRA.html')
 def not_found_page():
     return """
     <html>
         <head>
-            <title>404 NOT FOUND</title>
+            <title>EXTRA</title>
         </head>
         <body>
-            404 PAGE NOT FOUND!
+            PAGE ADDED BY CUSTOM HANDLER!
         </body>
     </html>
     """
@@ -92,10 +95,10 @@ expected_dict = {
 
     'teapot.html': b"I am a teapot...",
 
-    '404.html':
+    'EXTRA.html':
         b"\n    <html>\n        <head>\n            <title>"
-        + b"404 NOT FOUND</title>\n        </head>\n"
-        + b"        <body>\n            404 PAGE NOT FOUND!\n"
+        + b"EXTRA</title>\n        </head>\n"
+        + b"        <body>\n            PAGE ADDED BY CUSTOM HANDLER!\n"
         + b"        </body>\n    </html>\n    ",
 
 }
