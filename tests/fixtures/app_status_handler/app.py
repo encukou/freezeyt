@@ -4,7 +4,7 @@ from freezeyt.hooks import TaskInfo
 
 
 def custom_status_handler(task: TaskInfo) -> str:
-    task.freeze_info.add_url('http://localhost:8000/EXTRA.html')
+    task.freeze_info.add_url('http://localhost:8000/extra.html')
     return 'save'
 
 
@@ -62,7 +62,7 @@ def third_page():
 def teapot_page():
     return Response(response='I am a teapot...', status="418 I'm a teapot")
 
-@app.route('/EXTRA.html')
+@app.route('/extra.html')
 def not_found_page():
     return """
     <html>
@@ -96,7 +96,7 @@ expected_dict = {
 
     'teapot.html': b"I am a teapot...",
 
-    'EXTRA.html':
+    'extra.html':
         b"\n    <html>\n        <head>\n            <title>"
         + b"EXTRA</title>\n        </head>\n"
         + b"        <body>\n            PAGE ADDED BY CUSTOM HANDLER!\n"
