@@ -319,14 +319,15 @@ The object has the following attributes:
 
 The `status_handlers` option defines the way to handle HTTP statuses.
 For example, the default reaction to a `404 NOT FOUND` status is to quit with an error,
-but you can use make `freezeyt` ignore the error instead using this configuration:
+but you can customize `freezeyt` to ignore the default error.
 
 ```yaml
 status_handlers:
     '404': ignore
 ```
-`freezeyt` contains some pre-defined handlers
-* `'warn'`: warn message to stdout and skip
+
+`freezeyt` includes a few pre-defined handlers:
+* `'warn'`: will save the content and send warn message to stdout
 * `'save'`: `freezeyt` will save the body of the redirect page, as if
   the response was `200`.
 * `'follow'`: `freezeyt` will save content from the redirected location
@@ -335,15 +336,14 @@ status_handlers:
 * `'error'`: abort with an error
 
 The user can also define a custom handler as:
-* a string in the form `my_module:custom_handler`, which names a handler
+* a string in the form `'my_module:custom_handler'`, which names a handler
   function to call,
 * a Python function (if configuring `freezeyt` from Python rather than from
   YAML).
-  
-The handler function takes these arguments:
-* `url` (str): freezing url
-* `status` (str): HTTP status
-* `task` (TaskInfo): information about the freezing task. See the `page_frozen` hook for a description.
+
+The handler function takes one argument, `task` (TaskInfo): information about the freezing task.
+See the `TaskInfo` hook for a description.
+A custom handler should call one of the pre-defined handlers (e.g. `freezeyt.status_handlers.follow`) and return the return value from it.
 
 Freezeyt's default functions, like `follow`, can be imported from `freezeyt.status_handlers` and used
 from the custom handlers.
@@ -364,21 +364,6 @@ Note that the status code must be a string, so it needs to be quoted in the YAML
 
 A range of statuses can be specified as a number (`1-5`) followed by lowercase `xx`.
 
-#### Custom status handler interface
-
-User is able to design his own handler. User handler shall meet certain interface.
-
-Interface shall be
-
-```
-Parameters:
-    url (str): freezing url
-    status (str): HTTP status
-    task (TaskInfo): hook object
-
-Returns:
-    status code as string
-```
 
 ### URL finding
 

@@ -1,4 +1,4 @@
-"""Test that the "reasons" attribute of UnexpectedStatus is set properly."""
+"""Test that the configuration of status_handlers work properly"""
 
 import pytest
 
@@ -7,9 +7,9 @@ from flask import Flask, Response
 from freezeyt import freeze, UnexpectedStatus
 
 
-STATUSES = ('100', '204', '301', '406', '503')
+STATUSES = ('100', '201', '204', '301', '406', '503', '600', '709', '888')
 
-@pytest.mark.parametrize('response_status', STATUSES)
+@pytest.mark.parametrize('response_status', STATUSES )
 def test_error_handler(response_status):
     app = Flask(__name__)
     config = {
@@ -50,7 +50,7 @@ def test_warn_handler(capsys, response_status):
     assert expected_output in captured.out
 
 
-@pytest.mark.parametrize('response_status', ('100', '301', '404', '500'))
+@pytest.mark.parametrize('response_status', STATUSES)
 def test_default_handlers(response_status):
     app = Flask(__name__)
     config = {
@@ -65,3 +65,20 @@ def test_default_handlers(response_status):
         freeze(app, config)
 
     assert e.value.status[:3] == f'{response_status}'
+
+def custom_handler(task):
+    return "non_sense"
+
+def test_error_custom_handler():
+    app = Flask(__name__)
+    config = {
+        'output': {'type': 'dict'},
+        'status_handlers': {'200': custom_handler}
+    }
+
+    @app.route('/')
+    def index():
+        return 'Hello world!'
+
+    with pytest.raises(UnexpectedStatus):
+        freeze(app, config)

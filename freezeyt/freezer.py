@@ -21,7 +21,7 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
-from freezeyt.util import WrongMimetypeError
+from freezeyt.util import WrongMimetypeError, UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError
 from freezeyt import hooks
 
@@ -43,7 +43,8 @@ DEFAULT_URL_FINDERS = {
 
 DEFAULT_STATUS_HANDLERS = {
     '1xx': 'error',
-    '2xx': 'save',
+    '200': 'save',
+    '2xx': 'error',
     '3xx': 'error',
     '4xx': 'error',
     '5xx': 'error',
@@ -128,6 +129,7 @@ class Task:
     urls: "set[URL]"
     freezer: "Freezer"
     response_headers: Optional[Headers] = None
+    response_status: Optional[str] = None
     redirects_to: "Optional[Task]" = None
     reasons: set = dataclasses.field(default_factory=set)
 
@@ -304,21 +306,31 @@ class Freezer:
 
         if self.status_handlers.get(status[:3]):
             status_handler = self.status_handlers.get(status[:3])
-
         elif self.status_handlers.get(status[0] + 'xx'):
             status_handler = self.status_handlers.get(status[0] + 'xx')
+        else:
+            raise UnexpectedStatus(url, status, task.reasons)
 
         task.response_headers = Headers(headers)
+        task.response_status = status
 
-        status_handler(status, hooks.TaskInfo(task, self))
+        status_action = status_handler(hooks.TaskInfo(task, self))
 
-        check_mimetype(
-            url.path, headers,
-            default=self.config.get(
-                'default_mimetype', 'application/octet-stream',
-            ),
-        )
-        return wsgi_write
+        if status_action == 'save':
+            check_mimetype(
+                url.path, headers,
+                default=self.config.get(
+                    'default_mimetype', 'application/octet-stream',
+                ),
+            )
+            return wsgi_write
+        elif status_action == 'ignore':
+            raise IgnorePage()
+        elif status_action == 'follow':
+            raise IsARedirect()
+        else:
+            raise UnexpectedStatus(url, status, task.reasons)
+
 
     def _add_extra_pages(self, prefix, extras):
         """Add URLs of extra pages from config.
