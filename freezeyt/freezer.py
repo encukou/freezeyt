@@ -169,10 +169,16 @@ class Freezer:
         self.extra_pages = config.get('extra_pages', ())
         self.extra_files = config.get('extra_files', None)
 
+        if config.get('no_default_url_finders', False):
+            _url_finders = config.get('url_finders', DEFAULT_URL_FINDERS)
+        else:
+            _url_finders = dict(
+                DEFAULT_URL_FINDERS, **config.get('url_finders', {})
+            )
+
         self.url_finders = parse_handlers(
-                                config.get('url_finders', DEFAULT_URL_FINDERS),
-                                default_module='freezeyt.url_finders'
-                            )
+            _url_finders, default_module='freezeyt.url_finders'
+        )
 
         _status_handlers = dict(
             DEFAULT_STATUS_HANDLERS, **config.get('status_handlers', {})
