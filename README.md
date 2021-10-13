@@ -342,8 +342,8 @@ The user can also define a custom handler as:
   YAML).
 
 The handler function takes one argument, `task` (TaskInfo): information about the freezing task.
-See the `TaskInfo` hook for a description. Returns value is intended action as string, allowed strings values are (`'save'`, `'follow'`, `'ignore'`). Different values will raise `UnExpectedStatus`.
-You should follow this scheme to create your own custom handler.
+See the `TaskInfo` hook for a description.
+A custom handler should call one of the pre-defined handlers (e.g. `freezeyt.status_handlers.follow`) and return the return value from it.
 
 Freezeyt's default functions, like `follow`, can be imported from `freezeyt.status_handlers` and used
 from the custom handlers.
