@@ -34,12 +34,12 @@ def freeze(app, config):
 
 async def freeze_async(app, config):
     freezer = Freezer(app, config)
-    freezer.prepare()
+    await freezer.prepare()
     freezer.call_hook('start', freezer.freeze_info)
-    freezer.freeze_extra_files()
+    await freezer.freeze_extra_files()
     await freezer.handle_urls()
-    freezer.handle_redirects()
-    return freezer.get_result()
+    await freezer.handle_redirects()
+    return await freezer.get_result()
 
 
 DEFAULT_URL_FINDERS = {
@@ -232,10 +232,10 @@ class Freezer:
             self.hooks[name] = func
 
 
-    def get_result(self):
+    async def get_result(self):
         get_result = getattr(self.saver, 'get_result', None)
         if get_result is not None:
-            return self.saver.get_result()
+            return await get_result()
 
     def add_task(self, url: URL, *, external_ok: bool = False, reason: str = None) -> Optional[Task]:
         """Add a task to freeze the given URL
@@ -268,7 +268,7 @@ class Freezer:
             task.reasons.add(reason)
         return task
 
-    def freeze_extra_files(self):
+    async def freeze_extra_files(self):
         if self.extra_files is not None:
             for filename, content in self.extra_files.items():
                 if isinstance(content, str):
@@ -283,10 +283,10 @@ class Freezer:
                             'a mapping in extra_files must contain '
                             + '"base64" or "copy_from"'
                         )
-                self.saver.save_to_filename(filename, [content])
+                await self.saver.save_to_filename(filename, [content])
 
-    def prepare(self):
-        self.saver.prepare()
+    async def prepare(self):
+        await self.saver.prepare()
 
 
     def start_response(
@@ -451,7 +451,7 @@ class Freezer:
             result_iterable,
         )
 
-        self.saver.save_to_filename(task.path, full_result)
+        await self.saver.save_to_filename(task.path, full_result)
 
         try:
             close = result_iterable.close
@@ -460,7 +460,7 @@ class Freezer:
         else:
             close()
 
-        with self.saver.open_filename(task.path) as f:
+        with await self.saver.open_filename(task.path) as f:
             content_type = task.response_headers.get('Content-Type')
             mime_type, encoding = parse_options_header(content_type)
             url_finder = self.url_finders.get(mime_type)
@@ -487,7 +487,7 @@ class Freezer:
 
         self.call_hook('page_frozen', hooks.TaskInfo(task, self))
 
-    def handle_redirects(self):
+    async def handle_redirects(self):
         """Save copies of target pages for redirect_policy='follow'"""
         while self.redirecting_tasks:
             saved_something = False
@@ -495,8 +495,8 @@ class Freezer:
                 if task.redirects_to.status != TaskStatus.DONE:
                     continue
 
-                with self.saver.open_filename(task.redirects_to.path) as f:
-                    self.saver.save_to_filename(task.path, f)
+                with await self.saver.open_filename(task.redirects_to.path) as f:
+                    await self.saver.save_to_filename(task.path, f)
                 self.call_hook('page_frozen', hooks.TaskInfo(task, self))
                 del self.redirecting_tasks[key]
                 self.done_tasks[task.path] = task
