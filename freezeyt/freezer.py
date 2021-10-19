@@ -9,6 +9,7 @@ import dataclasses
 from typing import Optional, Mapping
 import enum
 from urllib.parse import urljoin
+import asyncio
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -23,15 +24,20 @@ from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import WrongMimetypeError, UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError
+from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 
 
 def freeze(app, config):
+    return asyncio_run(freeze_async(app, config))
+
+
+async def freeze_async(app, config):
     freezer = Freezer(app, config)
     freezer.prepare()
     freezer.call_hook('start', freezer.freeze_info)
     freezer.freeze_extra_files()
-    freezer.handle_urls()
+    await freezer.handle_urls()
     freezer.handle_redirects()
     return freezer.get_result()
 
@@ -118,7 +124,6 @@ def get_path_from_url(prefix, url, url_to_path):
     return result
 
 class TaskStatus(enum.Enum):
-    PENDING = "Not started"
     IN_PROGRESS = "Currently being handled"
     REDIRECTING = "Waiting for target of redirection"
     DONE = "Saved"
@@ -132,6 +137,7 @@ class Task:
     response_status: Optional[str] = None
     redirects_to: "Optional[Task]" = None
     reasons: set = dataclasses.field(default_factory=set)
+    asyncio_task: "Optional[asyncio.Task]" = None
 
     def __repr__(self):
         return f"<Task for {self.path}, {self.status.name}>"
@@ -209,10 +215,8 @@ class Freezer:
         # Each task must be in exactly in one of these.
         self.done_tasks = {}
         self.redirecting_tasks = {}
-        self.pending_tasks = {}
         self.inprogress_tasks = {}
         self.task_queues = {
-            TaskStatus.PENDING: self.pending_tasks,
             TaskStatus.DONE: self.done_tasks,
             TaskStatus.REDIRECTING: self.redirecting_tasks,
             TaskStatus.IN_PROGRESS: self.inprogress_tasks,
@@ -255,7 +259,11 @@ class Freezer:
             # (not with `break`, or exception, return, etc.)
             # Here, this means the task wasn't found.
             task = Task(path, {url}, self)
-            self.pending_tasks[path] = task
+            task.asyncio_task = asyncio_create_task(
+                self.handle_one_task(task),
+                name=task.path,
+            )
+            self.inprogress_tasks[path] = task
         if reason:
             task.reasons.add(reason)
         return task
@@ -362,111 +370,122 @@ class Freezer:
                 generator = extra
                 self._add_extra_pages(prefix, generator(self.app))
 
-    def handle_urls(self):
-        while self.pending_tasks:
-            file_path, task = self.pending_tasks.popitem()
-            self.inprogress_tasks[task.path] = task
+    async def handle_urls(self):
+        while self.inprogress_tasks:
+            # Get an item from self.inprogress_tasks.
+            # Since this is a dict, we can't do self.inprogress_tasks[0];
+            # and since we don't want to change it we can't use pop().
+            # So, start iterating over it, and break the loop immediately
+            # when we get the first item.
+            for path, task in self.inprogress_tasks.items():
+                break
+            await task.asyncio_task
+            if path in self.inprogress_tasks:
+                raise ValueError(f'{task} is in_progress after it was handled')
 
-            # Get an URL from the task's set of URLs
-            url_parsed = task.get_a_url()
-            url = url_parsed
+    async def handle_one_task(self, task):
+        # Get an URL from the task's set of URLs
+        url_parsed = task.get_a_url()
+        url = url_parsed
 
-            # url_string should not be needed (except for debug messages)
-            url_string = url_parsed.to_url()
+        # url_string should not be needed (except for debug messages)
+        url_string = url_parsed.to_url()
 
-            path_info = url_parsed.path
+        path_info = url_parsed.path
 
-            if path_info.startswith(self.prefix.path):
-                path_info = "/" + path_info[len(self.prefix.path):]
+        if path_info.startswith(self.prefix.path):
+            path_info = "/" + path_info[len(self.prefix.path):]
 
-            environ = {
-                'SERVER_NAME': self.prefix.ascii_host,
-                'SERVER_PORT': str(self.prefix.port),
-                'REQUEST_METHOD': 'GET',
-                'PATH_INFO': encode_wsgi_path(path_info),
-                'SCRIPT_NAME': encode_wsgi_path(self.prefix.path),
-                'SERVER_PROTOCOL': 'HTTP/1.1',
-                'SERVER_SOFTWARE': 'freezeyt/0.1',
+        environ = {
+            'SERVER_NAME': self.prefix.ascii_host,
+            'SERVER_PORT': str(self.prefix.port),
+            'REQUEST_METHOD': 'GET',
+            'PATH_INFO': encode_wsgi_path(path_info),
+            'SCRIPT_NAME': encode_wsgi_path(self.prefix.path),
+            'SERVER_PROTOCOL': 'HTTP/1.1',
+            'SERVER_SOFTWARE': 'freezeyt/0.1',
 
-                'wsgi.version': (1, 0),
-                'wsgi.url_scheme': 'http',
-                'wsgi.input': io.BytesIO(),
-                'wsgi.errors': sys.stderr,
-                'wsgi.multithread': False,
-                'wsgi.multiprocess': False,
-                'wsgi.run_once': False,
+            'wsgi.version': (1, 0),
+            'wsgi.url_scheme': 'http',
+            'wsgi.input': io.BytesIO(),
+            'wsgi.errors': sys.stderr,
+            'wsgi.multithread': False,
+            'wsgi.multiprocess': False,
+            'wsgi.run_once': False,
 
-                'freezeyt.freezing': True,
-            }
+            'freezeyt.freezing': True,
+        }
 
-            # The WSGI application can output data in two ways:
-            # - by a "write" function, which, in our case, will append
-            #   any data to a list, `wsgi_write_data`
-            # - (preferably) by returning an iterable object.
+        # The WSGI application can output data in two ways:
+        # - by a "write" function, which, in our case, will append
+        #   any data to a list, `wsgi_write_data`
+        # - (preferably) by returning an iterable object.
 
-            # See: https://www.python.org/dev/peps/pep-3333/#the-write-callable
+        # See: https://www.python.org/dev/peps/pep-3333/#the-write-callable
 
-            # Set up the wsgi_write_data, and make its `append` method
-            # available to `start_response` as first argument:
-            wsgi_write_data = []
-            start_response = functools.partial(
-                self.start_response,
-                task,
-                url,
-                wsgi_write_data.append,
-            )
+        # Set up the wsgi_write_data, and make its `append` method
+        # available to `start_response` as first argument:
+        wsgi_write_data = []
+        start_response = functools.partial(
+            self.start_response,
+            task,
+            url,
+            wsgi_write_data.append,
+        )
 
-            # Call the application. All calls to write (wsgi_write_data.append)
-            # must be doneas part of this call.
-            try:
-                result_iterable = self.app(environ, start_response)
-            except IsARedirect:
-                continue
-            except IgnorePage:
-                continue
-
-            # Combine the list of data from write() with the returned
-            # iterable object.
-            full_result = itertools.chain(
-                wsgi_write_data,
-                result_iterable,
-            )
-
-            self.saver.save_to_filename(task.path, full_result)
-
-            try:
-                close = result_iterable.close
-            except AttributeError:
-                pass
-            else:
-                close()
-
-            with self.saver.open_filename(file_path) as f:
-                content_type = task.response_headers.get('Content-Type')
-                mime_type, encoding = parse_options_header(content_type)
-                url_finder = self.url_finders.get(mime_type)
-                if url_finder is not None:
-                    links = url_finder(
-                        f, url_string, task.response_headers.to_wsgi_list()
-                    )
-                    for new_url_text in links:
-                        new_url = url.join(decode_input_path(new_url_text))
-                        try:
-                            new_url = add_port(new_url)
-                        except UnsupportedSchemeError:
-                            # If this has a scheme other than http and https,
-                            # it's an external url and we don't follow it.
-                            pass
-                        else:
-                            self.add_task(
-                                new_url, external_ok=True,
-                                reason=f'linked from {url}',
-                            )
-
+        # Call the application. All calls to write (wsgi_write_data.append)
+        # must be doneas part of this call.
+        try:
+            result_iterable = self.app(environ, start_response)
+        except IsARedirect:
+            return
+        except IgnorePage:
             del self.inprogress_tasks[task.path]
             self.done_tasks[task.path] = task
+            return
 
-            self.call_hook('page_frozen', hooks.TaskInfo(task, self))
+        # Combine the list of data from write() with the returned
+        # iterable object.
+        full_result = itertools.chain(
+            wsgi_write_data,
+            result_iterable,
+        )
+
+        self.saver.save_to_filename(task.path, full_result)
+
+        try:
+            close = result_iterable.close
+        except AttributeError:
+            pass
+        else:
+            close()
+
+        with self.saver.open_filename(task.path) as f:
+            content_type = task.response_headers.get('Content-Type')
+            mime_type, encoding = parse_options_header(content_type)
+            url_finder = self.url_finders.get(mime_type)
+            if url_finder is not None:
+                links = url_finder(
+                    f, url_string, task.response_headers.to_wsgi_list()
+                )
+                for new_url_text in links:
+                    new_url = url.join(decode_input_path(new_url_text))
+                    try:
+                        new_url = add_port(new_url)
+                    except UnsupportedSchemeError:
+                        # If this has a scheme other than http and https,
+                        # it's an external url and we don't follow it.
+                        pass
+                    else:
+                        self.add_task(
+                            new_url, external_ok=True,
+                            reason=f'linked from {url}',
+                        )
+
+        del self.inprogress_tasks[task.path]
+        self.done_tasks[task.path] = task
+
+        self.call_hook('page_frozen', hooks.TaskInfo(task, self))
 
     def handle_redirects(self):
         """Save copies of target pages for redirect_policy='follow'"""

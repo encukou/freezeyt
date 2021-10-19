@@ -74,6 +74,9 @@ freeze(app, config)
 The `config` should be a dict as if read from a YAML configuration
 file (see Configuration below).
 
+From asynchronous code running in an `asyncio` event loop,
+you can call `freeze_async` instead of `freeze`.
+
 
 ## Configuration
 
