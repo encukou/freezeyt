@@ -1,6 +1,17 @@
 import shutil
+import os
+import sys
+from freezeyt.util import FileWrapper
+from typing import Optional, Callable
 
 from . import compat
+
+try:
+    # sendfile is not available on all platforms.
+    # If it is available, we can use it to speed up saving "static" files
+    sendfile: Optional[Callable] = os.sendfile
+except AttributeError:
+    sendfile = None
 
 
 class DirectoryExistsError(Exception):
@@ -32,13 +43,41 @@ class FileSaver:
             shutil.rmtree(self.base_path)
 
     async def save_to_filename(self, filename, content_iterable):
+        global sendfile
         absolute_filename = self.base_path / filename
         assert self.base_path in absolute_filename.parents
 
         loop = compat.get_running_loop()
 
         absolute_filename.parent.mkdir(parents=True, exist_ok=True)
+
         with open(absolute_filename, "wb") as f:
+            if sendfile and isinstance(content_iterable, FileWrapper):
+                # Optimization for systems that support os.sendfile
+                try:
+                    fileno_method = content_iterable.file.fileno
+                except AttributeError:
+                    pass
+                else:
+                    if sys.platform == 'linux':
+                        offset = None
+                    else:
+                        offset = content_iterable.file.tell()
+                    fileno = fileno_method()
+                    try:
+                        await loop.run_in_executor(
+                            None, sendfile,
+                            f.fileno(), fileno, offset, sys.maxsize,
+                        )
+                    except OSError:
+                        # This system probably doesn't support copying
+                        # regular files with os.sendfile.
+                        # Don't try it in the future.
+                        sendfile = None
+                    else:
+                        # Done!
+                        return
+
             for item in content_iterable:
                 await loop.run_in_executor(None, f.write, item)
 

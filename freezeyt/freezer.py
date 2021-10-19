@@ -24,6 +24,7 @@ from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import WrongMimetypeError, UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError
+from freezeyt.util import FileWrapper
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 
@@ -412,6 +413,7 @@ class Freezer:
             'wsgi.multithread': False,
             'wsgi.multiprocess': False,
             'wsgi.run_once': False,
+            'wsgi.file_wrapper': FileWrapper,
 
             'freezeyt.freezing': True,
         }
@@ -444,12 +446,15 @@ class Freezer:
             self.done_tasks[task.path] = task
             return
 
-        # Combine the list of data from write() with the returned
-        # iterable object.
-        full_result = itertools.chain(
-            wsgi_write_data,
-            result_iterable,
-        )
+        if wsgi_write_data:
+            # Combine the list of data from write() with the returned
+            # iterable object.
+            full_result = itertools.chain(
+                wsgi_write_data,
+                result_iterable,
+            )
+        else:
+            full_result = result_iterable
 
         await self.saver.save_to_filename(task.path, full_result)
 

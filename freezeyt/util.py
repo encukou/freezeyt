@@ -1,4 +1,5 @@
 import importlib
+import functools
 
 from werkzeug.urls import url_parse
 
@@ -134,3 +135,18 @@ def import_variable_from_module(
         result = getattr(result, attribute_name)
 
     return result
+
+
+class FileWrapper:
+    """WSGI file wrapper
+
+    see https://www.python.org/dev/peps/pep-3333/#optional-platform-specific-file-handling
+    """
+    def __init__(self, file, block_size=8192):
+        self.read_func = functools.partial(file.read, block_size)
+        self.file = file
+        if hasattr(file, 'close'):
+            self.close = file.close
+
+    def __iter__(self):
+        return iter(self.read_func, b'')
