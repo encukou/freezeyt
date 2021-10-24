@@ -48,7 +48,7 @@ def test_get_only_links_from_html(tmp_path):
             **module.freeze_config,
             'output': str(builddir),
             'url_finders': {'text/html': 'get_html_links'},
-            'no_default_url_finders': True,
+            'use_default_url_finders': False,
         }
 
         freeze(module.app, freeze_config)
@@ -94,7 +94,7 @@ def test_get_only_links_from_css(tmp_path):
             **module.freeze_config,
             'output': str(builddir),
             'url_finders': {'text/css': 'get_css_links'},
-            'no_default_url_finders': True,
+            'use_default_url_finders': False,
         }
 
         freeze_config['extra_pages'] += ["/static/style.css"]
@@ -117,7 +117,7 @@ def test_get_no_links(tmp_path):
         freeze_config = {
             'output': str(builddir),
             'url_finders': {},
-            'no_default_url_finders': True,
+            'use_default_url_finders': False,
         }
 
         freeze(module.app, freeze_config)
