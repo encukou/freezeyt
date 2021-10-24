@@ -411,7 +411,7 @@ Freezeyt's default for `text/css` will be used.
 To disable the default scanners, specify:
 
 ```yaml
-no_default_url_finders: true
+use_default_url_finders: false
 ```
 
 
