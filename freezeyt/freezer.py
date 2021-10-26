@@ -243,17 +243,36 @@ class Freezer:
         if get_result is not None:
             return await get_result()
 
+    def add_static_task(
+        self, url: URL, content: bytes, *, external_ok: bool = False,
+        reason: str = None,
+    ) -> Optional[Task]:
+        """Add a task to save the given content at the given URL.
+
+        If no task is added (e.g. for external URLs), return None.
+        """
+        task = self._add_task(url, external_ok=external_ok, reason=reason)
+        if task and task.asyncio_task is None:
+            coroutine = self.handle_content_task(task, content)
+            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
+        return task
+
     def add_task(
         self, url: URL, *, external_ok: bool = False, reason: str = None,
-        content: Optional[bytes] = None,
     ) -> Optional[Task]:
         """Add a task to freeze the given URL
 
         If no task is added (e.g. for external URLs), return None.
-
-        If content is given, the result file will have that content;
-        otherwise the content is retreived from the app.
         """
+        task = self._add_task(url, external_ok=external_ok, reason=reason)
+        if task and task.asyncio_task is None:
+            coroutine = self.handle_one_task(task)
+            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
+        return task
+
+    def _add_task(
+        self, url: URL, *, external_ok: bool = False, reason: str = None,
+    ) -> Optional[Task]:
         if is_external(url, self.prefix):
             if external_ok:
                 return None
@@ -271,11 +290,6 @@ class Freezer:
             # (not with `break`, or exception, return, etc.)
             # Here, this means the task wasn't found.
             task = Task(path, {url}, self)
-            if content is None:
-                coroutine = self.handle_one_task(task)
-            else:
-                coroutine = self.handle_content_task(task, content)
-            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
             self.inprogress_tasks[path] = task
         if reason:
             task.reasons.add(reason)
@@ -305,7 +319,7 @@ class Freezer:
                             + '"base64" or "copy_from"'
                         )
                 url = self.prefix.join(filename)
-                self.add_task(
+                self.add_static_task(
                     url=url, reason="from extra_files", content=content,
                 )
 
@@ -315,7 +329,7 @@ class Freezer:
                 self.freeze_extra_dir(dirname / subpath.name, subpath)
             else:
                 url = self.prefix.join(str(dirname / subpath.name))
-                self.add_task(
+                self.add_static_task(
                     url=url,
                     reason="from extra_files",
                     content=subpath.read_bytes(),
