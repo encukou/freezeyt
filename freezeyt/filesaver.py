@@ -1,5 +1,7 @@
 import shutil
 
+from . import compat
+
 
 class DirectoryExistsError(Exception):
     """Attempt to overwrite directory that doesn't contain freezeyt output"""
@@ -16,7 +18,7 @@ class FileSaver:
         self.base_path = base_path.resolve()
         self.prefix = prefix
 
-    def prepare(self):
+    async def prepare(self):
         if self.base_path.exists():
             has_files = list(self.base_path.iterdir())
             has_index = self.base_path.joinpath('index.html').exists()
@@ -29,16 +31,18 @@ class FileSaver:
                 )
             shutil.rmtree(self.base_path)
 
-    def save_to_filename(self, filename, content_iterable):
+    async def save_to_filename(self, filename, content_iterable):
         absolute_filename = self.base_path / filename
         assert self.base_path in absolute_filename.parents
+
+        loop = compat.get_running_loop()
 
         absolute_filename.parent.mkdir(parents=True, exist_ok=True)
         with open(absolute_filename, "wb") as f:
             for item in content_iterable:
-                f.write(item)
+                await loop.run_in_executor(None, f.write, item)
 
-    def open_filename(self, filename):
+    async def open_filename(self, filename):
         absolute_filename = self.base_path / filename
         assert self.base_path in absolute_filename.parents
 

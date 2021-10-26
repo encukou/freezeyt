@@ -34,3 +34,13 @@ def asyncio_create_task(coroutine, name):
         return asyncio.create_task(coroutine)
     else:
         return asyncio.create_task(coroutine, name=name)
+
+
+def get_running_loop():
+    try:
+        get_loop = asyncio.get_running_loop
+    except AttributeError:
+        # Python 3.6
+        return asyncio.get_event_loop()
+    else:
+        return get_loop()

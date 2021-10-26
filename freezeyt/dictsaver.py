@@ -12,10 +12,10 @@ class DictSaver:
         self.prefix = prefix
         self.contents = {}
 
-    def prepare(self):
+    async def prepare(self):
         """DictSaver doesn't need any preparation"""
 
-    def save_to_filename(self, filename, content_iterable):
+    async def save_to_filename(self, filename, content_iterable):
         parts = Path(filename).parts
 
         target = self.contents
@@ -23,12 +23,12 @@ class DictSaver:
             target = target.setdefault(part, {})
         target[parts[-1]] = b''.join(content_iterable)
 
-    def open_filename(self, filename):
+    async def open_filename(self, filename):
         parts = Path(filename).parts
         target = self.contents
         for part in parts[:-1]:
             target = target.setdefault(part, {})
         return BytesIO(target[parts[-1]])
 
-    def get_result(self):
+    async def get_result(self):
         return self.contents
