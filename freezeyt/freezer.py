@@ -283,7 +283,15 @@ class Freezer:
                     if 'base64' in content:
                         content = base64.b64decode(content['base64'])
                     elif 'copy_from' in content:
-                        content = Path(content['copy_from']).read_bytes()
+                        path = Path(content['copy_from'])
+                        if path.is_dir():
+                            await self.freeze_extra_dir(
+                                dirname=PurePosixPath(filename),
+                                path=path,
+                            )
+                            continue
+                        else:
+                            content = path.read_bytes()
                     else:
                         raise ValueError(
                             'a mapping in extra_files must contain '
@@ -291,9 +299,17 @@ class Freezer:
                         )
                 await self.saver.save_to_filename(filename, [content])
 
+    async def freeze_extra_dir(self, dirname, path):
+        for subpath in path.iterdir():
+            if subpath.is_dir():
+                await self.freeze_extra_dir(dirname / subpath.name, subpath)
+            else:
+                await self.saver.save_to_filename(
+                    dirname / subpath.name, [subpath.read_bytes()],
+                )
+
     async def prepare(self):
         await self.saver.prepare()
-
 
     def start_response(
         self, task, url, wsgi_write, status, headers, exc_info=None,
