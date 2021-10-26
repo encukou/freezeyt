@@ -36,7 +36,7 @@ async def freeze_async(app, config):
     freezer = Freezer(app, config)
     await freezer.prepare()
     freezer.call_hook('start', freezer.freeze_info)
-    await freezer.freeze_extra_files()
+    freezer.freeze_extra_files()
     await freezer.handle_urls()
     await freezer.handle_redirects()
     return await freezer.get_result()
@@ -243,10 +243,16 @@ class Freezer:
         if get_result is not None:
             return await get_result()
 
-    def add_task(self, url: URL, *, external_ok: bool = False, reason: str = None) -> Optional[Task]:
+    def add_task(
+        self, url: URL, *, external_ok: bool = False, reason: str = None,
+        content: Optional[bytes] = None,
+    ) -> Optional[Task]:
         """Add a task to freeze the given URL
 
         If no task is added (e.g. for external URLs), return None.
+
+        If content is given, the result file will have that content;
+        otherwise the content is retreived from the app.
         """
         if is_external(url, self.prefix):
             if external_ok:
@@ -265,16 +271,17 @@ class Freezer:
             # (not with `break`, or exception, return, etc.)
             # Here, this means the task wasn't found.
             task = Task(path, {url}, self)
-            task.asyncio_task = asyncio_create_task(
-                self.handle_one_task(task),
-                name=task.path,
-            )
+            if content is None:
+                coroutine = self.handle_one_task(task)
+            else:
+                coroutine = self.handle_content_task(task, content)
+            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
             self.inprogress_tasks[path] = task
         if reason:
             task.reasons.add(reason)
         return task
 
-    async def freeze_extra_files(self):
+    def freeze_extra_files(self):
         if self.extra_files is not None:
             for filename, content in self.extra_files.items():
                 if isinstance(content, str):
@@ -285,7 +292,7 @@ class Freezer:
                     elif 'copy_from' in content:
                         path = Path(content['copy_from'])
                         if path.is_dir():
-                            await self.freeze_extra_dir(
+                            self.freeze_extra_dir(
                                 dirname=PurePosixPath(filename),
                                 path=path,
                             )
@@ -297,16 +304,23 @@ class Freezer:
                             'a mapping in extra_files must contain '
                             + '"base64" or "copy_from"'
                         )
-                await self.saver.save_to_filename(filename, [content])
+                url = self.prefix.join(filename)
+                self.add_task(
+                    url=url, reason="from extra_files", content=content,
+                )
 
-    async def freeze_extra_dir(self, dirname, path):
+    def freeze_extra_dir(self, dirname, path):
         for subpath in path.iterdir():
             if subpath.is_dir():
-                await self.freeze_extra_dir(dirname / subpath.name, subpath)
+                self.freeze_extra_dir(dirname / subpath.name, subpath)
             else:
-                await self.saver.save_to_filename(
-                    dirname / subpath.name, [subpath.read_bytes()],
+                url = self.prefix.join(str(dirname / subpath.name))
+                self.add_task(
+                    url=url,
+                    reason="from extra_files",
+                    content=subpath.read_bytes(),
                 )
+
 
     async def prepare(self):
         await self.saver.prepare()
@@ -404,6 +418,11 @@ class Freezer:
             await task.asyncio_task
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
+
+    async def handle_content_task(self, task, content):
+        await self.saver.save_to_filename(task.path, [content])
+        del self.inprogress_tasks[task.path]
+        self.done_tasks[task.path] = task
 
     async def handle_one_task(self, task):
         # Get an URL from the task's set of URLs

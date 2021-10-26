@@ -4,7 +4,7 @@ from flask import Flask, url_for
 
 APP_DIR = Path(__file__).parent
 
-app = Flask(__name__, static_url_path='/static', static_folder='static_dir')
+app = Flask(__name__)
 
 
 freeze_config = {
@@ -21,7 +21,7 @@ def index():
         </head>
         <body>
             Hello world!
-            <img src='{url_for("static", filename="smile.png")}'>
+            <img src='/static/smile.png'>
         </body>
     </html>
     """
