@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flask import Flask, url_for
+from flask import Flask
 
 APP_DIR = Path(__file__).parent
 
@@ -14,7 +14,7 @@ freeze_config = {
 
 @app.route('/')
 def index():
-    return f"""
+    return """
     <html>
         <head>
             <title>Hello world</title>
