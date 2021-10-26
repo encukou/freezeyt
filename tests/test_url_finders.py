@@ -48,6 +48,7 @@ def test_get_only_links_from_html(tmp_path):
             **module.freeze_config,
             'output': str(builddir),
             'url_finders': {'text/html': 'get_html_links'},
+            'use_default_url_finders': False,
         }
 
         freeze(module.app, freeze_config)
@@ -58,6 +59,28 @@ def test_get_only_links_from_html(tmp_path):
     assert (builddir / 'static' / 'style.css').exists()
     assert not (builddir / 'static' / 'TurretRoad-Regular.ttf').exists()
 
+
+def test_only_html_links_keep_css_default(tmp_path):
+    """Test if we get only links from html files.
+    We used app with css (app_links_css) and extra pages.
+    Extra page is preserved.
+    """
+    builddir = tmp_path / 'build'
+
+    with context_for_test('app_links_css') as module:
+        freeze_config = {
+            **module.freeze_config,
+            'output': str(builddir),
+            'url_finders': {'text/html': 'get_html_links'},
+        }
+
+        freeze(module.app, freeze_config)
+
+    assert (builddir / 'index.html').exists()
+    assert (builddir / 'second_page.html').exists()
+    assert (builddir / 'static' / 'OFL.txt').exists()
+    assert (builddir / 'static' / 'style.css').exists()
+    assert (builddir / 'static' / 'TurretRoad-Regular.ttf').exists()
 
 def test_get_only_links_from_css(tmp_path):
     """Test if we get only links from css files.
@@ -71,6 +94,7 @@ def test_get_only_links_from_css(tmp_path):
             **module.freeze_config,
             'output': str(builddir),
             'url_finders': {'text/css': 'get_css_links'},
+            'use_default_url_finders': False,
         }
 
         freeze_config['extra_pages'] += ["/static/style.css"]
@@ -89,16 +113,19 @@ def test_get_no_links(tmp_path):
     """
     builddir = tmp_path / 'build'
 
-    with context_for_test('app_2pages') as module:
+    with context_for_test('app_links_css') as module:
         freeze_config = {
             'output': str(builddir),
-            'url_finders': {},
+            'use_default_url_finders': False,
         }
 
         freeze(module.app, freeze_config)
 
     assert (builddir / 'index.html').exists()
     assert not (builddir / 'second_page.html').exists()
+    assert not (builddir / 'static' / 'OFL.txt').exists()
+    assert not (builddir / 'static' / 'style.css').exists()
+    assert not (builddir / 'static' / 'TurretRoad-Regular.ttf').exists()
 
 
 @pytest.mark.parametrize('found_url', (

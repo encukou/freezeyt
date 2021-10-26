@@ -403,6 +403,17 @@ in the page's contents. These URLs can be relative.
 The `freezeyt.url_finders` module includes the functions `get_html_links`
 and `get_css_links`, which you can call (for example, as fallbacks).
 
+#### Disabling default URL scanners
+
+With `url_finders` you can add new scanners or override the default ones.
+For example, if you only specify `text/html: my_own_scanner`,
+Freezeyt's default for `text/css` will be used.
+To disable the default scanners, specify:
+
+```yaml
+use_default_url_finders: false
+```
+
 
 ### Path generation
 
