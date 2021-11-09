@@ -246,10 +246,12 @@ class Freezer:
         for name, func in config.get('hooks', {}).items():
             if isinstance(func, str):
                 func = import_variable_from_module(func)
-            self.hooks[name] = func
+            self.add_hook(name, func)
 
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
+    def add_hook(self, hook_name, func):
+        self.hooks[hook_name] = func
 
     async def get_result(self):
         get_result = getattr(self.saver, 'get_result', None)

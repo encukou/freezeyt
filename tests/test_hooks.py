@@ -172,3 +172,32 @@ def test_taskinfo_has_freezeinfo():
 
     a, b = freezeinfos
     assert a is b
+
+
+def test_add_hook():
+    recorded_tasks = {}
+
+    def register_hook(freeze_info):
+        freeze_info.add_hook('page_frozen', record_page)
+
+    def record_page(task_info):
+        recorded_tasks[task_info.get_a_url()] = task_info
+
+    with context_for_test('app_2pages') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {'start': register_hook},
+        }
+
+        freeze(module.app, config)
+
+    print(recorded_tasks)
+
+    assert len(recorded_tasks) == 2
+
+    info = recorded_tasks['http://example.com:80/']
+    assert info.path == 'index.html'
+
+    info = recorded_tasks['http://example.com:80/second_page.html']
+    assert info.path == 'second_page.html'
