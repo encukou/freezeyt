@@ -243,15 +243,16 @@ class Freezer:
         self._add_extra_pages(prefix, self.extra_pages)
 
         self.hooks = {}
-        for name, func in config.get('hooks', {}).items():
-            if isinstance(func, str):
-                func = import_variable_from_module(func)
-            self.add_hook(name, func)
+        for name, funcs in config.get('hooks', {}).items():
+            for func in funcs:
+                if isinstance(func, str):
+                    func = import_variable_from_module(func)
+                self.add_hook(name, func)
 
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
     def add_hook(self, hook_name, func):
-        self.hooks[hook_name] = func
+        self.hooks.setdefault(hook_name, []).append(func)
 
     async def get_result(self):
         get_result = getattr(self.saver, 'get_result', None)
@@ -581,6 +582,5 @@ class Freezer:
                     raise InfiniteRedirection(task)
 
     def call_hook(self, hook_name, *arguments):
-        hook = self.hooks.get(hook_name)
-        if hook:
+        for hook in self.hooks.get(hook_name, ()):
             hook(*arguments)
