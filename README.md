@@ -254,6 +254,16 @@ extra_files:
         copy_from: included/config2.dat
 ```
 
+It's possible to recursively copy an entire directory using `copy_from`,
+as in:
+
+
+```yaml
+extra_files:
+    static:
+        copy_from: static/
+```
+
 Extra files cannot be specified on the CLI.
 
 

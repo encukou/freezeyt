@@ -36,7 +36,7 @@ async def freeze_async(app, config):
     freezer = Freezer(app, config)
     await freezer.prepare()
     freezer.call_hook('start', freezer.freeze_info)
-    await freezer.freeze_extra_files()
+    freezer.freeze_extra_files()
     await freezer.handle_urls()
     await freezer.handle_redirects()
     return await freezer.get_result()
@@ -243,11 +243,36 @@ class Freezer:
         if get_result is not None:
             return await get_result()
 
-    def add_task(self, url: URL, *, external_ok: bool = False, reason: str = None) -> Optional[Task]:
+    def add_static_task(
+        self, url: URL, content: bytes, *, external_ok: bool = False,
+        reason: str = None,
+    ) -> Optional[Task]:
+        """Add a task to save the given content at the given URL.
+
+        If no task is added (e.g. for external URLs), return None.
+        """
+        task = self._add_task(url, external_ok=external_ok, reason=reason)
+        if task and task.asyncio_task is None:
+            coroutine = self.handle_content_task(task, content)
+            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
+        return task
+
+    def add_task(
+        self, url: URL, *, external_ok: bool = False, reason: str = None,
+    ) -> Optional[Task]:
         """Add a task to freeze the given URL
 
         If no task is added (e.g. for external URLs), return None.
         """
+        task = self._add_task(url, external_ok=external_ok, reason=reason)
+        if task and task.asyncio_task is None:
+            coroutine = self.handle_one_task(task)
+            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
+        return task
+
+    def _add_task(
+        self, url: URL, *, external_ok: bool = False, reason: str = None,
+    ) -> Optional[Task]:
         if is_external(url, self.prefix):
             if external_ok:
                 return None
@@ -265,35 +290,52 @@ class Freezer:
             # (not with `break`, or exception, return, etc.)
             # Here, this means the task wasn't found.
             task = Task(path, {url}, self)
-            task.asyncio_task = asyncio_create_task(
-                self.handle_one_task(task),
-                name=task.path,
-            )
             self.inprogress_tasks[path] = task
         if reason:
             task.reasons.add(reason)
         return task
 
-    async def freeze_extra_files(self):
+    def freeze_extra_files(self):
         if self.extra_files is not None:
-            for filename, content in self.extra_files.items():
+            for url_part, content in self.extra_files.items():
                 if isinstance(content, str):
                     content = content.encode()
                 elif isinstance(content, dict):
                     if 'base64' in content:
                         content = base64.b64decode(content['base64'])
                     elif 'copy_from' in content:
-                        content = Path(content['copy_from']).read_bytes()
+                        path = Path(content['copy_from'])
+                        self.freeze_extra_files_from_path(
+                            url_path=PurePosixPath(url_part),
+                            disk_path=path,
+                        )
+                        continue
                     else:
                         raise ValueError(
                             'a mapping in extra_files must contain '
                             + '"base64" or "copy_from"'
                         )
-                await self.saver.save_to_filename(filename, [content])
+                url = self.prefix.join(url_part)
+                self.add_static_task(
+                    url=url, reason="from extra_files", content=content,
+                )
+
+    def freeze_extra_files_from_path(self, url_path, disk_path):
+        if disk_path.is_dir():
+            for subpath in disk_path.iterdir():
+                self.freeze_extra_files_from_path(
+                    url_path / subpath.name, subpath)
+        else:
+            url = self.prefix.join(str(url_path))
+            self.add_static_task(
+                url=url,
+                reason="from extra_files",
+                content=disk_path.read_bytes(),
+            )
+
 
     async def prepare(self):
         await self.saver.prepare()
-
 
     def start_response(
         self, task, url, wsgi_write, status, headers, exc_info=None,
@@ -388,6 +430,11 @@ class Freezer:
             await task.asyncio_task
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
+
+    async def handle_content_task(self, task, content):
+        await self.saver.save_to_filename(task.path, [content])
+        del self.inprogress_tasks[task.path]
+        self.done_tasks[task.path] = task
 
     async def handle_one_task(self, task):
         # Get an URL from the task's set of URLs

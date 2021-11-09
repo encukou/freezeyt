@@ -1,2 +1,3 @@
 /tests/fixtures/*/test_expected_output/** -text
 /tests/fixtures/*/static/** -text
+/tests/fixtures/*/static_dir/** -text
