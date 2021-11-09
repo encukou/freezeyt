@@ -297,7 +297,7 @@ class Freezer:
 
     def freeze_extra_files(self):
         if self.extra_files is not None:
-            for filename, content in self.extra_files.items():
+            for url_part, content in self.extra_files.items():
                 if isinstance(content, str):
                     content = content.encode()
                 elif isinstance(content, dict):
@@ -305,35 +305,33 @@ class Freezer:
                         content = base64.b64decode(content['base64'])
                     elif 'copy_from' in content:
                         path = Path(content['copy_from'])
-                        if path.is_dir():
-                            self.freeze_extra_dir(
-                                dirname=PurePosixPath(filename),
-                                path=path,
-                            )
-                            continue
-                        else:
-                            content = path.read_bytes()
+                        self.freeze_extra_files_from_path(
+                            url_path=PurePosixPath(url_part),
+                            disk_path=path,
+                        )
+                        continue
                     else:
                         raise ValueError(
                             'a mapping in extra_files must contain '
                             + '"base64" or "copy_from"'
                         )
-                url = self.prefix.join(filename)
+                url = self.prefix.join(url_part)
                 self.add_static_task(
                     url=url, reason="from extra_files", content=content,
                 )
 
-    def freeze_extra_dir(self, dirname, path):
-        for subpath in path.iterdir():
-            if subpath.is_dir():
-                self.freeze_extra_dir(dirname / subpath.name, subpath)
-            else:
-                url = self.prefix.join(str(dirname / subpath.name))
-                self.add_static_task(
-                    url=url,
-                    reason="from extra_files",
-                    content=subpath.read_bytes(),
-                )
+    def freeze_extra_files_from_path(self, url_path, disk_path):
+        if disk_path.is_dir():
+            for subpath in disk_path.iterdir():
+                self.freeze_extra_files_from_path(
+                    url_path / subpath.name, subpath)
+        else:
+            url = self.prefix.join(str(url_path))
+            self.add_static_task(
+                url=url,
+                reason="from extra_files",
+                content=disk_path.read_bytes(),
+            )
 
 
     async def prepare(self):
