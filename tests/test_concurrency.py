@@ -31,4 +31,4 @@ def test_tasks_are_limited(tmp_path):
         'extra_pages': [f'{n}.html' for n in range(NUM_PAGES)],
     }
 
-    result = freeze(app, config)
+    freeze(app, config)
