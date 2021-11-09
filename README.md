@@ -294,9 +294,9 @@ you can make freezeyt call them using this configuration:
 ```yaml
 hooks:
     start:
-        mymodule:start
+        - mymodule:start
     page_frozen:
-        mymodule:page_frozen
+        - mymodule:page_frozen
 ```
 
 When using the Python API, a function can be used instead of a name
