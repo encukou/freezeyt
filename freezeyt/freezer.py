@@ -249,6 +249,11 @@ class Freezer:
                     func = import_variable_from_module(func)
                 self.add_hook(name, func)
 
+        for plugin in config.get('plugins', {}):
+            if isinstance(plugin, str):
+                plugin = import_variable_from_module(plugin)
+            plugin(self.freeze_info)
+
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
     def add_hook(self, hook_name, func):

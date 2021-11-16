@@ -282,6 +282,28 @@ use:
 default_mimetype=text/plain
 ```
 
+### Plugins
+
+It is possible to extend `freezeyt` with *plugins*, either ones that
+ship with `freezeyt` or external ones.
+
+Plugins are added using configuration like:
+
+```yaml
+plugins:
+    - freezeyt.progressbar:ProgressBar
+    - mymodule:my_plugin
+```
+
+#### Custom plugins
+
+A plugin is a function that `freezeyt` will call before starting to
+freeze pages.
+
+It is passed a `FreezeInfo` object as argument (see the `start` hook below).
+Usually, the plugin will call `freeze_info.add_hook` to register additional
+functions.
+
 
 ### Hooks
 
@@ -314,6 +336,7 @@ The object has the following attributes:
   If that URL was frozen already, or is outside the `prefix`, does nothing.
   If you add a `reason` string, it will be used in error messages as the reason
   why the added URL is being handled.
+* `add_hook(hook_name, callable)`: Register an additional hook function.
 * `total_task_count`: The number of pages `freezeyt` currently “knows about” –
   ones that are already frozen plus ones that are scheduled to be frozen.
 * `done_task_count`: The number of pages that were already frozen.
