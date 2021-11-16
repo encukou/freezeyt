@@ -233,3 +233,41 @@ def test_multiple_hooks():
 
     info = recorded_tasks['http://example.com:80/second_page.html']
     assert info.path == 'second_page.html'
+
+
+def test_task_counts():
+    recorded_counts = []
+
+    def record_start(freeze_info):
+        recorded_counts.append((
+            '(start)',
+            freeze_info.total_task_count,
+            freeze_info.done_task_count,
+        ))
+
+    def record_page(task_info):
+        recorded_counts.append((
+            task_info.path,
+            task_info.freeze_info.total_task_count,
+            task_info.freeze_info.done_task_count,
+        ))
+
+    with context_for_test('app_2pages') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {
+                'start': [record_start],
+                'page_frozen': [record_page],
+            },
+        }
+
+        freeze(module.app, config)
+
+    print(recorded_counts)
+
+    assert recorded_counts == [
+        ('(start)', 1, 0),
+        ('index.html', 2, 1),
+        ('second_page.html', 2, 2),
+    ]

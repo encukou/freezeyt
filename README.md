@@ -308,12 +308,15 @@ The function will be called when the freezing process starts,
 before any other hooks.
 
 It is passed a `FreezeInfo` object as argument.
-The object has the following method:
+The object has the following attributes:
 
 * `add_url(url, reason=None)`: Add the URL to the set of pages to be frozen.
   If that URL was frozen already, or is outside the `prefix`, does nothing.
   If you add a `reason` string, it will be used in error messages as the reason
   why the added URL is being handled.
+* `total_task_count`: The number of pages `freezeyt` currently “knows about” –
+  ones that are already frozen plus ones that are scheduled to be frozen.
+* `done_task_count`: The number of pages that were already frozen.
 
 #### `page_frozen`
 

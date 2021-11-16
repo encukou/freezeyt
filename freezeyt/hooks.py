@@ -29,3 +29,14 @@ class FreezeInfo:
 
     def add_hook(self, hook_name, func):
         self._freezer.add_hook(hook_name, func)
+
+    @property
+    def total_task_count(self):
+        return sum(len(tasks) for tasks in self._freezer.task_queues.values())
+
+    @property
+    def done_task_count(self):
+        # Import TaskStatus here to avoid a circular import
+        # (since freezer imports hooks)
+        from freezeyt.freezer import TaskStatus
+        return len(self._freezer.task_queues[TaskStatus.DONE])
