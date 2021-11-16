@@ -8,13 +8,16 @@ from freezeyt.util import import_variable_from_module
 @click.command()
 @click.argument('module_name')
 @click.argument('dest_path', required=False)
-@click.option('--prefix', help='URL of the application root')
+@click.option('--prefix',
+              help='URL where we want to deploy our static site '
+                + '(the application root)')
 @click.option('--extra-page', 'extra_pages', multiple=True,
-              help='Pages without any link in application')
+              help="URLs of a page to freeze even if it's not linked from "
+                + "the application. May be repeated.")
 @click.option('-c', '--config', 'config_file', type=click.File(),
-              help='YAML file of configuration')
+              help='Path to configuration YAML file')
 @click.option('-C', '--import-config', 'config_var',
-              help='Variable with configuration')
+              help='Python variable with configuration')
 def main(module_name, dest_path, prefix, extra_pages, config_file, config_var):
     """
     MODULE_NAME
@@ -23,18 +26,6 @@ def main(module_name, dest_path, prefix, extra_pages, config_file, config_var):
     DEST_PATH
         Absolute or relative path to the directory to which the files
     will be frozen.
-
-    --prefix
-        URL, where we want to deploy our static site
-
-    --extra-page
-        Path to page without any link in application
-
-    -c / --config
-        Path to configuration YAML file
-
-    -C / --import-config
-        Dictionary with the configuration
 
     Example use:
         python -m freezeyt demo_app build --prefix 'http://localhost:8000/' --extra-page /extra/
