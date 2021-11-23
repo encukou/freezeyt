@@ -27,6 +27,8 @@ from freezeyt.util import UnsupportedSchemeError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 
+MAX_RUNNING_TASKS = 100
+
 
 def freeze(app, config):
     return asyncio_run(freeze_async(app, config))
@@ -159,6 +161,15 @@ class IsARedirect(BaseException):
 class IgnorePage(BaseException):
     """Raised when freezing a page should be ignored"""
 
+def needs_semaphore(func):
+    """Decorator for a "task" method that holds self.semaphore when running"""
+    @functools.wraps(func)
+    async def wrapper(self, *args, **kwargs):
+        async with self.semaphore:
+            result = await func(self, *args, **kwargs)
+        return result
+    return wrapper
+
 class Freezer:
     def __init__(self, app, config):
         self.app = app
@@ -236,6 +247,8 @@ class Freezer:
             if isinstance(func, str):
                 func = import_variable_from_module(func)
             self.hooks[name] = func
+
+        self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
 
     async def get_result(self):
@@ -431,11 +444,13 @@ class Freezer:
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
 
+    @needs_semaphore
     async def handle_content_task(self, task, content):
         await self.saver.save_to_filename(task.path, [content])
         del self.inprogress_tasks[task.path]
         self.done_tasks[task.path] = task
 
+    @needs_semaphore
     async def handle_one_task(self, task):
         # Get an URL from the task's set of URLs
         url_parsed = task.get_a_url()
@@ -487,7 +502,7 @@ class Freezer:
         )
 
         # Call the application. All calls to write (wsgi_write_data.append)
-        # must be doneas part of this call.
+        # must be done as part of this call.
         try:
             result_iterable = self.app(environ, start_response)
         except IsARedirect:
@@ -497,27 +512,29 @@ class Freezer:
             self.done_tasks[task.path] = task
             return
 
-        # Combine the list of data from write() with the returned
-        # iterable object.
-        full_result = itertools.chain(
-            wsgi_write_data,
-            result_iterable,
-        )
-
-        await self.saver.save_to_filename(task.path, full_result)
-
         try:
-            close = result_iterable.close
-        except AttributeError:
-            pass
-        else:
-            close()
+            # Combine the list of data from write() with the returned
+            # iterable object.
+            full_result = itertools.chain(
+                wsgi_write_data,
+                result_iterable,
+            )
 
-        with await self.saver.open_filename(task.path) as f:
-            content_type = task.response_headers.get('Content-Type')
-            mime_type, encoding = parse_options_header(content_type)
-            url_finder = self.url_finders.get(mime_type)
-            if url_finder is not None:
+            await self.saver.save_to_filename(task.path, full_result)
+
+        finally:
+            try:
+                close = result_iterable.close
+            except AttributeError:
+                pass
+            else:
+                close()
+
+        content_type = task.response_headers.get('Content-Type')
+        mime_type, encoding = parse_options_header(content_type)
+        url_finder = self.url_finders.get(mime_type)
+        if url_finder is not None:
+            with await self.saver.open_filename(task.path) as f:
                 links = url_finder(
                     f, url_string, task.response_headers.to_wsgi_list()
                 )
@@ -540,6 +557,7 @@ class Freezer:
 
         self.call_hook('page_frozen', hooks.TaskInfo(task, self))
 
+    @needs_semaphore
     async def handle_redirects(self):
         """Save copies of target pages for redirect_policy='follow'"""
         while self.redirecting_tasks:
