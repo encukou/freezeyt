@@ -18,7 +18,13 @@ from freezeyt.util import import_variable_from_module
               help='Path to configuration YAML file')
 @click.option('-C', '--import-config', 'config_var',
               help='Python variable with configuration')
-def main(module_name, dest_path, prefix, extra_pages, config_file, config_var):
+@click.option('--progress', 'progress',
+              type=click.Choice(['none', 'bar', 'log']),
+              help='Select how to display progress')
+def main(
+    module_name, dest_path, prefix, extra_pages, config_file, config_var,
+    progress,
+):
     """
     MODULE_NAME
         Name of the Python web app module which will be frozen.
@@ -65,6 +71,13 @@ def main(module_name, dest_path, prefix, extra_pages, config_file, config_var):
         if dest_path is None:
             raise click.UsageError('DEST_PATH argument is required')
         config['output'] = {'type': 'dir', 'dir': dest_path}
+
+    if progress == 'bar':
+        config.setdefault(
+            'plugins', []).append('freezeyt.progressbar:ProgressBarPlugin')
+    elif progress == 'log':
+        config.setdefault(
+            'plugins', []).append('freezeyt.progressbar:LogPlugin')
 
     app = import_variable_from_module(
         module_name, default_variable_name='app',

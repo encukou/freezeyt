@@ -13,3 +13,16 @@ class ProgressBarPlugin:
         self.counter.total = task_info.freeze_info.total_task_count
         self.counter.count = task_info.freeze_info.done_task_count
         self.counter.update(0)
+
+class LogPlugin:
+    def __init__(self, freeze_info):
+        freeze_info.add_hook('page_frozen', self.page_frozen)
+
+    def page_frozen(self, task_info):
+        total = task_info.freeze_info.total_task_count
+        count = task_info.freeze_info.done_task_count
+        progress = count / total
+        print(
+            f'[{count:{len(str(total))}d}/{total}, ~{progress:3.0%}]',
+            task_info.path,
+        )

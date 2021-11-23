@@ -282,6 +282,21 @@ use:
 default_mimetype=text/plain
 ```
 
+### Progress bar and logging
+
+The CLI option `--progress` controls what `freezeyt` outputs as it
+handles pages:
+
+* `--progress=log`: Output a message about each frozen page to stdout.
+* `--progress=bar`: Draw a status bar in the terminal. Messages about
+  each frozen page are *also* printed to stdout.
+* `--progress=none`: Don't do any of this.
+
+It is possible to configure this in the config file using the plugins
+`freezeyt.progressbar:ProgressBarPlugin` and `freezeyt.progressbar:LogPlugin`.
+See below on how to enable plugins.
+
+
 ### Plugins
 
 It is possible to extend `freezeyt` with *plugins*, either ones that
