@@ -292,6 +292,8 @@ handles pages:
   each frozen page are *also* printed to stdout.
 * `--progress=none`: Don't do any of this.
 
+The default is `bar` if stdout is a terminal, and `log` otherwise.
+
 It is possible to configure this in the config file using the plugins
 `freezeyt.progressbar:ProgressBarPlugin` and `freezeyt.progressbar:LogPlugin`.
 See below on how to enable plugins.

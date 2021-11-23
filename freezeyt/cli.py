@@ -1,3 +1,5 @@
+import sys
+
 import click
 import yaml
 
@@ -72,10 +74,18 @@ def main(
             raise click.UsageError('DEST_PATH argument is required')
         config['output'] = {'type': 'dir', 'dir': dest_path}
 
+    if progress is None:
+        if sys.stdout.isatty():
+            progress = 'bar'
+        else:
+            progress = 'log'
+
     if progress == 'bar':
         config.setdefault(
             'plugins', []).append('freezeyt.progressbar:ProgressBarPlugin')
-    elif progress == 'log':
+    if progress in ('log', 'bar'):
+        # The 'log' plugin is activated both with --progress=log and
+        # --progress=bar.
         config.setdefault(
             'plugins', []).append('freezeyt.progressbar:LogPlugin')
 
