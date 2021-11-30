@@ -30,12 +30,25 @@ def test_output(tmp_path, monkeypatch, app_name):
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
 
         if error_path.exists():
-            # XXX MultiError only
-            with pytest.raises((ValueError, MultiError)) as exc:
+            expected_error_info = error_path.read_text().strip()
+            with pytest.raises((ValueError, MultiError)) as excinfo:
                 freeze(app, freeze_config)
-            exception_name = exc.type.__name__
-            expected_name = error_path.read_text().strip()
-            assert exception_name == expected_name
+            if isinstance(excinfo.value, MultiError):
+                # Expected error info looks like:
+                # ```
+                # MultiError:
+                #     UnexpectedStatus
+                #     SomeOtherException
+                # ```
+                multierror = excinfo.value
+                error_info = "MultiError:\n" + '\n'.join(sorted(
+                    ' ' * 4 + type(exc).__name__
+                    for exc in multierror.exceptions
+                ))
+                assert error_info == expected_error_info
+            else:
+                exception_name = excinfo.type.__name__
+                assert exception_name == expected_error_info
         else:
             # Non error app.
 

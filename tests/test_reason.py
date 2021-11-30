@@ -1,10 +1,9 @@
 """Test that the "reasons" attribute of UnexpectedStatus is set properly."""
 
-import pytest
-
 from flask import Flask, redirect
 
 from freezeyt import freeze, UnexpectedStatus
+from testutil import raises_multierror_with_one_exception
 
 
 def test_reason_homepage():
@@ -14,7 +13,7 @@ def test_reason_homepage():
         'output': {'type': 'dict'},
     }
 
-    with pytest.raises(UnexpectedStatus) as e:
+    with raises_multierror_with_one_exception(UnexpectedStatus) as e:
         freeze(app, config)
     assert str(e.value.url) == 'http://localhost:80/'
     assert e.value.status[:3] == '404'
@@ -34,7 +33,7 @@ def test_reason_redirect():
         'status_handlers': {'3xx': 'follow'},
     }
 
-    with pytest.raises(UnexpectedStatus) as e:
+    with raises_multierror_with_one_exception(UnexpectedStatus) as e:
         freeze(app, config)
 
     assert str(e.value.url) == 'http://localhost:80/404'
@@ -55,7 +54,7 @@ def test_reason_extra():
         'extra_pages': ['404.html'],
     }
 
-    with pytest.raises(UnexpectedStatus) as e:
+    with raises_multierror_with_one_exception(UnexpectedStatus) as e:
         freeze(app, config)
     print(e)
     assert str(e.value.url) == 'http://localhost:80/404.html'
@@ -75,7 +74,7 @@ def test_reason_link():
         'output': {'type': 'dict'},
     }
 
-    with pytest.raises(UnexpectedStatus) as e:
+    with raises_multierror_with_one_exception(UnexpectedStatus) as e:
         freeze(app, config)
     print(e)
     assert str(e.value.url) == 'http://localhost:80/404.html'

@@ -1,1 +1,3 @@
-MultiError
+MultiError:
+    UnexpectedStatus
+    UnexpectedStatus

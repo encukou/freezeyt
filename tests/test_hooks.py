@@ -3,6 +3,7 @@ import pytest
 
 from freezeyt import freeze, ExternalURLError, UnexpectedStatus
 from testutil import context_for_test
+from testutil import raises_multierror_with_one_exception
 
 
 app = Flask(__name__)
@@ -115,7 +116,7 @@ def test_freezeinfo_add_404_url(reason, expected_reasons):
             'hooks': {'start': [start_hook]},
         }
 
-        with pytest.raises(UnexpectedStatus) as e:
+        with raises_multierror_with_one_exception(UnexpectedStatus) as e:
             freeze(module.app, config)
         assert e.value.reasons == expected_reasons
 

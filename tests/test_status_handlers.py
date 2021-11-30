@@ -6,6 +6,8 @@ from flask import Flask, Response
 
 from freezeyt import freeze, UnexpectedStatus
 
+from testutil import raises_multierror_with_one_exception
+
 
 STATUSES = ('100', '201', '204', '301', '406', '503', '600', '709', '888')
 
@@ -21,7 +23,7 @@ def test_error_handler(response_status):
     def index():
         return Response(response='Hello world!', status=response_status)
 
-    with pytest.raises(UnexpectedStatus) as e:
+    with raises_multierror_with_one_exception(UnexpectedStatus) as e:
         freeze(app, config)
 
     assert e.value.status[:3] == f'{response_status}'
@@ -61,7 +63,7 @@ def test_default_handlers(response_status):
     def index():
         return Response(response='Hello world!', status=response_status)
 
-    with pytest.raises(UnexpectedStatus) as e:
+    with raises_multierror_with_one_exception(UnexpectedStatus) as e:
         freeze(app, config)
 
     assert e.value.status[:3] == f'{response_status}'
@@ -80,5 +82,5 @@ def test_error_custom_handler():
     def index():
         return 'Hello world!'
 
-    with pytest.raises(UnexpectedStatus):
+    with raises_multierror_with_one_exception(UnexpectedStatus):
         freeze(app, config)

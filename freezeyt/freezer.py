@@ -267,12 +267,8 @@ class Freezer:
             get_result = getattr(self.saver, 'get_result', None)
             if get_result is not None:
                 return await get_result()
-        elif len(self.failed_tasks) == 1:
-            # XXX always raise MultiError
-            [task] = self.failed_tasks.values()
-            raise task.asyncio_task.exception()
-        else:
-            raise MultiError(self.failed_tasks.values())
+            return None
+        raise MultiError(self.failed_tasks.values())
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,
