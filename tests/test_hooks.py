@@ -17,7 +17,7 @@ def test_page_frozen_hook():
         config = {
             'output': {'type': 'dict'},
             'prefix': 'http://example.com/',
-            'hooks': {'page_frozen': record_page},
+            'hooks': {'page_frozen': [record_page]},
         }
 
         freeze(module.app, config)
@@ -43,7 +43,7 @@ def test_page_frozen_hook_by_name():
         config = {
             'output': {'type': 'dict'},
             'prefix': 'http://example.com/',
-            'hooks': {'page_frozen': f'{__name__}:hook'},
+            'hooks': {'page_frozen': [f'{__name__}:hook']},
         }
 
         _recorded_hook_calls.clear()
@@ -63,7 +63,7 @@ def test_freezeinfo_add_url():
         config = {
             'output': {'type': 'dict'},
             'prefix': 'http://example.com/',
-            'hooks': {'start': start_hook},
+            'hooks': {'start': [start_hook]},
         }
 
         output = freeze(module.app, config)
@@ -83,7 +83,7 @@ def test_freezeinfo_add_external_url():
         config = {
             'output': {'type': 'dict'},
             'prefix': 'http://example.com/',
-            'hooks': {'start': start_hook},
+            'hooks': {'start': [start_hook]},
         }
 
         with pytest.raises(ExternalURLError):
@@ -112,7 +112,7 @@ def test_freezeinfo_add_404_url(reason, expected_reasons):
         config = {
             'output': {'type': 'dict'},
             'prefix': 'http://example.com/',
-            'hooks': {'start': start_hook},
+            'hooks': {'start': [start_hook]},
         }
 
         with pytest.raises(UnexpectedStatus) as e:
@@ -130,7 +130,7 @@ def test_page_frozen_hook_with_redirects(policy):
     with context_for_test('app_redirects') as module:
         config = dict(module.freeze_config)
         config['output'] = {'type': 'dict'}
-        config['hooks'] = {'page_frozen': record_page}
+        config['hooks'] = {'page_frozen': [record_page]}
         config['redirect_policy'] = policy
         output = freeze(module.app, config)
 
@@ -163,8 +163,8 @@ def test_taskinfo_has_freezeinfo():
             'output': {'type': 'dict'},
             'prefix': 'http://example.com/',
             'hooks': {
-                'start': start_hook,
-                'page_frozen': page_frozen_hook,
+                'start': [start_hook],
+                'page_frozen': [page_frozen_hook],
             },
         }
 
@@ -172,3 +172,102 @@ def test_taskinfo_has_freezeinfo():
 
     a, b = freezeinfos
     assert a is b
+
+
+def test_add_hook():
+    recorded_tasks = {}
+
+    def register_hook(freeze_info):
+        freeze_info.add_hook('page_frozen', record_page)
+
+    def record_page(task_info):
+        recorded_tasks[task_info.get_a_url()] = task_info
+
+    with context_for_test('app_2pages') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {'start': [register_hook]},
+        }
+
+        freeze(module.app, config)
+
+    print(recorded_tasks)
+
+    assert len(recorded_tasks) == 2
+
+    info = recorded_tasks['http://example.com:80/']
+    assert info.path == 'index.html'
+
+    info = recorded_tasks['http://example.com:80/second_page.html']
+    assert info.path == 'second_page.html'
+
+
+def test_multiple_hooks():
+    recorded_tasks = {}
+    counter = 0
+
+    def record_page(task_info):
+        recorded_tasks[task_info.get_a_url()] = task_info
+
+    def increment_counter(task_info):
+        nonlocal counter
+        counter += 1
+
+    with context_for_test('app_2pages') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {'page_frozen': [record_page, increment_counter]},
+        }
+
+        freeze(module.app, config)
+
+    print(recorded_tasks)
+
+    assert len(recorded_tasks) == 2
+    assert counter == 2
+
+    info = recorded_tasks['http://example.com:80/']
+    assert info.path == 'index.html'
+
+    info = recorded_tasks['http://example.com:80/second_page.html']
+    assert info.path == 'second_page.html'
+
+
+def test_task_counts():
+    recorded_counts = []
+
+    def record_start(freeze_info):
+        recorded_counts.append((
+            '(start)',
+            freeze_info.total_task_count,
+            freeze_info.done_task_count,
+        ))
+
+    def record_page(task_info):
+        recorded_counts.append((
+            task_info.path,
+            task_info.freeze_info.total_task_count,
+            task_info.freeze_info.done_task_count,
+        ))
+
+    with context_for_test('app_2pages') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {
+                'start': [record_start],
+                'page_frozen': [record_page],
+            },
+        }
+
+        freeze(module.app, config)
+
+    print(recorded_counts)
+
+    assert recorded_counts == [
+        ('(start)', 1, 0),
+        ('index.html', 2, 1),
+        ('second_page.html', 2, 2),
+    ]

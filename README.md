@@ -282,6 +282,45 @@ use:
 default_mimetype=text/plain
 ```
 
+### Progress bar and logging
+
+The CLI option `--progress` controls what `freezeyt` outputs as it
+handles pages:
+
+* `--progress=log`: Output a message about each frozen page to stdout.
+* `--progress=bar`: Draw a status bar in the terminal. Messages about
+  each frozen page are *also* printed to stdout.
+* `--progress=none`: Don't do any of this.
+
+The default is `bar` if stdout is a terminal, and `log` otherwise.
+
+It is possible to configure this in the config file using the plugins
+`freezeyt.progressbar:ProgressBarPlugin` and `freezeyt.progressbar:LogPlugin`.
+See below on how to enable plugins.
+
+
+### Plugins
+
+It is possible to extend `freezeyt` with *plugins*, either ones that
+ship with `freezeyt` or external ones.
+
+Plugins are added using configuration like:
+
+```yaml
+plugins:
+    - freezeyt.progressbar:ProgressBar
+    - mymodule:my_plugin
+```
+
+#### Custom plugins
+
+A plugin is a function that `freezeyt` will call before starting to
+freeze pages.
+
+It is passed a `FreezeInfo` object as argument (see the `start` hook below).
+Usually, the plugin will call `freeze_info.add_hook` to register additional
+functions.
+
 
 ### Hooks
 
@@ -294,9 +333,9 @@ you can make freezeyt call them using this configuration:
 ```yaml
 hooks:
     start:
-        mymodule:start
+        - mymodule:start
     page_frozen:
-        mymodule:page_frozen
+        - mymodule:page_frozen
 ```
 
 When using the Python API, a function can be used instead of a name
@@ -308,12 +347,16 @@ The function will be called when the freezing process starts,
 before any other hooks.
 
 It is passed a `FreezeInfo` object as argument.
-The object has the following method:
+The object has the following attributes:
 
 * `add_url(url, reason=None)`: Add the URL to the set of pages to be frozen.
   If that URL was frozen already, or is outside the `prefix`, does nothing.
   If you add a `reason` string, it will be used in error messages as the reason
   why the added URL is being handled.
+* `add_hook(hook_name, callable)`: Register an additional hook function.
+* `total_task_count`: The number of pages `freezeyt` currently “knows about” –
+  ones that are already frozen plus ones that are scheduled to be frozen.
+* `done_task_count`: The number of pages that were already frozen.
 
 #### `page_frozen`
 
