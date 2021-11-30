@@ -38,7 +38,6 @@ def get_html_links(
     ) -> Iterable[str]:
         """Get all links from an element."""
         if 'href' in node.attrib:
-            print(node.attrib['href'], type(node.attrib['href']))
             yield node.attrib['href']
         if 'src' in node.attrib:
             yield node.attrib['src']
