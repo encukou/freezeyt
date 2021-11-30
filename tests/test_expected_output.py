@@ -47,7 +47,7 @@ def test_output(tmp_path, monkeypatch, app_name):
                 ))
                 assert error_info == expected_error_info
             else:
-                exception_name = excinfo.type.__name__
+                exception_name = excinfo.typename
                 assert exception_name == expected_error_info
         else:
             # Non error app.
