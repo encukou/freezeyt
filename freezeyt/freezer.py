@@ -23,7 +23,7 @@ from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import WrongMimetypeError, UnexpectedStatus
-from freezeyt.util import UnsupportedSchemeError
+from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 
@@ -129,6 +129,7 @@ class TaskStatus(enum.Enum):
     IN_PROGRESS = "Currently being handled"
     REDIRECTING = "Waiting for target of redirection"
     DONE = "Saved"
+    FAILED = "Raised an exception"
 
 @dataclasses.dataclass
 class Task:
@@ -233,10 +234,12 @@ class Freezer:
         self.done_tasks = {}
         self.redirecting_tasks = {}
         self.inprogress_tasks = {}
+        self.failed_tasks = {}
         self.task_queues = {
             TaskStatus.DONE: self.done_tasks,
             TaskStatus.REDIRECTING: self.redirecting_tasks,
             TaskStatus.IN_PROGRESS: self.inprogress_tasks,
+            TaskStatus.FAILED: self.failed_tasks,
         }
 
         self.add_task(prefix_parsed, reason='site root (homepage)')
@@ -260,9 +263,16 @@ class Freezer:
         self.hooks.setdefault(hook_name, []).append(func)
 
     async def get_result(self):
-        get_result = getattr(self.saver, 'get_result', None)
-        if get_result is not None:
-            return await get_result()
+        if not self.failed_tasks:
+            get_result = getattr(self.saver, 'get_result', None)
+            if get_result is not None:
+                return await get_result()
+        elif len(self.failed_tasks) == 1:
+            # XXX always raise MultiError
+            [task] = self.failed_tasks.values()
+            raise task.asyncio_task.exception()
+        else:
+            raise MultiError(self.failed_tasks.values())
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,
@@ -448,7 +458,11 @@ class Freezer:
             # when we get the first item.
             for path, task in self.inprogress_tasks.items():
                 break
-            await task.asyncio_task
+            try:
+                await task.asyncio_task
+            except Exception:
+                del self.inprogress_tasks[task.path]
+                self.failed_tasks[task.path] = task
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
 
@@ -571,6 +585,11 @@ class Freezer:
         while self.redirecting_tasks:
             saved_something = False
             for key, task in list(self.redirecting_tasks.items()):
+                if task.redirects_to.status == TaskStatus.FAILED:
+                    # Don't process redirects to a failed pages
+                    del self.redirecting_tasks[key]
+                    self.done_tasks[task.path] = task
+                    continue
                 if task.redirects_to.status != TaskStatus.DONE:
                     continue
 

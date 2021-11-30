@@ -40,6 +40,13 @@ class WrongMimetypeError(ValueError):
             + f" guessed from '{url_path}'"
         )
 
+class MultiError(Exception):
+    """Contains multiple errors"""
+    def __init__(self, tasks):
+        super().__init__(f"{len(tasks)} errors")
+        self._tasks = tasks
+        self.exceptions = [t.asyncio_task.exception() for t in tasks]
+
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
 

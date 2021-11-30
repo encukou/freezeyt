@@ -4,7 +4,7 @@ import shutil
 
 import pytest
 
-from freezeyt import freeze, InfiniteRedirection
+from freezeyt import freeze, InfiniteRedirection, MultiError, UnexpectedStatus
 from testutil import FIXTURES_PATH, context_for_test, assert_dirs_same
 
 
@@ -30,7 +30,8 @@ def test_output(tmp_path, monkeypatch, app_name):
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
 
         if error_path.exists():
-            with pytest.raises(ValueError) as exc:
+            # XXX MultiError only
+            with pytest.raises((ValueError, MultiError)) as exc:
                 freeze(app, freeze_config)
             exception_name = exc.type.__name__
             expected_name = error_path.read_text().strip()
@@ -105,3 +106,19 @@ def test_circular_redirect(tmp_path, monkeypatch):
 
         with pytest.raises(InfiniteRedirection):
             freeze(module.app, freeze_config)
+
+
+def test_multierror(tmp_path, monkeypatch):
+    with context_for_test('app_2_broken_links') as module:
+        freeze_config = {
+            'output': {'type': 'dir', 'dir': tmp_path},
+        }
+
+        with pytest.raises(MultiError) as excinfo:
+            freeze(module.app, freeze_config)
+
+        multierror = excinfo.value
+        assert len(multierror.exceptions) == 2
+        for exception in multierror.exceptions:
+            with pytest.raises(UnexpectedStatus):
+                raise exception
