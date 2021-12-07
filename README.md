@@ -441,7 +441,7 @@ url_finders:
 
 Keys in the `url_finders` dict are MIME types;
 
-Values are url finder, which can be define as:
+Values are URL finders, which can be defined as:
 * strings in the form `"module:function"`, which name the finder
   function to call,
 * strings like `get_html_links`, which name a function from the
