@@ -114,16 +114,21 @@ def test_get_links_path():
         'http://localhost:8000/second_page',
         'http://localhost:8000/third_page',
 ```
+
 This test ensures (*asserts*) that when given an absolute link, nothing will change:
+
 ```python
 'http://localhost:8000/second_page',
 'http://localhost:8000/third_page',
 ```
 And when given a relative link (ex. 'fourth_page/'), the base appends the relative link:
+
 ```python
-'http://localhost:8000/path1/path2/fourth_page/
+'http://localhost:8000/path1/path2/fourth_page/',
 ```
+
 To get a clearer picture as to why and how this happens, here is how the ```url_to_filename()``` function looks like at the moment:
+
 ```python
 def url_to_filename(base, url):
     """Return the filename to which the page is frozen.
@@ -253,17 +258,23 @@ This gives as an opportunity to compare the content of the pyladies.cz gh-pages 
 
 How to do this step by step:
 1. Clone the pyladies.cz GitHub repository and check the entire history:
-    ```
-    $ gitk --all
-    ```
+
+   ```
+   $ gitk --all
+   ```
+
 2. In the pyladies.cz directory switch to branch gh-pages:
-    ```
-    $ git checkout gh-pages
-    ```
+
+   ```
+   $ git checkout gh-pages
+   ```
+
 3. At this point we have the actual pages created instead of the source code which makes it possible to use a tool that can compare the content with the same on freezeyt. This can be done by using a graphic diff and merge tool [Meld](https://en.wikipedia.org/wiki/Meld_(software)) or just the terminal command:
-    ```
-    $ diff -r -U3 <pyladies_cz_repository/> _build
-    ```
+
+   ```
+   $ diff -r -U3 <pyladies_cz_repository/> _build
+   ```
+
 ### The Issue with Elsa's Commits
 *1hr:12min*
 We ran into an issue when trying to compare because when Elsa makes a change it creates a completely new commit, separate from the commit history and it saves this new commit to gh-pages without the history. Git pull would remove all previous commit history since Elsa created a new commit for every change. This way gh-pages would not show the history of commits:
