@@ -24,7 +24,8 @@
             
 
 <h1>Freezeyt sraz šestnáctý - protokol WSGI</h1>
-<blockquote><p>Tento článek není hotový. Záznam ze srazu je <a href="https://youtu.be/kzIBeKOItgs">zde</a>.</p>
+<blockquote>
+<p>Tento článek není hotový. Záznam ze srazu je <a href="https://youtu.be/kzIBeKOItgs">zde</a>.</p>
 </blockquote>
 <p>Na začátku jsme si rozdělili, na čem budeme do příště pracovat. A dostali jsme doporučení, jak na to.</p>
 <p>Poté jsme pokračovali v procházení protokolu WSGI.</p>
@@ -32,30 +33,31 @@
 <p>Byty musí rovnou poslat, nemůže si je nikam ukládat a posílat je postupně. Takže nás bufferovnání nebude zajímat.
 Demo s printem následuje.
 Příklad 1</p>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<pre><code class="language-python"><span class="kn">import</span> <span class="nn">time</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;def&quot;</span><span class="p">)</span>
-</pre></div>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+</code></pre>
+<pre><code class="language-python"><span class="kn">import</span> <span class="nn">time</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="p">)</span>
 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;def&quot;</span><span class="p">)</span>
-</pre></div>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+</code></pre>
+<pre><code class="language-python"><span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;def&quot;</span><span class="p">)</span>
-</pre></div>
+</code></pre>
 <p>Procházení vypadá tak, že se postupně otevírají nové issues, případně se dodávají body do todo v <a href="https://github.com/encukou/freezeyt/issues/38">již otevřeném issue</a>.</p>
 <p>Pokračovalo se tím, co všechno musí být ve slovníku <code>environ</code>.</p>
 <p>Došli jsme do poloviny protokolu.</p>
-<blockquote><p>Záznam ze srazu <a href="https://youtu.be/kzIBeKOItgs">zde</a>.
+<blockquote>
+<p>Záznam ze srazu <a href="https://youtu.be/kzIBeKOItgs">zde</a>.
 Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
 </blockquote>
 

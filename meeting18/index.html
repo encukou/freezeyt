@@ -24,7 +24,8 @@
             
 
 <h1>Freezeyt sraz osmnáctý</h1>
-<blockquote><p>Tento článek není hotový. Záznam ze srazu je <a href="https://youtu.be/zV0tPtqz1BM">zde</a>.</p>
+<blockquote>
+<p>Tento článek není hotový. Záznam ze srazu je <a href="https://youtu.be/zV0tPtqz1BM">zde</a>.</p>
 </blockquote>
 <p>Sraz, jako už klasicky, začal kontrolou pull requestů (PR), které přistály na GitHubu.</p>
 <p>První z nich odebíral <code>else</code>, ke kterému by se program nikdy neměl dostat, ale PR byl zavřen, protože, kdyby někdo upravil podmínku nad tím, tak by se to mohlo pokazit.</p>
@@ -33,10 +34,11 @@
 <p>Vrátili jsme se k tomu, co jsme rozpracovali minule.</p>
 <p>Flask výjímky - dodat (jak nevyhazovat 404 a místo toho nějaké jiné).</p>
 <p>Potom jsme zkoumali, jak jsou cesty v URL adresách zakódovány. A zjistili jsme, že WSGI adresy kóduje pomocí UTF-8 a dekóduje pomocí Latin-1, takže v Pythonu by toto kódování mohlo vypadat nějak takto:</p>
-
-<pre><code>&gt;&gt;&gt; "čau".encode("utf-8").decode("latin-1")</code></pre>
+<pre><code>&gt;&gt;&gt; &quot;čau&quot;.encode(&quot;utf-8&quot;).decode(&quot;latin-1&quot;)
+</code></pre>
 <p>kódovací odbočka</p>
-<blockquote><p>Záznam ze srazu <a href="https://youtu.be/zV0tPtqz1BM">zde</a>.
+<blockquote>
+<p>Záznam ze srazu <a href="https://youtu.be/zV0tPtqz1BM">zde</a>.
 Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
 </blockquote>
 

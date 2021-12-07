@@ -38,15 +38,16 @@ Zamezit opakování jde udělat vícero způsoby - jeden z nich je, že vytvoř�
 jednu funkci, která zajistí, co se má udělat předem a co se má stát po tom.
 Druhou možností je napsat vlastní context manager, který by se dal použít
 pomocí <code>with</code>, třeba takto:</p>
-<div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">my_context_manager</span><span class="p">:</span>
+<pre><code class="language-python"><span class="k">with</span> <span class="n">my_context_manager</span><span class="p">:</span>
     <span class="o">...</span>
-</pre></div>
+</code></pre>
 <p>Context manager lze napsat pomocí dekorátoru <code>@contextmanager</code> z knihovny <code>contextlib</code>.
 Místo, kam má uživatel vložit daný kus kódu označíme slovem <code>yield</code>, na němž se
 funkce zastaví.</p>
 <p>Do příště by bylo fajn si rozmyslet, jak by se dal freezeyt používat a jaká by
 mohl mít rozšíření.</p>
-<blockquote><p>Záznam ze srazu <a href="https://youtu.be/4OFdP8usCTw">zde</a>.
+<blockquote>
+<p>Záznam ze srazu <a href="https://youtu.be/4OFdP8usCTw">zde</a>.
 Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
 </blockquote>
 

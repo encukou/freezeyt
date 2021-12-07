@@ -24,13 +24,17 @@
             
 
 <h1>Freezeyt sraz osmý - jedna velká odbočka</h1>
-<blockquote><p>Tento článek není hotový. Záznam ze srazu je <a href="https://youtu.be/uV-RvpklS1Y">zde</a>.</p>
+<blockquote>
+<p>Tento článek není hotový. Záznam ze srazu je <a href="https://youtu.be/uV-RvpklS1Y">zde</a>.</p>
 </blockquote>
 <h2>Review PR</h2>
 <p>První PR, již z minula přidával článek na blog z šestého srazu. Problém s obrázky (chybí), cestami k obrázkům (nezačínají tam, kde by měly) a kousky kódu nejsou zvýrazněny.</p>
 <p>Druhý PR přidával 7. sraz na blog.</p>
-<blockquote><p>Poznámka k MD
+<blockquote>
+<p>Poznámka k MD
 Do těchto uvozovek <code>za tyto troje uvozovky napíšete python a obarví se to</code></p>
+</blockquote>
+<blockquote>
 <p>Poznámka k blogu
 napíšeme si to sami, jinak se doporučuje psát s něčím už připraveném např. <a href="https://blog.getpelican.com/">pelican</a></p>
 </blockquote>
@@ -41,7 +45,8 @@ napíšeme si to sami, jinak se doporučuje psát s něčím už připraveném n
 <p>Začali jsme opravováním nového testu, který přidával možnost použít url bez uvedení portu. Přidali jsme do funkcí <code>freeze</code> a <code>url_to_filename</code> přidání defaultního portu. A následně přišel na řadu „třetí“ krok TDD, a to refactoring. Momentálně se nám při nezadání portu daný port vyhodnocoval dvakrát. Rozhodli jsme se, že nejlepším řešením bude přidat funkci, která URL adresu zpracuje. Parse result dědí z ntice, takže je nemění, nemůžeme tedy přidat/změnit port. Dědí z třídy named tuple, metoda <a href="https://docs.python.org/3.8/library/collections.html#collections.somenamedtuple._replace"><em>_replace</em></a> z modulu collections (ze standardní knihovny) by nám mohla pomoci s měněním výchozích portů. <code>_replace</code> pracuje na pojmenované ntici, jenže port je atribut třídy, takže není v ntici. Bylo by dobré napsat <a href="https://en.wikipedia.org/wiki/Unit_testing">unit testy</a> na tuto funkci, takže úkol do příště.</p>
 <h3>Odbočka ke closures - vnořené funkce</h3>
 <p>Rekurze &amp; lokální funkce</p>
-<blockquote><p>Záznam ze srazu <a href="https://youtu.be/uV-RvpklS1Y">zde</a>.
+<blockquote>
+<p>Záznam ze srazu <a href="https://youtu.be/uV-RvpklS1Y">zde</a>.
 Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
 </blockquote>
 

@@ -31,7 +31,7 @@ běžet nějaký složitý webový server.
 Budeme to dělat pro stránky, které nejsou webové aplikace.</p>
 <h2>Jak vypadal první sraz?</h2>
 <p>Seznámili jsme se službami, které budeme používat pro komunikaci v průběhu srazů
-(jit.si, Etherpad, GSheet). Také jsme se dozvěděli, jak budou "srazy probíhat" -
+(jit.si, Etherpad, GSheet). Také jsme se dozvěděli, jak budou &quot;srazy probíhat&quot; -
 bude se tvořit a naším úkolem je pro začátek chápat o čem je řeč.
 Kvůli/díky koronaviru budou srazy probíhat online, momentálně se naše skupinka
 skládá z lidí z Brna a Ostravy. Úkoly budou zadávány formou issues na GitHubu.
@@ -49,7 +49,7 @@ jsme vytvořili jednoduchý program, který vezme jednu stránku a uloží ji na
 Proto, abychom nějakou aplikaci mohli uložit na disk, budeme (logicky)
 potřebovat aplikaci. Pro její vytvoření použijeme webový framework Flask.
 Základní konstrukce takové aplikace vypadá následovně:</p>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<pre><code class="language-python"><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -66,14 +66,14 @@ Základní konstrukce takové aplikace vypadá následovně:</p>
 <span class="s2">        &lt;/body&gt;</span>
 <span class="s2">    &lt;/html&gt;</span>
 <span class="s2">    &quot;&quot;&quot;</span>
-</pre></div>
+</code></pre>
 <p>Dále jsme si vytvořili virtuální prostředí a do něj nainstalovali Flask.
 Dalším krokem je pustit Flask pomocí následujících příkazů
 (na Windows místo <code>export</code> použijte <code>set</code>):</p>
-<div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">export</span> <span class="nv">FLASK_APP</span><span class="o">=</span>demo_app.py
+<pre><code class="language-console"><span class="gp">$ </span><span class="nb">export</span> <span class="nv">FLASK_APP</span><span class="o">=</span>demo_app.py
 <span class="gp">$ </span><span class="nb">export</span> <span class="nv">FLASK_DEBUG</span><span class="o">=</span><span class="m">1</span>
 <span class="gp">$ </span>flask run
-</pre></div>
+</code></pre>
 <p>Abychom si ujasnili, co všechno má generátor udělat, je vhodnou metodou test
 driven development (TDD). Nejdříve se napíše test který by měl projekt splňovat
 a poté zařídíme, aby test procházel.</p>
@@ -86,7 +86,7 @@ Funkce <code>freeze(app, tmp_path)</code> ještě není napsaná, ale test zajis
 že jakmile ji vytvoříme, bude se chovat tak, jak chceme</p>
 <p>Test momentálně neprochází kvůli <em>ModuleNotFoundError</em>, protože modul
 <code>freezeyt</code> ještě neexistuje. První test tedy vypadá nějak takto:</p>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
+<pre><code class="language-python"><span class="kn">import</span> <span class="nn">pytest</span>
 <span class="kn">from</span> <span class="nn">demo_app</span> <span class="kn">import</span> <span class="n">app</span>
 <span class="kn">from</span> <span class="nn">freezeyt</span> <span class="kn">import</span> <span class="n">freeze</span>
 
@@ -105,8 +105,9 @@ Funkce <code>freeze(app, tmp_path)</code> ještě není napsaná, ale test zajis
 <span class="s2">        &lt;/body&gt;</span>
 <span class="s2">    &lt;/html&gt;</span>
 <span class="s2">    &quot;&quot;&quot;</span>
-</pre></div>
-<blockquote><p><code>tmp/frozen</code> je dočasný adresář a na Windows to nebude fungovat.
+</code></pre>
+<blockquote>
+<p><code>tmp/frozen</code> je dočasný adresář a na Windows to nebude fungovat.
 Na konci srazu to bylo změněno tak, aby to fungovalo i na Windows.
 Testy si tedy vytvoří vlastní adresář a po skončení testu ho smažou.
 K tomu se použijeme
@@ -135,7 +136,7 @@ Tím jsme si ukázali, že aplikace demo_app.py je kompatibilní s tímto webov�
 rozhraním. Soubor wsgi_demo.py ukazuje způsob, jak je možno takovou aplikaci
 spustit pomocí <code>wsgiref.simple_server</code> a ne pomocí Flask. A téměř celá aplikace
 je zkopírována z <a href="https://docs.python.org/3.8/library/wsgiref.html#module-wsgiref.simple_server">dokumentace</a>:</p>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">wsgiref.simple_server</span> <span class="kn">import</span> <span class="n">make_server</span>
+<pre><code class="language-python"><span class="kn">from</span> <span class="nn">wsgiref.simple_server</span> <span class="kn">import</span> <span class="n">make_server</span>
 <span class="kn">from</span> <span class="nn">demo_app</span> <span class="kn">import</span> <span class="n">app</span>
 
 <span class="c1"># Create a demo WSGI server from a Flask app.</span>
@@ -144,7 +145,7 @@ je zkopírována z <a href="https://docs.python.org/3.8/library/wsgiref.html#mod
 
     <span class="c1"># Respond to requests until process is killed</span>
     <span class="n">server</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
-</pre></div>
+</code></pre>
 <p>Naši spuštěnou aplikaci najdeme na portu 8000, proto do prohlížeče zadáme <code>localhost:8000</code>.</p>
 <h2>Jak toto rozhraní funguje?</h2>
 <p>Proto, abychom z aplikace dostali nějaký obsah, tak ji potřebujeme zavolat.
@@ -182,7 +183,8 @@ na stránku druhou. A dále by bylo dobré napsat README.</p>
 <p>Aby se nám lépe pracovalo na projektu, je dobré si u projektu nastavit „Watching“
 u <a href="https://github.com/encukou/freezeyt">repozitáře</a> projektu. Tím nám budou chodit
 upozornění o Issues a Pull requestech.</p>
-<blockquote><p>Záznam ze srazu <a href="https://youtu.be/6xDkqmQPefw">zde</a>.
+<blockquote>
+<p>Záznam ze srazu <a href="https://youtu.be/6xDkqmQPefw">zde</a>.
 Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
 </blockquote>
 

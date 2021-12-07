@@ -65,7 +65,8 @@ Následně jsme přidali možnost smazat původní adresář.
 PyFlakes si stěžovalo jen na to, že u některých formátovacích řetězců
 nevkládáme žádnou proměnnou.
 Do README jsme napsali poznámku o tom, že freezeyt smaže existující adresář.</p>
-<blockquote><p>Tip pro práci v terminálu, když píšete nějaký příkaz, ale ještě přesně nevíte,
+<blockquote>
+<p>Tip pro práci v terminálu, když píšete nějaký příkaz, ale ještě přesně nevíte,
 jak by měl končit, na začátek řádku napište <code>#</code> a tím to „zakomentujete“.
 (Ekvivalentní příkaz na Windows je <code>rem</code>.)</p>
 </blockquote>
@@ -74,7 +75,8 @@ Tím jsme vyřešili jedno issue.
 Abychom nepřišli o testy, které tyto soubory používaly,
 převedli jsme je na testy pouze s výstupem do slovníku.</p>
 <p>Nakonec jsme zkontrolovali, že v repozitáři nezbyly žádné soubory s divnými jmény.</p>
-<blockquote><p>Na to jsme použili tento příkaz: <code>ls -R | grep '[^-a-zA-Z0-9._/:]'</code>.
+<blockquote>
+<p>Na to jsme použili tento příkaz: <code>ls -R | grep '[^-a-zA-Z0-9._/:]'</code>.
 Tento příkaz nebude fungovat na Windows.
 <code>ls -R</code> - rekurzivně prohledá adresář (a vrátí názvy souborů).
 Pomocí <code>|</code> předáme výstup z předchozího programu dalšímu programu.
@@ -98,9 +100,12 @@ rozhodně ne v těch oficiálních (ostatním to znesnadní práci).</p>
 tak master větve (hlavní větve) u forknutých repozitářů jsou dobré na testování
 věcí (protože by na nich nikdo neměl dále „stavět“),
 pro které je potřeba, že je to commit v masteru (například GH Actions).</p>
-<blockquote><p>A tip nakonec, už jsme se o tom na nějakém dřívějším srazu bavili,
+<blockquote>
+<p>A tip nakonec, už jsme se o tom na nějakém dřívějším srazu bavili,
 ale když chcete pushnout změny z jedné větve do jiné, tak to jde udělat
 třeba takto <code>git push &lt;jmeno_remote&gt; master:blog-config</code></p>
+</blockquote>
+<blockquote>
 <p>Záznam ze srazu <a href="https://youtu.be/lEIp9cmwZ88">zde</a>.
 Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
 </blockquote>

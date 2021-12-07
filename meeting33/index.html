@@ -142,10 +142,10 @@ Dále můžeme specifikovat extra soubory typu <code>.nojekyll</code> apod.</p>
 budeme ji muset nainstalovat.
 Poté si vytvoříme <a href="https://naucse.python.cz/course/mi-pyt/fast-track/install/">virtuální prostředí</a>.
 V příkazové řádce zadáme (na Windows místo <code>export</code> použijte <code>set</code>):</p>
-<div class="highlight"><pre><span></span>$ <span class="nb">export</span> <span class="nv">FLASK_APP</span><span class="o">=</span>app.py
+<pre><code class="language-shell">$ <span class="nb">export</span> <span class="nv">FLASK_APP</span><span class="o">=</span>app.py
 $ <span class="nb">export</span> <span class="nv">FLASK_ENV</span><span class="o">=</span>developement
 $ flask run
-</pre></div>
+</code></pre>
 <p>Jen tak mimochodem jsme došli k tomu, že na blog by bylo fajn přidat styly!</p>
 <p>Pak jsme v README hledali (a našli), jak se freezeyt používá.
 Je potřeba přidat freezeyt do proměnné prostředí PYTHONPATH.
@@ -161,7 +161,7 @@ Na základě toho může aplikace např. vynechat dynamické stránky (a odkazy 
 Následně je potřeba přepnout se do virtuálního prostředí.
 Zjistit, jak se daná aplikace importuje.
 Potom jsme nastavili PYTHONPATH (až bude balíček, bude to jednodušší).
-Pak jde freezeyt spustit a aplikaci „zamrazit" – uložit na disk.</p>
+Pak jde freezeyt spustit a aplikaci „zamrazit&quot; – uložit na disk.</p>
 <h2>Kontrola PRs</h2>
 <p>Každý sraz začínáme procházením Pull Requestů (PR) na GitHubu (GH).
 Dnes jsme se k tomu dostali trochu později.
@@ -187,8 +187,8 @@ v adresáři a změny testů.
 Začlenění proběhlo se slovním approve za zneužití administrátorských privilegií. 😀</p>
 <h3>Prázdné odkazy</h3>
 <p>Další PR přidával test s prázdným odkazem, např.:</p>
-<div class="highlight"><pre><span></span>Odkaz <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">&gt;</span>někam<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>, tedy spíše nikam.
-</pre></div>
+<pre><code class="language-html">Odkaz <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">&gt;</span>někam<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>, tedy spíše nikam.
+</code></pre>
 <p>Není to ideální, ale není to chyba.
 Approve už tam byl, takže PR byl začleněn.
 Na chvilku jsme se u toho zastavili.
@@ -224,7 +224,8 @@ První problém byl způsobený verzí Pytestu, to opravuje specifikace v requir
 Druhý problém je ve WSGI static middleware,
 to se vyřeší to až budeme umět kopírovat statické soubory.</p>
 <p>Příští týden začíná týmový začátečnický kurz Pythonu, takže se příště sejdeme v úterý.</p>
-<blockquote><p>Záznam ze srazu <a href="https://youtu.be/RKRogH-NepY">zde</a>.
+<blockquote>
+<p>Záznam ze srazu <a href="https://youtu.be/RKRogH-NepY">zde</a>.
 Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
 </blockquote>
 

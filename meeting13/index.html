@@ -56,15 +56,15 @@ například extra stránky, vypisovat jejich seznam by bylo složité a zdlouhav
 tak, aby testy procházely a následoval 3. krok TDD a to refactoring dané podmínky.</p>
 <p>Máme-li nějaké nepovinné argumenty, tak je dobré je předávat pomocí slovníku
 <code>kwargs</code>. To znamená, že funkci <code>freeze</code> teď voláme takto, abychom zamezili
-exponenciálnímu nárůstu délky <code>else</code> bloku v testech: <code>freeze (app, tmp_path,
-**freeze_args)</code>. Následně byl se změnami poslán PR, který čeká na review.</p>
+exponenciálnímu nárůstu délky <code>else</code> bloku v testech: <code>freeze (app, tmp_path, **freeze_args)</code>. Následně byl se změnami poslán PR, který čeká na review.</p>
 <h2>Kontrola, že mimetype sedí k příponě souboru</h2>
 <p>Opět jsme začali napsáním testu. Aplikace vrací správný <code>mimetype</code>, ale jakmile
 ji spustíme jako statickou stránku, tak <code>mimetype</code> není správný. Demonstrovali
 jsme si možné řešení. Takže byl otevřen Draft pull request, kde je možní řešení
 tohoto issue. Více informací a rad, jak postupovat. Je možno najít v popisku
 pull requestu.</p>
-<blockquote><p>Záznam ze srazu <a href="https://youtu.be/CG5dPqZzC8M">zde</a>.
+<blockquote>
+<p>Záznam ze srazu <a href="https://youtu.be/CG5dPqZzC8M">zde</a>.
 Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
 </blockquote>
 

@@ -35,14 +35,16 @@ Díky tady tomuto PR freezeyt spadne v případě, že v dané webové aplikaci
 bude „pokažený“ odkaz, např. e-mail link bez <code>mailto:</code></p>
 <p>Komentář k tomuto PR říkal, že by bylo dobré, kdyby chybová hláška
 byla více informativní. K tomu se dostaneme později v projektu.</p>
-<blockquote><p>Poznámka ke GitHubu: chceme-li zajistit, aby se dané Issue zavřelo
+<blockquote>
+<p>Poznámka ke GitHubu: chceme-li zajistit, aby se dané Issue zavřelo
 automaticky, je potřeba použít jedno
 z <a href="https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword">těchto</a>
 klíčových slov.</p>
 </blockquote>
 <p>Třetí PR přidává adresář na blog, ale jelikož je blog stále „a Work in progress“,
 tak jsme PR (zatím) do projektu nezačlenili.</p>
-<blockquote><p>Poznámka ke GitHubu: chceme-li se podívat na obrázky, které byly přidány přímo
+<blockquote>
+<p>Poznámka ke GitHubu: chceme-li se podívat na obrázky, které byly přidány přímo
 na GitHubu bez toho, aniž bychom si k sobě stahovali danou větev, můžeme použít
 tlačítko <em>Display the rich diff</em> vpravo v rohu u daného souboru v sekci <em>Files changed</em> na GitHubu.</p>
 <p>
@@ -52,15 +54,15 @@ tlačítko <em>Display the rich diff</em> vpravo v rohu u daného souboru v sekc
 <h2>Úprava odchytávání chybných odkazů</h2>
 <p>Následně jsme zkontrolovali Issues a poté jsme se pustili do práce na samotném kódu.
 Začleněný PR na odchytávání špatných odkazů obsahoval i tuto podmínku:</p>
-<div class="highlight"><pre><span></span><span class="k">if</span> <span class="s2">&quot;200&quot;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
+<pre><code class="language-python"><span class="k">if</span> <span class="s2">&quot;200&quot;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
     <span class="o">...</span>
-</pre></div>
-<p>V řetězci, který obsahuje status code, se <code>"200"</code> teoreticky může vyskytovat kdekoliv,
+</code></pre>
+<p>V řetězci, který obsahuje status code, se <code>&quot;200&quot;</code> teoreticky může vyskytovat kdekoliv,
 takže pro jistotu jsme tuto podmínku upravili, protože dle <a href="https://tools.ietf.org/html/rfc7231">standardu</a>
 je status code vždy na začátku. Podmínku jsme upravili tak, že zjišťuje, zda status začíná kódem 200.</p>
-<div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;200&quot;</span><span class="p">):</span>
+<pre><code class="language-python"><span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;200&quot;</span><span class="p">):</span>
     <span class="o">...</span>
-</pre></div>
+</code></pre>
 <h2>Úprava slovníku <code>environ</code></h2>
 <p>Když už jsme se věnovali těm standardům, tak jsme se pustili na úpravu <code>environ</code>
 aby bylo podle WSGI standardu, tedy dle <a href="https://www.python.org/dev/peps/pep-3333/#environ-variables">PEP 3333</a>.
@@ -108,7 +110,8 @@ standardní knihovny.</p>
 <li><code>__name__</code> vrátí název modulu.</li>
 <li><code>__file__</code> vrátí název souboru s celou cestou a příponou.</li>
 </ul>
-<blockquote><p>Záznam ze srazu <a href="https://youtu.be/DzpNvEarVAE">zde</a>.
+<blockquote>
+<p>Záznam ze srazu <a href="https://youtu.be/DzpNvEarVAE">zde</a>.
 Více informací o projektu <a href="https://tinyurl.com/freezeyt">zde</a>.</p>
 </blockquote>
 
