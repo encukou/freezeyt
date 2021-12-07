@@ -427,8 +427,8 @@ A range of statuses can be specified as a number (`1-5`) followed by lowercase `
 are functions whose goal is to find url of specific MIME type.
 `freezeyt` offer different configuration options to use url finders:
 
-* use predefined url finders for `text/html` or `text/css` (default),
-* define your own url finder as your function,
+* use predefined URL finders for `text/html` or `text/css` (default),
+* define your own URL finder as your function,
 * turn off some of finders (section below)
 
 Example of configuration:
