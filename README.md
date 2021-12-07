@@ -449,7 +449,6 @@ Values are URL finders, which can be defined as:
 * Python functions (if configuring `freezeyt` from Python rather than
   YAML).
 
-If you'd like to define your url finder consider the right interface.
 
 Input args:
 * page content `BinaryIO`,
