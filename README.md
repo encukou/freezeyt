@@ -425,7 +425,7 @@ A range of statuses can be specified as a number (`1-5`) followed by lowercase `
 
 `freezeyt` discovers new links in the application by URL finders. URL finders
 are functions whose goal is to find url of specific MIME type.
-`freezeyt` offer different configuration options to use url finders:
+`freezeyt` offer different configuration options to use URL finders:
 
 * use predefined URL finders for `text/html` or `text/css` (default),
 * define your own URL finder as your function,
