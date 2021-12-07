@@ -463,10 +463,10 @@ and `get_css_links`.
 
 #### Disabling default URL finders
 
-If finder is not explictly specified in configuration file, `freezeyt` use the
+If a finder is not explictly specified in the configuration file, `freezeyt` will use the
 default for certain MIME type. For example, if you specify
-`text/html: my_custom_finder` only, `freezeyt` use for `text/css`
-the default finder.
+`text/html: my_custom_finder` only, `freezeyt` will use the default finder
+for `text/css`.
 
 It's needed to explicitly disable this behaviour:
 
