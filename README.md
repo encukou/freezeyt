@@ -423,12 +423,15 @@ A range of statuses can be specified as a number (`1-5`) followed by lowercase `
 
 ### URL finding
 
-`freezeyt` discovers pages in the application it freezes by scanning
-the application's pages for links.
-By default, HTML and CSS pages are scanned this way.
-It is possible to customize the scanning or turn it off by setting
-`url_finders` in the configuration.
-For example, the default scanners would be specified as:
+`freezeyt` discovers new links in the application by url finders. Url finders
+are functions whose goal is to find url of specific MIME type.
+`freezeyt` offer different configuration options to use url finders:
+
+* use predefined url finders for `text/html` or `text/css` (default),
+* define your own url finder as your function,
+* turn off some of finders (section below)
+
+Example of configuration:
 
 ```yaml
 url_finders:
@@ -436,37 +439,42 @@ url_finders:
     text/css: get_css_links
 ```
 
-Keys in the `url_finders` dict are MIME types; the values can be:
-* strings in the form `"module:function"`, which name the scanning
+Keys in the `url_finders` dict are MIME types;
+
+Values are url finder, which can be define as:
+* strings in the form `"module:function"`, which name the finder
   function to call,
 * strings like `get_html_links`, which name a function from the
   `freezeyt.url_finders` module, or
 * Python functions (if configuring `freezeyt` from Python rather than
   YAML).
 
-A scanning function gets these arguments:
-* an open file with the page's contents (call `read` to get the contents
-  as bytes),
-* the URL of the page, as a string, and
-* the HTTP headers, as a list of (name, value) tuples (as in WSGI).
+If you'd like to define your url finder consider the right interface.
 
+Input args:
+* page content `BinaryIO`,
+* the URL of the page, as a `string`,
+* the HTTP headers, as a list of tuples (WSGI).
+
+Output:
 The function should return an iterator of URLs (as strings) found
 in the page's contents. These URLs can be relative.
 
-The `freezeyt.url_finders` module includes the functions `get_html_links`
-and `get_css_links`, which you can call (for example, as fallbacks).
+The `freezeyt.url_finders` module includes the default finders `get_html_links`
+and `get_css_links`.
 
-#### Disabling default URL scanners
+#### Disabling default URL finders
 
-With `url_finders` you can add new scanners or override the default ones.
-For example, if you only specify `text/html: my_own_scanner`,
-Freezeyt's default for `text/css` will be used.
-To disable the default scanners, specify:
+If finder is not explictly specified in configuration file, `freezeyt` use the
+default for certain MIME type. For example, if you specify
+`text/html: my_custom_finder` only, `freezeyt` use for `text/css`
+the default finder.
+
+It's needed to explicitly disable this behaviour:
 
 ```yaml
 use_default_url_finders: false
 ```
-
 
 ### Path generation
 
