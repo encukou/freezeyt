@@ -468,7 +468,7 @@ default for certain MIME type. For example, if you specify
 `text/html: my_custom_finder` only, `freezeyt` will use the default finder
 for `text/css`.
 
-It's needed to explicitly disable this behaviour:
+You can disable this behaviour:
 
 ```yaml
 use_default_url_finders: false
