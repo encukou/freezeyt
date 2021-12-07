@@ -450,7 +450,7 @@ Values are URL finders, which can be defined as:
   YAML).
 
 
-Input args:
+An URL finder gets these arguments:
 * page content `BinaryIO`,
 * the URL of the page, as a `string`,
 * the HTTP headers, as a list of tuples (WSGI).
