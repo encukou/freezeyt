@@ -455,7 +455,6 @@ An URL finder gets these arguments:
 * the URL of the page, as a `string`,
 * the HTTP headers, as a list of tuples (WSGI).
 
-Output:
 The function should return an iterator of URLs (as strings) found
 in the page's contents. These URLs can be relative.
 
