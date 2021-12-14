@@ -1,7 +1,7 @@
 from flask import Flask
 import pytest
 
-from freezeyt import freeze, ExternalURLError, UnexpectedStatus
+from freezeyt import freeze, ExternalURLError, UnexpectedStatus, MultiError
 from testutil import context_for_test
 from testutil import raises_multierror_with_one_exception
 
@@ -271,4 +271,47 @@ def test_task_counts():
         ('(start)', 1, 0),
         ('index.html', 2, 1),
         ('second_page.html', 2, 2),
+    ]
+
+
+def test_page_failed_hook():
+    records = []
+
+    def record_frozen(task_info):
+        records.append((
+            'frozen',
+            task_info.path,
+            task_info.freeze_info.total_task_count,
+            task_info.freeze_info.done_task_count,
+            task_info.freeze_info.failed_task_count,
+        ))
+        assert task_info.exception == None
+
+    def record_fail(task_info):
+        records.append((
+            'failed',
+            task_info.path,
+            task_info.freeze_info.total_task_count,
+            task_info.freeze_info.done_task_count,
+            task_info.freeze_info.failed_task_count,
+        ))
+        assert isinstance(task_info.exception, UnexpectedStatus)
+
+    with context_for_test('app_2_broken_links') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {
+                'page_frozen': [record_frozen],
+                'page_failed': [record_fail],
+            },
+        }
+
+        with pytest.raises(MultiError):
+            freeze(module.app, config)
+
+    assert records == [
+        ('frozen', 'index.html', 3, 1, 0),
+        ('failed', 'nowhere', 3, 2, 1),
+        ('failed', 'also_nowhere', 3, 3, 2),
     ]

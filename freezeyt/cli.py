@@ -3,7 +3,7 @@ import sys
 import click
 import yaml
 
-from freezeyt.freezer import freeze
+from freezeyt import freeze, MultiError
 from freezeyt.util import import_variable_from_module
 
 
@@ -93,4 +93,8 @@ def main(
         module_name, default_variable_name='app',
     )
 
-    freeze(app, config)
+    try:
+        freeze(app, config)
+    except MultiError as e:
+        print(e)
+        exit(1)

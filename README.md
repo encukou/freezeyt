@@ -356,7 +356,9 @@ The object has the following attributes:
 * `add_hook(hook_name, callable)`: Register an additional hook function.
 * `total_task_count`: The number of pages `freezeyt` currently “knows about” –
   ones that are already frozen plus ones that are scheduled to be frozen.
-* `done_task_count`: The number of pages that were already frozen.
+* `done_task_count`: The number of pages that are done (either successfully
+  frozen, or failed).
+* `failed_task_count`: The number of pages that failed to freeze.
 
 #### `page_frozen`
 
@@ -369,6 +371,14 @@ The object has the following attributes:
   an arbitrary one.
 * `path`: the relative path the content is saved to.
 * `freeze_info`: a `FreezeInfo` object. See the `start` hook for details.
+* `exception`: for failed tasks, the exception raised;
+  `None` otherwise.
+
+#### `page_failed`
+
+The function will be called whenever a page is not saved due to an
+exception.
+It is passed a `TaskInfo` object as argument (see the `page_frozen` hook).
 
 
 ### Status handling

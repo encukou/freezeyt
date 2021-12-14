@@ -459,6 +459,7 @@ class Freezer:
             except Exception:
                 del self.inprogress_tasks[task.path]
                 self.failed_tasks[task.path] = task
+                self.call_hook('page_failed', hooks.TaskInfo(task, self))
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
 

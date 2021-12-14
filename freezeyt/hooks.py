@@ -19,6 +19,13 @@ class TaskInfo:
     def freeze_info(self):
         return self._freezer.freeze_info
 
+    @property
+    def exception(self):
+        if self._task.asyncio_task.done():
+            return self._task.asyncio_task.exception()
+        else:
+            return None
+
 
 class FreezeInfo:
     def __init__(self, freezer):
@@ -39,4 +46,13 @@ class FreezeInfo:
         # Import TaskStatus here to avoid a circular import
         # (since freezer imports hooks)
         from freezeyt.freezer import TaskStatus
-        return len(self._freezer.task_queues[TaskStatus.DONE])
+        return (
+            len(self._freezer.task_queues[TaskStatus.FAILED])
+            + len(self._freezer.task_queues[TaskStatus.DONE])
+        )
+
+    @property
+    def failed_task_count(self):
+        # Import TaskStatus here, see done_task_count
+        from freezeyt.freezer import TaskStatus
+        return len(self._freezer.task_queues[TaskStatus.FAILED])
