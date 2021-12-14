@@ -1,6 +1,7 @@
 import traceback
 
 import enlighten
+import click
 
 bar_format = '{percentage:3.0f}%▕{bar}▏{elapsed}, {rate:.2f} pg/s'
 
@@ -42,17 +43,10 @@ class LogPlugin:
         return ''.join(result)
 
     def page_frozen(self, task_info):
-        print(
-            self._summary(task_info.freeze_info),
-            task_info.path,
-        )
+        summary = click.style(self._summary(task_info.freeze_info), fg='cyan')
+        click.echo(f'{summary} {task_info.path}')
 
     def page_failed(self, task_info):
-        print(
-            self._summary(task_info.freeze_info),
-            'ERROR:',
-            type(task_info.exception).__name__,
-            'in',
-            task_info.path,
-        )
-        # traceback.print_exception(task_info.exception)
+        summary = click.style(self._summary(task_info.freeze_info), fg='red')
+        click.echo(f'{summary} ERROR in {task_info.path}')
+        traceback.print_exception(task_info.exception)
