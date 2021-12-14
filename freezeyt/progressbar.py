@@ -1,4 +1,5 @@
 import traceback
+import sys
 
 import enlighten
 import click
@@ -44,9 +45,9 @@ class LogPlugin:
 
     def page_frozen(self, task_info):
         summary = click.style(self._summary(task_info.freeze_info), fg='cyan')
-        click.echo(f'{summary} {task_info.path}')
+        click.echo(f'{summary} {task_info.path}', file=sys.stderr)
 
     def page_failed(self, task_info):
         summary = click.style(self._summary(task_info.freeze_info), fg='red')
-        click.echo(f'{summary} ERROR in {task_info.path}')
+        click.echo(f'{summary} ERROR in {task_info.path}', file=sys.stderr)
         traceback.print_exception(task_info.exception)
