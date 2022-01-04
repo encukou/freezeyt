@@ -47,7 +47,7 @@ def test_output(tmp_path, monkeypatch, app_name):
                     for exc in multierror.exceptions
                 ))
                 for exc in multierror.exceptions:
-                    traceback.print_exception(exc)
+                    traceback.print_exception(type(exc), exc, exc.__traceback__)
                 assert error_info == expected_error_info
             else:
                 print(excinfo.getrepr(style='short'))

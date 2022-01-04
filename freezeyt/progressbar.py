@@ -50,4 +50,5 @@ class LogPlugin:
     def page_failed(self, task_info):
         summary = click.style(self._summary(task_info.freeze_info), fg='red')
         click.echo(f'{summary} ERROR in {task_info.path}', file=sys.stderr)
-        traceback.print_exception(task_info.exception)
+        exc = task_info.exception
+        traceback.print_exception(type(exc), exc, exc.__traceback__)
