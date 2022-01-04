@@ -1,4 +1,5 @@
 import sys
+import shutil
 
 import click
 import yaml
@@ -95,6 +96,15 @@ def main(
 
     try:
         freeze(app, config)
-    except MultiError as e:
-        print(e)
+    except MultiError as multierr:
+        if sys.stderr.isatty():
+            cols, lines = shutil.get_terminal_size()
+            message = f' {multierr} '
+            click.echo(file=sys.stderr)
+            click.secho(message.center(cols, '='), file=sys.stderr, fg='red')
+        for task in multierr.tasks:
+            exc = task.exception
+            err_type = click.style(type(exc).__name__, fg='red')
+            click.echo(f'{err_type} in {task.path}:', file=sys.stderr)
+            click.echo(f'{exc}', file=sys.stderr)
         exit(1)

@@ -43,9 +43,14 @@ class WrongMimetypeError(ValueError):
 class MultiError(Exception):
     """Contains multiple errors"""
     def __init__(self, tasks):
+        # Import TaskInfo here to avoid a circular import
+        # (since hooks imports utils)
+        from freezeyt.hooks import TaskInfo
+
         super().__init__(f"{len(tasks)} errors")
         self._tasks = tasks
         self.exceptions = [t.asyncio_task.exception() for t in tasks]
+        self.tasks = [TaskInfo(t) for t in tasks]
 
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
