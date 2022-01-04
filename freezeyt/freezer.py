@@ -392,7 +392,7 @@ class Freezer:
         elif self.status_handlers.get(status[0] + 'xx'):
             status_handler = self.status_handlers.get(status[0] + 'xx')
         else:
-            raise UnexpectedStatus(url, status, task.reasons)
+            raise UnexpectedStatus(url, status)
 
         task.response_headers = Headers(headers)
         task.response_status = status
@@ -412,7 +412,7 @@ class Freezer:
         elif status_action == 'follow':
             raise IsARedirect()
         else:
-            raise UnexpectedStatus(url, status, task.reasons)
+            raise UnexpectedStatus(url, status)
 
 
     def _add_extra_pages(self, prefix, extras):

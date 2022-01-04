@@ -17,7 +17,7 @@ def test_reason_homepage():
         freeze(app, config)
     assert str(e.value.url) == 'http://localhost:80/'
     assert e.value.status[:3] == '404'
-    assert e.value.reasons == ['site root (homepage)']
+    assert e.freezeyt_task.reasons == ['site root (homepage)']
 
 
 def test_reason_redirect():
@@ -38,7 +38,7 @@ def test_reason_redirect():
 
     assert str(e.value.url) == 'http://localhost:80/404'
     assert e.value.status[:3] == '404'
-    assert e.value.reasons == ['target of redirect from http://localhost:80/']
+    assert e.freezeyt_task.reasons == ['target of redirect from http://localhost:80/']
 
 
 def test_reason_extra():
@@ -59,7 +59,7 @@ def test_reason_extra():
     print(e)
     assert str(e.value.url) == 'http://localhost:80/404.html'
     assert e.value.status[:3] == '404'
-    assert e.value.reasons == ['extra page']
+    assert e.freezeyt_task.reasons == ['extra page']
 
 
 def test_reason_link():
@@ -79,4 +79,4 @@ def test_reason_link():
     print(e)
     assert str(e.value.url) == 'http://localhost:80/404.html'
     assert e.value.status[:3] == '404'
-    assert e.value.reasons == ['linked from http://localhost:80/']
+    assert e.freezeyt_task.reasons == ['linked from http://localhost:80/']

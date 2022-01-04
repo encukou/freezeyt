@@ -373,6 +373,10 @@ The object has the following attributes:
 * `freeze_info`: a `FreezeInfo` object. See the `start` hook for details.
 * `exception`: for failed tasks, the exception raised;
   `None` otherwise.
+* `reasons`: A list of strings explaining why the given page was visited.
+  (Note that as the freezing progresses, new reasons may be added to
+  existing tasks.)
+
 
 #### `page_failed`
 

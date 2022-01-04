@@ -1,6 +1,7 @@
 import importlib
 import os
 import shutil
+import traceback
 
 import pytest
 
@@ -45,8 +46,11 @@ def test_output(tmp_path, monkeypatch, app_name):
                     ' ' * 4 + type(exc).__name__
                     for exc in multierror.exceptions
                 ))
+                for exc in multierror.exceptions:
+                    traceback.print_exception(exc)
                 assert error_info == expected_error_info
             else:
+                print(excinfo.getrepr(style='short'))
                 exception_name = excinfo.typename
                 assert exception_name == expected_error_info
         else:

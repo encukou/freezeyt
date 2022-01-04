@@ -22,14 +22,10 @@ class UnsupportedSchemeError(ValueError):
 
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
-    def __init__(self, url, status, reasons=None):
+    def __init__(self, url, status):
         self.url = str(url)
         self.status = status
-        self.reasons = sorted(reasons)
-        message = f"Unexpected status '{status}' on URL {url}"
-        if reasons:
-            for reason in self.reasons:
-                message += f'\n-  {reason}'
+        message = str(status)
         super().__init__(message)
 
 class WrongMimetypeError(ValueError):

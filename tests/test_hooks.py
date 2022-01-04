@@ -118,7 +118,7 @@ def test_freezeinfo_add_404_url(reason, expected_reasons):
 
         with raises_multierror_with_one_exception(UnexpectedStatus) as e:
             freeze(module.app, config)
-        assert e.value.reasons == expected_reasons
+        assert e.freezeyt_task.reasons == expected_reasons
 
 
 @pytest.mark.parametrize('policy', ('save', 'follow'))

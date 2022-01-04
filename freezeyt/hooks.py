@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from freezeyt.util import parse_absolute_url
 
 class TaskInfo:
@@ -25,6 +27,14 @@ class TaskInfo:
             return self._task.asyncio_task.exception()
         else:
             return None
+
+    @property
+    def reasons(self) -> Iterable[str]:
+        """A list of strings explaining why the given page was visited.
+
+        New entries may be added as the freezing goes on.
+        """
+        return sorted(self._task.reasons)
 
 
 class FreezeInfo:

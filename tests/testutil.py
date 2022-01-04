@@ -94,8 +94,11 @@ class ExceptionInfo:
     # the attributes are filled in when the
     # raises_multierror_with_one_exception context manager exits.
 
+    # Additionally, this ExceptionInfo has a "freezeyt_task" attribute.
+
     value: Exception
     type: type
+    freezeyt_task: object  # (TaskInfo)
 
 
 @contextmanager
@@ -112,3 +115,7 @@ def raises_multierror_with_one_exception(exc_type):
     assert len(multierror.exceptions) == 1
     excinfo.value = multierror.exceptions[0]
     excinfo.type = type(multierror.exceptions[0])
+
+    assert len(multierror.tasks) == 1
+    assert multierror.tasks[0].exception == multierror.exceptions[0]
+    excinfo.freezeyt_task = multierror.tasks[0]
