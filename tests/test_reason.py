@@ -38,7 +38,7 @@ def test_reason_redirect():
 
     assert str(e.value.url) == 'http://localhost:80/404'
     assert e.value.status[:3] == '404'
-    assert e.freezeyt_task.reasons == ['target of redirect from http://localhost:80/']
+    assert e.freezeyt_task.reasons == ['target of redirect from: index.html']
 
 
 def test_reason_extra():
@@ -79,4 +79,4 @@ def test_reason_link():
     print(e)
     assert str(e.value.url) == 'http://localhost:80/404.html'
     assert e.value.status[:3] == '404'
-    assert e.freezeyt_task.reasons == ['linked from http://localhost:80/']
+    assert e.freezeyt_task.reasons == ['linked from: index.html']

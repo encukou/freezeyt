@@ -568,7 +568,7 @@ class Freezer:
                     else:
                         self.add_task(
                             new_url, external_ok=True,
-                            reason=f'linked from {url}',
+                            reason=f'linked from: {task.path}',
                         )
 
         del self.inprogress_tasks[task.path]
