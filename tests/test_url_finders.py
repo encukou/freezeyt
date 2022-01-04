@@ -133,12 +133,20 @@ def test_get_no_links(tmp_path):
     '/third_page.html',
     'third_page.html',
 ))
-def test_get_url_finder_callable_defined_by_user(found_url, tmp_path):
+@pytest.mark.parametrize('use_async', (True, False))
+def test_get_url_finder_callable_defined_by_user(found_url, tmp_path, use_async):
     """Test if we freezer parse url_finder inserted as func type by user.
     """
-    def my_url_finder(page_content, base_url, headers=None):
+    def sync_url_finder(page_content, base_url, headers=None):
         return [found_url]
 
+    async def async_url_finder(page_content, base_url, headers=None):
+        return [found_url]
+
+    if use_async:
+        my_url_finder = async_url_finder
+    else:
+        my_url_finder = sync_url_finder
 
     builddir = tmp_path / 'build'
 
@@ -155,10 +163,14 @@ def test_get_url_finder_callable_defined_by_user(found_url, tmp_path):
     assert (builddir / 'third_page.html').exists()
 
 
-def url_finder(page_content, base_url, headers=None):
+def url_finder_sync(page_content, base_url, headers=None):
     return []
 
-def test_get_url_finder_by_name_defined_by_user(tmp_path):
+async def url_finder_async(page_content, base_url, headers=None):
+    return []
+
+@pytest.mark.parametrize('name', ('url_finder_sync', 'url_finder_async'))
+def test_get_url_finder_by_name_defined_by_user(tmp_path, name):
     """Test if we freezer parse url_finder inserted as func type.
     """
 
@@ -167,7 +179,7 @@ def test_get_url_finder_by_name_defined_by_user(tmp_path):
     with context_for_test('app_3pages_deep') as module:
         freeze_config = {
             'output': str(builddir),
-            'url_finders': {'text/html': f'{__name__}:url_finder'},
+            'url_finders': {'text/html': f'{__name__}:{name}'},
         }
 
         freeze(module.app, freeze_config)

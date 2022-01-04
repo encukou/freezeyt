@@ -8,7 +8,7 @@ from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
 
-def get_css_links(
+async def get_css_links(
     css_file: BinaryIO,
     base_url: str,
     headers: Optional[List[Tuple[str, str]]]=None,
@@ -16,11 +16,11 @@ def get_css_links(
     """Get all links from a CSS file."""
     text = css_file.read()
     parsed = css_parser.parseString(text)
-    yield from css_parser.getUrls(parsed)
+    return list(css_parser.getUrls(parsed))
 
 
 
-def get_html_links(
+async def get_html_links(
     page_content: bytes,
     base_url: str,
     headers: Optional[List[Tuple[str, str]]]=None,
@@ -53,4 +53,4 @@ def get_html_links(
         cont_type, cont_options = parse_options_header(content_type_header)
         cont_charset = cont_options.get('charset')
     document = html5lib.parse(page_content, transport_encoding=cont_charset)
-    return get_links_from_node(document, base_url)
+    return list(get_links_from_node(document, base_url))

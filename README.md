@@ -458,6 +458,9 @@ An URL finder gets these arguments:
 The function should return an iterator of URLs (as strings) found
 in the page's contents. These URLs can be relative.
 
+The finder function can be `async` (i.e. return a coroutine). If it is, it's
+awaited and the result is used as the iterator of URLs.
+
 The `freezeyt.url_finders` module includes the default finders `get_html_links`
 and `get_css_links`.
 

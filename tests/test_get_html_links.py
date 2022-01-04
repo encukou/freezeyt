@@ -1,4 +1,5 @@
 from freezeyt.url_finders import get_html_links
+from freezeyt.compat import asyncio_run
 
 
 def test_get_links():
@@ -7,7 +8,7 @@ def test_get_links():
     The get_html_links function should return all links
     even when the links are deeper in the page.
     """
-    links = get_html_links(b"""
+    links = asyncio_run(get_html_links(b"""
         <html>
             <head>
                 <title>Hello world</title>
@@ -23,7 +24,7 @@ def test_get_links():
                 <img src="blabla.png">
             </body>
         </html>
-    """, 'http://localhost:8000')
+    """, 'http://localhost:8000'))
 
     assert sorted(links) == [
         '/second_page',
@@ -34,7 +35,7 @@ def test_get_links():
 
 
 def test_get_links_path():
-    links = get_html_links(b"""
+    links = asyncio_run(get_html_links(b"""
         <html>
             <head>
                 <title>Hello world</title>
@@ -49,7 +50,7 @@ def test_get_links_path():
                 <a href='fourth_page/'>LINK</a> to fourth page.
             </body>
         </html>
-    """, 'http://localhost:8000/path1/path2/')
+    """, 'http://localhost:8000/path1/path2/'))
 
     assert sorted(links) == [
         '/second_page',
@@ -60,7 +61,7 @@ def test_get_links_path():
 
 def test_get_links_utf8():
     # Test that links are parsed according to the content encoding (UTF-8)
-    links = get_html_links(
+    links = asyncio_run(get_html_links(
         b"""
             <html>
                 <head>
@@ -73,7 +74,7 @@ def test_get_links_utf8():
         """,
         'http://localhost:8000/',
         {'Content-Type': 'text/html; charset=utf-8'},
-    )
+    ))
 
     assert sorted(links) == [
         '/čau',
@@ -82,7 +83,7 @@ def test_get_links_utf8():
 
 def test_get_links_cp1253():
     # Test that links are parsed according to the content encoding (Greek)
-    links = get_html_links(
+    links = asyncio_run(get_html_links(
         b"""
             <html>
                 <head>
@@ -95,7 +96,7 @@ def test_get_links_cp1253():
         """,
         'http://localhost:8000/',
         {'Content-Type': 'text/html; charset=cp1253'},
-    )
+    ))
 
     assert sorted(links) == [
         '/π',

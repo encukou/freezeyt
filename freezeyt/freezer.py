@@ -543,9 +543,13 @@ class Freezer:
         url_finder = self.url_finders.get(mime_type)
         if url_finder is not None:
             with await self.saver.open_filename(task.path) as f:
-                links = url_finder(
+                finder_result = url_finder(
                     f, url_string, task.response_headers.to_wsgi_list()
                 )
+                if asyncio.iscoroutine(finder_result):
+                    links = await finder_result
+                else:
+                    links = finder_result
                 for new_url_text in links:
                     new_url = url.join(decode_input_path(new_url_text))
                     try:
