@@ -103,8 +103,15 @@ def main(
             click.echo(file=sys.stderr)
             click.secho(message.center(cols, '='), file=sys.stderr, fg='red')
         for task in multierr.tasks:
-            exc = task.exception
-            err_type = click.style(type(exc).__name__, fg='red')
-            click.echo(f'{err_type} in {task.path}:', file=sys.stderr)
-            click.echo(f'{exc}', file=sys.stderr)
+            message = str(task.exception)
+            if message:
+                # Separate the error type and value by a semicolon
+                # (only if there is a value)
+                message = ': ' + message
+            err_type = click.style(type(task.exception).__name__, fg='red')
+            path = click.style(task.path, fg='cyan')
+            click.echo(f'{err_type}{message}', file=sys.stderr)
+            click.echo(f'  in {path}', file=sys.stderr)
+            for reason in task.reasons:
+                click.echo(f'    {reason}', file=sys.stderr)
         exit(1)
