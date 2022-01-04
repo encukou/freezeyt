@@ -7,6 +7,8 @@ import css_parser
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
+from . import compat
+
 
 async def get_css_links(
     css_file: BinaryIO,
@@ -15,7 +17,8 @@ async def get_css_links(
 )  -> Iterable[str]:
     """Get all links from a CSS file."""
     text = css_file.read()
-    parsed = css_parser.parseString(text)
+    loop = compat.get_running_loop()
+    parsed = await loop.run_in_executor(None, css_parser.parseString, text)
     return list(css_parser.getUrls(parsed))
 
 
@@ -45,12 +48,16 @@ async def get_html_links(
         for child in node:
             yield from get_links_from_node(child, base_url)
 
+    def task():
+        if headers == None:
+            cont_charset = None
+        else:
+            content_type_header = Headers(headers).get('Content-Type')
+            cont_type, cont_options = parse_options_header(content_type_header)
+            cont_charset = cont_options.get('charset')
+        document = html5lib.parse(page_content, transport_encoding=cont_charset)
+        return list(get_links_from_node(document, base_url))
 
-    if headers == None:
-        cont_charset = None
-    else:
-        content_type_header = Headers(headers).get('Content-Type')
-        cont_type, cont_options = parse_options_header(content_type_header)
-        cont_charset = cont_options.get('charset')
-    document = html5lib.parse(page_content, transport_encoding=cont_charset)
-    return list(get_links_from_node(document, base_url))
+    loop = compat.get_running_loop()
+
+    return await loop.run_in_executor(None, task)

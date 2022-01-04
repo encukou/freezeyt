@@ -10,6 +10,7 @@ from typing import Optional, Mapping
 import enum
 from urllib.parse import urljoin
 import asyncio
+import inspect
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -546,10 +547,15 @@ class Freezer:
                 finder_result = url_finder(
                     f, url_string, task.response_headers.to_wsgi_list()
                 )
-                if asyncio.iscoroutine(finder_result):
+                if inspect.iscoroutine(finder_result):
                     links = await finder_result
                 else:
                     links = finder_result
+                if inspect.isasyncgen(links):
+                    new_links = []
+                    async for link in links:
+                        new_links.append(link)
+                    links = new_links
                 for new_url_text in links:
                     new_url = url.join(decode_input_path(new_url_text))
                     try:

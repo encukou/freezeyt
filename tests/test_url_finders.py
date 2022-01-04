@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from freezeyt import freeze
@@ -164,12 +166,23 @@ def test_get_url_finder_callable_defined_by_user(found_url, tmp_path, use_async)
 
 
 def url_finder_sync(page_content, base_url, headers=None):
-    return []
+    return ['third_page.html']
 
 async def url_finder_async(page_content, base_url, headers=None):
-    return []
+    return ['third_page.html']
 
-@pytest.mark.parametrize('name', ('url_finder_sync', 'url_finder_async'))
+def url_generator_sync(page_content, base_url, headers=None):
+    yield 'third_page.html'
+
+async def url_generator_async(page_content, base_url, headers=None):
+    await asyncio.sleep(0)
+    yield 'third_page.html'
+    await asyncio.sleep(0)
+
+@pytest.mark.parametrize('name', (
+    'url_finder_sync', 'url_finder_async',
+    'url_generator_sync', 'url_generator_async',
+))
 def test_get_url_finder_by_name_defined_by_user(tmp_path, name):
     """Test if we freezer parse url_finder inserted as func type.
     """
@@ -186,4 +199,5 @@ def test_get_url_finder_by_name_defined_by_user(tmp_path, name):
 
     assert (builddir / 'index.html').exists()
     assert not (builddir / 'second_page.html').exists()
-    assert not (builddir / 'third_page.html').exists()
+    assert (builddir / 'third_page.html').exists()
+
