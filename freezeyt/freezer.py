@@ -397,7 +397,7 @@ class Freezer:
         task.response_headers = Headers(headers)
         task.response_status = status
 
-        status_action = status_handler(hooks.TaskInfo(task, self))
+        status_action = status_handler(hooks.TaskInfo(task))
 
         if status_action == 'save':
             check_mimetype(
@@ -459,7 +459,7 @@ class Freezer:
             except Exception:
                 del self.inprogress_tasks[task.path]
                 self.failed_tasks[task.path] = task
-                self.call_hook('page_failed', hooks.TaskInfo(task, self))
+                self.call_hook('page_failed', hooks.TaskInfo(task))
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
 
@@ -574,7 +574,7 @@ class Freezer:
         del self.inprogress_tasks[task.path]
         self.done_tasks[task.path] = task
 
-        self.call_hook('page_frozen', hooks.TaskInfo(task, self))
+        self.call_hook('page_frozen', hooks.TaskInfo(task))
 
     @needs_semaphore
     async def handle_redirects(self):
@@ -592,7 +592,7 @@ class Freezer:
 
                 with await self.saver.open_filename(task.redirects_to.path) as f:
                     await self.saver.save_to_filename(task.path, f)
-                self.call_hook('page_frozen', hooks.TaskInfo(task, self))
+                self.call_hook('page_frozen', hooks.TaskInfo(task))
                 del self.redirecting_tasks[key]
                 self.done_tasks[task.path] = task
                 saved_something = True

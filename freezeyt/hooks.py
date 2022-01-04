@@ -2,9 +2,9 @@ from freezeyt.util import parse_absolute_url
 
 class TaskInfo:
     """Public information about a task that's being saved"""
-    def __init__(self, task, freezer):
+    def __init__(self, task):
         self._task = task
-        self._freezer = freezer
+        self._freezer = task.freezer
 
     def get_a_url(self):
         """Return a URL of this page"""
