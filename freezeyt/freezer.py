@@ -59,11 +59,14 @@ DEFAULT_STATUS_HANDLERS = {
 }
 
 
-def check_mimetype(url_path, headers, default='application/octet-stream'):
+def check_mimetype(
+    url_path, headers,
+    frecognizer=guess_type, default='application/octet-stream'
+):
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
-    file_type, file_encoding = guess_type(url_path)
+    file_type, file_encoding = frecognizer(url_path)
     if not file_type:
         file_type = default
     headers = Headers(headers)
@@ -394,8 +397,13 @@ class Freezer:
         status_action = status_handler(hooks.TaskInfo(task, self))
 
         if status_action == 'save':
+            frecognizer = self.config.get('filetype_recognizer', guess_type)
+            if isinstance(frecognizer, str):
+                frecognizer = import_variable_from_module(frecognizer)
+
             check_mimetype(
                 url.path, headers,
+                frecognizer=frecognizer,
                 default=self.config.get(
                     'default_mimetype', 'application/octet-stream',
                 ),
