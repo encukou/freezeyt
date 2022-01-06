@@ -2,157 +2,148 @@ import pytest
 
 from freezeyt.freezer import check_mimetype
 
-def test_normal_html():
-    check_mimetype(
+
+TEST_DATA = {
+    'normal_html': (
         'http://localhost:8000/index.html',
         [
             ('Content-Type', 'text/html; charset=utf-8'),
             ('Content-Length', '164'),
-        ]
-    )
+        ],
+    ),
 
-def test_diff_type_jpg_png_fail():
-    with pytest.raises(ValueError):
-        check_mimetype(
-            'http://localhost:8000/image.jpg',
-            [
-                ('Content-Type', 'image/png'),
-                ('Content-Length', '654'),
-            ],
-        )
+    'jpg_X_png_fail': (
+        'http://localhost:8000/index.jpg',
+        [
+            ('Content-Type', 'image/png'),
+            ('Content-Length', '654'),
+        ],
+    ),
 
+    'missing_content_type_fail': (
+        'http://localhost:8000/index.html', [('Content-Length', '164')]
+    ),
 
-def test_missing_content_type():
-    with pytest.raises(ValueError):
-        check_mimetype(
-            'http://localhost:8000/index.html',
-            [
-                ('Content-Length', '164'),
-            ]
-        )
+    'case_insensitive_content_type': (
+        'http://localhost:8000/index.html',
+        [
+            ('Content-Type', 'TEXT/HTML; charset=utf-8'),
+            ('Content-Length', '164'),
+        ],
+    ),
 
+    'case_insensitive_file': (
+        'http://localhost:8000/index.HTML',
+        [
+            ('Content-Type', 'text/html; charset=utf-8'),
+            ('Content-Length', '164'),
+        ],
+    ),
 
-def test_case_insensitive_content_type():
-        check_mimetype(
-            'http://localhost:8000/index.html',
-            [
-                ('Content-Type', 'TEXT/HTML; charset=utf-8'),
-                ('Content-Length', '164'),
-            ]
-        )
+    'case_insensitive_headers_fail': (
+        'http://localhost:8000/index.jpg',
+        [
+            ('CONTENT-TYPE', 'IMAGE/PNG'),
+            ('Content-Length', '654'),
+        ],
+    ),
 
-
-def test_case_insensitive_file():
-        check_mimetype(
-            'http://localhost:8000/index.HTML',
-            [
-                ('Content-Type', 'text/html; charset=utf-8'),
-                ('Content-Length', '164'),
-            ]
-        )
-
-
-def test_case_insensitive_headers_fail():
-    with pytest.raises(ValueError):
-        check_mimetype(
-            'http://localhost:8000/image.jpg',
-            [
-                ('CONTENT-TYPE', 'IMAGE/PNG'),
-                ('Content-Length', '654'),
-            ],
-        )
-
-
-def test_case_insensitive_headers():
-    check_mimetype(
-        'http://localhost:8000/image.jpg',
+    'case_insensitive_headers': (
+        'http://localhost:8000/index.jpg',
         [
             ('coNtENT-TypE', 'IMAgE/JpEG'),
             ('Content-Length', '654'),
         ],
-    )
+    ),
 
+    # there is diff between jpg and jpeg, our default frecognizer (guess_type)
+    # return jpg as jpeg.
+    'same_jpg_fail': (
+        'http://localhost:8000/image.jpg',
+        [
+            ('Content-Type', 'image/jpg'),
+            ('Content-Length', '654'),
+        ],
+    ),
 
-def test_same_jpg_fail():
-    with pytest.raises(ValueError):
-        check_mimetype(
-            'http://localhost:8000/image.jpg',
-            [
-                ('Content-Type', 'image/jpg'),
-                ('Content-Length', '654'),
-            ],
-        )
-
-
-def test_missing_file_suffix():
-    check_mimetype(
+    'missing_file_suffix': (
         'http://localhost:8000/index',
         [
             ('Content-Type', 'application/octet-stream'),
             ('Content-Length', '164'),
-        ]
-    )
+        ],
+    ),
 
-def test_missing_file_suffix_fail():
-    with pytest.raises(ValueError):
-        check_mimetype(
-            'http://localhost:8000/index',
-            [
-                ('Content-Type', 'image/png'),
-                ('Content-Length', '164'),
-            ]
-        )
-
-def test_directory():
-    check_mimetype(
-        'http://localhost:8000/foo/',
-        [
-            ('Content-Type', 'text/html'),
-        ]
-    )
-
-
-def test_missing_file_default():
-    check_mimetype(
+    'missing_file_suffix_fail': (
         'http://localhost:8000/index',
         [
             ('Content-Type', 'image/png'),
             ('Content-Length', '164'),
         ],
-        default='image/png'
-    )
+    ),
+
+    'directory': (
+        'http://localhost:8000/foo/', [('Content-Type', 'text/html')]
+    ),
+}
+
+@pytest.mark.parametrize('testname', TEST_DATA)
+def test_kwargs_exclude(testname):
+    url_path, headers= TEST_DATA[testname]
+    error = testname[-5:] == '_fail'
+
+    if error:
+        with pytest.raises(ValueError):
+            check_mimetype(url_path, headers)
+    else:
+        check_mimetype(url_path, headers)
 
 
-def test_default_ignored():
-    check_mimetype(
+TEST_DATA_DEFAULT = {
+    'missing_file_suffix': (
+        'http://localhost:8000/index',
+        [
+            ('Content-Type', 'image/png'),
+            ('Content-Length', '164'),
+        ],
+        'image/png'
+    ),
+
+    'missing_file_suffix_fail': (
+        'http://localhost:8000/index',
+        [
+            ('Content-Type', 'text/html'),
+            ('Content-Length', '164'),
+        ],
+        'image/png'
+    ),
+
+    'default_ignored': (
         'http://localhost:8000/picture.jpg',
         [
             ('Content-Type', 'image/jpeg'),
             ('Content-Length', '164'),
         ],
-        default='image/png'
+        'image/png'
+    ),
+
+    'default_ignored_fail': (
+        'http://localhost:8000/picture.jpg',
+        [
+            ('Content-Type', 'image/png'),
+            ('Content-Length', '164'),
+        ],
+        'image/png'
     )
+}
 
+@pytest.mark.parametrize('testname', TEST_DATA_DEFAULT)
+def test_default_include(testname):
+    url_path, headers, default = TEST_DATA_DEFAULT[testname]
+    error = testname[-5:] == '_fail'
 
-def test_missing_file_default_fail():
-    with pytest.raises(ValueError):
-        check_mimetype(
-            'http://localhost:8000/index',
-            [
-                ('Content-Type', 'text/html'),
-                ('Content-Length', '164'),
-            ],
-            default='image/png'
-        )
-
-
-def test_default_ignored_fail():
-    with pytest.raises(ValueError):
-        check_mimetype(
-            'http://localhost:8000/picture.jpg',
-            [
-                ('Content-Type', 'image/png'),
-                ('Content-Length', '164'),
-            ],
-            default='image/png'
-        )
+    if error:
+        with pytest.raises(ValueError):
+            check_mimetype(url_path, headers, default=default)
+    else:
+        check_mimetype(url_path, headers, default=default)
