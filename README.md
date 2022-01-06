@@ -267,12 +267,14 @@ extra_files:
 Extra files cannot be specified on the CLI.
 
 
-### Default MIME type
+### Comparison of MIME type and file type
 
 Freezeyt checks whether the file extensions in its output
 correspond to the MIME types served by the app.
 If there's a mismatch, freezeyt fails, because this means a server
 wouldn't be able to serve the page correctly.
+
+#### Default MIME type
 
 It is possible to specify the MIME type used for files without an extension.
 For example, if your server of static pages defaults to plain text files,
@@ -281,6 +283,31 @@ use:
 ```yaml
 default_mimetype=text/plain
 ```
+
+#### File type recognition
+
+It is possible to specify the recognizer of FILE type.
+For example, if your server of static pages set defaults recognizer
+as your_file_recognizer function, use:
+
+```yaml
+filetype_recognizer=module:your_file_recognizer
+```
+
+Value is recognizer, which can be defined as:
+* strings in the form `"module:function"`, which name the finder
+  function to call,
+* Python functions (if configuring `freezeyt` from Python, e.g. as a dict,
+  rather than YAML).
+
+
+An URL finder gets arguments:
+* filepath as `PurePath`
+
+The recognizer returns `Tuple` with two `strings`:
+* file type (e.g. `"text/plain"`)
+* file encoding (e.g. `"UTF-8"`)
+
 
 ### Progress bar and logging
 
