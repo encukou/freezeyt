@@ -147,3 +147,46 @@ def test_default_include(testname):
             check_mimetype(url_path, headers, default=default)
     else:
         check_mimetype(url_path, headers, default=default)
+
+
+def test_missing_file_suffix_frecognizer():
+    def frecognizer(url_path):
+        return ("image/png", None)
+
+    check_mimetype(
+        'http://localhost:8000/index',
+        [
+            ('Content-Type', 'image/png'),
+            ('Content-Length', '164'),
+        ],
+        frecognizer=frecognizer
+    )
+
+def test_missing_file_suffix_frecognizer_fail():
+    def frecognizer(url_path):
+        return ("image/png", None)
+
+    with pytest.raises(ValueError):
+        check_mimetype(
+            'http://localhost:8000/index',
+            [
+                ('Content-Type', 'image/jpeg'),
+                ('Content-Length', '164'),
+            ],
+            frecognizer=frecognizer
+        )
+
+def test_missing_file_suffix_frecognizer_fail_default_ignored():
+    def frecognizer(url_path):
+        return ("image/bmp", None)
+
+    with pytest.raises(ValueError):
+        check_mimetype(
+            'http://localhost:8000/index',
+            [
+                ('Content-Type', 'text/html'),
+                ('Content-Length', '164'),
+            ],
+            frecognizer=frecognizer,
+            default='text/html'
+        )
