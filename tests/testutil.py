@@ -116,6 +116,9 @@ def raises_multierror_with_one_exception(exc_type):
     excinfo.value = multierror.exceptions[0]
     excinfo.type = type(multierror.exceptions[0])
 
+    with pytest.raises(exc_type):
+        raise excinfo.value
+
     assert len(multierror.tasks) == 1
     assert multierror.tasks[0].exception == multierror.exceptions[0]
     excinfo.freezeyt_task = multierror.tasks[0]
