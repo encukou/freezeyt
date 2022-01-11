@@ -345,13 +345,13 @@ For example, some of the fonts are linked from the CSS file without using the <e
 <pre><code class="language-html">Halflings&#39;;src:url(../fonts/glyphicons-halflings-regular.eot);src:url(../fonts/glyphicons-halflings-regular.eot?#iefix) format(&#39;embedded-opentype&#39;),url(../fonts/glyphicons-halflings-regular.woff2) format(&#39;woff2&#39;),url(../fonts/glyphicons-halflings-regular.woff) format(&#39;woff&#39;),url(../fonts/glyphicons-halflings-
 </code></pre>
 <p>Other CSS links were recognized properly since they are entered as a <em>href</em> link:</p>
-<pre><code class="language-html"><span class="c">&lt;!-- Bootstrap CSS --&gt;</span>
+<pre><code class="language-html"><span class="cm">&lt;!-- Bootstrap CSS --&gt;</span>
    <span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/static/css/bootstrap.min.css&quot;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span><span class="p">&gt;</span>
-   <span class="c">&lt;!-- Custom CSS --&gt;</span>
+   <span class="cm">&lt;!-- Custom CSS --&gt;</span>
    <span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/static/css/custom.css&quot;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span><span class="p">&gt;</span>
 </code></pre>
 <p>Additionally, CSS fonts linking to an external page were not a problem as freezeyt is able to recognize links going to external pages:</p>
-<pre><code class="language-html"><span class="c">&lt;!-- Custom Fonts --&gt;</span>
+<pre><code class="language-html"><span class="cm">&lt;!-- Custom Fonts --&gt;</span>
 <span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic,700&amp;subset=latin,greek,greek-ext,vietnamese,latin-ext,cyrillic&#39;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;stylesheet&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text/css&#39;</span><span class="p">&gt;</span>
 </code></pre>
 <p>We are also missing some images from the bg folder (bg-background) which are also embedded in a <a href="https://pyladies.cz/static/css/custom.css">CSS file</a>.</p>
