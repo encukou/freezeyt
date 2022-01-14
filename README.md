@@ -284,29 +284,36 @@ use:
 default_mimetype=text/plain
 ```
 
-#### File type recognition
+If the default MIME type isn't explicitly configured in YAML configuration,
+then the `freezeyt` uses value `application/octet-stream`.
 
-It is possible to specify the recognizer of FILE type.
-For example, if your server of static pages set defaults recognizer
-as your_file_recognizer function, use:
+#### Recognizing file types from extensions
+
+There is possibility to modify the way how to determine file type
+from file extension.
+You can setup your own `get_mimetype` function.
+
+Freezeyt will register your own function, if you specify it in configuration
+YAML file as:
 
 ```yaml
-filetype_recognizer=module:your_file_recognizer
+get_mimetype=module:your_function
 ```
 
-Value is recognizer, which can be defined as:
-* strings in the form `"module:function"`, which name the finder
-  function to call,
-* Python functions (if configuring `freezeyt` from Python, e.g. as a dict,
+If the `get_mimetype` is not defined in configuration file,
+then the `freezeyt` uses the python function `mimetypes.guess_type`
+
+`get_mimetype` can be defined as:
+* strings in the form `"module:function"`, which name the function to call,
+* Python functions (if configuring `freezeyt` from Python, e.g. as a `dict`,
   rather than YAML).
 
+The `get_mimetype`:
+*gets one argument the `filepath` as `string`
 
-An URL finder gets arguments:
-* filepath as `PurePath`
+*returns file type as `string` (e.g. `"text/plain"`).
 
-The recognizer returns `Tuple` with two `strings`:
-* file type (e.g. `"text/plain"`)
-* file encoding (e.g. `"UTF-8"`)
+If `mimetype` can't be determine, `get_mimetypes` returns `None`.
 
 
 ### Progress bar and logging
