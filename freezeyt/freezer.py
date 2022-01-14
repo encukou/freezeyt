@@ -61,7 +61,7 @@ DEFAULT_STATUS_HANDLERS = {
 
 def check_mimetype(
     url_path, headers,
-    frecognizer=guess_type, default='application/octet-stream'
+    default='application/octet-stream', *, frecognizer=guess_type,
 ):
     if url_path.endswith('/'):
         # Directories get saved as index.html
