@@ -56,8 +56,9 @@ TEST_DATA = {
         ],
     ),
 
-    # there is diff between jpg and jpeg, our default frecognizer (guess_type)
-    # return jpg as jpeg.
+    # The content-type for JPEG images is standardized: `image/jpeg` (case insensitive).
+    # The file extension is not standardized; the default recognizer guesses that
+    # both `.jpg` or `.jpeg` mean JPEG images.
     'same_jpg_fail': (
         'http://localhost:8000/image.jpg',
         [
