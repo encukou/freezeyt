@@ -61,12 +61,12 @@ DEFAULT_STATUS_HANDLERS = {
 
 def check_mimetype(
     url_path, headers,
-    default='application/octet-stream', *, frecognizer=guess_type,
+    default='application/octet-stream', *, get_mimetype=guess_type,
 ):
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
-    file_type, file_encoding = frecognizer(url_path)
+    file_type, _ = get_mimetype(url_path)
     if not file_type:
         file_type = default
     headers = Headers(headers)
@@ -180,8 +180,17 @@ class Freezer:
 
         self.freeze_info = hooks.FreezeInfo(self)
 
-        self.extra_pages = config.get('extra_pages', ())
-        self.extra_files = config.get('extra_files', None)
+        CONFIG_DATA = (
+            ('extra_pages', ()),
+            ('extra_files', None),
+            ('default_mimetype', 'application/octet-stream'),
+            ('get_mimetype', guess_type)
+        )
+        for attr_name, default in CONFIG_DATA:
+            setattr(self, attr_name, config.get(attr_name, default))
+
+        if isinstance(self.get_mimetype, str):
+            self.get_mimetype = import_variable_from_module(self.get_mimetype)
 
         if config.get('use_default_url_finders', True):
             _url_finders = dict(
@@ -397,16 +406,10 @@ class Freezer:
         status_action = status_handler(hooks.TaskInfo(task, self))
 
         if status_action == 'save':
-            frecognizer = self.config.get('filetype_recognizer', guess_type)
-            if isinstance(frecognizer, str):
-                frecognizer = import_variable_from_module(frecognizer)
-
             check_mimetype(
                 url.path, headers,
-                frecognizer=frecognizer,
-                default=self.config.get(
-                    'default_mimetype', 'application/octet-stream',
-                ),
+                default=self.default_mimetype,
+                get_mimetype=self.get_mimetype
             )
             return wsgi_write
         elif status_action == 'ignore':
