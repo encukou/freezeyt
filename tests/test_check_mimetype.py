@@ -150,8 +150,8 @@ def test_default_include(testname):
         check_mimetype(url_path, headers, default=default)
 
 
-def test_missing_file_suffix_frecognizer():
-    def frecognizer(url_path):
+def test_missing_file_suffix_get_mimetype():
+    def get_mimetype(url_path):
         return ("image/png", None)
 
     check_mimetype(
@@ -160,11 +160,11 @@ def test_missing_file_suffix_frecognizer():
             ('Content-Type', 'image/png'),
             ('Content-Length', '164'),
         ],
-        frecognizer=frecognizer
+        get_mimetype=get_mimetype
     )
 
-def test_missing_file_suffix_frecognizer_fail():
-    def frecognizer(url_path):
+def test_missing_file_suffix_get_mimetype_fail():
+    def get_mimetype(url_path):
         return ("image/png", None)
 
     with pytest.raises(ValueError):
@@ -174,11 +174,11 @@ def test_missing_file_suffix_frecognizer_fail():
                 ('Content-Type', 'image/jpeg'),
                 ('Content-Length', '164'),
             ],
-            frecognizer=frecognizer
+            get_mimetype=get_mimetype
         )
 
-def test_missing_file_suffix_frecognizer_fail_default_ignored():
-    def frecognizer(url_path):
+def test_missing_file_suffix_get_mimetype_fail_default_ignored():
+    def get_mimetype(url_path):
         return ("image/bmp", None)
 
     with pytest.raises(ValueError):
@@ -188,6 +188,7 @@ def test_missing_file_suffix_frecognizer_fail_default_ignored():
                 ('Content-Type', 'text/html'),
                 ('Content-Length', '164'),
             ],
-            frecognizer=frecognizer,
-            default='text/html'
+            default='text/html',
+            get_mimetype=get_mimetype,
+
         )
