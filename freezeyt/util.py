@@ -22,14 +22,10 @@ class UnsupportedSchemeError(ValueError):
 
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
-    def __init__(self, url, status, reasons=None):
+    def __init__(self, url, status):
         self.url = str(url)
         self.status = status
-        self.reasons = sorted(reasons)
-        message = f"Unexpected status '{status}' on URL {url}"
-        if reasons:
-            for reason in self.reasons:
-                message += f'\n-  {reason}'
+        message = str(status)
         super().__init__(message)
 
 class WrongMimetypeError(ValueError):
@@ -39,6 +35,18 @@ class WrongMimetypeError(ValueError):
             f"Content-type '{got}' is different from filetype '{expected}'"
             + f" guessed from '{url_path}'"
         )
+
+class MultiError(Exception):
+    """Contains multiple errors"""
+    def __init__(self, tasks):
+        # Import TaskInfo here to avoid a circular import
+        # (since hooks imports utils)
+        from freezeyt.hooks import TaskInfo
+
+        super().__init__(f"{len(tasks)} errors")
+        self._tasks = tasks
+        self.exceptions = [t.asyncio_task.exception() for t in tasks]
+        self.tasks = [TaskInfo(t) for t in tasks]
 
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`

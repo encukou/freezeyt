@@ -1,9 +1,10 @@
 import sys
+import shutil
 
 import click
 import yaml
 
-from freezeyt.freezer import freeze
+from freezeyt import freeze, MultiError
 from freezeyt.util import import_variable_from_module
 
 
@@ -93,4 +94,24 @@ def main(
         module_name, default_variable_name='app',
     )
 
-    freeze(app, config)
+    try:
+        freeze(app, config)
+    except MultiError as multierr:
+        if sys.stderr.isatty():
+            cols, lines = shutil.get_terminal_size()
+            message = f' {multierr} '
+            click.echo(file=sys.stderr)
+            click.secho(message.center(cols, '='), file=sys.stderr, fg='red')
+        for task in multierr.tasks:
+            message = str(task.exception)
+            if message:
+                # Separate the error type and value by a semicolon
+                # (only if there is a value)
+                message = ': ' + message
+            err_type = click.style(type(task.exception).__name__, fg='red')
+            path = click.style(task.path, fg='cyan')
+            click.echo(f'{err_type}{message}', file=sys.stderr)
+            click.echo(f'  in {path}', file=sys.stderr)
+            for reason in task.reasons:
+                click.echo(f'    {reason}', file=sys.stderr)
+        exit(1)

@@ -7,6 +7,8 @@ import difflib
 
 import pytest
 
+from freezeyt import MultiError
+
 
 FIXTURES_PATH = Path(__file__).parent / 'fixtures'
 
@@ -83,3 +85,40 @@ def assert_cmp_same(cmp):
     for subcmp in cmp.subdirs.values():
         assert_cmp_same(subcmp)
 
+
+class ExceptionInfo:
+    """Mimics pytest's ExceptionInfo class"""
+    # ExceptionInfo (the result of pytest.raises)
+    # doesn't have public API for creating instances.
+    # This is a class that looks enough like it for our purposes:
+    # the attributes are filled in when the
+    # raises_multierror_with_one_exception context manager exits.
+
+    # Additionally, this ExceptionInfo has a "freezeyt_task" attribute.
+
+    value: Exception
+    type: type
+    freezeyt_task: object  # (TaskInfo)
+
+
+@contextmanager
+def raises_multierror_with_one_exception(exc_type):
+    """Like pytest.raises, but expects a MultiError with a single exception
+
+    The single exception must be of the given `exc_type`; information about it
+    (and not the MultiError) is provided by this context manager.
+    """
+    excinfo = ExceptionInfo()
+    with pytest.raises(MultiError) as multierror_excinfo:
+        yield excinfo
+    multierror = multierror_excinfo.value
+    assert len(multierror.exceptions) == 1
+    excinfo.value = multierror.exceptions[0]
+    excinfo.type = type(multierror.exceptions[0])
+
+    with pytest.raises(exc_type):
+        raise excinfo.value
+
+    assert len(multierror.tasks) == 1
+    assert multierror.tasks[0].exception == multierror.exceptions[0]
+    excinfo.freezeyt_task = multierror.tasks[0]

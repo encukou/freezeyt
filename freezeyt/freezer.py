@@ -23,7 +23,7 @@ from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import WrongMimetypeError, UnexpectedStatus
-from freezeyt.util import UnsupportedSchemeError
+from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 
@@ -129,6 +129,7 @@ class TaskStatus(enum.Enum):
     IN_PROGRESS = "Currently being handled"
     REDIRECTING = "Waiting for target of redirection"
     DONE = "Saved"
+    FAILED = "Raised an exception"
 
 @dataclasses.dataclass
 class Task:
@@ -233,10 +234,12 @@ class Freezer:
         self.done_tasks = {}
         self.redirecting_tasks = {}
         self.inprogress_tasks = {}
+        self.failed_tasks = {}
         self.task_queues = {
             TaskStatus.DONE: self.done_tasks,
             TaskStatus.REDIRECTING: self.redirecting_tasks,
             TaskStatus.IN_PROGRESS: self.inprogress_tasks,
+            TaskStatus.FAILED: self.failed_tasks,
         }
 
         self.add_task(prefix_parsed, reason='site root (homepage)')
@@ -260,9 +263,12 @@ class Freezer:
         self.hooks.setdefault(hook_name, []).append(func)
 
     async def get_result(self):
-        get_result = getattr(self.saver, 'get_result', None)
-        if get_result is not None:
-            return await get_result()
+        if not self.failed_tasks:
+            get_result = getattr(self.saver, 'get_result', None)
+            if get_result is not None:
+                return await get_result()
+            return None
+        raise MultiError(self.failed_tasks.values())
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,
@@ -386,12 +392,12 @@ class Freezer:
         elif self.status_handlers.get(status[0] + 'xx'):
             status_handler = self.status_handlers.get(status[0] + 'xx')
         else:
-            raise UnexpectedStatus(url, status, task.reasons)
+            raise UnexpectedStatus(url, status)
 
         task.response_headers = Headers(headers)
         task.response_status = status
 
-        status_action = status_handler(hooks.TaskInfo(task, self))
+        status_action = status_handler(hooks.TaskInfo(task))
 
         if status_action == 'save':
             check_mimetype(
@@ -406,7 +412,7 @@ class Freezer:
         elif status_action == 'follow':
             raise IsARedirect()
         else:
-            raise UnexpectedStatus(url, status, task.reasons)
+            raise UnexpectedStatus(url, status)
 
 
     def _add_extra_pages(self, prefix, extras):
@@ -448,7 +454,12 @@ class Freezer:
             # when we get the first item.
             for path, task in self.inprogress_tasks.items():
                 break
-            await task.asyncio_task
+            try:
+                await task.asyncio_task
+            except Exception:
+                del self.inprogress_tasks[task.path]
+                self.failed_tasks[task.path] = task
+                self.call_hook('page_failed', hooks.TaskInfo(task))
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
 
@@ -557,13 +568,13 @@ class Freezer:
                     else:
                         self.add_task(
                             new_url, external_ok=True,
-                            reason=f'linked from {url}',
+                            reason=f'linked from: {task.path}',
                         )
 
         del self.inprogress_tasks[task.path]
         self.done_tasks[task.path] = task
 
-        self.call_hook('page_frozen', hooks.TaskInfo(task, self))
+        self.call_hook('page_frozen', hooks.TaskInfo(task))
 
     @needs_semaphore
     async def handle_redirects(self):
@@ -571,12 +582,17 @@ class Freezer:
         while self.redirecting_tasks:
             saved_something = False
             for key, task in list(self.redirecting_tasks.items()):
+                if task.redirects_to.status == TaskStatus.FAILED:
+                    # Don't process redirects to a failed pages
+                    del self.redirecting_tasks[key]
+                    self.done_tasks[task.path] = task
+                    continue
                 if task.redirects_to.status != TaskStatus.DONE:
                     continue
 
                 with await self.saver.open_filename(task.redirects_to.path) as f:
                     await self.saver.save_to_filename(task.path, f)
-                self.call_hook('page_frozen', hooks.TaskInfo(task, self))
+                self.call_hook('page_frozen', hooks.TaskInfo(task))
                 del self.redirecting_tasks[key]
                 self.done_tasks[task.path] = task
                 saved_something = True

@@ -6,6 +6,8 @@ import pytest
 
 from freezeyt import freeze
 
+from testutil import raises_multierror_with_one_exception
+
 
 class InternalServerError(Exception):
     """Simulated 500 error"""
@@ -28,7 +30,7 @@ def test_exc_info():
 
     config = {'output': {'type': 'dict'}}
 
-    with pytest.raises(InternalServerError):
+    with raises_multierror_with_one_exception(InternalServerError):
         freeze(simple_app, config)
 
 
