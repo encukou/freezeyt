@@ -26,7 +26,7 @@ tak jsme PR (zatím) do projektu nezačlenili.
 > Poznámka ke GitHubu: chceme-li se podívat na obrázky, které byly přidány přímo
 na GitHubu bez toho, aniž bychom si k sobě stahovali danou větev, můžeme použít
 tlačítko *Display the rich diff* vpravo v rohu u daného souboru v sekci *Files changed* na GitHubu.
-
+>
 > ![Tlačítko pro zobrazení obrázků na GitHubu](../static/images/rich_diff.png)
 
 

@@ -1,5 +1,5 @@
 import mimetypes
-import mistune
+from markdown_it import MarkdownIt
 from flask import Flask, url_for, abort, render_template, Response
 from pathlib import Path
 from urllib.parse import urlparse
@@ -17,33 +17,38 @@ ARTICLES_PATH = BASE_PATH / 'articles'
 IMAGES_PATH = BASE_PATH / 'static/images'
 
 
-class BlogRenderer(mistune.Renderer):
-    def block_code(self, code, lang):
-        if not lang:
-            escaped = mistune.escape(code)
-            return f'\n<pre><code>{escaped}</code></pre>\n'
+def highlighter(code, lang_name, lang_attrs):
+    if not lang_name:
+        return html.escape(code)
 
-        lexer = get_lexer_by_name(lang, stripall=True)
-        formatter = HtmlFormatter()
-        return highlight(code, lexer, formatter)
+    lexer = get_lexer_by_name(lang_name, stripall=True)
+    formatter = HtmlFormatter(nowrap=True)
+    return highlight(code, lexer, formatter)
 
-    def image(self, src, title, alt_text):
-        src_parse = urlparse(src)
-        alt_text = html.escape(alt_text, quote=True)
 
-        if title:
-            title_part = f'title="{html.escape(title, quote=True)}"'
-        else:
-            title_part = ""
+def render_img(self, tokens, idx, options, env):
+    [token] = tokens
 
-        if not src_parse.netloc:
-            filename = Path(src_parse.path).name
-            src = url_for('article_image', filename=filename)
-            src = html.escape(src, quote=True)
-            return f'\n<img src="{src}" alt="{alt_text}" {title_part}>\n'
+    src = token.attrs['src']
+    alt_text = token.content
+    title = token.attrs.get('title')
 
+    src_parse = urlparse(src)
+    alt_text = html.escape(alt_text, quote=True)
+
+    if title:
+        title_part = f'title="{html.escape(title, quote=True)}"'
+    else:
+        title_part = ""
+
+    if not src_parse.netloc:
+        filename = Path(src_parse.path).name
+        src = url_for('article_image', filename=filename)
         src = html.escape(src, quote=True)
         return f'\n<img src="{src}" alt="{alt_text}" {title_part}>\n'
+
+    src = html.escape(src, quote=True)
+    return f'\n<img src="{src}" alt="{alt_text}" {title_part}>\n'
 
 
 @app.route('/')
@@ -77,9 +82,9 @@ def post(slug):
     with file:
         md_content = file.read()
 
-    renderer = BlogRenderer()
-    md = mistune.Markdown(renderer=renderer)
-    html_content = md.render(md_content)
+    renderer = MarkdownIt("commonmark", {"highlight": highlighter})
+    renderer.add_render_rule("image", render_img)
+    html_content = renderer.render(md_content)
 
     return render_template(
         'post.html',

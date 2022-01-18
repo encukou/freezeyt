@@ -94,13 +94,14 @@ def test_one_page(tmp_path):
     </html>
     """
 ```
+
 > `tmp/frozen` je dočasný adresář a na Windows to nebude fungovat.
 > Na konci srazu to bylo změněno tak, aby to fungovalo i na Windows.
 > Testy si tedy vytvoří vlastní adresář a po skončení testu ho smažou.
 > K tomu se použijeme
 > [`tmp_path`](https://docs.pytest.org/en/stable/tmpdir.html#the-tmp-path-fixture)
 > z pytestu.
-
+>
 > Zeptá-li se prohlížeč na nějaký adresář, server statických stránek sáhne po
 > souboru `index.html` jako hlavní stránce daného adresáře.
 
