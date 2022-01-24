@@ -301,7 +301,8 @@ get_mimetype=module:your_function
 ```
 
 If the `get_mimetype` is not defined in configuration file,
-then the `freezeyt` uses the python function `mimetypes.guess_type`
+then `freezeyt` calls the python function `mimetypes.guess_type`
+and uses the mimetype (the first element) it returns.
 
 `get_mimetype` can be defined as:
 * strings in the form `"module:function"`, which name the function to call,
@@ -313,7 +314,7 @@ The `get_mimetype`:
 
 *returns file type as `string` (e.g. `"text/plain"`).
 
-If `mimetype` can't be determine, `get_mimetypes` returns `None`.
+If `get_mimetypes` returns `None`, `freezeyt` will use the configured `default_mimetype` (see *Default MIME type* above).
 
 
 ### Progress bar and logging
