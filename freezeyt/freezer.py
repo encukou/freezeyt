@@ -59,14 +59,22 @@ DEFAULT_STATUS_HANDLERS = {
 }
 
 
+
+def default_get_mimetype(url: str) -> Optional[str]:
+    """Returns filetype as a string from mimetype.guess_type
+    """
+    file_type, encoding = guess_type(url)
+    return file_type
+
+
 def check_mimetype(
     url_path, headers,
-    default='application/octet-stream', *, get_mimetype=guess_type,
+    default='application/octet-stream', *, get_mimetype=default_get_mimetype,
 ):
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
-    file_type, _ = get_mimetype(url_path)
+    file_type = get_mimetype(url_path)
     if not file_type:
         file_type = default
     headers = Headers(headers)
@@ -184,7 +192,7 @@ class Freezer:
             ('extra_pages', ()),
             ('extra_files', None),
             ('default_mimetype', 'application/octet-stream'),
-            ('get_mimetype', guess_type)
+            ('get_mimetype', default_get_mimetype)
         )
         for attr_name, default in CONFIG_DATA:
             setattr(self, attr_name, config.get(attr_name, default))
