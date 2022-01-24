@@ -192,13 +192,17 @@ class Freezer:
             ('extra_pages', ()),
             ('extra_files', None),
             ('default_mimetype', 'application/octet-stream'),
-            ('get_mimetype', default_get_mimetype)
+            ('get_mimetype', default_get_mimetype),
+            ('url_to_path', default_url_to_path)
         )
         for attr_name, default in CONFIG_DATA:
             setattr(self, attr_name, config.get(attr_name, default))
 
         if isinstance(self.get_mimetype, str):
             self.get_mimetype = import_variable_from_module(self.get_mimetype)
+
+        if isinstance(self.url_to_path, str):
+            self.url_to_path = import_variable_from_module(self.url_to_path)
 
         if config.get('use_default_url_finders', True):
             _url_finders = dict(
@@ -242,10 +246,6 @@ class Freezer:
             self.saver = FileSaver(Path(output_dir), self.prefix)
         else:
             raise ValueError(f"unknown output type {output['type']}")
-
-        self.url_to_path = config.get('url_to_path', default_url_to_path)
-        if isinstance(self.url_to_path, str):
-            self.url_to_path = import_variable_from_module(self.url_to_path)
 
         # The tasks for individual pages are tracked in the followng sets
         # (actually dictionaries: {task.path: task})
