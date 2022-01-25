@@ -1,6 +1,10 @@
 import importlib
+import concurrent.futures
 
 from werkzeug.urls import url_parse
+
+
+process_pool_executor = concurrent.futures.ProcessPoolExecutor()
 
 
 class InfiniteRedirection(Exception):

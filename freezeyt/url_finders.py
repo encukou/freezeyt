@@ -7,23 +7,22 @@ import css_parser
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
+from . import compat
+from .util import process_pool_executor
 
-def get_css_links(
-    css_file: BinaryIO,
-    base_url: str,
-    headers: Optional[List[Tuple[str, str]]]=None,
+
+_Headers = Optional[List[Tuple[str, str]]]
+
+def _get_css_links(
+    content: bytes, base_url: str, headers: _Headers,
 )  -> Iterable[str]:
     """Get all links from a CSS file."""
-    text = css_file.read()
-    parsed = css_parser.parseString(text)
-    yield from css_parser.getUrls(parsed)
+    parsed = css_parser.parseString(content)
+    return list(css_parser.getUrls(parsed))
 
 
-
-def get_html_links(
-    page_content: bytes,
-    base_url: str,
-    headers: Optional[List[Tuple[str, str]]]=None,
+def _get_html_links(
+    page_content: bytes, base_url: str, headers: _Headers,
 ) -> Iterable[str]:
     """Get all links from "page_content".
 
@@ -44,7 +43,6 @@ def get_html_links(
         for child in node:
             yield from get_links_from_node(child, base_url)
 
-
     if headers == None:
         cont_charset = None
     else:
@@ -52,4 +50,38 @@ def get_html_links(
         cont_type, cont_options = parse_options_header(content_type_header)
         cont_charset = cont_options.get('charset')
     document = html5lib.parse(page_content, transport_encoding=cont_charset)
-    return get_links_from_node(document, base_url)
+    return list(get_links_from_node(document, base_url))
+
+
+def get_html_links(
+    html_file: BinaryIO, base_url: str, headers: _Headers=None,
+) -> Iterable[str]:
+    content = html_file.read()
+    return _get_html_links(content, base_url, headers)
+
+
+def get_css_links(
+    css_file: BinaryIO, base_url: str, headers: _Headers=None,
+)  -> Iterable[str]:
+    content = css_file.read()
+    return _get_css_links(content, base_url, headers)
+
+
+async def get_css_links_async(
+    css_file: BinaryIO, base_url: str, headers: _Headers=None,
+)  -> Iterable[str]:
+    loop = compat.get_running_loop()
+    content = css_file.read()
+    return await loop.run_in_executor(
+        process_pool_executor, _get_css_links, content, base_url, headers,
+    )
+
+
+async def get_html_links_async(
+    html_file: BinaryIO, base_url: str, headers: _Headers=None,
+)  -> Iterable[str]:
+    loop = compat.get_running_loop()
+    content = html_file.read()
+    return await loop.run_in_executor(
+        process_pool_executor, _get_html_links, content, base_url, headers,
+    )
