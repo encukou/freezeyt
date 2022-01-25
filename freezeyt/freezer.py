@@ -46,8 +46,8 @@ async def freeze_async(app, config):
 
 
 DEFAULT_URL_FINDERS = {
-            'text/html': 'get_html_links',
-            'text/css': 'get_css_links'
+            'text/html': 'get_html_links_async',
+            'text/css': 'get_css_links_async'
         }
 
 DEFAULT_STATUS_HANDLERS = {
