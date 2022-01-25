@@ -479,7 +479,8 @@ Finder functions may be asynchronous:
   and use `yield`). If so, freezeyt will use async iteration to handle it.
 
 The `freezeyt.url_finders` module includes the default finders `get_html_links`
-and `get_css_links`.
+and `get_css_links`, and their asynchronous variants `get_html_links_async`
+and `get_css_links_async`.
 
 #### Disabling default URL finders
 

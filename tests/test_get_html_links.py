@@ -106,3 +106,9 @@ def test_links_css(test_name):
     assert sorted(links) == expected
 
 
+@pytest.mark.parametrize("test_name", TEST_DATA)
+def test_links_css_async(test_name):
+    (content, *args), expected = TEST_DATA[test_name]
+    f = BytesIO(content)
+    links = asyncio_run(get_html_links_async(f, *args))
+    assert sorted(links) == expected
