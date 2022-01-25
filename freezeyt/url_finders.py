@@ -24,7 +24,7 @@ async def get_css_links(
 
 
 async def get_html_links(
-    page_content: bytes,
+    page_content: BinaryIO,
     base_url: str,
     headers: Optional[List[Tuple[str, str]]]=None,
 ) -> Iterable[str]:
