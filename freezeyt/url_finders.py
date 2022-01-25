@@ -1,6 +1,5 @@
 import xml.etree.ElementTree
 from typing import Iterable, BinaryIO, List, Optional, Tuple
-import concurrent.futures
 
 import html5lib
 import css_parser
@@ -9,8 +8,7 @@ from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
 from . import compat
-
-executor = concurrent.futures.ProcessPoolExecutor()
+from .util import process_pool_executor
 
 
 _Headers = Optional[List[Tuple[str, str]]]
@@ -76,7 +74,7 @@ async def get_css_links_async(
     loop = compat.get_running_loop()
     content = css_file.read()
     return await loop.run_in_executor(
-        executor, _get_css_links, content, base_url, headers,
+        process_pool_executor, _get_css_links, content, base_url, headers,
     )
 
 
@@ -86,5 +84,5 @@ async def get_html_links_async(
     loop = compat.get_running_loop()
     content = html_file.read()
     return await loop.run_in_executor(
-        executor, _get_html_links, content, base_url, headers,
+        process_pool_executor, _get_html_links, content, base_url, headers,
     )
