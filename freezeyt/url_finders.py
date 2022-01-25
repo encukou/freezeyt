@@ -70,7 +70,6 @@ def get_css_links(
 async def get_css_links_async(
     css_file: BinaryIO, base_url: str, headers: _Headers=None,
 )  -> Iterable[str]:
-    print(css_file)
     loop = compat.get_running_loop()
     content = css_file.read()
     return await loop.run_in_executor(
