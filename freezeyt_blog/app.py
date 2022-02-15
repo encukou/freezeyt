@@ -54,21 +54,20 @@ def render_img(self, tokens, idx, options, env):
 @app.route('/')
 def index():
     """Start page with list of articles."""
-    post_slugs = [a.stem for a in sorted(ARTICLES_PATH.glob('*.md'))]
-    post_names = []
-    for article in sorted(ARTICLES_PATH.glob('*.md')):
+    articles = sorted(ARTICLES_PATH.glob('*.md'))
+    post_info = []
+
+    for article in articles:
         with open(article, encoding='utf-8') as a:
             title = a.readline()
-            if title.startswith("# "):
-                post_names.append(title[2:])
-            else:
+            if not title.startswith("# "):
                 raise ValueError("Post must begin with a title.")
-    post_info = zip(post_slugs, post_names)
 
-    return render_template(
-        'index.html',
-        post_info=post_info
-    )
+        slug = article.stem
+        title = title.lstrip("# ").strip()
+        post_info.append((slug, title))
+
+    return render_template('index.html', post_info=post_info)
 
 
 @app.route('/<slug>/')
@@ -86,10 +85,7 @@ def post(slug):
     renderer.add_render_rule("image", render_img)
     html_content = renderer.render(md_content)
 
-    return render_template(
-        'post.html',
-        content=html_content,
-    )
+    return render_template('post.html', content=html_content)
 
 
 @app.route('/article_image/<filename>')
