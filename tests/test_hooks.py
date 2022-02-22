@@ -236,10 +236,19 @@ def test_multiple_hooks():
     assert info.path == 'second_page.html'
 
 
+def check_task_counts(freeze_info, expected_total):
+    total = freeze_info.total_task_count
+    done = freeze_info.done_task_count
+    failed = freeze_info.failed_task_count
+    assert 0 <= failed <= done <= total <= expected_total
+
+
 def test_task_counts():
     recorded_counts = []
+    expected_total = 2
 
     def record_start(freeze_info):
+        check_task_counts(freeze_info, expected_total)
         recorded_counts.append((
             '(start)',
             freeze_info.total_task_count,
@@ -247,6 +256,7 @@ def test_task_counts():
         ))
 
     def record_page(task_info):
+        check_task_counts(task_info.freeze_info, expected_total)
         recorded_counts.append((
             task_info.path,
             task_info.freeze_info.total_task_count,
@@ -280,11 +290,11 @@ def test_task_counts_extra_page():
     expected_total = 3
 
     def record_start(freeze_info):
-        assert 0 < freeze_info.total_task_count <= expected_total
+        check_task_counts(freeze_info, expected_total)
         assert freeze_info.done_task_count == 0
 
     def record_page(task_info):
-        assert 0 < task_info.freeze_info.total_task_count <= expected_total
+        check_task_counts(task_info.freeze_info, expected_total)
         recorded_done_counts.append(task_info.freeze_info.done_task_count)
         recorded_paths.add(task_info.path)
 
@@ -313,11 +323,11 @@ def test_task_counts_extra_file():
     expected_total = 7
 
     def record_start(freeze_info):
-        assert 0 < freeze_info.total_task_count <= expected_total
+        check_task_counts(freeze_info, expected_total)
         assert freeze_info.done_task_count == 0
 
     def record_page(task_info):
-        assert 0 < task_info.freeze_info.total_task_count <= expected_total
+        check_task_counts(task_info.freeze_info, expected_total)
         recorded_done_counts.append(task_info.freeze_info.done_task_count)
         recorded_paths.add(task_info.path)
 
@@ -343,8 +353,10 @@ def test_task_counts_extra_file():
 
 def test_page_failed_hook():
     records = []
+    expected_total = 3
 
     def record_frozen(task_info):
+        check_task_counts(task_info.freeze_info, expected_total)
         records.append((
             'frozen',
             task_info.path,
@@ -355,6 +367,7 @@ def test_page_failed_hook():
         assert task_info.exception == None
 
     def record_fail(task_info):
+        check_task_counts(task_info.freeze_info, expected_total)
         records.append((
             'failed',
             task_info.path,
