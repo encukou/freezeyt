@@ -1,4 +1,3 @@
-import importlib
 import os
 import shutil
 import traceback
@@ -21,7 +20,6 @@ def test_output(tmp_path, monkeypatch, app_name):
     error_path = app_path / 'error.txt'
 
     with context_for_test(app_name) as module:
-        module = importlib.import_module('app')
         app = module.app
 
         freeze_config = getattr(module, 'freeze_config', {})
