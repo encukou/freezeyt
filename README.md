@@ -501,7 +501,7 @@ Values are URL finders, which can be defined as:
 
 An URL finder gets these arguments:
 * page content `BinaryIO`,
-* the URL of the page, as a `string`,
+* the absolute URL of the page, as a `string`,
 * the HTTP headers, as a list of tuples (WSGI).
 
 The function should return an iterator of URLs (as strings) found
