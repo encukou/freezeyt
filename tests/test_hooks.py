@@ -274,6 +274,39 @@ def test_task_counts():
     ]
 
 
+def test_task_counts_extra_page():
+    recorded_done_counts = []
+    recorded_paths = set()
+    expected_total = 3
+
+    def record_start(freeze_info):
+        assert freeze_info.total_task_count == expected_total
+        assert freeze_info.done_task_count == 0
+
+    def record_page(task_info):
+        assert task_info.freeze_info.total_task_count == expected_total
+        recorded_done_counts.append(task_info.freeze_info.done_task_count)
+        recorded_paths.add(task_info.path)
+
+    with context_for_test('app_with_extra_page_deep') as module:
+        config = {
+            **module.freeze_config,
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {
+                'start': [record_start],
+                'page_frozen': [record_page],
+            },
+        }
+
+        freeze(module.app, config)
+
+    assert recorded_done_counts == [1, 2, 3]
+    assert recorded_paths == {
+        'index.html', 'extra/index.html', 'extra/extra_deep/index.html',
+    }
+
+
 def test_page_failed_hook():
     records = []
 
