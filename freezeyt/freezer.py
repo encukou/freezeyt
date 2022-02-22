@@ -513,7 +513,7 @@ class Freezer:
             'SERVER_SOFTWARE': 'freezeyt/0.1',
 
             'wsgi.version': (1, 0),
-            'wsgi.url_scheme': 'http',
+            'wsgi.url_scheme': self.prefix.scheme,
             'wsgi.input': io.BytesIO(),
             'wsgi.errors': sys.stderr,
             'wsgi.multithread': False,
