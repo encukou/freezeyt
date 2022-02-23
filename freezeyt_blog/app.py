@@ -70,7 +70,6 @@ def render_html(path):
 @app.route('/')
 def index():
     """Start page with list of articles."""
-    concepts_path = ARTICLES_PATH / 'python_concepts.md'
     paths = sorted(ARTICLES_PATH.glob('*.md'))
     post_info = []
 
