@@ -88,18 +88,8 @@ def index():
 
 @app.route('/<slug>/')
 def post(slug):
-    article = ARTICLES_PATH / f'{slug}.md'
-    try:
-        file = open(article, mode='r', encoding='UTF-8')
-    except FileNotFoundError:
-        return abort(404)
-
-    with file:
-        md_content = file.read()
-
-    renderer = MarkdownIt("commonmark", {"highlight": highlighter})
-    renderer.add_render_rule("image", render_img)
-    html_content = renderer.render(md_content)
+    path = ARTICLES_PATH / f'{slug}.md'
+    html_content = render_html(path)
 
     return render_template('post.html', content=html_content)
 
