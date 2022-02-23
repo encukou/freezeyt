@@ -50,6 +50,22 @@ def render_img(self, tokens, idx, options, env):
     src = html.escape(src, quote=True)
     return f'\n<img src="{src}" alt="{alt_text}" {title_part}>\n'
 
+def render_html(path):
+    """Render html content from markdown file
+    """
+    try:
+        file = open(path, mode='r', encoding='UTF-8')
+    except FileNotFoundError:
+        return abort(404)
+
+    with file:
+        md_content = file.read()
+
+    renderer = MarkdownIt("commonmark", {"highlight": highlighter})
+    renderer.add_render_rule("image", render_img)
+    return renderer.render(md_content)
+
+
 
 @app.route('/')
 def index():
