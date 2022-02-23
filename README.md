@@ -636,7 +636,22 @@ $ git push <remote_label> <branch_name>
 
 8. Finally, make a pull request from your GitHub account to origin
 
-9. Repeat this process until we will have done amazing freezer
+
+### Install dependecies
+
+Project consists from four groups of dependecies:
+1. for freezeyt itself - `.`
+2. for blog - `blog`
+3. for development - `dev`
+4. for mypy type checks - `typecheck`
+
+Each group can be installed, separately,
+`$ python -m pip install -e .`
+
+`$ python -m pip install -e ."[typecheck]"`
+
+or all groups at once.
+`$ python -m pip install -e ."[blog, dev, typecheck]"`
 
 
 ### Using an in-development copy of freezeyt
