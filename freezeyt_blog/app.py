@@ -70,16 +70,16 @@ def render_html(path):
 @app.route('/')
 def index():
     """Start page with list of articles."""
-    articles = sorted(ARTICLES_PATH.glob('*.md'))
+    paths = sorted(ARTICLES_PATH.glob('*.md'))
     post_info = []
 
-    for article in articles:
-        with open(article, encoding='utf-8') as a:
-            title = a.readline()
-            if not title.startswith("# "):
+    for file in paths:
+        with open(file, encoding='utf-8') as article:
+            title = article.readline()
+            if not title.startswith("#"):
                 raise ValueError("Post must begin with a title.")
 
-        slug = article.stem
+        slug = file.stem
         title = title.lstrip("# ").strip()
         post_info.append((slug, title))
 
