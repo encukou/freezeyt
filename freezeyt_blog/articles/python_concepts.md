@@ -9,4 +9,4 @@
     * [freezeeyt-yt-video-77 (01:31:00)](https://www.youtube.com/watch?v=osaVARgxpgo&list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT&index=78)
 
 * **async**
-    * přidej
+    * [root.cz](https://www.root.cz/clanky/soubezne-a-paralelne-bezici-ulohy-naprogramovane-v-pythonu/)
