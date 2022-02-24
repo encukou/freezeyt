@@ -612,7 +612,7 @@ $ git clone https://github.com/encukou/freezeyt
 3. Add your forked repo as a new remote to your local computer:
 
 ```shell
-$ git remote add <remote_label> git@github.com:<username>/freezeyt.git
+$ git remote add <remote_label> https://github.com/<username>/freezeyt
 ```
 
 4. Create a new branch at your local computer
