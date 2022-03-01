@@ -2,18 +2,10 @@
 
 <h1>Vítejte na blogu o projektu freezeyt!</h1>
 
-<div>
-    Odkazy na konkrétně použité koncepty:
-</div>
-<ul class="list-unstyled">
-    <li>
-        <a href={{ url_for('post', slug="concepts_list") }}>Python koncepty</a>
-    </li>
-</ul>
+{{ concepts | safe }}
 
-<div>
-Všechny články k projektu:
-</div>
+<h2>Všechny články k projektu:</h2>
+
 <ul class="list-unstyled">
 {% for slug, title in post_info %}
     {% if slug == "meeting01" or slug == "meeting33" %}

@@ -50,31 +50,11 @@ def render_img(self, tokens, idx, options, env):
     src = html.escape(src, quote=True)
     return f'\n<img src="{src}" alt="{alt_text}" {title_part}>\n'
 
-
-@app.route('/')
-def index():
-    """Start page with list of articles."""
-    articles = sorted(ARTICLES_PATH.glob('*.md'))
-    post_info = []
-
-    for article in articles:
-        with open(article, encoding='utf-8') as a:
-            title = a.readline()
-            if not title.startswith("# "):
-                raise ValueError("Post must begin with a title.")
-
-        slug = article.stem
-        title = title.lstrip("# ").strip()
-        post_info.append((slug, title))
-
-    return render_template('index.html', post_info=post_info)
-
-
-@app.route('/<slug>/')
-def post(slug):
-    article = ARTICLES_PATH / f'{slug}.md'
+def render_html(path):
+    """Render html content from markdown file
+    """
     try:
-        file = open(article, mode='r', encoding='UTF-8')
+        file = open(path, mode='r', encoding='UTF-8')
     except FileNotFoundError:
         return abort(404)
 
@@ -83,7 +63,37 @@ def post(slug):
 
     renderer = MarkdownIt("commonmark", {"highlight": highlighter})
     renderer.add_render_rule("image", render_img)
-    html_content = renderer.render(md_content)
+    return renderer.render(md_content)
+
+
+
+@app.route('/')
+def index():
+    """Start page with list of articles."""
+    concepts_path = ARTICLES_PATH / 'python_concepts.md'
+    paths = sorted(ARTICLES_PATH.glob('*.md'))
+    post_info = []
+
+    for file in paths:
+        with open(file, encoding='utf-8') as article:
+            title = article.readline()
+            if not title.startswith("#"):
+                raise ValueError("Post must begin with a title.")
+
+        slug = file.stem
+        title = title.lstrip("# ").strip()
+        post_info.append((slug, title))
+        concepts = render_html(concepts_path)
+
+    return render_template(
+        'index.html', post_info=post_info, concepts=concepts
+    )
+
+
+@app.route('/<slug>/')
+def post(slug):
+    path = ARTICLES_PATH / f'{slug}.md'
+    html_content = render_html(path)
 
     return render_template('post.html', content=html_content)
 
