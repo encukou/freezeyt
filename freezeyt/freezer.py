@@ -488,6 +488,7 @@ class Freezer:
         await self.saver.save_to_filename(task.path, [content])
         del self.inprogress_tasks[task.path]
         self.done_tasks[task.path] = task
+        self.call_hook('page_frozen', hooks.TaskInfo(task))
 
     @needs_semaphore
     async def handle_one_task(self, task):

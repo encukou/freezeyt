@@ -236,10 +236,19 @@ def test_multiple_hooks():
     assert info.path == 'second_page.html'
 
 
+def check_task_counts(freeze_info, expected_total):
+    total = freeze_info.total_task_count
+    done = freeze_info.done_task_count
+    failed = freeze_info.failed_task_count
+    assert 0 <= failed <= done <= total <= expected_total
+
+
 def test_task_counts():
     recorded_counts = []
+    expected_total = 2
 
     def record_start(freeze_info):
+        check_task_counts(freeze_info, expected_total)
         recorded_counts.append((
             '(start)',
             freeze_info.total_task_count,
@@ -247,6 +256,7 @@ def test_task_counts():
         ))
 
     def record_page(task_info):
+        check_task_counts(task_info.freeze_info, expected_total)
         recorded_counts.append((
             task_info.path,
             task_info.freeze_info.total_task_count,
@@ -274,10 +284,79 @@ def test_task_counts():
     ]
 
 
+def test_task_counts_extra_page():
+    recorded_done_counts = []
+    recorded_paths = set()
+    expected_total = 3
+
+    def record_start(freeze_info):
+        check_task_counts(freeze_info, expected_total)
+        assert freeze_info.done_task_count == 0
+
+    def record_page(task_info):
+        check_task_counts(task_info.freeze_info, expected_total)
+        recorded_done_counts.append(task_info.freeze_info.done_task_count)
+        recorded_paths.add(task_info.path)
+
+    with context_for_test('app_with_extra_page_deep') as module:
+        config = {
+            **module.freeze_config,
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {
+                'start': [record_start],
+                'page_frozen': [record_page],
+            },
+        }
+
+        freeze(module.app, config)
+
+    assert recorded_done_counts == [1, 2, 3]
+    assert recorded_paths == {
+        'index.html', 'extra/index.html', 'extra/extra_deep/index.html',
+    }
+
+
+def test_task_counts_extra_file():
+    recorded_done_counts = []
+    recorded_paths = set()
+    expected_total = 7
+
+    def record_start(freeze_info):
+        check_task_counts(freeze_info, expected_total)
+        assert freeze_info.done_task_count == 0
+
+    def record_page(task_info):
+        check_task_counts(task_info.freeze_info, expected_total)
+        recorded_done_counts.append(task_info.freeze_info.done_task_count)
+        recorded_paths.add(task_info.path)
+
+    with context_for_test('app_with_extra_files') as module:
+        config = {
+            **module.freeze_config,
+            'output': {'type': 'dict'},
+            'prefix': 'http://example.com/',
+            'hooks': {
+                'start': [record_start],
+                'page_frozen': [record_page],
+            },
+        }
+
+        freeze(module.app, config)
+
+    assert recorded_done_counts == list(range(1, expected_total+1))
+    assert recorded_paths == {
+        'index.html', 'CNAME', '.nojekyll', 'config/xyz',
+        'smile.png', 'bin_range.dat', 'smile2.png',
+    }
+
+
 def test_page_failed_hook():
     records = []
+    expected_total = 3
 
     def record_frozen(task_info):
+        check_task_counts(task_info.freeze_info, expected_total)
         records.append((
             'frozen',
             task_info.path,
@@ -288,6 +367,7 @@ def test_page_failed_hook():
         assert task_info.exception == None
 
     def record_fail(task_info):
+        check_task_counts(task_info.freeze_info, expected_total)
         records.append((
             'failed',
             task_info.path,
