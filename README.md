@@ -612,31 +612,54 @@ $ git clone https://github.com/encukou/freezeyt
 3. Add your forked repo as a new remote to your local computer:
 
 ```shell
-$ git remote add <name_your_remote> https://github.com/<your_username>/freezeyt
+$ git remote add <remote_label> https://github.com/<username>/freezeyt
 ```
 
-4. Create new branch at your local computer
+4. Create a new branch at your local computer
 
 ```shell
-$ git branch <name_new_branch>
+$ git branch <branch_name>
 ```
 
 5. Switch to your new branch
 
 ```shell
-$ git switch <name_new_branch>
+$ git switch <branch_name>
 ```
 
-6. Make some awesome changes in code
-7. Push changes to your forked repo on GitHub
+6. Update the code
+7. Push the changes to your forked repo on GitHub
 
 ```shell
-$ git push <your_remote> <your_new_branch>
+$ git push <remote_label> <branch_name>
 ```
 
-8. Finally make a pull request from your GitHub account to origin
+8. Finally, make a pull request from your GitHub account to origin
 
-9. Repeat this process until we will have done amazing freezer
+
+### Installing for development
+
+`freezeyt` can be installed from the current directory:
+
+```shell
+$ python -m pip install -e .
+```
+
+It also has several groups of extra dependecies:
+* `blog` for the project blog
+* `dev` for development and running tests
+* `typecheck` for mypy type checks
+
+Each group can be installed separately:
+
+```shell
+$ python -m pip install -e ."[typecheck]"
+```
+
+or you can install more groups at once:
+```shell
+$ python -m pip install -e ."[blog, dev, typecheck]"`
+```
 
 
 ### Using an in-development copy of freezeyt
