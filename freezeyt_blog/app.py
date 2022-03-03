@@ -74,13 +74,13 @@ def index():
     paths = sorted(ARTICLES_PATH.glob('*.md'))
     post_info = []
 
-    for file in paths:
-        with open(file, encoding='utf-8') as article:
-            title = article.readline()
+    for path in paths:
+        with open(path, encoding='utf-8') as file:
+            title = file.readline()
             if not title.startswith("#"):
                 raise ValueError("Post must begin with a title.")
 
-        slug = file.stem
+        slug = path.stem
         title = title.lstrip("# ").strip()
         post_info.append((slug, title))
         concepts = render_html(concepts_path)
