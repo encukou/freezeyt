@@ -1,5 +1,6 @@
 import importlib
 import concurrent.futures
+from functools import cached_property
 
 from werkzeug.urls import url_parse
 
@@ -40,17 +41,28 @@ class WrongMimetypeError(ValueError):
             + f" guessed from '{url_path}'"
         )
 
-class MultiError(Exception):
+class MultiError(ExceptionGroup):
     """Contains multiple errors"""
-    def __init__(self, tasks):
+    def __new__(cls, tasks):
         # Import TaskInfo here to avoid a circular import
         # (since hooks imports utils)
         from freezeyt.hooks import TaskInfo
 
-        super().__init__(f"{len(tasks)} errors")
+        exceptions = [t.asyncio_task.exception() for t in tasks]
+        self = super().__new__(cls, f"{len(tasks)} errors", exceptions)
+
         self._tasks = tasks
-        self.exceptions = [t.asyncio_task.exception() for t in tasks]
         self.tasks = [TaskInfo(t) for t in tasks]
+        return self
+
+    def derive(self, excs):
+        return MultiError([self._exc_to_task[e] for e in excs])
+
+    @cached_property
+    def _exc_to_task(self):
+        return {
+            task.asyncio_task.exception(): task for task in self._tasks
+        }
 
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
