@@ -48,7 +48,12 @@ class MultiError(ExceptionGroup):
         # (since hooks imports utils)
         from freezeyt.hooks import TaskInfo
 
-        exceptions = [t.asyncio_task.exception() for t in tasks]
+        exceptions = []
+        for task in tasks:
+            exc = task.asyncio_task.exception()
+            exc._freezeyt_exception_task = task
+            exceptions.append(exc)
+
         self = super().__new__(cls, f"{len(tasks)} errors", exceptions)
 
         self._tasks = tasks
@@ -56,13 +61,8 @@ class MultiError(ExceptionGroup):
         return self
 
     def derive(self, excs):
-        return MultiError([self._exc_to_task[e] for e in excs])
+        return MultiError([e._freezeyt_exception_task for e in excs])
 
-    @cached_property
-    def _exc_to_task(self):
-        return {
-            task.asyncio_task.exception(): task for task in self._tasks
-        }
 
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`
