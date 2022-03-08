@@ -314,7 +314,25 @@ The `get_mimetype`:
 
 *returns file type as `string` (e.g. `"text/plain"`).
 
-If `get_mimetypes` returns `None`, `freezeyt` will use the configured `default_mimetype` (see *Default MIME type* above).
+If `get_mimetypes` returns `None`, `freezeyt` will use the configured `default_mimetype`
+(see *Default MIME type* above).
+
+#### Add mimetype database
+
+There is also an option to load database with informations, how to choose filetype
+by the file extensions.
+
+This configuration has to be applied with respect to configuration `get_mimetype`,
+which is mentioned above. These two configurations are applied simultaneously.
+Function `get_mimetype` parse database infromations and use it.
+If the parser will not be able to parse, errors will occur.
+
+Function `get_mimetype` takes two arguments the filename with extension
+and path to database as regulation, how to assing mimetype by the file extension.
+
+```yaml
+mimetype_db=path/to/db.json
+```
 
 
 ### Progress bar and logging
