@@ -1,4 +1,5 @@
 import importlib
+import json
 import concurrent.futures
 
 from werkzeug.urls import url_parse
@@ -146,3 +147,15 @@ def import_variable_from_module(
         result = getattr(result, attribute_name)
 
     return result
+
+
+def parse_mimetype_db(path):
+    """Parse mimetype: extesions dict structure from .json file,
+    which has a same structure as github pages mime-db.
+    """
+    with open(path) as file:
+        mime_db = json.load(file)
+
+    return {
+        k: v['extensions'] for k, v in mime_db.items() if v.get('extensions')
+    }
