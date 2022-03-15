@@ -17,5 +17,5 @@
     * [naucse.python.cz](https://naucse.python.cz/course/mi-pyt/intro/async/)
 
 * **Pokročilé objektově orientované programování**
-   * [freezeeyt-yt-video-79 (31:38) - magická metoda \_\_new__ ve třídách a jak se liší od \_\_init__ metody](https://www.youtube.com/watch?v=znpSzRKgohw&t=1898s)
-   * [freezeeyt-yt-video-79 (1:12:40) - jak fungují objekty v Pythonu, aneb descriptory a metody \_\_get__ a \_\_set__](https://www.youtube.com/watch?v=znpSzRKgohw&t=4360s)
+   * [freezeeyt-yt-video-79 (31:38) - magická metoda `__new__` ve třídách a jak se liší od `__init__` metody](https://www.youtube.com/watch?v=znpSzRKgohw&t=1898s)
+   * [freezeeyt-yt-video-79 (1:12:40) - jak fungují objekty v Pythonu, aneb descriptory a metody `__get__` a `__set__`](https://www.youtube.com/watch?v=znpSzRKgohw&t=4360s)
