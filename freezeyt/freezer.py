@@ -20,7 +20,8 @@ from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
-from freezeyt.util import parse_absolute_url, is_external, add_port
+from freezeyt.util import parse_absolute_url, parse_mimetype_db
+from freezeyt.util import is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import WrongMimetypeError, UnexpectedStatus
@@ -62,7 +63,16 @@ DEFAULT_STATUS_HANDLERS = {
     '5xx': 'error',
 }
 
+def github_type(db):
 
+    def get_type(url: str) -> Optional[str]:
+        suffix = PurePosixPath(URL(url).path).suffix
+        if suffix.startswith("."):
+            suffix = suffix[1:]
+
+        return db.get(suffix)
+
+    return get_type
 
 def default_get_mimetype(url: str) -> Optional[str]:
     """Returns filetype as a string from mimetype.guess_type
@@ -197,14 +207,23 @@ class Freezer:
             ('extra_pages', ()),
             ('extra_files', None),
             ('default_mimetype', 'application/octet-stream'),
-            ('get_mimetype', default_get_mimetype),
+            ('mimetype_db', None),
             ('url_to_path', default_url_to_path)
         )
         for attr_name, default in CONFIG_DATA:
             setattr(self, attr_name, config.get(attr_name, default))
 
-        if isinstance(self.get_mimetype, str):
-            self.get_mimetype = import_variable_from_module(self.get_mimetype)
+        if self.mimetype_db:
+            parsed_db = parse_mimetype_db(self.mimetype_db)
+            self.get_mimetype = github_type(parsed_db)
+        else:
+            self.get_mimetype = config.get(
+                "get_mimetype", default_get_mimetype
+            )
+            if isinstance(self.get_mimetype, str):
+                self.get_mimetype = import_variable_from_module(
+                    self.get_mimetype
+                )
 
         if isinstance(self.url_to_path, str):
             self.url_to_path = import_variable_from_module(self.url_to_path)
