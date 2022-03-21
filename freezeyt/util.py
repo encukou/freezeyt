@@ -153,9 +153,55 @@ def parse_mimetype_db(path):
     """Parse mimetype: extesions dict structure from .json file,
     which has a same structure as github pages mime-db.
     """
+    result = {
+        "rtf": "application/rtf",
+        "m4a": "audio/mp4",
+        "msi": "application/octet-stream",
+        "mpp": "application/vnd.ms-project",
+        "ra": "audio/x-pn-realaudio",
+        "prc": "application/x-mobipocket-ebook",
+        "xlf": "application/x-xliff+xml",
+        "ac": "application/pkix-attr-cert",
+        "pcx": "image/vnd.zbrush.pcx",
+        "rar": "application/vnd.rar",
+        "xml": "application/xml",
+        "obj": "application/x-tgif",
+        "wmf": "application/x-msmetafile",
+        "3gpp": "audio/3gpp",
+        "sub": "image/vnd.dvb.subtitle",
+        "exe": "application/octet-stream",
+        "dmg": "application/octet-stream",
+        "pages": "application/vnd.apple.pages",
+        "x3db": "model/x3d+binary",
+        "mp3": "audio/mp3",
+        "key": "application/vnd.apple.keynote",
+        "jpm": "image/jpm",
+        "numbers": "application/vnd.apple.numbers",
+        "pdb": "application/vnd.palm",
+        "dll": "application/octet-stream",
+        "asc": "application/pgp-signature",
+        "org": "application/vnd.lotus-organizer",
+        "ico": "image/vnd.microsoft.icon",
+        "deb": "application/octet-stream",
+        "x3dv": "model/x3d+vrml",
+        "bmp": "image/bmp",
+        "wav": "audio/wav",
+        "emf": "application/x-msmetafile",
+        "bdoc": "application/bdoc",
+        "iso": "application/octet-stream",
+        "wmz": "application/x-ms-wmz",
+        "stl": "application/vnd.ms-pki.stl",
+        "xsl": "application/xml",
+    }
     with open(path) as file:
         mime_db = json.load(file)
 
-    return {
-        k: v['extensions'] for k, v in mime_db.items() if v.get('extensions')
-    }
+    for mimetype, opts in mime_db.items():
+        extensions = opts.get('extensions')
+        if extensions is not None:
+            for extension in extensions:
+                if not result.get(extension):
+                    result[extension] = mimetype
+
+    return result
+
