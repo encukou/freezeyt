@@ -317,18 +317,15 @@ The `get_mimetype`:
 If `get_mimetypes` returns `None`, `freezeyt` will use the configured `default_mimetype`
 (see *Default MIME type* above).
 
-#### Add mimetype database
+#### Add Github mimetype database file
 
-There is also an option to load database with informations, how to choose filetype
-by the file extensions.
+There is also an option to load github database with informations, how to choose mimetype by the file extensions. Respectively, any database file in `json` format with same structure as github database can be used as source.
 
-This configuration has to be applied with respect to configuration `get_mimetype`,
-which is mentioned above. These two configurations are applied simultaneously.
-Function `get_mimetype` parse database infromations and use it.
-If the parser will not be able to parse, errors will occur.
+If `json` database is used, then the default `get_mimetype` is switched to predefined github parser automatically.
 
-Function `get_mimetype` takes two arguments the filename with extension
-and path to database as regulation, how to assing mimetype by the file extension.
+When it's configured `get_mimetypes` and `mimetype_db` suddenly, the configuration of `get_mimetypes` is omitted.
+
+Example of configuration `mimetype_db`:
 
 ```yaml
 mimetype_db=path/to/db.json
