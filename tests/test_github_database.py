@@ -7,7 +7,10 @@ MIMETYPE_DB = {
 }
 
 
-@patch('freezeyt.util.parse_mimetype_db', return_value=MIMETYPE_DB)
+@patch(
+    'freezeyt.freezer.parse_mimetype_db',
+    return_value=MIMETYPE_DB,
+)
 def test_github_mimetypes(tmp_path):
     """Test
     """
