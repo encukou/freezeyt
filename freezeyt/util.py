@@ -1,6 +1,5 @@
 import importlib
 import concurrent.futures
-from functools import cached_property
 
 from werkzeug.urls import url_parse
 

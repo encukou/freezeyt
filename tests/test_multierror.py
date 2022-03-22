@@ -1,6 +1,6 @@
 # These tests only run on Python 3.11+
 
-from testutil import FIXTURES_PATH, context_for_test, assert_dirs_same
+from testutil import context_for_test
 
 from freezeyt import freeze, UnexpectedStatus
 
