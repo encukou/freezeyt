@@ -3,11 +3,15 @@ import concurrent.futures
 
 from werkzeug.urls import url_parse
 
+
+# In Python 3.11, freezeyt's MultiError derives from ExceptionGroup
+# and can be used with the `except*` statement.
+# In older versions, it derives from Exception instead.
 try:
-    ExceptionGroup
+    _MultiErrorBase = ExceptionGroup
     HAVE_EXCEPTION_GROUP = True
 except NameError:
-    ExceptionGroup = Exception
+    _MultiErrorBase = Exception
     HAVE_EXCEPTION_GROUP = False
 
 
@@ -47,7 +51,7 @@ class WrongMimetypeError(ValueError):
             + f" guessed from '{url_path}'"
         )
 
-class MultiError(ExceptionGroup):
+class MultiError(_MultiErrorBase):
     """Contains multiple errors"""
     def __new__(cls, tasks):
         # Import TaskInfo here to avoid a circular import

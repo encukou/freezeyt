@@ -1,4 +1,7 @@
-# These tests only run on Python 3.11+
+# This tests that MultiError is usable as an ExceptionGroup
+# with the `except*` statement in Python 3.11+.
+#
+# The tests are skipped on lower versions.
 
 from testutil import context_for_test
 
