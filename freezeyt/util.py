@@ -4,6 +4,13 @@ from functools import cached_property
 
 from werkzeug.urls import url_parse
 
+try:
+    ExceptionGroup
+    HAVE_EXCEPTION_GROUP = True
+except NameError:
+    ExceptionGroup = Exception
+    HAVE_EXCEPTION_GROUP = False
+
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
 
@@ -54,7 +61,11 @@ class MultiError(ExceptionGroup):
             exc._freezeyt_exception_task = task
             exceptions.append(exc)
 
-        self = super().__new__(cls, f"{len(tasks)} errors", exceptions)
+        if HAVE_EXCEPTION_GROUP:
+            self = super().__new__(cls, f"{len(tasks)} errors", exceptions)
+        else:
+            self = super().__new__(cls, f"{len(tasks)} errors")
+            self.exceptions = exceptions
 
         self._tasks = tasks
         self.tasks = [TaskInfo(t) for t in tasks]
