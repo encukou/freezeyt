@@ -2,7 +2,7 @@ import io
 import json
 import pytest
 
-from freezeyt.util import parse_mimetype_db
+from freezeyt.freezer import parse_mimetype_db
 
 
 TESTCASES = {
@@ -20,12 +20,12 @@ TESTCASES = {
             }
         },
         {
-            "jpeg": "image/jpeg",
-            "jpg": "image/jpeg",
-            "jpe": "image/jpeg",
+            "jpeg": {"image/jpeg"},
+            "jpg": {"image/jpeg"},
+            "jpe": {"image/jpeg"},
         }
     ),
-    "catch_conflict_mimetypes": (
+    "catch_many_mimetypes": (
         {
             "audio/wav": {
                 "compressible": False,
@@ -40,41 +40,45 @@ TESTCASES = {
                 "compressible": False,
                 "extensions": ["weba"]
             },
+            "application/x-msdos-program": {
+                "extensions": ["exe"]
+            },
+            "application/x-msdownload": {
+                "source": "apache",
+                "extensions": ["exe","dll","com","bat","msi"]
+            },
+            "application/octet-stream": {
+                "source": "iana",
+                "compressible": False,
+                "extensions": ["bin","exe","dll","msi"]
+            },
         },
         {
-            "wav": "audio/wav",
-            "weba": "audio/webm",
+            "wav": {"audio/wav", "audio/wave"},
+            "weba": {"audio/webm"},
+            "exe": {
+                "application/octet-stream",
+                "application/x-msdownload",
+                "application/x-msdos-program"
+            },
+            "dll": {"application/octet-stream", "application/x-msdownload"},
+            "com": {"application/x-msdownload"},
+            "bat": {"application/x-msdownload"},
+            "msi": {"application/x-msdownload", "application/octet-stream"},
+            "bin": {"application/octet-stream"}
         }
     ),
-    "basic": (
+    "no_catch": (
         {
-            "application/onenote": {
-                "source": "apache",
-                "extensions": ["onetoc","onetoc2","onetmp","onepkg"]
+            "application/vnd.cybank": {
+                "source": "iana"
             },
-            "application/vnd.cups-ppd": {
+            "application/vnd.cyclonedx+json": {
                 "source": "iana",
-                "extensions": ["ppd"]
+                "compressible": True
             },
-            "application/vnd.curl.car": {
-                "source": "apache",
-                "extensions": ["car"]
         },
-        },
-        {
-            "onetoc": "application/onenote",
-            "onetoc2": "application/onenote",
-            "onetmp": "application/onenote",
-            "onepkg": "application/onenote",
-            "ppd": "application/vnd.cups-ppd",
-            "car": "application/vnd.curl.car",
-            # default suffix
-            "3gpp": "audio/3gpp",
-            "sub": "image/vnd.dvb.subtitle",
-            "exe": "application/octet-stream",
-            "dmg": "application/octet-stream",
-
-        }
+        {}
     )
 }
 
@@ -96,61 +100,3 @@ def test_parse_mimetype_db(monkeypatch, testcase):
     for suffix in expected:
         assert result.get(suffix) == expected.get(suffix)
 
-
-def test_parse_mimetype_db_no_catch(monkeypatch):
-    default_db = {
-        "rtf": "application/rtf",
-        "m4a": "audio/mp4",
-        "msi": "application/octet-stream",
-        "mpp": "application/vnd.ms-project",
-        "ra": "audio/x-pn-realaudio",
-        "prc": "application/x-mobipocket-ebook",
-        "xlf": "application/x-xliff+xml",
-        "ac": "application/pkix-attr-cert",
-        "pcx": "image/vnd.zbrush.pcx",
-        "rar": "application/vnd.rar",
-        "xml": "application/xml",
-        "obj": "application/x-tgif",
-        "wmf": "application/x-msmetafile",
-        "3gpp": "audio/3gpp",
-        "sub": "image/vnd.dvb.subtitle",
-        "exe": "application/octet-stream",
-        "dmg": "application/octet-stream",
-        "pages": "application/vnd.apple.pages",
-        "x3db": "model/x3d+binary",
-        "mp3": "audio/mp3",
-        "key": "application/vnd.apple.keynote",
-        "jpm": "image/jpm",
-        "numbers": "application/vnd.apple.numbers",
-        "pdb": "application/vnd.palm",
-        "dll": "application/octet-stream",
-        "asc": "application/pgp-signature",
-        "org": "application/vnd.lotus-organizer",
-        "ico": "image/vnd.microsoft.icon",
-        "deb": "application/octet-stream",
-        "x3dv": "model/x3d+vrml",
-        "bmp": "image/bmp",
-        "wav": "audio/wav",
-        "emf": "application/x-msmetafile",
-        "bdoc": "application/bdoc",
-        "iso": "application/octet-stream",
-        "wmz": "application/x-ms-wmz",
-        "stl": "application/vnd.ms-pki.stl",
-        "xsl": "application/xml",
-    }
-    mocked_func = mock_wrapper(
-        {
-            "application/mathml-presentation+xml": {
-                "source": "iana",
-                "compressible": True
-            },
-            "application/mathml-content+xml": {
-                "source": "iana",
-                "compressible": True
-            }
-        }
-    )
-    monkeypatch.setattr('builtins.open', mocked_func)
-    result = parse_mimetype_db('some/path')
-
-    assert result == default_db
