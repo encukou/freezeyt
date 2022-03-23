@@ -3,6 +3,7 @@ from pathlib import Path, PurePosixPath
 from mimetypes import guess_type
 import io
 import itertools
+import json
 import functools
 import base64
 import dataclasses
@@ -20,8 +21,7 @@ from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
-from freezeyt.util import parse_absolute_url, parse_mimetype_db
-from freezeyt.util import is_external, add_port
+from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import WrongMimetypeError, UnexpectedStatus
@@ -117,6 +117,23 @@ def parse_handlers(
         result[key] = handler
 
     return result
+
+
+def parse_mimetype_db(path):
+    """Parse mimetype: extesions dict structure from .json file,
+    which has a same structure as github pages mime-db.
+    """
+    suffixes_db = {}
+    with open(path) as file:
+        mime_db = json.load(file)
+
+    for mimetype, opts in mime_db.items():
+        extensions = opts.get('extensions')
+        if extensions is not None:
+            for extension in extensions:
+                suffixes_db.setdefault(extension, {mimetype}).add(mimetype)
+
+    return suffixes_db
 
 
 def default_url_to_path(path):
