@@ -79,6 +79,19 @@ TESTCASES = {
             },
         },
         {}
+    ),
+    "low_up_mix": (
+        {
+            "auDio/Wav": {
+                "compressible": False,
+                "extensions": ["wAv"]
+            },
+            "aUdio/waVe": {
+                "compressible": False,
+                "extensions": ["waV"]
+            },
+        },
+        {"wav": {"audio/wav", "audio/wave"}},
     )
 }
 
