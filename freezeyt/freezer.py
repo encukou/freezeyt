@@ -135,7 +135,8 @@ def parse_mimetype_db(path):
         extensions = opts.get('extensions')
         if extensions is not None:
             for extension in extensions:
-                suffixes_db.setdefault(extension, {mimetype}).add(mimetype)
+                saved_mimetypes = suffixes_db.setdefault(extension.lower(), set())
+                saved_mimetypes.add(mimetype.lower())
 
     return suffixes_db
 
