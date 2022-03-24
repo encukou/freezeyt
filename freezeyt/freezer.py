@@ -74,11 +74,14 @@ def github_mimetypes(suffixes_db):
 
     return mimetypes
 
-def default_get_mimetype(url: str) -> Optional[str]:
+def default_get_mimetype(url: str) -> Optional[set[str]]:
     """Returns filetype as a string from mimetype.guess_type
     """
     file_type, encoding = guess_type(url)
-    return file_type
+    if file_type is None:
+        return None
+    else:
+        return {file_type}
 
 
 def check_mimetype(
@@ -90,12 +93,12 @@ def check_mimetype(
         url_path = 'index.html'
     file_types = get_mimetype(url_path)
     if not file_types:
-        file_types = default
+        file_types = {default}
 
     headers = Headers(headers)
     mime_type, encoding = parse_options_header(headers.get('Content-Type'))
-    if file_type.lower() != mime_type.lower():
-        raise WrongMimetypeError(file_type, mime_type, url_path)
+    if mime_type.lower() not in file_types:
+        raise WrongMimetypeError(file_types, mime_type, url_path)
 
 
 def parse_handlers(
