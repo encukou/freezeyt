@@ -5,10 +5,10 @@ from unittest.mock import patch
 
 from testutil import context_for_test
 from freezeyt import freeze
-from freezeyt.freezer import parse_mimetype_db
+from freezeyt.freezer import parse_mimetype_db, github_mimetypes
 
 
-TESTCASES = {
+PARSER_DATA = {
     "catch_jpeg": (
         {
             "application/3gpdash-qoe-report+xml": {
@@ -106,9 +106,12 @@ def mock_wrapper(db_content):
 
     return mocked_open
 
-@pytest.mark.parametrize('testcase', TESTCASES)
-def test_parse_mimetype_db(monkeypatch, testcase):
-    db_content, expected = TESTCASES[testcase]
+@pytest.mark.parametrize('testname', PARSER_DATA)
+def test_parse_mimetype_db(monkeypatch, testname):
+    """Test if the json file 'github database of mimetypes'
+    is parsed correctly.
+    """
+    db_content, expected = PARSER_DATA[testname]
     mocked_func = mock_wrapper(db_content)
     monkeypatch.setattr('builtins.open', mocked_func)
 
@@ -117,26 +120,27 @@ def test_parse_mimetype_db(monkeypatch, testcase):
         assert result.get(suffix) == expected.get(suffix)
 
 
-
 MIMETYPE_DB = {
-    'html': {'mocked_html_mimetype/html'}
+    'html': {'text/html'},
+    'jpg': {'image/png'}
 }
 
 
-@patch(
-    'freezeyt.freezer.parse_mimetype_db',
-    return_value=MIMETYPE_DB,
-)
-def test_github_mimetypes(tmp_path):
-    """Test
+@patch('freezeyt.freezer.parse_mimetype_db', return_value=MIMETYPE_DB)
+def test_freeze_app_simple(mocked_func, tmp_path):
+    """Integration test with custom database, where is purposely
+    set wrong mimetype for jpg format to be sure that mock was used.
     """
     builddir = tmp_path / 'build'
 
-    with context_for_test('app_simple') as module:
+    with context_for_test('app_wrong_mimetype') as module:
         freeze_config = {
             'output': str(builddir),
             'mimetype_db': 'path/to/db.json'
         }
 
         freeze(module.app, freeze_config)
+
+    assert (builddir / 'index.html').exists()
+    assert (builddir / 'image.jpg').exists()
 
