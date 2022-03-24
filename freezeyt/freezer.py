@@ -65,8 +65,8 @@ DEFAULT_STATUS_HANDLERS = {
 
 def github_mimetypes(suffixes_db):
 
-        suffix = PurePosixPath(URL(url).path).suffix
     def mimetypes(url: str) -> Optional[str]:
+        suffix = PurePosixPath(url).suffix
         if suffix.startswith("."):
             suffix = suffix[1:]
 
