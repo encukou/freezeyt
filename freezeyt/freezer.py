@@ -229,6 +229,7 @@ class Freezer:
             ('extra_pages', ()),
             ('extra_files', None),
             ('default_mimetype', 'application/octet-stream'),
+            ('get_mimetype', default_get_mimetype),
             ('mimetype_db', None),
             ('url_to_path', default_url_to_path)
         )
@@ -236,16 +237,11 @@ class Freezer:
             setattr(self, attr_name, config.get(attr_name, default))
 
         if self.mimetype_db:
-            parsed_db = parse_mimetype_db(self.mimetype_db)
-            self.get_mimetype = github_type(parsed_db)
-        else:
-            self.get_mimetype = config.get(
-                "get_mimetype", default_get_mimetype
-            )
-            if isinstance(self.get_mimetype, str):
-                self.get_mimetype = import_variable_from_module(
-                    self.get_mimetype
-                )
+            suffixes_db = parse_mimetype_db(self.mimetype_db)
+            self.get_mimetype = github_mimetypes(suffixes_db)
+
+        if isinstance(self.get_mimetype, str):
+            self.get_mimetype = import_variable_from_module(self.get_mimetype)
 
         if isinstance(self.url_to_path, str):
             self.url_to_path = import_variable_from_module(self.url_to_path)
