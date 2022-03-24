@@ -63,16 +63,16 @@ DEFAULT_STATUS_HANDLERS = {
     '5xx': 'error',
 }
 
-def github_type(db):
+def github_mimetypes(suffixes_db):
 
-    def get_type(url: str) -> Optional[str]:
         suffix = PurePosixPath(URL(url).path).suffix
+    def mimetypes(url: str) -> Optional[str]:
         if suffix.startswith("."):
             suffix = suffix[1:]
 
-        return db.get(suffix)
+        return suffixes_db.get(suffix)
 
-    return get_type
+    return mimetypes
 
 def default_get_mimetype(url: str) -> Optional[str]:
     """Returns filetype as a string from mimetype.guess_type
@@ -88,9 +88,10 @@ def check_mimetype(
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
-    file_type = get_mimetype(url_path)
-    if not file_type:
-        file_type = default
+    file_types = get_mimetype(url_path)
+    if not file_types:
+        file_types = default
+
     headers = Headers(headers)
     mime_type, encoding = parse_options_header(headers.get('Content-Type'))
     if file_type.lower() != mime_type.lower():
