@@ -144,3 +144,24 @@ def test_freeze_app_simple(mocked_func, tmp_path):
     assert (builddir / 'index.html').exists()
     assert (builddir / 'image.jpg').exists()
 
+
+MIMETYPE_DATA = {
+    "simple": (
+        {"wav": {"audio/wav", "audio/wave"}},
+        "https://example.test/hello.wav",
+        {"audio/wav", "audio/wave"}
+    ),
+    "without_suffix": (
+        {"wav": {"audio/wav", "audio/wave"}},
+        "https://example.test/hello",
+        None
+    )
+}
+@pytest.mark.parametrize('testname', MIMETYPE_DATA)
+def test_get_filetype_from_suffix(testname):
+    """Test the guessing filetype by github mimetype from file suffix.
+    """
+    db, url, expected = MIMETYPE_DATA[testname]
+    get_mimetype = github_mimetypes(db)
+    result = get_mimetype(url)
+    assert result == expected
