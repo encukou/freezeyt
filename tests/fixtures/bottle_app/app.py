@@ -90,3 +90,16 @@ expected_dict = {
         + b'    </html>\n    ',
 
 }
+
+# this part of code will not affect tests but you can run standalone Falcon app with it
+if __name__ == "__main__":
+    from wsgiref.simple_server import make_server
+    with make_server('', 8000, app) as httpd:
+        print("Serving on port 8000...")
+        httpd.serve_forever()
+
+# SOME NOTES:
+
+# if you need to check dictionary output, you can do that with this code:
+# from freezeyt import freeze
+# new_dict = freeze(app, {"output": {"type": "dict"}})
