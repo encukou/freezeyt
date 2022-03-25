@@ -7,7 +7,7 @@ import json
 import functools
 import base64
 import dataclasses
-from typing import Optional, Mapping
+from typing import Optional, Mapping, Set
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -74,7 +74,7 @@ def github_mimetypes(suffixes_db):
 
     return mimetypes
 
-def default_get_mimetype(url: str) -> Optional[set[str]]:
+def default_get_mimetype(url: str) -> Optional[Set[str]]:
     """Returns filetype as a string from mimetype.guess_type
     """
     file_type, encoding = guess_type(url)
