@@ -3,7 +3,7 @@ from pathlib import Path
 
 STATIC_IMAGE_PATH = Path(__file__).parent / 'static'
 
-class FalconApp(object):
+class Resource(object):
     def on_get(self, req, resp):
         """Handles GET requests on index (/)"""
         resp.text = """
@@ -48,10 +48,10 @@ class FalconApp(object):
 app = falcon.App(media_type=falcon.MEDIA_HTML)
 app.add_static_route("/images", STATIC_IMAGE_PATH, downloadable=True, fallback_filename=None)
 
-falcon_app = FalconApp()
-app.add_route('/', falcon_app)
-app.add_route('/second_page/', falcon_app, suffix="second")
-app.add_route('/image_page/', falcon_app, suffix="image")
+resource = Resource()
+app.add_route('/', resource)
+app.add_route('/second_page/', resource, suffix="second")
+app.add_route('/image_page/', resource, suffix="image")
 
 expected_dict = {
     'index.html':
@@ -89,14 +89,14 @@ expected_dict = {
 
 }
 
-# SOME NOTES:
+# this part of code will not affect tests but you can run standalone Falcon app with it
+if __name__ == "__main__":
+    from wsgiref.simple_server import make_server
+    with make_server('', 8000, app) as httpd:
+        print("Serving on port 8000...")
+        httpd.serve_forever()
 
-# you can run this Falcon app standalone with this part of code:
-# if __name__ == "__main__":
-#     from wsgiref.simple_server import make_server
-#     with make_server('', 8000, app) as httpd:
-#         print("Serving on port 8000...")
-#         httpd.serve_forever()
+# SOME NOTES:
 
 # if you need to check dictionary output, you can do that with this code:
 # from freezeyt import freeze
