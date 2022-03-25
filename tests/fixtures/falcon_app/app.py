@@ -101,3 +101,4 @@ if __name__ == "__main__":
 # if you need to check dictionary output, you can do that with this code:
 # from freezeyt import freeze
 # new_dict = freeze(app, {"output": {"type": "dict"}})
+
