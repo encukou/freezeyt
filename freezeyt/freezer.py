@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path, PurePosixPath
+from shutil import rmtree
 from mimetypes import guess_type
 import io
 import itertools
@@ -42,6 +43,7 @@ async def freeze_async(app, config):
         freezer.call_hook('start', freezer.freeze_info)
         await freezer.handle_urls()
         await freezer.handle_redirects()
+        freezer.remove_incomplete_dir()
         return await freezer.get_result()
     except:
         freezer.cancel_tasks()
@@ -302,6 +304,10 @@ class Freezer:
                 return await get_result()
             return None
         raise MultiError(self.failed_tasks.values())
+    
+    def remove_incomplete_dir(self):
+        if self.failed_tasks:
+            rmtree(self.saver.base_path)
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,
