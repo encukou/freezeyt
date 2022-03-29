@@ -37,11 +37,15 @@ def freeze(app, config):
 
 async def freeze_async(app, config):
     freezer = Freezer(app, config)
-    await freezer.prepare()
-    freezer.call_hook('start', freezer.freeze_info)
-    await freezer.handle_urls()
-    await freezer.handle_redirects()
-    return await freezer.get_result()
+    try:
+        await freezer.prepare()
+        freezer.call_hook('start', freezer.freeze_info)
+        await freezer.handle_urls()
+        await freezer.handle_redirects()
+        return await freezer.get_result()
+    except:
+        freezer.cancel_tasks()
+        raise
 
 
 DEFAULT_URL_FINDERS = {
@@ -262,26 +266,34 @@ class Freezer:
             TaskStatus.FAILED: self.failed_tasks,
         }
 
-        self.add_task(prefix_parsed, reason='site root (homepage)')
-        self._add_extra_files()
-        self._add_extra_pages(prefix, self.extra_pages)
+        try:
+            self.add_task(prefix_parsed, reason='site root (homepage)')
+            self._add_extra_files()
+            self._add_extra_pages(prefix, self.extra_pages)
 
-        self.hooks = {}
-        for name, funcs in config.get('hooks', {}).items():
-            for func in funcs:
-                if isinstance(func, str):
-                    func = import_variable_from_module(func)
-                self.add_hook(name, func)
+            self.hooks = {}
+            for name, funcs in config.get('hooks', {}).items():
+                for func in funcs:
+                    if isinstance(func, str):
+                        func = import_variable_from_module(func)
+                    self.add_hook(name, func)
 
-        for plugin in config.get('plugins', {}):
-            if isinstance(plugin, str):
-                plugin = import_variable_from_module(plugin)
-            plugin(self.freeze_info)
+            for plugin in config.get('plugins', {}):
+                if isinstance(plugin, str):
+                    plugin = import_variable_from_module(plugin)
+                plugin(self.freeze_info)
 
-        self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
+            self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
+        except:
+            self.cancel_tasks()
+            raise
 
     def add_hook(self, hook_name, func):
         self.hooks.setdefault(hook_name, []).append(func)
+
+    def cancel_tasks(self):
+        for task in self.inprogress_tasks.values():
+            task.asyncio_task.cancel()
 
     async def get_result(self):
         if not self.failed_tasks:
