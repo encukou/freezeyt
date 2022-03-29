@@ -658,7 +658,7 @@ $ python -m pip install -e ."[typecheck]"
 
 or you can install more groups at once:
 ```shell
-$ python -m pip install -e ."[blog, dev, typecheck]"`
+$ python -m pip install -e ."[blog, dev, typecheck]"
 ```
 
 
