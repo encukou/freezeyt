@@ -1,5 +1,6 @@
 import importlib
 import concurrent.futures
+import sys
 
 from werkzeug.urls import url_parse
 
@@ -7,10 +8,10 @@ from werkzeug.urls import url_parse
 # In Python 3.11, freezeyt's MultiError derives from ExceptionGroup
 # and can be used with the `except*` statement.
 # In older versions, it derives from Exception instead.
-try:
+if sys.version_info >= (3, 11):
     _MultiErrorBase = ExceptionGroup
     HAVE_EXCEPTION_GROUP = True
-except NameError:
+else:
     _MultiErrorBase = Exception
     HAVE_EXCEPTION_GROUP = False
 
