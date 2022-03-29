@@ -39,7 +39,6 @@ async def freeze_async(app, config):
     freezer = Freezer(app, config)
     await freezer.prepare()
     freezer.call_hook('start', freezer.freeze_info)
-    freezer.freeze_extra_files()
     await freezer.handle_urls()
     await freezer.handle_redirects()
     return await freezer.get_result()
@@ -264,6 +263,7 @@ class Freezer:
         }
 
         self.add_task(prefix_parsed, reason='site root (homepage)')
+        self._add_extra_files()
         self._add_extra_pages(prefix, self.extra_pages)
 
         self.hooks = {}
@@ -343,7 +343,7 @@ class Freezer:
             task.reasons.add(reason)
         return task
 
-    def freeze_extra_files(self):
+    def _add_extra_files(self):
         if self.extra_files is not None:
             for url_part, content in self.extra_files.items():
                 if isinstance(content, str):
