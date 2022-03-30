@@ -7,7 +7,7 @@ import json
 import functools
 import base64
 import dataclasses
-from typing import Optional, Mapping, Set
+from typing import Optional, Mapping, Set, Dict
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -122,14 +122,11 @@ def parse_handlers(
     return result
 
 
-def parse_mime_db(path):
+def parse_mime_db(mime_db: dict) -> Mapping:
     """Parse mimetype: extesions dict structure from .json file,
     which has a same structure as github pages mime-db.
     """
-    parsed_db = {}
-    with open(path) as file:
-        mime_db = json.load(file)
-
+    parsed_db: Dict[str, Set[str]] = {}
     for mimetype, opts in mime_db.items():
         extensions = opts.get('extensions')
         if extensions is not None:
@@ -236,7 +233,9 @@ class Freezer:
             setattr(self, attr_name, config.get(attr_name, default))
 
         if self.mime_db_file:
-            parsed_mime_db = parse_mime_db(self.mime_db_file)
+            with open(self.mime_db_file) as file:
+                mime_db = json.load(file)
+            parsed_mime_db = parse_mime_db(mime_db)
             mimetype = functools.partial(mime_db_mimetype, parsed_mime_db)
             self.get_mimetype = mimetype
 

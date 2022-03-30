@@ -1,14 +1,12 @@
-import io
-import json
 import pytest
-from unittest.mock import patch
+import json
 
 from testutil import context_for_test
 from freezeyt import freeze
 from freezeyt.freezer import parse_mime_db, mime_db_mimetype
 
 
-PARSER_DATA = {
+PARSER_TEST_DATA = {
     "catch_jpeg": (
         {
             "application/3gpdash-qoe-report+xml": {
@@ -98,45 +96,40 @@ PARSER_DATA = {
     )
 }
 
-def mock_wrapper(db_content):
-
-    def mocked_open(file):
-        content = json.dumps(db_content)
-        return io.StringIO(content)
-
-    return mocked_open
-
-@pytest.mark.parametrize('testname', PARSER_DATA)
-def test_parse_mimetype_db(monkeypatch, testname):
+@pytest.mark.parametrize('testname', PARSER_TEST_DATA)
+def test_parse_mime_db(monkeypatch, testname):
     """Test if the json file 'github database of mimetypes'
     is parsed correctly.
     """
-    db_content, expected = PARSER_DATA[testname]
-    mocked_func = mock_wrapper(db_content)
-    monkeypatch.setattr('builtins.open', mocked_func)
-
-    result = parse_mime_db('path/to/file')
-    for suffix in expected:
-        assert result.get(suffix) == expected.get(suffix)
+    mime_db, expected = PARSER_TEST_DATA[testname]
+    result = parse_mime_db(mime_db)
+    assert result == expected
 
 
-MIMETYPE_DB = {
-    'html': {'text/html'},
-    'jpg': {'image/png'}
-}
-
-
-@patch('freezeyt.freezer.parse_mime_db', return_value=MIMETYPE_DB)
-def test_freeze_app_simple(mocked_func, tmp_path):
+def test_freeze_app_mock_mime_db(tmp_path):
     """Integration test with custom database, where is purposely
     set wrong mimetype for jpg format to be sure that mock was used.
     """
+    MIMETYPE_DB = {
+        "image/png": {
+            "source": "iana",
+            "compressible": False,
+            "extensions": ["jpeg","jpg"]
+        },
+        'text/html': {
+            "extensions": ["html"]
+        }
+    }
     builddir = tmp_path / 'build'
+    db_path = tmp_path / "mime_db.json"
+
+    with open(db_path, mode="w") as mime_db:
+        json.dump(MIMETYPE_DB, mime_db)
 
     with context_for_test('app_wrong_mimetype') as module:
         freeze_config = {
             'output': str(builddir),
-            'mime_db_file': 'path/to/db.json'
+            'mime_db_file': str(db_path)
         }
 
         freeze(module.app, freeze_config)
@@ -145,7 +138,7 @@ def test_freeze_app_simple(mocked_func, tmp_path):
     assert (builddir / 'image.jpg').exists()
 
 
-MIMETYPE_DATA = {
+MIME_DB_TEST_DATA = {
     "simple": (
         {"wav": {"audio/wav", "audio/wave"}},
         "https://example.test/hello.wav",
@@ -157,10 +150,10 @@ MIMETYPE_DATA = {
         None
     )
 }
-@pytest.mark.parametrize('testname', MIMETYPE_DATA)
+@pytest.mark.parametrize('testname', MIME_DB_TEST_DATA)
 def test_get_filetype_from_suffix(testname):
     """Test the guessing filetype by github mimetype from file suffix.
     """
-    suffixes_db, url, expected = MIMETYPE_DATA[testname]
+    suffixes_db, url, expected = MIME_DB_TEST_DATA[testname]
     result = mime_db_mimetype(suffixes_db, url)
     assert result == expected
