@@ -8,8 +8,8 @@ def my_get_mimetype(url_path):
     suffix = Path(url_path).suffix
 
     if suffix == '.html':
-        return "text/html"
-    return "text/plain"
+        return {"text/html"}
+    return {"text/plain"}
 
 GET_MIMETYPES = {
     'python_get_mimetype': my_get_mimetype,
