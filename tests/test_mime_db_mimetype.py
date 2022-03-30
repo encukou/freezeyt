@@ -137,6 +137,32 @@ def test_freeze_app_mock_mime_db(tmp_path):
     assert (builddir / 'image.jpg').exists()
 
 
+def test_freeze_app_mock_parse_mime_db_uppercase(tmp_path, monkeypatch):
+    """Integration test with mocked parsed database, where is uppercase font used
+    to check lower case conversion in comparisons.
+    """
+    builddir = tmp_path / 'build'
+    db_path = tmp_path / "mime_db.json"
+
+    with open(db_path, mode="w") as mime_db:
+        json.dump({}, mime_db)
+
+    fake_DB = {'html': {'text/hTmL'}, 'jpg': {'imAge/pNg'}}
+    mocked_func = lambda _: fake_DB
+    monkeypatch.setattr('freezeyt.freezer.parse_mime_db', mocked_func)
+
+    with context_for_test('app_wrong_mimetype') as module:
+        freeze_config = {
+            'output': str(builddir),
+            'mime_db_file': str(db_path)
+        }
+
+        freeze(module.app, freeze_config)
+
+    assert (builddir / 'index.html').exists()
+    assert (builddir / 'image.jpg').exists()
+
+
 MIME_DB_TEST_DATA = {
     "simple": (
         {"wav": {"audio/wav", "audio/wave"}},
