@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from testutil import context_for_test
 from freezeyt import freeze
-from freezeyt.freezer import parse_mimetype_db, github_mimetypes
+from freezeyt.freezer import parse_mimetype_db, mimetypes
 
 
 PARSER_DATA = {
@@ -161,7 +161,6 @@ MIMETYPE_DATA = {
 def test_get_filetype_from_suffix(testname):
     """Test the guessing filetype by github mimetype from file suffix.
     """
-    db, url, expected = MIMETYPE_DATA[testname]
-    get_mimetype = github_mimetypes(db)
-    result = get_mimetype(url)
+    suffixes_db, url, expected = MIMETYPE_DATA[testname]
+    result = mimetypes(suffixes_db, url)
     assert result == expected

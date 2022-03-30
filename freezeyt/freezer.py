@@ -63,16 +63,13 @@ DEFAULT_STATUS_HANDLERS = {
     '5xx': 'error',
 }
 
-def github_mimetypes(suffixes_db):
+def mimetypes(suffixes_db: dict, url: str) -> Optional[Set[str]]:
+    suffix = PurePosixPath(url).suffix
+    if suffix.startswith("."):
+        suffix = suffix[1:]
 
-    def mimetypes(url: str) -> Optional[str]:
-        suffix = PurePosixPath(url).suffix
-        if suffix.startswith("."):
-            suffix = suffix[1:]
+    return suffixes_db.get(suffix)
 
-        return suffixes_db.get(suffix)
-
-    return mimetypes
 
 def default_get_mimetype(url: str) -> Optional[Set[str]]:
     """Returns filetype as a string from mimetype.guess_type
@@ -238,7 +235,7 @@ class Freezer:
 
         if self.mimetype_db:
             suffixes_db = parse_mimetype_db(self.mimetype_db)
-            self.get_mimetype = github_mimetypes(suffixes_db)
+            self.get_mimetype = functools.partial(mimetypes, suffixes_db)
 
         if isinstance(self.get_mimetype, str):
             self.get_mimetype = import_variable_from_module(self.get_mimetype)
