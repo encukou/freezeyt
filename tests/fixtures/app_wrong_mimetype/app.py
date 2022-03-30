@@ -15,6 +15,7 @@ def index():
         </head>
         <body>
             <img src="/image.jpg">
+            <a href="/second_page.HTML"
         </body>
     </html>
     """
@@ -24,3 +25,16 @@ def image():
     img_path = Path(__file__).parent / 'smile.png'
     img_bytes = img_path.read_bytes()
     return Response(img_bytes, mimetype='image/png')
+
+@app.route('/second_page.HTML')
+def second_page():
+    return """
+    <html>
+        <head>
+            <title>Second page</title>
+        </head>
+        <body>
+            Second page!
+        </body>
+    </html>
+    """
