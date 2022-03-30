@@ -71,7 +71,7 @@ def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
     if suffix.startswith("."):
         suffix = suffix[1:]
 
-    return mime_db.get(suffix)
+    return mime_db.get(suffix.lower())
 
 
 def default_get_mimetype(url: str) -> Optional[Set[str]]:
@@ -100,7 +100,7 @@ def check_mimetype(
 
     headers = Headers(headers)
     mime_type, encoding = parse_options_header(headers.get('Content-Type'))
-    if mime_type.lower() not in file_types:
+    if mime_type.lower() not in (t.lower() for t in file_types):
         raise WrongMimetypeError(file_types, mime_type, url_path)
 
 
@@ -340,8 +340,6 @@ class Freezer:
             if get_result is not None:
                 return await get_result()
             return None
-        a = MultiError(self.failed_tasks.values())
-        print(a.exceptions)
         raise MultiError(self.failed_tasks.values())
 
     def add_static_task(
