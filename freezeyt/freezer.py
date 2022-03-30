@@ -64,7 +64,8 @@ DEFAULT_STATUS_HANDLERS = {
 }
 
 def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
-    """Returns filetypes as a set of strings from parsed mime-db
+    """Returns filetypes as a set of strings from parsed mime-db.
+    Filetypes are guessed by file suffix.
     """
     suffix = PurePosixPath(url).suffix
     if suffix.startswith("."):
@@ -74,7 +75,8 @@ def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
 
 
 def default_get_mimetype(url: str) -> Optional[Set[str]]:
-    """Returns filetype as a string from mimetype.guess_type
+    """Returns filetype as a string from mimetype.guess_type.
+    Filetypes are guessed by file suffix.
     """
     file_type, encoding = guess_type(url)
     if file_type is None:
@@ -87,6 +89,8 @@ def check_mimetype(
     url_path, headers,
     default='application/octet-stream', *, get_mimetype=default_get_mimetype,
 ):
+    """Compare mimetype sent from headers with filetype guessed from its suffix
+    """
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
@@ -123,8 +127,7 @@ def parse_handlers(
 
 
 def parse_mime_db(mime_db: dict) -> Mapping:
-    """Parse mimetype: extesions dict structure from .json file,
-    which has a same structure as github pages mime-db.
+    """Parse mimetypes from mime-db as dict structure {suffix: {mimetypes, ...}}
     """
     parsed_db: Dict[str, Set[str]] = {}
     for mimetype, opts in mime_db.items():

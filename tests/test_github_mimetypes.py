@@ -98,8 +98,7 @@ PARSER_TEST_DATA = {
 
 @pytest.mark.parametrize('testname', PARSER_TEST_DATA)
 def test_parse_mime_db(monkeypatch, testname):
-    """Test if the json file 'github database of mimetypes'
-    is parsed correctly.
+    """Test func parse_mime_db that correct structure is parsed
     """
     mime_db, expected = PARSER_TEST_DATA[testname]
     result = parse_mime_db(mime_db)
@@ -108,7 +107,7 @@ def test_parse_mime_db(monkeypatch, testname):
 
 def test_freeze_app_mock_mime_db(tmp_path):
     """Integration test with custom database, where is purposely
-    set wrong mimetype for jpg format to be sure that mock was used.
+    set wrong mimetype for jpg format to be sure that custom db was really used.
     """
     MIMETYPE_DB = {
         "image/png": {
@@ -152,7 +151,7 @@ MIME_DB_TEST_DATA = {
 }
 @pytest.mark.parametrize('testname', MIME_DB_TEST_DATA)
 def test_get_filetype_from_suffix(testname):
-    """Test the guessing filetype by github mimetype from file suffix.
+    """Test the guessing filetype by mime-db mimetype from file suffix.
     """
     suffixes_db, url, expected = MIME_DB_TEST_DATA[testname]
     result = mime_db_mimetype(suffixes_db, url)
