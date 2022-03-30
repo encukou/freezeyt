@@ -312,7 +312,8 @@ and uses the mimetype (the first element) it returns.
 The `get_mimetype`:
 *gets one argument the `filepath` as `string`
 
-*returns file type as `string` (e.g. `"text/plain"`).
+*returns file types as `set` of `strings` (e.g. `{"text/plain"}`), where `strings`
+are file types. Filet ypes should be converted as `lowercase`.
 
 If `get_mimetypes` returns `None`, `freezeyt` will use the configured `default_mimetype`
 (see *Default MIME type* above).
