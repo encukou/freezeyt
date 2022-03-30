@@ -7,7 +7,7 @@ import json
 import functools
 import base64
 import dataclasses
-from typing import Optional, Mapping
+from typing import Optional, Mapping, Set
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -63,7 +63,7 @@ DEFAULT_STATUS_HANDLERS = {
     '5xx': 'error',
 }
 
-def mime_db_mimetype(mime_db: dict, url: str) -> Optional[set[str]]:
+def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
     """Returns filetypes as a set of strings from parsed mime-db.
     Filetypes are guessed by file suffix.
     """
@@ -74,7 +74,7 @@ def mime_db_mimetype(mime_db: dict, url: str) -> Optional[set[str]]:
     return mime_db.get(suffix.lower())
 
 
-def default_get_mimetype(url: str) -> Optional[set[str]]:
+def default_get_mimetype(url: str) -> Optional[Set[str]]:
     """Returns filetype as a string from mimetype.guess_type.
     Filetypes are guessed by file suffix.
     """
