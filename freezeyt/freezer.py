@@ -91,7 +91,7 @@ def check_mimetype(
         # Directories get saved as index.html
         url_path = 'index.html'
     file_types = get_mimetype(url_path)
-    if not file_types:
+    if file_types is None:
         file_types = {default}
 
     headers = Headers(headers)
