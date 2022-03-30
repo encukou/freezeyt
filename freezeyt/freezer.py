@@ -63,12 +63,14 @@ DEFAULT_STATUS_HANDLERS = {
     '5xx': 'error',
 }
 
-def mimetypes(suffixes_db: dict, url: str) -> Optional[Set[str]]:
+def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
+    """Returns filetypes as a set of strings from parsed mime-db
+    """
     suffix = PurePosixPath(url).suffix
     if suffix.startswith("."):
         suffix = suffix[1:]
 
-    return suffixes_db.get(suffix)
+    return mime_db.get(suffix)
 
 
 def default_get_mimetype(url: str) -> Optional[Set[str]]:
@@ -120,11 +122,11 @@ def parse_handlers(
     return result
 
 
-def parse_mimetype_db(path):
+def parse_mime_db(path):
     """Parse mimetype: extesions dict structure from .json file,
     which has a same structure as github pages mime-db.
     """
-    suffixes_db = {}
+    parsed_db = {}
     with open(path) as file:
         mime_db = json.load(file)
 
@@ -132,10 +134,10 @@ def parse_mimetype_db(path):
         extensions = opts.get('extensions')
         if extensions is not None:
             for extension in extensions:
-                saved_mimetypes = suffixes_db.setdefault(extension.lower(), set())
+                saved_mimetypes = parsed_db.setdefault(extension.lower(), set())
                 saved_mimetypes.add(mimetype.lower())
 
-    return suffixes_db
+    return parsed_db
 
 
 def default_url_to_path(path):
@@ -227,15 +229,16 @@ class Freezer:
             ('extra_files', None),
             ('default_mimetype', 'application/octet-stream'),
             ('get_mimetype', default_get_mimetype),
-            ('mimetype_db', None),
+            ('mime_db_file', None),
             ('url_to_path', default_url_to_path)
         )
         for attr_name, default in CONFIG_DATA:
             setattr(self, attr_name, config.get(attr_name, default))
 
-        if self.mimetype_db:
-            suffixes_db = parse_mimetype_db(self.mimetype_db)
-            self.get_mimetype = functools.partial(mimetypes, suffixes_db)
+        if self.mime_db_file:
+            parsed_mime_db = parse_mime_db(self.mime_db_file)
+            mimetype = functools.partial(mime_db_mimetype, parsed_mime_db)
+            self.get_mimetype = mimetype
 
         if isinstance(self.get_mimetype, str):
             self.get_mimetype = import_variable_from_module(self.get_mimetype)
@@ -335,6 +338,8 @@ class Freezer:
             if get_result is not None:
                 return await get_result()
             return None
+        a = MultiError(self.failed_tasks.values())
+        print(a.exceptions)
         raise MultiError(self.failed_tasks.values())
 
     def add_static_task(

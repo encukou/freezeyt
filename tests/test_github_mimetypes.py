@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from testutil import context_for_test
 from freezeyt import freeze
-from freezeyt.freezer import parse_mimetype_db, mimetypes
+from freezeyt.freezer import parse_mime_db, mime_db_mimetype
 
 
 PARSER_DATA = {
@@ -115,7 +115,7 @@ def test_parse_mimetype_db(monkeypatch, testname):
     mocked_func = mock_wrapper(db_content)
     monkeypatch.setattr('builtins.open', mocked_func)
 
-    result = parse_mimetype_db('path/to/file')
+    result = parse_mime_db('path/to/file')
     for suffix in expected:
         assert result.get(suffix) == expected.get(suffix)
 
@@ -126,7 +126,7 @@ MIMETYPE_DB = {
 }
 
 
-@patch('freezeyt.freezer.parse_mimetype_db', return_value=MIMETYPE_DB)
+@patch('freezeyt.freezer.parse_mime_db', return_value=MIMETYPE_DB)
 def test_freeze_app_simple(mocked_func, tmp_path):
     """Integration test with custom database, where is purposely
     set wrong mimetype for jpg format to be sure that mock was used.
@@ -136,7 +136,7 @@ def test_freeze_app_simple(mocked_func, tmp_path):
     with context_for_test('app_wrong_mimetype') as module:
         freeze_config = {
             'output': str(builddir),
-            'mimetype_db': 'path/to/db.json'
+            'mime_db_file': 'path/to/db.json'
         }
 
         freeze(module.app, freeze_config)
@@ -162,5 +162,5 @@ def test_get_filetype_from_suffix(testname):
     """Test the guessing filetype by github mimetype from file suffix.
     """
     suffixes_db, url, expected = MIMETYPE_DATA[testname]
-    result = mimetypes(suffixes_db, url)
+    result = mime_db_mimetype(suffixes_db, url)
     assert result == expected

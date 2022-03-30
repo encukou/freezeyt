@@ -328,7 +328,7 @@ When it's configured `get_mimetypes` and `mimetype_db` suddenly, the configurati
 Example of configuration `mimetype_db`:
 
 ```yaml
-mimetype_db=path/to/db.json
+mime_db_file=path/to/db.json
 ```
 
 
