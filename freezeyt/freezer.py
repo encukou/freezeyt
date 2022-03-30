@@ -306,7 +306,9 @@ class Freezer:
         raise MultiError(self.failed_tasks.values())
     
     def remove_incomplete_dir(self):
-        if self.failed_tasks:
+        remove_incomplete_dir = self.config.get("remove_incomplete_dir")
+        print(remove_incomplete_dir)
+        if self.failed_tasks and remove_incomplete_dir == "yes":
             rmtree(self.saver.base_path)
 
     def add_static_task(
