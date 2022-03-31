@@ -1,6 +1,4 @@
-import pytest
 import falcon
-from pathlib import Path
 from freezeyt import freeze
 from freezeyt.util import WrongMimetypeError
 from testutil import raises_multierror_with_one_exception
@@ -36,7 +34,7 @@ def test_let_incomplete_dir_intact(tmp_path):
     output_dir = tmp_path / "output"
     output_dir.mkdir()
     config = {"remove_incomplete_dir": "no", "output": str(output_dir)}
-    with raises_multierror_with_one_exception(WrongMimetypeError) as e:
+    with raises_multierror_with_one_exception(WrongMimetypeError):
         freeze(app, config)
     assert output_dir.exists() == True # the output dir has to exist
     assert (output_dir / "index.html").exists() == True # the index.html file inside output dir has to exist
@@ -46,7 +44,7 @@ def test_remove_incomplete_dir(tmp_path):
     output_dir = tmp_path / "output2"
     output_dir.mkdir()
     config = {"remove_incomplete_dir": "yes", "output": str(output_dir)}
-    with raises_multierror_with_one_exception(WrongMimetypeError) as e:
+    with raises_multierror_with_one_exception(WrongMimetypeError):
         freeze(app, config)
     assert output_dir.exists() == False # the output dir has to be gone
 
@@ -54,7 +52,7 @@ def test_remove_incomplete_dir_by_default(tmp_path):
     output_dir = tmp_path / "output3"
     output_dir.mkdir()
     config = {"output": str(output_dir)}
-    with raises_multierror_with_one_exception(WrongMimetypeError) as e:
+    with raises_multierror_with_one_exception(WrongMimetypeError):
         freeze(app, config)
     assert output_dir.exists() == False # the output dir has to be gone
 
