@@ -310,7 +310,7 @@ class Freezer:
         if (
                 self.failed_tasks and
                 isinstance(self.saver, FileSaver) and
-                (remove_incomplete_dir == "yes" or remove_incomplete_dir == None)
+                (remove_incomplete_dir == True or remove_incomplete_dir == None)
             ):
             rmtree(self.saver.base_path)
 
