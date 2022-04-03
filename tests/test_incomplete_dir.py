@@ -32,7 +32,7 @@ app.add_route('/smile.png', resource, suffix="image")
 
 def test_let_incomplete_dir_intact(tmp_path):
     output_dir = tmp_path / "output"
-    config = {"remove_incomplete_dir": False, "output": str(output_dir)}
+    config = {"rm_incomplete_dir": False, "output": str(output_dir)}
     with raises_multierror_with_one_exception(WrongMimetypeError):
         freeze(app, config)
     assert output_dir.exists() == True # the output dir has to exist
@@ -41,7 +41,7 @@ def test_let_incomplete_dir_intact(tmp_path):
 
 def test_remove_incomplete_dir(tmp_path):
     output_dir = tmp_path / "output2"
-    config = {"remove_incomplete_dir": True, "output": str(output_dir)}
+    config = {"rm_incomplete_dir": True, "output": str(output_dir)}
     with raises_multierror_with_one_exception(WrongMimetypeError):
         freeze(app, config)
     assert output_dir.exists() == False # the output dir has to be gone

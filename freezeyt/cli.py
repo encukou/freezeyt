@@ -24,13 +24,13 @@ from freezeyt.util import import_variable_from_module
 @click.option('--progress', 'progress',
               type=click.Choice(['none', 'bar', 'log']),
               help='Select how to display progress')
-@click.option('--rm-incomplete-dir/--no-rm-incomplete-dir', 'remove_incomplete_dir',
+@click.option('--rm-incomplete-dir/--no-rm-incomplete-dir', 'rm_incomplete_dir',
               default=True,
               help='Select to delete/remove incomplete directory (if error occured)')
 
 def main(
     module_name, dest_path, prefix, extra_pages, config_file, config_var,
-    progress, remove_incomplete_dir,
+    progress, rm_incomplete_dir,
 ):
     """
     MODULE_NAME
@@ -94,10 +94,10 @@ def main(
         config.setdefault(
             'plugins', []).append('freezeyt.progressbar:LogPlugin')
     
-    if remove_incomplete_dir == True: # default state also without --rm-incomplete-dir parameter
-        config['remove_incomplete_dir'] = True
-    else: # remove_incomplete_dir == False
-        config['remove_incomplete_dir'] = False
+    if rm_incomplete_dir == True: # default state also without --rm-incomplete-dir parameter
+        config['rm_incomplete_dir'] = True
+    else: # rm_incomplete_dir == False
+        config['rm_incomplete_dir'] = False
 
     app = import_variable_from_module(
         module_name, default_variable_name='app',

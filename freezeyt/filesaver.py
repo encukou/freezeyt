@@ -47,3 +47,7 @@ class FileSaver:
         assert self.base_path in absolute_filename.parents
 
         return open(absolute_filename, 'rb')
+    
+    def rm_incomplete_dir(self, remove_config):
+        if remove_config == True or remove_config == None:
+            shutil.rmtree(self.base_path)

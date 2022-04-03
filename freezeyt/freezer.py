@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path, PurePosixPath
-from shutil import rmtree
 from mimetypes import guess_type
 import io
 import itertools
@@ -43,7 +42,7 @@ async def freeze_async(app, config):
         freezer.call_hook('start', freezer.freeze_info)
         await freezer.handle_urls()
         await freezer.handle_redirects()
-        freezer.remove_incomplete_dir()
+        freezer.rm_incomplete_dir()
         return await freezer.get_result()
     except:
         freezer.cancel_tasks()
@@ -305,14 +304,13 @@ class Freezer:
             return None
         raise MultiError(self.failed_tasks.values())
     
-    def remove_incomplete_dir(self):
-        remove_incomplete_dir = self.config.get("remove_incomplete_dir")
-        if (
-                self.failed_tasks and
-                isinstance(self.saver, FileSaver) and
-                (remove_incomplete_dir == True or remove_incomplete_dir == None)
-            ):
-            rmtree(self.saver.base_path)
+    def rm_incomplete_dir(self):
+        if self.failed_tasks:
+            try:
+                remove_config = self.config.get("rm_incomplete_dir")
+                self.saver.rm_incomplete_dir(remove_config)
+            except NameError: # saver has not method rm_incomplete_dir, for example DictSaver
+                pass
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,
