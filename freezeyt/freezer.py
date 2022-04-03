@@ -309,7 +309,7 @@ class Freezer:
             try:
                 remove_config = self.config.get("rm_incomplete_dir")
                 self.saver.rm_incomplete_dir(remove_config)
-            except NameError: # saver has not method rm_incomplete_dir, for example DictSaver
+            except AttributeError: # saver has not method rm_incomplete_dir, for example DictSaver
                 pass
 
     def add_static_task(
