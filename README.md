@@ -451,12 +451,14 @@ status_handlers:
 
 `freezeyt` includes a few pre-defined handlers:
 * `'warn'`: will save the content and send warn message to stdout
-* `'save'`: `freezeyt` will save the body of the redirect page, as if
-  the response was `200`.
+* `'save'`: `freezeyt` will save the body of the page.
+  This is the default for status `200 OK`.
 * `'follow'`: `freezeyt` will save content from the redirected location
   (this requires a `Location` header, which is usually added for redirects – `3xx` statuses).
+  Redirects to external pages are not supported.
 * `'ignore'`: `freezeyt` will not save any content for the page
-* `'error'`: abort with an error
+* `'error'`: fail; the page will not be saved and `freeze()` will raise
+  an exception.
 
 The user can also define a custom handler as:
 * a string in the form `'my_module:custom_handler'`, which names a handler
