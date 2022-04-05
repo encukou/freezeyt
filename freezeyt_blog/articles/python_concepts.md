@@ -23,7 +23,8 @@
 * **git rebase**
     * [official-docs](https://git-scm.com/docs/git-rebase)
     * [git online book](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)
-    * [freezeeyt-yt-video-82 (02:40, 59:20)](https://www.youtube.com/watch?v=Mv4Q9ktBBRk&list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT&index=83)
+    * [freezeeyt-yt-video-82 (02:42)](https://www.youtube.com/watch?v=Mv4Q9ktBBRk&t=162s)
+    * [freezeeyt-yt-video-82 (59:20)](https://www.youtube.com/watch?v=Mv4Q9ktBBRk&t=3560s)
 
 * **Význam "double underscored" atributů (např. `__note__`)**
-    * [freezeeyt-yt-video-82 (01:28:00)](https://www.youtube.com/watch?v=Mv4Q9ktBBRk&list=PLFt-PM7J_H3EU5Oez3ZSVjY5pZJttP2lT&index=83)
+    * [freezeeyt-yt-video-82 (01:27:55)](https://www.youtube.com/watch?v=Mv4Q9ktBBRk&t=5275s)
