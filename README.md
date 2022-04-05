@@ -149,12 +149,30 @@ Best practice is to remove the output directory before freezing.
 
 #### Output to dict
 
-For testing, Freezeyt can also output to a dictionary.
+For testing, `freezeyt` can output to a dictionary rather than save
+files to the disk.
 This can be configured with:
 
 ```yaml
 output:
     type: dict
+```
+
+In this case, the `freeze()` function returns a dictionary of filenames
+and their contents.
+For example, a site with `/`, `/second_page/` and `/images/smile.png`
+will be represented as:
+
+```python
+{
+    'index.html': b'<html>...',
+    'second_page': {
+        'index.html': b'<html>...',
+    },
+    'images': {
+        'smile.png': b'\x89PNG\r\n\x1a\n\x00...',
+    },
+}
 ```
 
 This is not useful in the CLI, as the return value is lost.
