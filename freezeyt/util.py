@@ -3,6 +3,8 @@ import concurrent.futures
 
 from werkzeug.urls import url_parse
 
+from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
+
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
 
@@ -40,17 +42,32 @@ class WrongMimetypeError(ValueError):
             + f" guessed from '{url_path}'"
         )
 
-class MultiError(Exception):
+class MultiError(_MultiErrorBase):
     """Contains multiple errors"""
-    def __init__(self, tasks):
+    def __new__(cls, tasks):
         # Import TaskInfo here to avoid a circular import
         # (since hooks imports utils)
         from freezeyt.hooks import TaskInfo
 
-        super().__init__(f"{len(tasks)} errors")
+        exceptions = []
+        for task in tasks:
+            exc = task.asyncio_task.exception()
+            exc._freezeyt_exception_task = task
+            exceptions.append(exc)
+
+        if HAVE_EXCEPTION_GROUP:
+            self = super().__new__(cls, f"{len(tasks)} errors", exceptions)
+        else:
+            self = super().__new__(cls, f"{len(tasks)} errors")
+            self.exceptions = exceptions
+
         self._tasks = tasks
-        self.exceptions = [t.asyncio_task.exception() for t in tasks]
         self.tasks = [TaskInfo(t) for t in tasks]
+        return self
+
+    def derive(self, excs):
+        return MultiError([e._freezeyt_exception_task for e in excs])
+
 
 def is_external(parsed_url, prefix):
     """Return true if the given URL is within a web app at `prefix`

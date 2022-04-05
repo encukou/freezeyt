@@ -44,3 +44,14 @@ def get_running_loop():
         return asyncio.get_event_loop()
     else:
         return get_loop()
+
+
+# In Python 3.11, freezeyt's MultiError derives from ExceptionGroup
+# and can be used with the `except*` statement.
+# In older versions, it derives from Exception instead.
+if sys.version_info >= (3, 11):
+    _MultiErrorBase = ExceptionGroup
+    HAVE_EXCEPTION_GROUP = True
+else:
+    _MultiErrorBase = Exception
+    HAVE_EXCEPTION_GROUP = False
