@@ -415,7 +415,7 @@ The object has the following attributes:
 
 #### `page_frozen`
 
-The function will be called whenever a page is saved.
+The function will be called whenever a page is processed successfully.
 It is passed a `TaskInfo` object as argument.
 The object has the following attributes:
 
