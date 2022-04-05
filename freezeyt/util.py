@@ -1,19 +1,9 @@
 import importlib
 import concurrent.futures
-import sys
 
 from werkzeug.urls import url_parse
 
-
-# In Python 3.11, freezeyt's MultiError derives from ExceptionGroup
-# and can be used with the `except*` statement.
-# In older versions, it derives from Exception instead.
-if sys.version_info >= (3, 11):
-    _MultiErrorBase = ExceptionGroup
-    HAVE_EXCEPTION_GROUP = True
-else:
-    _MultiErrorBase = Exception
-    HAVE_EXCEPTION_GROUP = False
+from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
