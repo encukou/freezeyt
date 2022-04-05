@@ -84,3 +84,17 @@ def test_error_custom_handler():
 
     with raises_multierror_with_one_exception(UnexpectedStatus):
         freeze(app, config)
+
+@pytest.mark.parametrize(
+    'status',
+    ['ldaskfjhfasdlkdasjh', '', '50x', '50', 50, 'xxx', 'a8xx', '123a'],
+)
+def test_bad_status(status):
+    app = Flask(__name__)
+    config = {
+        'output': {'type': 'dict'},
+        'status_handlers': {status: 'save'}
+    }
+
+    with pytest.raises((ValueError, TypeError)):
+        freeze(app, config)

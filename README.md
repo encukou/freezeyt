@@ -488,6 +488,7 @@ status_handlers:
 Note that the status code must be a string, so it needs to be quoted in the YAML file.
 
 A range of statuses can be specified as a number (`1-5`) followed by lowercase `xx`.
+(Other "wildcards" like `50x` are not supported.)
 
 
 ### URL finding
