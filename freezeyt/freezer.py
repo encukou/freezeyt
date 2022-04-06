@@ -42,7 +42,7 @@ async def freeze_async(app, config):
         freezer.call_hook('start', freezer.freeze_info)
         await freezer.handle_urls()
         await freezer.handle_redirects()
-        freezer.rm_incomplete_dir()
+        await freezer.cleanup()
         return await freezer.get_result()
     except:
         freezer.cancel_tasks()
@@ -304,13 +304,15 @@ class Freezer:
             return None
         raise MultiError(self.failed_tasks.values())
     
-    def rm_incomplete_dir(self):
+    async def cleanup(self):
         if self.failed_tasks:
+            remove_cfg = self.config.get("cleanup", True)
             try:
-                remove_config = self.config.get("rm_incomplete_dir")
-                self.saver.rm_incomplete_dir(remove_config)
-            except AttributeError: # saver has not method rm_incomplete_dir, for example DictSaver
+                savers_cleanup = self.saver.cleanup
+            except AttributeError: # saver has not method cleanup, for example DictSaver
                 pass
+            else:
+                await savers_cleanup(remove_cfg)
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,

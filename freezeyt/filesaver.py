@@ -48,6 +48,6 @@ class FileSaver:
 
         return open(absolute_filename, 'rb')
     
-    def rm_incomplete_dir(self, remove_config):
-        if remove_config == True or remove_config == None:
+    async def cleanup(self, cleanup_cfg):
+        if cleanup_cfg == True:
             shutil.rmtree(self.base_path)
