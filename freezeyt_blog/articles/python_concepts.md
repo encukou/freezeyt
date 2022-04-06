@@ -19,3 +19,12 @@
 * **Pokročilé objektově orientované programování**
    * [freezeeyt-yt-video-79 (31:38) - magická metoda `__new__` ve třídách a jak se liší od `__init__` metody](https://www.youtube.com/watch?v=znpSzRKgohw&t=1898s)
    * [freezeeyt-yt-video-79 (1:12:40) - jak fungují objekty v Pythonu, aneb descriptory a metody `__get__` a `__set__`](https://www.youtube.com/watch?v=znpSzRKgohw&t=4360s)
+
+* **git rebase**
+    * [official-docs](https://git-scm.com/docs/git-rebase)
+    * [git online book](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)
+    * [freezeeyt-yt-video-82 (02:42)](https://www.youtube.com/watch?v=Mv4Q9ktBBRk&t=162s)
+    * [freezeeyt-yt-video-82 (59:20)](https://www.youtube.com/watch?v=Mv4Q9ktBBRk&t=3560s)
+
+* **Význam "double underscored" atributů (např. `__note__`)**
+    * [freezeeyt-yt-video-82 (01:27:55)](https://www.youtube.com/watch?v=Mv4Q9ktBBRk&t=5275s)

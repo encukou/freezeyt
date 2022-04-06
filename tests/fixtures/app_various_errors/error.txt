@@ -1,0 +1,5 @@
+MultiError:
+    TypeError
+    TypeError
+    UnexpectedStatus
+    ValueError
