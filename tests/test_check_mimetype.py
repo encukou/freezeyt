@@ -163,6 +163,20 @@ def test_missing_file_suffix_get_mimetype():
         get_mimetype=get_mimetype
     )
 
+def test_get_mimetype_capital_mimetype(monkeypatch):
+    def get_mimetype(url_path):
+        return {"image/PNG"}
+
+    check_mimetype(
+        'http://localhost:8000/image.png',
+        [
+            ('Content-Type', 'image/png'),
+            ('Content-Length', '164'),
+        ],
+        get_mimetype=get_mimetype
+    )
+
+
 def test_missing_file_suffix_get_mimetype_fail():
     def get_mimetype(url_path):
         return {"image/png"}
