@@ -36,7 +36,7 @@ class WrongMimetypeError(ValueError):
     """MIME type does not match file extension"""
     def __init__(self, expected, got, url_path):
         super().__init__(
-            f"Content-type '{got}' is different from allowed filetypes '{expected}'"
+            f"Content-type '{got}' is different from allowed MIME types '{expected}'"
             + f" guessed from '{url_path}'"
         )
 
