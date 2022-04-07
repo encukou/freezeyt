@@ -74,7 +74,7 @@ def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
     return mime_db.get(suffix.lower())
 
 
-def default_get_mimetype(url: str) -> Optional[Set[str]]:
+def default_mimetype(url: str) -> Optional[Set[str]]:
     """Returns file mimetype as a string from mimetype.guess_type.
     file mimetypes are guessed by file suffix.
     """
@@ -87,7 +87,7 @@ def default_get_mimetype(url: str) -> Optional[Set[str]]:
 
 def check_mimetype(
     url_path, headers,
-    default='application/octet-stream', *, get_mimetype=default_get_mimetype,
+    default='application/octet-stream', *, get_mimetype=default_mimetype,
 ):
     """Compare mimetype sent from headers with mimetype guessed from its suffix
     """
@@ -230,7 +230,7 @@ class Freezer:
             ('extra_pages', ()),
             ('extra_files', None),
             ('default_mimetype', 'application/octet-stream'),
-            ('get_mimetype', default_get_mimetype),
+            ('get_mimetype', default_mimetype),
             ('mime_db_file', None),
             ('url_to_path', default_url_to_path)
         )
