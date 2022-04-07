@@ -128,18 +128,21 @@ def parse_handlers(
     return result
 
 
-def parse_mime_db(mime_db: dict) -> Mapping:
-    """Parse mimetypes from mime-db as dict structure {suffix: {mimetypes, ...}}
+def mime_db_conversion(mime_db: dict) -> Mapping:
+    """Convert mime-db structure to new one.
+    New structure is build as: Keys are extensions and Values are set of MIME types
     """
-    parsed_db: dict[str, set[str]] = {}
+    converted_db: dict[str, set[str]] = {}
     for mimetype, opts in mime_db.items():
         extensions = opts.get('extensions')
         if extensions is not None:
             for extension in extensions:
-                saved_mimetypes = parsed_db.setdefault(extension.lower(), set())
+                saved_mimetypes = converted_db.setdefault(
+                    extension.lower(), set()
+                )
                 saved_mimetypes.add(mimetype.lower())
 
-    return parsed_db
+    return converted_db
 
 
 def default_url_to_path(path):
@@ -240,9 +243,9 @@ class Freezer:
         if self.mime_db_file:
             with open(self.mime_db_file) as file:
                 mime_db = json.load(file)
-            parsed_mime_db = parse_mime_db(mime_db)
-            mimetype = functools.partial(mime_db_mimetype, parsed_mime_db)
-            self.get_mimetype = mimetype
+
+            mime_db = mime_db_conversion(mime_db)
+            self.get_mimetype = functools.partial(mime_db_mimetype, mime_db)
 
         if isinstance(self.get_mimetype, str):
             self.get_mimetype = import_variable_from_module(self.get_mimetype)
