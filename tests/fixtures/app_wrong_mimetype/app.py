@@ -26,7 +26,7 @@ def image():
     img_bytes = img_path.read_bytes()
     return Response(img_bytes, mimetype='image/png')
 
-@app.route('/second_page.HTML')
+@app.route('/capital_extension.HTML')
 def second_page():
     return """
     <html>
