@@ -3,10 +3,10 @@ import json
 
 from testutil import context_for_test
 from freezeyt import freeze
-from freezeyt.freezer import parse_mime_db, mime_db_mimetype
+from freezeyt.freezer import mime_db_conversion, mime_db_mimetype
 
 
-PARSER_TEST_DATA = {
+MIME_DB_TESTCASES = {
     "catch_jpeg": (
         {
             "application/3gpdash-qoe-report+xml": {
@@ -81,7 +81,7 @@ PARSER_TEST_DATA = {
         },
         {}
     ),
-    "low_up_mix": (
+    "capitals_used": (
         {
             "auDio/Wav": {
                 "compressible": False,
@@ -96,34 +96,36 @@ PARSER_TEST_DATA = {
     )
 }
 
-@pytest.mark.parametrize('testname', PARSER_TEST_DATA)
-def test_parse_mime_db(monkeypatch, testname):
-    """Test func parse_mime_db that correct structure is parsed
+@pytest.mark.parametrize('testname', MIME_DB_TESTCASES)
+def test_mime_db_conversion(testname):
+    """Test if function mime_db_conversion convert mime-db structure
+    to new, expected dict structure.
     """
-    mime_db, expected = PARSER_TEST_DATA[testname]
-    result = parse_mime_db(mime_db)
+    mime_db, expected = MIME_DB_TESTCASES[testname]
+    result = mime_db_conversion(mime_db)
     assert result == expected
 
 
-def test_freeze_app_mock_mime_db(tmp_path):
-    """Integration test with custom database, where is purposely
-    set wrong mimetype for jpg format to be sure that custom db was really used.
+def test_modified_mime_db_file(tmp_path):
+    """Integration test with modified mime-db, where is purposely
+    set wrong extensions for MIME image/png to check if our db was used.
+
     """
-    MIMETYPE_DB = {
+    MIME_DB_TO_JSON = {
         "image/png": {
             "source": "iana",
             "compressible": False,
-            "extensions": ["jpeg","jpg"]
+            "extensions": ["Jpeg","jPg"]
         },
         'text/html': {
-            "extensions": ["html"]
+            "extensions": ["htmL"]
         }
     }
     builddir = tmp_path / 'build'
     db_path = tmp_path / "mime_db.json"
 
     with open(db_path, mode="w") as mime_db:
-        json.dump(MIMETYPE_DB, mime_db)
+        json.dump(MIME_DB_TO_JSON, mime_db)
 
     with context_for_test('app_wrong_mimetype') as module:
         freeze_config = {
@@ -134,39 +136,19 @@ def test_freeze_app_mock_mime_db(tmp_path):
         freeze(module.app, freeze_config)
 
     assert (builddir / 'index.html').exists()
+    # 'image.jpg' exists because we set jpg extension to MIME image/png
     assert (builddir / 'image.jpg').exists()
 
 
-def test_freeze_app_mock_parse_mime_db_uppercase(tmp_path, monkeypatch):
-    """Integration test with mocked parsed database, where is uppercase font used
-    to check lower case conversion in comparisons.
-    """
-    builddir = tmp_path / 'build'
-    db_path = tmp_path / "mime_db.json"
-
-    with open(db_path, mode="w") as mime_db:
-        json.dump({}, mime_db)
-
-    fake_DB = {'html': {'text/hTmL'}, 'jpg': {'imAge/pNg'}}
-    mocked_func = lambda _: fake_DB
-    monkeypatch.setattr('freezeyt.freezer.parse_mime_db', mocked_func)
-
-    with context_for_test('app_wrong_mimetype') as module:
-        freeze_config = {
-            'output': str(builddir),
-            'mime_db_file': str(db_path)
-        }
-
-        freeze(module.app, freeze_config)
-
-    assert (builddir / 'index.html').exists()
-    assert (builddir / 'image.jpg').exists()
-
-
-MIME_DB_TEST_DATA = {
+GET_MIME_TYPE_TESTCASES = {
     "simple": (
         {"wav": {"audio/wav", "audio/wave"}},
         "https://example.test/hello.wav",
+        {"audio/wav", "audio/wave"}
+    ),
+    "capital_file_suffix": (
+        {"wav": {"audio/wav", "audio/wave"}},
+        "https://example.test/hello.WAV",
         {"audio/wav", "audio/wave"}
     ),
     "without_suffix": (
@@ -175,10 +157,10 @@ MIME_DB_TEST_DATA = {
         None
     )
 }
-@pytest.mark.parametrize('testname', MIME_DB_TEST_DATA)
-def test_get_filetype_from_suffix(testname):
-    """Test the guessing filetype by mime-db mimetype from file suffix.
+@pytest.mark.parametrize('testname', GET_MIME_TYPE_TESTCASES)
+def test_get_MIME_type_from_suffix(testname):
+    """Test mime_db_mimetype return expected file mimetypes
     """
-    suffixes_db, url, expected = MIME_DB_TEST_DATA[testname]
-    result = mime_db_mimetype(suffixes_db, url)
+    converted_mime_db, url, expected = GET_MIME_TYPE_TESTCASES[testname]
+    result = mime_db_mimetype(converted_mime_db, url)
     assert result == expected
