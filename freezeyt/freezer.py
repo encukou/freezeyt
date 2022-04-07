@@ -64,8 +64,8 @@ DEFAULT_STATUS_HANDLERS = {
 }
 
 def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
-    """Returns filetypes as a set of strings from parsed mime-db.
-    Filetypes are guessed by file suffix.
+    """Returns file mimetypes as a set of strings from parsed mime-db.
+    File mimetypes are guessed by file suffix.
     """
     suffix = PurePosixPath(url).suffix
     if suffix.startswith("."):
@@ -75,33 +75,35 @@ def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
 
 
 def default_get_mimetype(url: str) -> Optional[Set[str]]:
-    """Returns filetype as a string from mimetype.guess_type.
-    Filetypes are guessed by file suffix.
+    """Returns file mimetype as a string from mimetype.guess_type.
+    file mimetypes are guessed by file suffix.
     """
-    file_type, encoding = guess_type(url)
-    if file_type is None:
+    file_mimetype, encoding = guess_type(url)
+    if file_mimetype is None:
         return None
     else:
-        return {file_type}
+        return {file_mimetype}
 
 
 def check_mimetype(
     url_path, headers,
     default='application/octet-stream', *, get_mimetype=default_get_mimetype,
 ):
-    """Compare mimetype sent from headers with filetype guessed from its suffix
+    """Compare mimetype sent from headers with mimetype guessed from its suffix
     """
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
-    file_types = get_mimetype(url_path)
-    if file_types is None:
-        file_types = {default}
+    file_mimetypes = get_mimetype(url_path)
+    if file_mimetypes is None:
+        file_mimetypes = {default}
 
     headers = Headers(headers)
-    mime_type, encoding = parse_options_header(headers.get('Content-Type'))
-    if mime_type.lower() not in (t.lower() for t in file_types):
-        raise WrongMimetypeError(file_types, mime_type, url_path)
+    headers_mimetype, encoding = parse_options_header(
+        headers.get('Content-Type')
+    )
+    if headers_mimetype.lower() not in (t.lower() for t in file_mimetypes):
+        raise WrongMimetypeError(file_mimetypes, headers_mimetype, url_path)
 
 
 def parse_handlers(
