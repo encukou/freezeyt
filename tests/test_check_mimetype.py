@@ -87,7 +87,6 @@ TEST_DATA = {
         'http://localhost:8000/foo/', [('Content-Type', 'text/html')]
     ),
 }
-
 @pytest.mark.parametrize('testname', TEST_DATA)
 def test_kwargs_exclude(testname):
     url_path, headers= TEST_DATA[testname]
@@ -137,7 +136,6 @@ TEST_DATA_DEFAULT = {
         'image/png'
     )
 }
-
 @pytest.mark.parametrize('testname', TEST_DATA_DEFAULT)
 def test_default_include(testname):
     url_path, headers, default = TEST_DATA_DEFAULT[testname]
@@ -162,6 +160,7 @@ def test_missing_file_suffix_get_mimetype():
         ],
         get_mimetype=get_mimetype
     )
+
 
 def test_get_mimetype_capital_mimetype(monkeypatch):
     def get_mimetype(url_path):
@@ -190,6 +189,7 @@ def test_missing_file_suffix_get_mimetype_fail():
             ],
             get_mimetype=get_mimetype
         )
+
 
 def test_missing_file_suffix_get_mimetype_fail_default_ignored():
     def get_mimetype(url_path):
