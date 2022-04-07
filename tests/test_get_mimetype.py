@@ -8,8 +8,8 @@ def my_get_mimetype(url_path):
     suffix = Path(url_path).suffix
 
     if suffix == '.html':
-        return {"text/html"}
-    return {"text/plain"}
+        return ["text/html"]
+    return ["text/plain"]
 
 GET_MIMETYPES = {
     'python_get_mimetype': my_get_mimetype,
@@ -19,7 +19,7 @@ GET_MIMETYPES = {
 
 @pytest.mark.parametrize('get_mimetypeID', GET_MIMETYPES)
 def test_succesfully_loaded_get_mimetype_config(tmp_path, get_mimetypeID):
-    """Test
+    """Test if configuration with user get_mimetype is used
     """
     builddir = tmp_path / 'build'
 

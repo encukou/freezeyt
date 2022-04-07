@@ -7,7 +7,7 @@ import json
 import functools
 import base64
 import dataclasses
-from typing import Optional, Mapping, Set, Dict
+from typing import Optional, Mapping, Set, List, Dict
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -74,7 +74,7 @@ def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
     return mime_db.get(suffix.lower())
 
 
-def default_mimetype(url: str) -> Optional[Set[str]]:
+def default_mimetype(url: str) -> Optional[List[str]]:
     """Returns file mimetype as a string from mimetype.guess_type.
     file mimetypes are guessed by file suffix.
     """
@@ -82,7 +82,7 @@ def default_mimetype(url: str) -> Optional[Set[str]]:
     if file_mimetype is None:
         return None
     else:
-        return {file_mimetype}
+        return [file_mimetype]
 
 
 def check_mimetype(
@@ -96,7 +96,7 @@ def check_mimetype(
         url_path = 'index.html'
     file_mimetypes = get_mimetype(url_path)
     if file_mimetypes is None:
-        file_mimetypes = {default}
+        file_mimetypes = [default]
 
     headers = Headers(headers)
     headers_mimetype, encoding = parse_options_header(
@@ -128,19 +128,17 @@ def parse_handlers(
     return result
 
 
-def mime_db_conversion(mime_db: Mapping) -> Dict[str, Set[str]]:
+def mime_db_conversion(mime_db: Mapping) -> Dict[str, List[str]]:
     """Convert mime-db structure to new one.
     New structure is build as: Keys are extensions and Values are set of MIME types
     """
-    converted_db: Dict[str, Set[str]] = {}
+    converted_db: Dict[str, List[str]] = {}
     for mimetype, opts in mime_db.items():
         extensions = opts.get('extensions')
         if extensions is not None:
             for extension in extensions:
-                saved_mimetypes = converted_db.setdefault(
-                    extension.lower(), set()
-                )
-                saved_mimetypes.add(mimetype.lower())
+                mimetypes = converted_db.setdefault(extension.lower(), [])
+                mimetypes.append(mimetype.lower())
 
     return converted_db
 

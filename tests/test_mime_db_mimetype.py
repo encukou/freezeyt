@@ -21,9 +21,9 @@ MIME_DB_TESTCASES = {
             }
         },
         {
-            "jpeg": {"image/jpeg"},
-            "jpg": {"image/jpeg"},
-            "jpe": {"image/jpeg"},
+            "jpeg": ["image/jpeg"],
+            "jpg": ["image/jpeg"],
+            "jpe": ["image/jpeg"],
         }
     ),
     "catch_many_mimetypes": (
@@ -55,18 +55,18 @@ MIME_DB_TESTCASES = {
             },
         },
         {
-            "wav": {"audio/wav", "audio/wave"},
-            "weba": {"audio/webm"},
-            "exe": {
-                "application/octet-stream",
+            "wav": ["audio/wav", "audio/wave"],
+            "weba": ["audio/webm"],
+            "exe": [
+                "application/x-msdos-program",
                 "application/x-msdownload",
-                "application/x-msdos-program"
-            },
-            "dll": {"application/octet-stream", "application/x-msdownload"},
-            "com": {"application/x-msdownload"},
-            "bat": {"application/x-msdownload"},
-            "msi": {"application/x-msdownload", "application/octet-stream"},
-            "bin": {"application/octet-stream"}
+                "application/octet-stream"
+            ],
+            "dll": ["application/x-msdownload", "application/octet-stream"],
+            "com": ["application/x-msdownload"],
+            "bat": ["application/x-msdownload"],
+            "msi": ["application/x-msdownload", "application/octet-stream"],
+            "bin": ["application/octet-stream"]
         }
     ),
     "no_catch": (
@@ -92,7 +92,9 @@ MIME_DB_TESTCASES = {
                 "extensions": ["waV"]
             },
         },
-        {"wav": {"audio/wav", "audio/wave"}},
+        {
+            "wav": ["audio/wav", "audio/wave"]
+        },
     )
 }
 
@@ -142,17 +144,17 @@ def test_modified_mime_db_file(tmp_path):
 
 GET_MIME_TYPE_TESTCASES = {
     "simple": (
-        {"wav": {"audio/wav", "audio/wave"}},
+        {"wav": ["audio/wav", "audio/wave"]},
         "https://example.test/hello.wav",
-        {"audio/wav", "audio/wave"}
+        ["audio/wav", "audio/wave"]
     ),
     "capital_file_suffix": (
-        {"wav": {"audio/wav", "audio/wave"}},
+        {"wav": ["audio/wav", "audio/wave"]},
         "https://example.test/hello.WAV",
-        {"audio/wav", "audio/wave"}
+        ["audio/wav", "audio/wave"]
     ),
     "without_suffix": (
-        {"wav": {"audio/wav", "audio/wave"}},
+        {"wav": ["audio/wav", "audio/wave"]},
         "https://example.test/hello",
         None
     )

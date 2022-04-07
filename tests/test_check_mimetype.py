@@ -150,7 +150,7 @@ def test_default_include(testname):
 
 def test_missing_file_suffix_get_mimetype():
     def get_mimetype(url_path):
-        return {"image/png"}
+        return ["image/png"]
 
     check_mimetype(
         'http://localhost:8000/index',
@@ -164,7 +164,7 @@ def test_missing_file_suffix_get_mimetype():
 
 def test_get_mimetype_capital_mimetype(monkeypatch):
     def get_mimetype(url_path):
-        return {"image/PNG"}
+        return ["image/PNG"]
 
     check_mimetype(
         'http://localhost:8000/image.png',
@@ -178,7 +178,7 @@ def test_get_mimetype_capital_mimetype(monkeypatch):
 
 def test_missing_file_suffix_get_mimetype_fail():
     def get_mimetype(url_path):
-        return {"image/png"}
+        return ["image/png"]
 
     with pytest.raises(ValueError):
         check_mimetype(
@@ -193,7 +193,7 @@ def test_missing_file_suffix_get_mimetype_fail():
 
 def test_missing_file_suffix_get_mimetype_fail_default_ignored():
     def get_mimetype(url_path):
-        return {"image/bmp"}
+        return ["image/bmp"]
 
     with pytest.raises(ValueError):
         check_mimetype(
