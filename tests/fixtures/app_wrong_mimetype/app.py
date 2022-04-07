@@ -15,7 +15,7 @@ def index():
         </head>
         <body>
             <img src="/image.jpg">
-            <a href="/second_page.HTML"
+            <a href="/capital_extension.HTML"
         </body>
     </html>
     """
@@ -31,10 +31,10 @@ def second_page():
     return """
     <html>
         <head>
-            <title>Second page</title>
+            <title>Test app - wrong mimetype</title>
         </head>
         <body>
-            Second page!
+            Test the page with capital extension!
         </body>
     </html>
     """
