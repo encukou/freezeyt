@@ -7,7 +7,7 @@ import json
 import functools
 import base64
 import dataclasses
-from typing import Optional, Mapping, Set
+from typing import Optional, Mapping, Set, Dict
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -128,11 +128,11 @@ def parse_handlers(
     return result
 
 
-def mime_db_conversion(mime_db: dict) -> Mapping:
+def mime_db_conversion(mime_db: Mapping) -> Dict[str, Set[str]]:
     """Convert mime-db structure to new one.
     New structure is build as: Keys are extensions and Values are set of MIME types
     """
-    converted_db: dict[str, set[str]] = {}
+    converted_db: Dict[str, Set[str]] = {}
     for mimetype, opts in mime_db.items():
         extensions = opts.get('extensions')
         if extensions is not None:
@@ -185,7 +185,7 @@ class TaskStatus(enum.Enum):
 @dataclasses.dataclass
 class Task:
     path: Path
-    urls: "set[URL]"
+    urls: "Set[URL]"
     freezer: "Freezer"
     response_headers: Optional[Headers] = None
     response_status: Optional[str] = None
