@@ -12,13 +12,13 @@ class Resource(object):
             <title>Hello world from Falcon app</title>
         </head>
         <body>
-            <h3>Hello world! This is Falcon app page with link to value_error page.</h3>
-            <a href="/value_error.html">value_error.html</a>
+            <h3>Hello world! This is Falcon app page link to error 404.</h3>
+            <a href="/not_found.html">not_found.html</a>
         </body>
     </html>\n"""
 
     def on_get_error(self, req, resp):
-        """Handles GET requests on index (/value_error.html)"""
+        """Handles GET requests on index (/not_found.html)"""
         raise falcon.HTTPNotFound()
 
 
@@ -26,4 +26,5 @@ class Resource(object):
 app = falcon.App(media_type=falcon.MEDIA_HTML)    
 resource = Resource()
 app.add_route('/', resource)
-app.add_route('/value_error.html', resource, suffix="error")
+app.add_route('/not_found.html', resource, suffix="error")
+

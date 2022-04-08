@@ -146,6 +146,7 @@ def test_nonstandard_dotted_app_name(tmp_path):
         build_dir,
     )
 
+
 def test_cleanup_config_works_if_runs_from_cli(tmp_path):
     app_name = 'app_cleanup_config'
     build_dir = tmp_path / 'build'
