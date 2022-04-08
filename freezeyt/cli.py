@@ -94,9 +94,7 @@ def main(
         config.setdefault(
             'plugins', []).append('freezeyt.progressbar:LogPlugin')
     
-    if cleanup == None and config.get("cleanup") == None:
-        config['cleanup'] = True
-    elif cleanup == True:
+    if (cleanup == None and config.get("cleanup") == None) or cleanup == True:
         config['cleanup'] = True
     elif cleanup == False:
         config['cleanup'] = False
