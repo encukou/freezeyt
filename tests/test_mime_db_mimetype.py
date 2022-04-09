@@ -100,8 +100,8 @@ MIME_DB_TESTCASES = {
 
 @pytest.mark.parametrize('testname', MIME_DB_TESTCASES)
 def test_mime_db_conversion(testname):
-    """Test if function mime_db_conversion convert mime-db structure
-    to new, expected dict structure.
+    """Test if the convert process of mime-db structure
+    to new one is performed correctly.
     """
     mime_db, expected = MIME_DB_TESTCASES[testname]
     result = mime_db_conversion(mime_db)
@@ -138,7 +138,7 @@ def test_modified_mime_db_file(tmp_path):
         freeze(module.app, freeze_config)
 
     assert (builddir / 'index.html').exists()
-    # 'image.jpg' exists because we set jpg extension to MIME image/png
+    # 'image.jpg' exists because we linked jpg extension with MIME 'image/png'
     assert (builddir / 'image.jpg').exists()
 
 
@@ -161,7 +161,7 @@ GET_MIME_TYPE_TESTCASES = {
 }
 @pytest.mark.parametrize('testname', GET_MIME_TYPE_TESTCASES)
 def test_get_MIME_type_from_suffix(testname):
-    """Test mime_db_mimetype return expected file mimetypes
+    """Test the return values of mime_db_mimetype
     """
     converted_mime_db, url, expected = GET_MIME_TYPE_TESTCASES[testname]
     result = mime_db_mimetype(converted_mime_db, url)

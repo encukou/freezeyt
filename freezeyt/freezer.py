@@ -64,8 +64,8 @@ DEFAULT_STATUS_HANDLERS = {
 }
 
 def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
-    """Returns file mimetypes as a set of strings from parsed mime-db.
-    File mimetypes are guessed by file suffix.
+    """Returns file mimetypes as a list of str from parsed mime-db.
+    File mimetypes are guessed from file suffix.
     """
     suffix = PurePosixPath(url).suffix
     if suffix.startswith("."):
@@ -89,7 +89,8 @@ def check_mimetype(
     url_path, headers,
     default='application/octet-stream', *, get_mimetype=default_mimetype,
 ):
-    """Compare mimetype sent from headers with mimetype guessed from its suffix
+    """Compare mimetype sent from headers with file mimetype guessed
+    from its suffix.
     """
     if url_path.endswith('/'):
         # Directories get saved as index.html
@@ -130,8 +131,8 @@ def parse_handlers(
 
 
 def mime_db_conversion(mime_db: Mapping) -> Dict[str, List[str]]:
-    """Convert mime-db structure to new one.
-    New structure is build as: Keys are extensions and Values are set of MIME types
+    """Convert mime-db value 'extensions' to become a key
+    and origin mimetype key to dict value as item of list.
     """
     converted_db: Dict[str, List[str]] = {}
     for mimetype, opts in mime_db.items():

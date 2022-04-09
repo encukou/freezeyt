@@ -19,7 +19,8 @@ GET_MIMETYPES = {
 
 @pytest.mark.parametrize('get_mimetypeID', GET_MIMETYPES)
 def test_succesfully_loaded_get_mimetype_config(tmp_path, get_mimetypeID):
-    """Test if configuration with user get_mimetype is used
+    """Test if user configuration of external functions get_mimetype
+    is loaded and used during web app freezing.
     """
     builddir = tmp_path / 'build'
 
