@@ -6,7 +6,7 @@ from freezeyt import freeze
 from freezeyt.freezer import mime_db_conversion, mime_db_mimetype
 
 
-MIME_DB_TESTCASES = {
+CONVERSION_TESTCASES = {
     "catch_jpeg": (
         {
             "application/3gpdash-qoe-report+xml": {
@@ -98,12 +98,12 @@ MIME_DB_TESTCASES = {
     )
 }
 
-@pytest.mark.parametrize('testname', MIME_DB_TESTCASES)
+@pytest.mark.parametrize('testname', CONVERSION_TESTCASES)
 def test_mime_db_conversion(testname):
     """Test if the convert process of mime-db structure
     to new one is performed correctly.
     """
-    mime_db, expected = MIME_DB_TESTCASES[testname]
+    mime_db, expected = CONVERSION_TESTCASES[testname]
     result = mime_db_conversion(mime_db)
     assert result == expected
 

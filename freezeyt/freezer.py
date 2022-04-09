@@ -104,7 +104,7 @@ def check_mimetype(
         headers.get('Content-Type')
     )
     assert isinstance(file_mimetypes, list)
-    if headers_mimetype.lower() not in (t.lower() for t in file_mimetypes):
+    if headers_mimetype.lower() not in (m.lower() for m in file_mimetypes):
         raise WrongMimetypeError(file_mimetypes, headers_mimetype, url_path)
 
 
