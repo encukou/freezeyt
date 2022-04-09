@@ -151,9 +151,19 @@ def test_cleanup_config_works_if_runs_from_cli(tmp_path):
     app_name = 'app_cleanup_config'
     build_dir = tmp_path / 'build'
 
-    with context_for_test(app_name,):
+    with context_for_test(app_name):
         cli_args = ['app', str(build_dir), '--import-config', 'app:freeze_config']
         run_and_check(cli_args, app_name, build_dir)
     assert build_dir.exists() == True
     assert (build_dir / 'index.html').exists() == True
+
+
+def test_cleanup_from_cli_has_higher_priority(tmp_path):
+    app_name = 'app_cleanup_config'
+    build_dir = tmp_path / 'build'
+
+    with context_for_test(app_name):
+        cli_args = ['app', str(build_dir), '--cleanup', '--import-config', 'app:freeze_config']
+        run_and_check(cli_args, app_name, build_dir)
+    assert build_dir.exists() == False
 

@@ -51,3 +51,4 @@ class FileSaver:
     async def cleanup(self, cleanup_cfg):
         if cleanup_cfg == True:
             shutil.rmtree(self.base_path)
+

@@ -26,7 +26,7 @@ from freezeyt.util import import_variable_from_module
               help='Select how to display progress')
 @click.option('--cleanup/--no-cleanup', 'cleanup',
               default=None,
-              help='Select to delete/remove incomplete directory (if error occured)')
+              help='Remove incomplete directory (if error occured)')
 
 def main(
     module_name, dest_path, prefix, extra_pages, config_file, config_var,
@@ -93,11 +93,9 @@ def main(
         # --progress=bar.
         config.setdefault(
             'plugins', []).append('freezeyt.progressbar:LogPlugin')
-    
-    if (cleanup == None and config.get("cleanup") == None) or cleanup == True:
-        config['cleanup'] = True
-    elif cleanup == False:
-        config['cleanup'] = False
+
+    if cleanup is not None:
+        config['cleanup'] = cleanup
 
     app = import_variable_from_module(
         module_name, default_variable_name='app',

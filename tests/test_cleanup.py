@@ -40,7 +40,7 @@ def test_let_incomplete_dir_intact(tmp_path):
     assert (output_dir / "index.html").exists() == True # the index.html file inside output dir has to exist
 
 
-def test_cleanup_incomplete_dir(tmp_path):
+def test_remove_incomplete_dir(tmp_path):
     output_dir = tmp_path / "output2"
     config = {"cleanup": True, "output": str(output_dir)}
     with raises_multierror_with_one_exception(ValueError):
@@ -48,12 +48,13 @@ def test_cleanup_incomplete_dir(tmp_path):
     assert output_dir.exists() == False # the output dir has to be gone
 
 
-def test_cleanup_incomplete_dir_by_default(tmp_path):
+def test_remove_incomplete_dir_by_default(tmp_path):
     output_dir = tmp_path / "output3"
     config = {"output": str(output_dir)}
     with raises_multierror_with_one_exception(ValueError):
         freeze(app, config)
     assert output_dir.exists() == False # the output dir has to be gone
+
 
 def test_do_not_cleanup_if_directory_exists_error(tmp_path):
     output_dir = tmp_path / "output4"
