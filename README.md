@@ -310,10 +310,10 @@ and uses the mimetype (the first element) it returns.
   rather than YAML).
 
 The `get_mimetype`:
-*gets one argument the `filepath` as `string`
+* gets one argument - the `filepath` as `str`
 
-* returns file types as `set` of MIME types (e.g. `{"text/plain"}`).
-MIME types should be lowercase strings.
+* returns file MIME types as a `list` of MIME types
+(e.g. `["text/plain", "text/html"]`).
 
 If `get_mimetypes` returns `None`, `freezeyt` will use the configured `default_mimetype`
 (see *Default MIME type* above).
@@ -323,15 +323,14 @@ If `get_mimetypes` returns `None`, `freezeyt` will use the configured `default_m
 There is an option to use database [mime-db](https://github.com/jshttp/mime-db/blob/master/db.json)
 from project `jshttp` or database with **same structure** as mime-db.
 By the way the feature - GitHub Pages use the same database for its servers.
-The database will be used to get filetype from file suffix. Consequently,
-the filetype is compared with mimetype from header sent by hosting server.
+The database will be used to get file MIME type from file suffix. Finally,
+the file MIME type is compared with mimetype included in headers as response of server.
 
-Database must be downloaded or created on your local disk as `json` file.
+Database has to be provided to `freezeyt` from your local disk as `json` file.
 
-If you want to use the freezeyt with external mimetypes databases, it is necessary
-to explicitly setup path to `json` file in config file:
+If you'd like to use mime-db database, add it to `freezeyt` configuration:
 ```yaml
-mime_db_file=path/to/mime-db/db.json
+mime_db_file=path/to/mime-db.json
 ```
 
 ### Progress bar and logging
