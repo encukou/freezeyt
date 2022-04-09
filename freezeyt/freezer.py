@@ -64,8 +64,8 @@ DEFAULT_STATUS_HANDLERS = {
 }
 
 def mime_db_mimetype(mime_db: dict, url: str) -> Optional[List[str]]:
-    """Returns file mimetypes as a list of str from parsed mime-db.
-    File mimetypes are guessed from file suffix.
+    """Determines file MIME type from file suffix. Decisions are made
+    by mime-db rules.
     """
     suffix = PurePosixPath(url).suffix
     if suffix.startswith("."):
@@ -76,7 +76,7 @@ def mime_db_mimetype(mime_db: dict, url: str) -> Optional[List[str]]:
 
 def default_mimetype(url: str) -> Optional[List[str]]:
     """Returns file mimetype as a string from mimetype.guess_type.
-    file mimetypes are guessed by file suffix.
+    file mimetypes are guessed from file suffix.
     """
     file_mimetype, encoding = guess_type(url)
     if file_mimetype is None:
