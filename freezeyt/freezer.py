@@ -63,7 +63,7 @@ DEFAULT_STATUS_HANDLERS = {
     '5xx': 'error',
 }
 
-def mime_db_mimetype(mime_db: dict, url: str) -> Optional[Set[str]]:
+def mime_db_mimetype(mime_db: dict, url: str) -> Optional[List[str]]:
     """Returns file mimetypes as a list of str from parsed mime-db.
     File mimetypes are guessed from file suffix.
     """
