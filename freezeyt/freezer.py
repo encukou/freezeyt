@@ -67,11 +67,9 @@ def mime_db_mimetype(mime_db: dict, url: str) -> Optional[List[str]]:
     """Determines file MIME type from file suffix. Decisions are made
     by mime-db rules.
     """
-    suffix = PurePosixPath(url).suffix
-    if suffix.startswith("."):
-        suffix = suffix[1:]
+    suffix = PurePosixPath(url).suffix[1:].lower()
 
-    return mime_db.get(suffix.lower())
+    return mime_db.get(suffix)
 
 
 def default_mimetype(url: str) -> Optional[List[str]]:
