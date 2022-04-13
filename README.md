@@ -315,7 +315,7 @@ The `get_mimetype`:
 * returns file MIME types as a `list` of MIME types
   (e.g. `["text/html"]` or `["audio/wav", "audio/wave"]`).
 
-If `get_mimetypes` returns `None`, `freezeyt` will use the configured `default_mimetype`
+If `get_mimetype` returns `None`, `freezeyt` will use the configured `default_mimetype`
 (see *Default MIME type* above).
 
 #### Use different databases with mimetypes
