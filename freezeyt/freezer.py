@@ -128,7 +128,7 @@ def parse_handlers(
     return result
 
 
-def mime_db_conversion(mime_db: Mapping) -> Dict[str, List[str]]:
+def convert_mime_db(mime_db: Mapping) -> Dict[str, List[str]]:
     """Convert mime-db value 'extensions' to become a key
     and origin mimetype key to dict value as item of list.
     """
@@ -242,7 +242,7 @@ class Freezer:
             with open(self.mime_db_file) as file:
                 mime_db = json.load(file)
 
-            mime_db = mime_db_conversion(mime_db)
+            mime_db = convert_mime_db(mime_db)
             self.get_mimetype = functools.partial(mime_db_mimetype, mime_db)
 
         if isinstance(self.get_mimetype, str):

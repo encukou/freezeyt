@@ -3,7 +3,7 @@ import json
 
 from testutil import context_for_test
 from freezeyt import freeze
-from freezeyt.freezer import mime_db_conversion, mime_db_mimetype
+from freezeyt.freezer import convert_mime_db, mime_db_mimetype
 
 
 CONVERSION_TESTCASES = {
@@ -104,7 +104,7 @@ def test_mime_db_conversion(testname):
     to new one is performed correctly.
     """
     mime_db, expected = CONVERSION_TESTCASES[testname]
-    result = mime_db_conversion(mime_db)
+    result = convert_mime_db(mime_db)
     assert result == expected
 
 
