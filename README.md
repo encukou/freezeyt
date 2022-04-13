@@ -313,7 +313,7 @@ The `get_mimetype`:
 * gets one argument - the `filepath` as `str`
 
 * returns file MIME types as a `list` of MIME types
-(e.g. `["text/plain", "text/html"]`).
+  (e.g. `["text/html"]` or `["audio/wav", "audio/wave"]`).
 
 If `get_mimetypes` returns `None`, `freezeyt` will use the configured `default_mimetype`
 (see *Default MIME type* above).
