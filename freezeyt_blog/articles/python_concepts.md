@@ -28,3 +28,9 @@
 
 * **Význam "double underscored" atributů (např. `__note__`)**
     * [freezeyt-yt-video-82 (01:27:55)](https://www.youtube.com/watch?v=Mv4Q9ktBBRk&t=5275s)
+
+* **ASCII, Unicode, kódování UTF-8 a vztah mezi nimi**
+    * [freezeyt-yt-video-84 (00:58:30)](https://youtu.be/CpemKarhGik?t=3511)
+    * [must-know-about-unicode-and-character-sets-no-excuses](https://www.joelonsoftware.com/2003/10/08/the-absolute-minimum-every-software-developer-absolutely-positively-must-know-about-unicode-and-character-sets-no-excuses/)
+    * [encodings and character sets to work with text](https://kunststube.net/encoding/)
+    * [unicode table](https://www.utf8-chartable.de/unicode-utf8-table.pl)
