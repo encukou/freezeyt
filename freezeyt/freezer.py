@@ -101,7 +101,10 @@ def check_mimetype(
     headers_mimetype, encoding = parse_options_header(
         headers.get('Content-Type')
     )
-    assert isinstance(file_mimetypes, list)
+
+    if isinstance(file_mimetypes, str):
+        raise TypeError("get_mimetype result must not be a string")
+
     if headers_mimetype.lower() not in (m.lower() for m in file_mimetypes):
         raise WrongMimetypeError(file_mimetypes, headers_mimetype, url_path)
 
