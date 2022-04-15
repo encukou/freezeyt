@@ -26,7 +26,7 @@ from freezeyt.util import import_variable_from_module
               help='Select how to display progress')
 @click.option('--cleanup/--no-cleanup', 'cleanup',
               default=None,
-              help='Remove incomplete directory (if error occured)')
+              help='Remove incomplete directory (if error occured). Default is to clean up.')
 
 def main(
     module_name, dest_path, prefix, extra_pages, config_file, config_var,
