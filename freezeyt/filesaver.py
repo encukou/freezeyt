@@ -53,6 +53,6 @@ class FileSaver:
         cleanup_cfg parameter contains the value from
         config["cleanup"] which can take values True/False/None).
         """
-        if cleanup_cfg == True:
+        if cleanup_cfg:
             shutil.rmtree(self.base_path)
 

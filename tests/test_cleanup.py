@@ -9,8 +9,8 @@ def test_let_incomplete_dir_intact(tmp_path):
     config = {"cleanup": False, "output": str(output_dir)}
     with raises_multierror_with_one_exception(UnexpectedStatus):
         freeze(app, config)
-    assert output_dir.exists() == True # the output dir has to exist
-    assert (output_dir / "index.html").exists() == True # the index.html file inside output dir has to exist
+    assert output_dir.exists() # the output dir has to exist
+    assert (output_dir / "index.html").exists() # the index.html file inside output dir has to exist
 
 
 def test_remove_incomplete_dir(tmp_path):
@@ -18,7 +18,7 @@ def test_remove_incomplete_dir(tmp_path):
     config = {"cleanup": True, "output": str(output_dir)}
     with raises_multierror_with_one_exception(UnexpectedStatus):
         freeze(app, config)
-    assert output_dir.exists() == False # the output dir has to be gone
+    assert not output_dir.exists() # the output dir has to be gone
 
 
 def test_remove_incomplete_dir_by_default(tmp_path):
@@ -26,7 +26,7 @@ def test_remove_incomplete_dir_by_default(tmp_path):
     config = {"output": str(output_dir)}
     with raises_multierror_with_one_exception(UnexpectedStatus):
         freeze(app, config)
-    assert output_dir.exists() == False # the output dir has to be gone
+    assert not output_dir.exists() # the output dir has to be gone
 
 
 def test_do_not_cleanup_if_directory_exists_error(tmp_path):
@@ -40,6 +40,6 @@ def test_do_not_cleanup_if_directory_exists_error(tmp_path):
     with pytest.raises(DirectoryExistsError):
         freeze(app, config)
 
-    assert output_dir.exists() == True # the output dir has to exist
-    assert (output_dir / 'important.dat').exists() == True # the important.dat file inside output dir has to exist
+    assert output_dir.exists() # the output dir has to exist
+    assert (output_dir / 'important.dat').exists() # the important.dat file inside output dir has to exist
 
