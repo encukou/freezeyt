@@ -1,7 +1,6 @@
 import abc
 from pathlib import PurePosixPath
-from typing import BinaryIO, Any
-from collections.abc import Iterable
+from typing import BinaryIO, Any, Iterable
 
 class Saver(abc.ABC):
     async def prepare(self):
@@ -11,7 +10,7 @@ class Saver(abc.ABC):
     async def save_to_filename(
         self,
         filename: PurePosixPath,
-        content_iterable: Iterable[bytes],
+        content_iterable: "Iterable[bytes]",
     ) -> None:
         """Save the given bytes to the given path"""
 
