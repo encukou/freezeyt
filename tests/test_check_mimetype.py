@@ -87,7 +87,6 @@ TEST_DATA = {
         'http://localhost:8000/foo/', [('Content-Type', 'text/html')]
     ),
 }
-
 @pytest.mark.parametrize('testname', TEST_DATA)
 def test_kwargs_exclude(testname):
     url_path, headers= TEST_DATA[testname]
@@ -137,7 +136,6 @@ TEST_DATA_DEFAULT = {
         'image/png'
     )
 }
-
 @pytest.mark.parametrize('testname', TEST_DATA_DEFAULT)
 def test_default_include(testname):
     url_path, headers, default = TEST_DATA_DEFAULT[testname]
@@ -152,7 +150,7 @@ def test_default_include(testname):
 
 def test_missing_file_suffix_get_mimetype():
     def get_mimetype(url_path):
-        return "image/png"
+        return ["image/png"]
 
     check_mimetype(
         'http://localhost:8000/index',
@@ -163,9 +161,24 @@ def test_missing_file_suffix_get_mimetype():
         get_mimetype=get_mimetype
     )
 
+
+def test_get_mimetype_capital_mimetype(monkeypatch):
+    def get_mimetype(url_path):
+        return ["image/PNG"]
+
+    check_mimetype(
+        'http://localhost:8000/image.png',
+        [
+            ('Content-Type', 'image/png'),
+            ('Content-Length', '164'),
+        ],
+        get_mimetype=get_mimetype
+    )
+
+
 def test_missing_file_suffix_get_mimetype_fail():
     def get_mimetype(url_path):
-        return "image/png"
+        return ["image/png"]
 
     with pytest.raises(ValueError):
         check_mimetype(
@@ -177,9 +190,10 @@ def test_missing_file_suffix_get_mimetype_fail():
             get_mimetype=get_mimetype
         )
 
+
 def test_missing_file_suffix_get_mimetype_fail_default_ignored():
     def get_mimetype(url_path):
-        return "image/bmp"
+        return ["image/bmp"]
 
     with pytest.raises(ValueError):
         check_mimetype(

@@ -178,6 +178,31 @@ will be represented as:
 This is not useful in the CLI, as the return value is lost.
 
 
+### Clean up
+
+If an error occurs during the "freeze" process, Freezeyt defaults to deleting the incomplete output directory. 
+
+This behavior can be set on the command line, using the --cleanup (which is also the default) or --no-cleanup switches. 
+
+or example:
+
+```shell
+$ python -m freezeyt my_app _build --no-cleanup
+```
+or in yaml file:
+
+```yaml
+cleanup: False
+```
+
+and the same configuration in the Python dictionary:
+
+```Python
+{"cleanup": False}
+```
+
+
+
 ### Prefix
 
 The URL where the application will be deployed can be
@@ -328,11 +353,27 @@ and uses the mimetype (the first element) it returns.
   rather than YAML).
 
 The `get_mimetype`:
-*gets one argument the `filepath` as `string`
+* gets one argument - the `filepath` as `str`
 
-*returns file type as `string` (e.g. `"text/plain"`).
+* returns file MIME types as a `list` of MIME types
+  (e.g. `["text/html"]` or `["audio/wav", "audio/wave"]`).
 
-If `get_mimetypes` returns `None`, `freezeyt` will use the configured `default_mimetype` (see *Default MIME type* above).
+If `get_mimetype` returns `None`, `freezeyt` will use the configured `default_mimetype`
+(see *Default MIME type* above).
+
+#### Using a mime-db database
+
+There is an option to use [the MIME type database from the `jshttp` project](https://github.com/jshttp/mime-db/blob/master/db.json),
+or a database with the same structure.
+(This is the database used by GitHub Pages).
+The database will be used to get file MIME type from file suffix.
+
+To use this database, add the path to the JSON file to `freezeyt` configuration:
+```yaml
+mime_db_file=path/to/mime-db.json
+```
+This is equivalent to setting `get_mimetype` to a function that maps
+extensions to filetypes according to the database.
 
 
 ### Progress bar and logging

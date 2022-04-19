@@ -3,10 +3,11 @@ from pathlib import Path, PurePosixPath
 from mimetypes import guess_type
 import io
 import itertools
+import json
 import functools
 import base64
 import dataclasses
-from typing import Optional, Mapping
+from typing import Optional, Mapping, Set, List, Dict
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -47,6 +48,7 @@ async def freeze_async(app, config):
         freezer.call_hook('start', freezer.freeze_info)
         await freezer.handle_urls()
         await freezer.handle_redirects()
+        await freezer.cleanup()
         return await freezer.get_result()
     except:
         freezer.cancel_tasks()
@@ -67,29 +69,51 @@ DEFAULT_STATUS_HANDLERS = {
     '5xx': 'error',
 }
 
-
-
-def default_get_mimetype(url: str) -> Optional[str]:
-    """Returns filetype as a string from mimetype.guess_type
+def mime_db_mimetype(mime_db: dict, url: str) -> Optional[List[str]]:
+    """Determines file MIME type from file suffix. Decisions are made
+    by mime-db rules.
     """
-    file_type, encoding = guess_type(url)
-    return file_type
+    suffix = PurePosixPath(url).suffix[1:].lower()
+
+    return mime_db.get(suffix)
+
+
+def default_mimetype(url: str) -> Optional[List[str]]:
+    """Returns file mimetype as a string from mimetype.guess_type.
+    file mimetypes are guessed from file suffix.
+    """
+    file_mimetype, encoding = guess_type(url)
+    if file_mimetype is None:
+        return None
+    else:
+        return [file_mimetype]
 
 
 def check_mimetype(
     url_path, headers,
-    default='application/octet-stream', *, get_mimetype=default_get_mimetype,
+    default='application/octet-stream', *, get_mimetype=default_mimetype,
 ):
+    """Ensure mimetype sent from headers with file mimetype guessed
+    from its suffix.
+    Raise WrongMimetypeError if they don't match.
+    """
     if url_path.endswith('/'):
         # Directories get saved as index.html
         url_path = 'index.html'
-    file_type = get_mimetype(url_path)
-    if not file_type:
-        file_type = default
+    file_mimetypes = get_mimetype(url_path)
+    if file_mimetypes is None:
+        file_mimetypes = [default]
+
     headers = Headers(headers)
-    mime_type, encoding = parse_options_header(headers.get('Content-Type'))
-    if file_type.lower() != mime_type.lower():
-        raise WrongMimetypeError(file_type, mime_type, url_path)
+    headers_mimetype, encoding = parse_options_header(
+        headers.get('Content-Type')
+    )
+
+    if isinstance(file_mimetypes, str):
+        raise TypeError("get_mimetype result must not be a string")
+
+    if headers_mimetype.lower() not in (m.lower() for m in file_mimetypes):
+        raise WrongMimetypeError(file_mimetypes, headers_mimetype, url_path)
 
 
 def parse_handlers(
@@ -112,6 +136,21 @@ def parse_handlers(
         result[key] = handler
 
     return result
+
+
+def convert_mime_db(mime_db: Mapping) -> Dict[str, List[str]]:
+    """Convert mime-db value 'extensions' to become a key
+    and origin mimetype key to dict value as item of list.
+    """
+    converted_db: Dict[str, List[str]] = {}
+    for mimetype, opts in mime_db.items():
+        extensions = opts.get('extensions')
+        if extensions is not None:
+            for extension in extensions:
+                mimetypes = converted_db.setdefault(extension.lower(), [])
+                mimetypes.append(mimetype.lower())
+
+    return converted_db
 
 
 def default_url_to_path(path):
@@ -154,7 +193,7 @@ class TaskStatus(enum.Enum):
 @dataclasses.dataclass
 class Task:
     path: Path
-    urls: "set[URL]"
+    urls: "Set[URL]"
     freezer: "Freezer"
     response_headers: Optional[Headers] = None
     response_status: Optional[str] = None
@@ -202,11 +241,19 @@ class Freezer:
             ('extra_pages', ()),
             ('extra_files', None),
             ('default_mimetype', 'application/octet-stream'),
-            ('get_mimetype', default_get_mimetype),
+            ('get_mimetype', default_mimetype),
+            ('mime_db_file', None),
             ('url_to_path', default_url_to_path)
         )
         for attr_name, default in CONFIG_DATA:
             setattr(self, attr_name, config.get(attr_name, default))
+
+        if self.mime_db_file:
+            with open(self.mime_db_file) as file:
+                mime_db = json.load(file)
+
+            mime_db = convert_mime_db(mime_db)
+            self.get_mimetype = functools.partial(mime_db_mimetype, mime_db)
 
         if isinstance(self.get_mimetype, str):
             self.get_mimetype = import_variable_from_module(self.get_mimetype)
@@ -313,6 +360,16 @@ class Freezer:
                 return await get_result()
             return None
         raise MultiError(self.failed_tasks.values())
+    
+    async def cleanup(self):
+        if self.failed_tasks:
+            remove_cfg = self.config.get("cleanup", True)
+            try:
+                savers_cleanup = self.saver.cleanup
+            except AttributeError: # saver has not method cleanup, for example DictSaver
+                pass
+            else:
+                await savers_cleanup(remove_cfg)
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,

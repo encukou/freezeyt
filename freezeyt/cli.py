@@ -24,9 +24,13 @@ from freezeyt.util import import_variable_from_module
 @click.option('--progress', 'progress',
               type=click.Choice(['none', 'bar', 'log']),
               help='Select how to display progress')
+@click.option('--cleanup/--no-cleanup', 'cleanup',
+              default=None,
+              help='Remove incomplete directory (if error occured). Default is to clean up.')
+
 def main(
     module_name, dest_path, prefix, extra_pages, config_file, config_var,
-    progress,
+    progress, cleanup,
 ):
     """
     MODULE_NAME
@@ -89,6 +93,9 @@ def main(
         # --progress=bar.
         config.setdefault(
             'plugins', []).append('freezeyt.progressbar:LogPlugin')
+
+    if cleanup is not None:
+        config['cleanup'] = cleanup
 
     app = import_variable_from_module(
         module_name, default_variable_name='app',
