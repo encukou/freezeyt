@@ -57,3 +57,5 @@ class FileSaver:
             if self.base_path.exists():
                 shutil.rmtree(self.base_path)
 
+    async def get_result(self):
+        return None

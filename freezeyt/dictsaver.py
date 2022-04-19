@@ -32,3 +32,9 @@ class DictSaver:
 
     async def get_result(self):
         return self.contents
+
+    async def cleanup(self, cleanup_cfg):
+        """Clean up after a failed freeze.
+
+        There's nothing to clean up in a dict, so do nothing."""
+        pass
