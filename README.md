@@ -525,8 +525,12 @@ An URL finder gets these arguments:
 * the absolute URL of the page, as a `string`,
 * the HTTP headers, as a list of tuples (WSGI).
 
-The function should return an iterator of URLs (as strings) found
-in the page's contents. These URLs can be relative.
+The function should return an iterator of all URLs (as strings) found
+in the page's contents, as they would appear in `href` or `src` attributes.
+Specifically:
+
+- The URLs can be relative.
+- External URLs (i.e. those not beginning with `prefix`) should be included.
 
 Finder functions may be asynchronous:
 - The function can be defined with `async def` (i.e. return a
