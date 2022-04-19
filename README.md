@@ -166,7 +166,7 @@ If an error occurs during the "freeze" process, Freezeyt defaults to deleting th
 
 This behavior can be set on the command line, using the --cleanup (which is also the default) or --no-cleanup switches. 
 
-or example:
+shell example:
 
 ```shell
 $ python -m freezeyt my_app _build --no-cleanup
