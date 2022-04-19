@@ -52,3 +52,4 @@ class LogPlugin:
         click.echo(f'{summary} ERROR in {task_info.path}', file=sys.stderr)
         exc = task_info.exception
         traceback.print_exception(type(exc), exc, exc.__traceback__)
+

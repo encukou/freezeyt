@@ -160,6 +160,31 @@ output:
 This is not useful in the CLI, as the return value is lost.
 
 
+### Clean up
+
+If an error occurs during the "freeze" process, Freezeyt defaults to deleting the incomplete output directory. 
+
+This behavior can be set on the command line, using the --cleanup (which is also the default) or --no-cleanup switches. 
+
+or example:
+
+```shell
+$ python -m freezeyt my_app _build --no-cleanup
+```
+or in yaml file:
+
+```yaml
+cleanup: False
+```
+
+and the same configuration in the Python dictionary:
+
+```Python
+{"cleanup": False}
+```
+
+
+
 ### Prefix
 
 The URL where the application will be deployed can be

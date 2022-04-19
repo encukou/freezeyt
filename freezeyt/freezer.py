@@ -43,6 +43,7 @@ async def freeze_async(app, config):
         freezer.call_hook('start', freezer.freeze_info)
         await freezer.handle_urls()
         await freezer.handle_redirects()
+        await freezer.cleanup()
         return await freezer.get_result()
     except:
         freezer.cancel_tasks()
@@ -348,6 +349,16 @@ class Freezer:
                 return await get_result()
             return None
         raise MultiError(self.failed_tasks.values())
+    
+    async def cleanup(self):
+        if self.failed_tasks:
+            remove_cfg = self.config.get("cleanup", True)
+            try:
+                savers_cleanup = self.saver.cleanup
+            except AttributeError: # saver has not method cleanup, for example DictSaver
+                pass
+            else:
+                await savers_cleanup(remove_cfg)
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,

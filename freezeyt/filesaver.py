@@ -47,3 +47,13 @@ class FileSaver:
         assert self.base_path in absolute_filename.parents
 
         return open(absolute_filename, 'rb')
+    
+    async def cleanup(self, cleanup_cfg):
+        """A function that deletes an incomplete directory.
+        cleanup_cfg parameter contains the value from
+        config["cleanup"] which can take values True/False/None).
+        """
+        if cleanup_cfg:
+            if self.base_path.exists():
+                shutil.rmtree(self.base_path)
+
