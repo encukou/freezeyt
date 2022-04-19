@@ -87,8 +87,9 @@ def check_mimetype(
     url_path, headers,
     default='application/octet-stream', *, get_mimetype=default_mimetype,
 ):
-    """Compare mimetype sent from headers with file mimetype guessed
+    """Ensure mimetype sent from headers with file mimetype guessed
     from its suffix.
+    Raise WrongMimetypeError if they don't match.
     """
     if url_path.endswith('/'):
         # Directories get saved as index.html
