@@ -183,7 +183,6 @@ and the same configuration in the Python dictionary:
 {"cleanup": False}
 ```
 
-WARNING: the command line (cli) always takes highest priority, so if you use --cleanup/--no-cleanup from the command line, the settings from the yaml file or the Python dictionary will be overwritten by the settings from cli. This is true for all settings, but in this case it may happen that the output directory with important data that you never wanted to delete is also deleted.
 
 
 ### Prefix
