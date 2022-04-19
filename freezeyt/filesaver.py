@@ -1,13 +1,14 @@
 import shutil
 
 from . import compat
+from .saver import Saver
 
 
 class DirectoryExistsError(Exception):
     """Attempt to overwrite directory that doesn't contain freezeyt output"""
 
 
-class FileSaver:
+class FileSaver(Saver):
     """Outputs frozen pages as files on the filesystem.
 
     base - Filesystem base path (eg. /tmp/)
@@ -47,15 +48,9 @@ class FileSaver:
         assert self.base_path in absolute_filename.parents
 
         return open(absolute_filename, 'rb')
-    
-    async def cleanup(self, cleanup_cfg):
-        """A function that deletes an incomplete directory.
-        cleanup_cfg parameter contains the value from
-        config["cleanup"] which can take values True/False).
-        """
-        if cleanup_cfg:
-            if self.base_path.exists():
-                shutil.rmtree(self.base_path)
 
-    async def get_result(self):
-        return None
+    async def finish(self, success: bool, cleanup: bool):
+        """Delete incomplete directory after a failed freeze.
+        """
+        if not success and cleanup and self.base_path.exists():
+            shutil.rmtree(self.base_path)

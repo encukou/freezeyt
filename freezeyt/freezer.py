@@ -28,6 +28,7 @@ from freezeyt.util import WrongMimetypeError, UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
+from freezeyt.saver import Saver
 
 MAX_RUNNING_TASKS = 100
 
@@ -43,8 +44,7 @@ async def freeze_async(app, config):
         freezer.call_hook('start', freezer.freeze_info)
         await freezer.handle_urls()
         await freezer.handle_redirects()
-        await freezer.cleanup()
-        return await freezer.get_result()
+        return await freezer.finish()
     except:
         freezer.cancel_tasks()
         raise
@@ -226,6 +226,8 @@ def needs_semaphore(func):
     return wrapper
 
 class Freezer:
+    saver: Saver
+
     def __init__(self, app, config):
         self.app = app
         self.config = config
@@ -342,15 +344,13 @@ class Freezer:
         for task in self.inprogress_tasks.values():
             task.asyncio_task.cancel()
 
-    async def get_result(self):
-        if not self.failed_tasks:
-            return await self.saver.get_result()
+    async def finish(self):
+        success = not self.failed_tasks
+        cleanup = self.config.get("cleanup", True)
+        result = await self.saver.finish(success, cleanup)
+        if success:
+            return result
         raise MultiError(self.failed_tasks.values())
-    
-    async def cleanup(self):
-        if self.failed_tasks:
-            remove_cfg = self.config.get("cleanup", True)
-            await self.saver.cleanup(remove_cfg)
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,
