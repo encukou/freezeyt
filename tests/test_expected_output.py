@@ -27,7 +27,6 @@ def test_output(tmp_path, monkeypatch, app_name):
         expecting_dir = not getattr(module, 'no_expected_directory', False)
 
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
-        freeze_config.setdefault('cleanup', False)
 
         if error_path.exists():
             expected_error_info = error_path.read_text().strip()
@@ -119,7 +118,6 @@ def test_circular_redirect(tmp_path, monkeypatch):
 
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
         freeze_config['status_handlers'] = {'3xx': 'follow'}
-        freeze_config.setdefault('cleanup', False)
 
         with pytest.raises(InfiniteRedirection):
             freeze(module.app, freeze_config)

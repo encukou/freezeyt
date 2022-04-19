@@ -54,5 +54,6 @@ class FileSaver:
         config["cleanup"] which can take values True/False/None).
         """
         if cleanup_cfg:
-            shutil.rmtree(self.base_path)
+            if self.base_path.exists():
+                shutil.rmtree(self.base_path)
 
