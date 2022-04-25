@@ -12,6 +12,7 @@ import enum
 from urllib.parse import urljoin
 import asyncio
 import inspect
+import pkg_resources
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -216,6 +217,9 @@ class IsARedirect(BaseException):
 class IgnorePage(BaseException):
     """Raised when freezing a page should be ignored"""
 
+class VersionMismatch(ValueError):
+    """Raised when major version in config is not correct"""
+
 def needs_semaphore(func):
     """Decorator for a "task" method that holds self.semaphore when running"""
     @functools.wraps(func)
@@ -229,6 +233,8 @@ class Freezer:
     def __init__(self, app, config):
         self.app = app
         self.config = config
+        if self.config.get('version'):
+            self.check_config()
 
         self.freeze_info = hooks.FreezeInfo(self)
 
@@ -334,6 +340,17 @@ class Freezer:
         except:
             self.cancel_tasks()
             raise
+
+    def check_config(self):
+        config_version = str(self.config.get("version"))
+        try:
+            main_version = int(config_version[0])
+        except ValueError:
+            raise VersionMismatch("First character in 'version' configuration have to be number.")
+
+        freezeyt_version = int(pkg_resources.require("freezeyt")[0].version[0])
+        if main_version != freezeyt_version:
+            raise VersionMismatch("The specified version does not match the freezeyt version.")
 
     def add_hook(self, hook_name, func):
         self.hooks.setdefault(hook_name, []).append(func)
