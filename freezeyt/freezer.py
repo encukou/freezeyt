@@ -17,6 +17,7 @@ from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 from werkzeug.urls import URL
 
+import freezeyt
 from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
@@ -572,7 +573,7 @@ class Freezer:
             'PATH_INFO': encode_wsgi_path(path_info),
             'SCRIPT_NAME': encode_wsgi_path(self.prefix.path),
             'SERVER_PROTOCOL': 'HTTP/1.1',
-            'SERVER_SOFTWARE': 'freezeyt/1.0',
+            'SERVER_SOFTWARE': f'freezeyt/{freezeyt.__version__}',
 
             'wsgi.version': (1, 0),
             'wsgi.url_scheme': self.prefix.scheme,
