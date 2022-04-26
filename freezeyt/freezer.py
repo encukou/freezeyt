@@ -153,13 +153,13 @@ def convert_mime_db(mime_db: Mapping) -> Dict[str, List[str]]:
     return converted_db
 
 
-def default_url_to_path(path):
+def default_url_to_path(path: str) -> str:
     if path.endswith('/') or not path:
         path = path + 'index.html'
     return encode_file_path(path)
 
 
-def get_path_from_url(prefix, url, url_to_path):
+def get_path_from_url(prefix: URL, url: URL, url_to_path) -> PurePosixPath:
     if is_external(url, prefix):
         raise ValueError(f'external url {url}')
 
@@ -192,7 +192,7 @@ class TaskStatus(enum.Enum):
 
 @dataclasses.dataclass
 class Task:
-    path: Path
+    path: PurePosixPath
     urls: "Set[URL]"
     freezer: "Freezer"
     response_headers: Optional[Headers] = None
