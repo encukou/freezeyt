@@ -1,5 +1,5 @@
 from io import BytesIO
-from pathlib import Path
+from pathlib import PurePosixPath
 
 from .saver import Saver
 
@@ -15,7 +15,7 @@ class DictSaver(Saver):
         self.contents = {}
 
     async def save_to_filename(self, filename, content_iterable):
-        parts = Path(filename).parts
+        parts = PurePosixPath(filename).parts
 
         target = self.contents
         for part in parts[:-1]:
@@ -23,7 +23,7 @@ class DictSaver(Saver):
         target[parts[-1]] = b''.join(content_iterable)
 
     async def open_filename(self, filename):
-        parts = Path(filename).parts
+        parts = PurePosixPath(filename).parts
         target = self.contents
         for part in parts[:-1]:
             target = target.setdefault(part, {})
