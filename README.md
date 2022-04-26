@@ -98,6 +98,30 @@ for example:
 $ python -m freezeyt my_app _build -C my_app:freezeyt_config
 ```
 
+Here is an example configuration file:
+
+```yaml
+output: ./_build/   # The website will be saved to this directory
+prefix: https://mysite.example.com/subpage/
+extra_pages:
+    # Let freezeyt know about URLs that are not linked from elsewhere
+    /robots.txt
+    /easter-egg.html
+extra_files:
+    # Include additional files in the output:
+    # Static files
+    static:
+        copy_from: static/
+    # Web host configuration
+    CNAME: https://mysite.example.com/
+    ".nojekyll": ''
+    googlecc704f0f191eda8f.html:
+        copy_from: google-verification.html
+status_handlers:
+    # If a redirect page (HTTP status 3xx) is found, warn but don't fail
+    "3xx": warn
+```
+
 The following options are configurable:
 
 ### Module Name
@@ -178,31 +202,6 @@ will be represented as:
 This is not useful in the CLI, as the return value is lost.
 
 
-### Clean up
-
-If an error occurs during the "freeze" process, Freezeyt defaults to deleting the incomplete output directory. 
-
-This behavior can be set on the command line, using the --cleanup (which is also the default) or --no-cleanup switches. 
-
-shell example:
-
-```shell
-$ python -m freezeyt my_app _build --no-cleanup
-```
-or in yaml file:
-
-```yaml
-cleanup: False
-```
-
-and the same configuration in the Python dictionary:
-
-```Python
-{"cleanup": False}
-```
-
-
-
 ### Prefix
 
 The URL where the application will be deployed can be
@@ -223,10 +222,12 @@ The prefix can also be specified on thecommand line with e.g.:
 `--prefix=http://localhost:8000/`.
 The CLI argument has priority over the config file.
 
+
 ### Extra pages
 
-A list of URLs to “extra” pages within the application can
-be given using:
+URLs of pages that are not reachable by following links from the homepage
+can specified as “extra” pages in the configuration:
+
 ```yaml
 extra_pages:
     - /extra/
@@ -236,7 +237,7 @@ extra_pages:
 Freezeyt will freeze these pages in addition to those it
 finds by following links.
 
-Extra pages may also be give on the command line,
+Extra pages may also be given on the command line,
 e.g. `--extra-page /extra/ --extra-page /extra2.html`.
 The lists from CLI and the config file are merged together.
 
@@ -310,6 +311,23 @@ extra_files:
 Extra files cannot be specified on the CLI.
 
 
+### Clean up
+
+If an error occurs during the "freeze" process, Freezeyt will delete the incomplete output directory.
+This prevents, for example, uploading incomplete results to a web hosting by mistake.
+
+If you want to keep the incomplete directory (for example,
+to help debugging), you can use the `--no-cleanup` switch
+or the `cleanup` key  in the configuration file:
+
+```yaml
+cleanup: False
+```
+
+The command line switch has priority over the configuration.
+Use `--no-cleanup` to override `cleanup: False` from the config.
+
+
 ### Comparison of MIME type and file type
 
 Freezeyt checks whether the file extensions in its output
@@ -329,6 +347,8 @@ default_mimetype=text/plain
 
 If the default MIME type isn't explicitly configured in YAML configuration,
 then the `freezeyt` uses value `application/octet-stream`.
+
+The default mimetype cannot be specified on the CLI.
 
 #### Recognizing file types from extensions
 
@@ -361,6 +381,9 @@ The `get_mimetype`:
 If `get_mimetype` returns `None`, `freezeyt` will use the configured `default_mimetype`
 (see *Default MIME type* above).
 
+The get_mimetype function cannot be specified on the CLI.
+
+
 #### Using a mime-db database
 
 There is an option to use [the MIME type database from the `jshttp` project](https://github.com/jshttp/mime-db/blob/master/db.json),
@@ -374,6 +397,8 @@ mime_db_file=path/to/mime-db.json
 ```
 This is equivalent to setting `get_mimetype` to a function that maps
 extensions to filetypes according to the database.
+
+The mime_db file cannot be specified on the CLI.
 
 
 ### Progress bar and logging
@@ -531,6 +556,8 @@ Note that the status code must be a string, so it needs to be quoted in the YAML
 A range of statuses can be specified as a number (`1-5`) followed by lowercase `xx`.
 (Other "wildcards" like `50x` are not supported.)
 
+Status handlers cannot be specified in the CLI.
+
 
 ### URL finding
 
@@ -583,6 +610,9 @@ The `freezeyt.url_finders` module includes the default finders `get_html_links`
 and `get_css_links`, and their asynchronous variants `get_html_links_async`
 and `get_css_links_async`.
 
+URL finders cannot be specified in the CLI.
+
+
 #### Disabling default URL finders
 
 If a finder is not explictly specified in the configuration file, `freezeyt` will use the
@@ -617,6 +647,8 @@ and should return a path to the saved file, relative to the build directory.
 
 The default function, available as `freezeyt.url_to_path`, adds `index.html`
 if the URL path ends with `/`.
+
+`url_to_path` cannot be specified in the CLI.
 
 
 ## Examples of CLI usage
