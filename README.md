@@ -599,10 +599,10 @@ use_default_url_finders: false
 ### Path generation
 
 It is possible to customize the filenames that URLs are saved under
-using the `path_to_url` configuration key, for example:
+using the `url_to_path` configuration key, for example:
 
 ```yaml
-path_to_url: my_module:path_to_url
+url_to_path: my_module:url_to_path
 ```
 
 The value can be:
