@@ -563,7 +563,7 @@ Status handlers cannot be specified in the CLI.
 
 `freezeyt` discovers new links in the application by URL finders. URL finders
 are functions whose goal is to find url of specific MIME type.
-`freezeyt` offer different configuration options to use URL finders:
+`freezeyt` offers different configuration options to use URL finders:
 
 * use predefined URL finders for `text/html` or `text/css` (default),
 * define your own URL finder as your function,
@@ -612,6 +612,17 @@ and `get_css_links_async`.
 
 URL finders cannot be specified in the CLI.
 
+#### Default `get_html_links`
+
+The default URL finder for HTML pages looks in `src` and `href` attributes
+of all tags in the document.
+It currently does not handle other links, such as embedded CSS, but it
+may be improved in the future.
+
+#### Default `get_css_links`
+
+The default URL finder for CSS uses the `css_parser` library to find all
+links in a stylesheet.
 
 #### Disabling default URL finders
 
