@@ -1,8 +1,10 @@
 from io import BytesIO
 from pathlib import Path
 
+from .saver import Saver
 
-class DictSaver:
+
+class DictSaver(Saver):
     """Outputs frozen pages into a dict.
 
     prefix - Base URL to deploy web app in production
@@ -11,9 +13,6 @@ class DictSaver:
     def __init__(self, prefix):
         self.prefix = prefix
         self.contents = {}
-
-    async def prepare(self):
-        """DictSaver doesn't need any preparation"""
 
     async def save_to_filename(self, filename, content_iterable):
         parts = Path(filename).parts
@@ -30,5 +29,5 @@ class DictSaver:
             target = target.setdefault(part, {})
         return BytesIO(target[parts[-1]])
 
-    async def get_result(self):
+    async def finish(self, success, cleanup):
         return self.contents
