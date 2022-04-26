@@ -583,7 +583,7 @@ class Freezer:
             'PATH_INFO': encode_wsgi_path(path_info),
             'SCRIPT_NAME': encode_wsgi_path(self.prefix.path),
             'SERVER_PROTOCOL': 'HTTP/1.1',
-            'SERVER_SOFTWARE': 'freezeyt/0.1',
+            'SERVER_SOFTWARE': 'freezeyt/1.0',
 
             'wsgi.version': (1, 0),
             'wsgi.url_scheme': self.prefix.scheme,
