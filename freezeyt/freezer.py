@@ -12,7 +12,6 @@ import enum
 from urllib.parse import urljoin
 import asyncio
 import inspect
-import pkg_resources
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -29,6 +28,8 @@ from freezeyt.util import WrongMimetypeError, UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
+
+VERSION = 1
 
 MAX_RUNNING_TASKS = 100
 
@@ -233,7 +234,7 @@ class Freezer:
     def __init__(self, app, config):
         self.app = app
         self.config = config
-        if self.config.get('version'):
+        if self.config.get('version') is not None:
             self.check_config()
 
         self.freeze_info = hooks.FreezeInfo(self)
@@ -342,15 +343,12 @@ class Freezer:
             raise
 
     def check_config(self):
-        config_version = str(self.config.get("version"))
         try:
-            main_version = int(config_version[0])
+            config_version = int(str(self.config.get("version")).split(".")[0])
         except ValueError:
-            raise VersionMismatch("First character in 'version' configuration have to be number.")
-
-        freezeyt_version = int(pkg_resources.require("freezeyt")[0].version[0])
-        if main_version != freezeyt_version:
-            raise VersionMismatch("The specified version does not match the freezeyt version.")
+            raise VersionMismatch("The specified version has to be number i.e. 1, 1.1 or '1.1'. ")
+        if VERSION != config_version:
+            raise VersionMismatch("The specified version does not match the freezeyt main version.")
 
     def add_hook(self, hook_name, func):
         self.hooks.setdefault(hook_name, []).append(func)
