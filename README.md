@@ -98,6 +98,30 @@ for example:
 $ python -m freezeyt my_app _build -C my_app:freezeyt_config
 ```
 
+Here is an example configuration file:
+
+```yaml
+output: ./_build/   # The website will be saved to this directory
+prefix: https://mysite.example.com/subpage/
+extra_pages:
+    # Let freezeyt know about URLs that are not linked from elsewhere
+    /robots.txt
+    /easter-egg.html
+extra_files:
+    # Include additional files in the output:
+    # Static files
+    static:
+        copy_from: static/
+    # Web host configuration
+    CNAME: https://mysite.example.com/
+    ".nojekyll": ''
+    googlecc704f0f191eda8f.html:
+        copy_from: google-verification.html
+status_handlers:
+    # If a redirect page (HTTP status 3xx) is found, warn but don't fail
+    "3xx": warn
+```
+
 The following options are configurable:
 
 ### Module Name
@@ -149,7 +173,8 @@ Best practice is to remove the output directory before freezing.
 
 #### Output to dict
 
-For testing, Freezeyt can also output to a dictionary.
+For testing, `freezeyt` can output to a dictionary rather than save
+files to the disk.
 This can be configured with:
 
 ```yaml
@@ -157,32 +182,24 @@ output:
     type: dict
 ```
 
+In this case, the `freeze()` function returns a dictionary of filenames
+and their contents.
+For example, a site with `/`, `/second_page/` and `/images/smile.png`
+will be represented as:
+
+```python
+{
+    'index.html': b'<html>...',
+    'second_page': {
+        'index.html': b'<html>...',
+    },
+    'images': {
+        'smile.png': b'\x89PNG\r\n\x1a\n\x00...',
+    },
+}
+```
+
 This is not useful in the CLI, as the return value is lost.
-
-
-### Clean up
-
-If an error occurs during the "freeze" process, Freezeyt defaults to deleting the incomplete output directory. 
-
-This behavior can be set on the command line, using the --cleanup (which is also the default) or --no-cleanup switches. 
-
-shell example:
-
-```shell
-$ python -m freezeyt my_app _build --no-cleanup
-```
-or in yaml file:
-
-```yaml
-cleanup: False
-```
-
-and the same configuration in the Python dictionary:
-
-```Python
-{"cleanup": False}
-```
-
 
 
 ### Prefix
@@ -205,10 +222,12 @@ The prefix can also be specified on thecommand line with e.g.:
 `--prefix=http://localhost:8000/`.
 The CLI argument has priority over the config file.
 
+
 ### Extra pages
 
-A list of URLs to “extra” pages within the application can
-be given using:
+URLs of pages that are not reachable by following links from the homepage
+can specified as “extra” pages in the configuration:
+
 ```yaml
 extra_pages:
     - /extra/
@@ -218,7 +237,7 @@ extra_pages:
 Freezeyt will freeze these pages in addition to those it
 finds by following links.
 
-Extra pages may also be give on the command line,
+Extra pages may also be given on the command line,
 e.g. `--extra-page /extra/ --extra-page /extra2.html`.
 The lists from CLI and the config file are merged together.
 
@@ -292,6 +311,23 @@ extra_files:
 Extra files cannot be specified on the CLI.
 
 
+### Clean up
+
+If an error occurs during the "freeze" process, Freezeyt will delete the incomplete output directory.
+This prevents, for example, uploading incomplete results to a web hosting by mistake.
+
+If you want to keep the incomplete directory (for example,
+to help debugging), you can use the `--no-cleanup` switch
+or the `cleanup` key  in the configuration file:
+
+```yaml
+cleanup: False
+```
+
+The command line switch has priority over the configuration.
+Use `--no-cleanup` to override `cleanup: False` from the config.
+
+
 ### Comparison of MIME type and file type
 
 Freezeyt checks whether the file extensions in its output
@@ -311,6 +347,8 @@ default_mimetype=text/plain
 
 If the default MIME type isn't explicitly configured in YAML configuration,
 then the `freezeyt` uses value `application/octet-stream`.
+
+The default mimetype cannot be specified on the CLI.
 
 #### Recognizing file types from extensions
 
@@ -343,6 +381,9 @@ The `get_mimetype`:
 If `get_mimetype` returns `None`, `freezeyt` will use the configured `default_mimetype`
 (see *Default MIME type* above).
 
+The get_mimetype function cannot be specified on the CLI.
+
+
 #### Using a mime-db database
 
 There is an option to use [the MIME type database from the `jshttp` project](https://github.com/jshttp/mime-db/blob/master/db.json),
@@ -356,6 +397,8 @@ mime_db_file=path/to/mime-db.json
 ```
 This is equivalent to setting `get_mimetype` to a function that maps
 extensions to filetypes according to the database.
+
+The mime_db file cannot be specified on the CLI.
 
 
 ### Progress bar and logging
@@ -438,7 +481,7 @@ The object has the following attributes:
 
 #### `page_frozen`
 
-The function will be called whenever a page is saved.
+The function will be called whenever a page is processed successfully.
 It is passed a `TaskInfo` object as argument.
 The object has the following attributes:
 
@@ -474,12 +517,14 @@ status_handlers:
 
 `freezeyt` includes a few pre-defined handlers:
 * `'warn'`: will save the content and send warn message to stdout
-* `'save'`: `freezeyt` will save the body of the redirect page, as if
-  the response was `200`.
+* `'save'`: `freezeyt` will save the body of the page.
+  This is the default for status `200 OK`.
 * `'follow'`: `freezeyt` will save content from the redirected location
   (this requires a `Location` header, which is usually added for redirects – `3xx` statuses).
+  Redirects to external pages are not supported.
 * `'ignore'`: `freezeyt` will not save any content for the page
-* `'error'`: abort with an error
+* `'error'`: fail; the page will not be saved and `freeze()` will raise
+  an exception.
 
 The user can also define a custom handler as:
 * a string in the form `'my_module:custom_handler'`, which names a handler
@@ -509,13 +554,16 @@ status_handlers:
 Note that the status code must be a string, so it needs to be quoted in the YAML file.
 
 A range of statuses can be specified as a number (`1-5`) followed by lowercase `xx`.
+(Other "wildcards" like `50x` are not supported.)
+
+Status handlers cannot be specified in the CLI.
 
 
 ### URL finding
 
 `freezeyt` discovers new links in the application by URL finders. URL finders
 are functions whose goal is to find url of specific MIME type.
-`freezeyt` offer different configuration options to use URL finders:
+`freezeyt` offers different configuration options to use URL finders:
 
 * use predefined URL finders for `text/html` or `text/css` (default),
 * define your own URL finder as your function,
@@ -545,8 +593,12 @@ An URL finder gets these arguments:
 * the absolute URL of the page, as a `string`,
 * the HTTP headers, as a list of tuples (WSGI).
 
-The function should return an iterator of URLs (as strings) found
-in the page's contents. These URLs can be relative.
+The function should return an iterator of all URLs (as strings) found
+in the page's contents, as they would appear in `href` or `src` attributes.
+Specifically:
+
+- The URLs can be relative.
+- External URLs (i.e. those not beginning with `prefix`) should be included.
 
 Finder functions may be asynchronous:
 - The function can be defined with `async def` (i.e. return a
@@ -557,6 +609,20 @@ Finder functions may be asynchronous:
 The `freezeyt.url_finders` module includes the default finders `get_html_links`
 and `get_css_links`, and their asynchronous variants `get_html_links_async`
 and `get_css_links_async`.
+
+URL finders cannot be specified in the CLI.
+
+#### Default `get_html_links`
+
+The default URL finder for HTML pages looks in `src` and `href` attributes
+of all tags in the document.
+It currently does not handle other links, such as embedded CSS, but it
+may be improved in the future.
+
+#### Default `get_css_links`
+
+The default URL finder for CSS uses the `css_parser` library to find all
+links in a stylesheet.
 
 #### Disabling default URL finders
 
@@ -574,10 +640,10 @@ use_default_url_finders: false
 ### Path generation
 
 It is possible to customize the filenames that URLs are saved under
-using the `path_to_url` configuration key, for example:
+using the `url_to_path` configuration key, for example:
 
 ```yaml
-path_to_url: my_module:path_to_url
+url_to_path: my_module:url_to_path
 ```
 
 The value can be:
@@ -592,6 +658,8 @@ and should return a path to the saved file, relative to the build directory.
 
 The default function, available as `freezeyt.url_to_path`, adds `index.html`
 if the URL path ends with `/`.
+
+`url_to_path` cannot be specified in the CLI.
 
 
 ## Examples of CLI usage

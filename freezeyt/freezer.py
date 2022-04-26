@@ -12,6 +12,7 @@ import enum
 from urllib.parse import urljoin
 import asyncio
 import inspect
+import re
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -31,6 +32,10 @@ from freezeyt import hooks
 from freezeyt.saver import Saver
 
 MAX_RUNNING_TASKS = 100
+
+# HTTP status description for status_handlers:
+# 3 digits, or 1 digit and 'xx'.
+STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
 def freeze(app, config):
@@ -275,6 +280,12 @@ class Freezer:
         self.status_handlers = parse_handlers(
             _status_handlers, default_module='freezeyt.status_handlers'
         )
+        for key in self.status_handlers:
+            if not STATUS_KEY_RE.fullmatch(key):
+                raise ValueError(
+                    'Status descriptions must be strings with 3 digits or one '
+                    + f'digit and "xx", got f{key!r}'
+                )
 
         prefix = config.get('prefix', 'http://localhost:8000/')
 
