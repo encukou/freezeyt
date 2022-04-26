@@ -376,7 +376,7 @@ See below on how to enable plugins.
 
 ### Version configuration
 
-The `version` parameter can also be added to the configuration - it is not mandatory. If the parameter is specified, freezeyt checks if the configuration is compatible with the main version of freezeyt. The format of the value is pretty much benevolent and only the first character is important for freezeyt, which must be the same with the main version of freezeyt.
+The `version` parameter can also be added to the configuration - it is not mandatory. If the parameter is specified, freezeyt checks if the configuration is compatible with the main version of freezeyt. If you use a decimal value in the version parameter (always separated by a dot), only the part of the number before the dot is relevant for freezeyt and this part must be equal to the main version of the currently used version of freezeyt. The float, string and int format is accepted.
 
 for example:
 
@@ -388,10 +388,10 @@ or in yaml file:
 ```yaml
 version: 1.1
 ```
-but you can also use some custom marker:
+or string version:
 
 ```Python
-{"version": "1_MyPage"}
+{"version": "1.1"}
 ```
 The version parameter is not accepted on the command line.
 
