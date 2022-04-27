@@ -374,25 +374,18 @@ It is possible to configure this in the config file using the plugins
 `freezeyt.progressbar:ProgressBarPlugin` and `freezeyt.progressbar:LogPlugin`.
 See below on how to enable plugins.
 
-### Version configuration
+### Configuration version
 
-The `version` parameter can also be added to the configuration - it is not mandatory. If the parameter is specified, freezeyt checks if the configuration is compatible with the main version of freezeyt. If you use a decimal value in the version parameter (always separated by a dot), only the part of the number before the dot is relevant for freezeyt and this part must be equal to the main version of the currently used version of freezeyt. The float, string and int format is accepted.
-
-for example:
-
-```Python
-{"version": 1}
-```
-or in yaml file:
+To ensure that your configuration will work unchanged in newer versions of freezeyt,
+you should add the current version number, `1`, to your configuration like this:
 
 ```yaml
-version: 1.1
+version: 1
 ```
-or string version:
 
-```Python
-{"version": "1.1"}
-```
+This is not mandatory. If the version is not given, the configuration may
+not work in future versions of freezeyt.
+
 The version parameter is not accepted on the command line.
 
 ### Plugins
