@@ -241,8 +241,7 @@ class Freezer:
     def __init__(self, app, config):
         self.app = app
         self.config = config
-        if self.config.get('version') is not None:
-            self.check_version()
+        self.check_version(self.config.get('version'))
 
         self.freeze_info = hooks.FreezeInfo(self)
 
@@ -355,8 +354,9 @@ class Freezer:
             self.cancel_tasks()
             raise
 
-    def check_version(self):
-        config_version = self.config.get("version")
+    def check_version(self, config_version):
+        if config_version is None:
+            return
         if not isinstance(config_version, float):
             main_version = str(config_version).split(".")[0]
         else:
