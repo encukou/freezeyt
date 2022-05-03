@@ -356,11 +356,14 @@ class Freezer:
             raise
 
     def check_version(self):
-        try:
-            config_version = int(str(self.config.get("version")).split(".")[0])
-        except ValueError:
-            raise VersionMismatch("The specified version has to be number i.e. 1, 1.1 or '1.1'. ")
-        if VERSION != config_version:
+        config_version = self.config.get("version")
+        if not isinstance(config_version, float):
+            main_version = str(config_version).split(".")[0]
+        else:
+            raise VersionMismatch("The specified version has to be string or int i.e. 1, 1.1 or '1', '1.1'.")
+
+        current_version = freezeyt.__version__.split(".")[0]
+        if main_version != current_version:
             raise VersionMismatch("The specified version does not match the freezeyt main version.")
 
     def add_hook(self, hook_name, func):
