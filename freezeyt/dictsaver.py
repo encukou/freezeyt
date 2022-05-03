@@ -1,8 +1,10 @@
 from io import BytesIO
-from pathlib import Path
+from pathlib import PurePosixPath
+
+from .saver import Saver
 
 
-class DictSaver:
+class DictSaver(Saver):
     """Outputs frozen pages into a dict.
 
     prefix - Base URL to deploy web app in production
@@ -12,11 +14,8 @@ class DictSaver:
         self.prefix = prefix
         self.contents = {}
 
-    async def prepare(self):
-        """DictSaver doesn't need any preparation"""
-
     async def save_to_filename(self, filename, content_iterable):
-        parts = Path(filename).parts
+        parts = PurePosixPath(filename).parts
 
         target = self.contents
         for part in parts[:-1]:
@@ -24,11 +23,11 @@ class DictSaver:
         target[parts[-1]] = b''.join(content_iterable)
 
     async def open_filename(self, filename):
-        parts = Path(filename).parts
+        parts = PurePosixPath(filename).parts
         target = self.contents
         for part in parts[:-1]:
             target = target.setdefault(part, {})
         return BytesIO(target[parts[-1]])
 
-    async def get_result(self):
+    async def finish(self, success, cleanup):
         return self.contents

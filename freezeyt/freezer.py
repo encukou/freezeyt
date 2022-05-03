@@ -12,11 +12,13 @@ import enum
 from urllib.parse import urljoin
 import asyncio
 import inspect
+import re
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 from werkzeug.urls import URL
 
+import freezeyt
 from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
@@ -28,9 +30,14 @@ from freezeyt.util import WrongMimetypeError, UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
+from freezeyt.saver import Saver
 
 
 MAX_RUNNING_TASKS = 100
+
+# HTTP status description for status_handlers:
+# 3 digits, or 1 digit and 'xx'.
+STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
 def freeze(app, config):
@@ -44,8 +51,7 @@ async def freeze_async(app, config):
         freezer.call_hook('start', freezer.freeze_info)
         await freezer.handle_urls()
         await freezer.handle_redirects()
-        await freezer.cleanup()
-        return await freezer.get_result()
+        return await freezer.finish()
     except:
         freezer.cancel_tasks()
         raise
@@ -149,13 +155,13 @@ def convert_mime_db(mime_db: Mapping) -> Dict[str, List[str]]:
     return converted_db
 
 
-def default_url_to_path(path):
+def default_url_to_path(path: str) -> str:
     if path.endswith('/') or not path:
         path = path + 'index.html'
     return encode_file_path(path)
 
 
-def get_path_from_url(prefix, url, url_to_path):
+def get_path_from_url(prefix: URL, url: URL, url_to_path) -> PurePosixPath:
     if is_external(url, prefix):
         raise ValueError(f'external url {url}')
 
@@ -188,7 +194,7 @@ class TaskStatus(enum.Enum):
 
 @dataclasses.dataclass
 class Task:
-    path: Path
+    path: PurePosixPath
     urls: "Set[URL]"
     freezer: "Freezer"
     response_headers: Optional[Headers] = None
@@ -230,6 +236,8 @@ def needs_semaphore(func):
     return wrapper
 
 class Freezer:
+    saver: Saver
+
     def __init__(self, app, config):
         self.app = app
         self.config = config
@@ -279,6 +287,12 @@ class Freezer:
         self.status_handlers = parse_handlers(
             _status_handlers, default_module='freezeyt.status_handlers'
         )
+        for key in self.status_handlers:
+            if not STATUS_KEY_RE.fullmatch(key):
+                raise ValueError(
+                    'Status descriptions must be strings with 3 digits or one '
+                    + f'digit and "xx", got f{key!r}'
+                )
 
         prefix = config.get('prefix', 'http://localhost:8000/')
 
@@ -356,23 +370,13 @@ class Freezer:
         for task in self.inprogress_tasks.values():
             task.asyncio_task.cancel()
 
-    async def get_result(self):
-        if not self.failed_tasks:
-            get_result = getattr(self.saver, 'get_result', None)
-            if get_result is not None:
-                return await get_result()
-            return None
+    async def finish(self):
+        success = not self.failed_tasks
+        cleanup = self.config.get("cleanup", True)
+        result = await self.saver.finish(success, cleanup)
+        if success:
+            return result
         raise MultiError(self.failed_tasks.values())
-    
-    async def cleanup(self):
-        if self.failed_tasks:
-            remove_cfg = self.config.get("cleanup", True)
-            try:
-                savers_cleanup = self.saver.cleanup
-            except AttributeError: # saver has not method cleanup, for example DictSaver
-                pass
-            else:
-                await savers_cleanup(remove_cfg)
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,
@@ -594,7 +598,7 @@ class Freezer:
             'PATH_INFO': encode_wsgi_path(path_info),
             'SCRIPT_NAME': encode_wsgi_path(self.prefix.path),
             'SERVER_PROTOCOL': 'HTTP/1.1',
-            'SERVER_SOFTWARE': 'freezeyt/0.1',
+            'SERVER_SOFTWARE': f'freezeyt/{freezeyt.__version__}',
 
             'wsgi.version': (1, 0),
             'wsgi.url_scheme': self.prefix.scheme,

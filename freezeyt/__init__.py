@@ -3,6 +3,7 @@ from freezeyt.util import InfiniteRedirection, ExternalURLError, RelativeURLErro
 from freezeyt.filesaver import DirectoryExistsError
 from freezeyt.freezer import default_url_to_path as url_to_path
 
+__version__ = '1.0'
 
 __all__ = [
     'freeze',
