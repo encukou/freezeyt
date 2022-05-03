@@ -29,7 +29,6 @@ from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 
-VERSION = 1
 
 MAX_RUNNING_TASKS = 100
 
@@ -235,7 +234,7 @@ class Freezer:
         self.app = app
         self.config = config
         if self.config.get('version') is not None:
-            self.check_config()
+            self.check_version()
 
         self.freeze_info = hooks.FreezeInfo(self)
 
@@ -342,7 +341,7 @@ class Freezer:
             self.cancel_tasks()
             raise
 
-    def check_config(self):
+    def check_version(self):
         try:
             config_version = int(str(self.config.get("version")).split(".")[0])
         except ValueError:
