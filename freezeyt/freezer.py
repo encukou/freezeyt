@@ -32,6 +32,7 @@ from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 from freezeyt.saver import Saver
 
+
 MAX_RUNNING_TASKS = 100
 
 # HTTP status description for status_handlers:
@@ -222,6 +223,9 @@ class IsARedirect(BaseException):
 class IgnorePage(BaseException):
     """Raised when freezing a page should be ignored"""
 
+class VersionMismatch(ValueError):
+    """Raised when major version in config is not correct"""
+
 def needs_semaphore(func):
     """Decorator for a "task" method that holds self.semaphore when running"""
     @functools.wraps(func)
@@ -237,6 +241,7 @@ class Freezer:
     def __init__(self, app, config):
         self.app = app
         self.config = config
+        self.check_version(self.config.get('version'))
 
         self.freeze_info = hooks.FreezeInfo(self)
 
@@ -348,6 +353,18 @@ class Freezer:
         except:
             self.cancel_tasks()
             raise
+
+    def check_version(self, config_version):
+        if config_version is None:
+            return
+        if not isinstance(config_version, float):
+            main_version = str(config_version).split(".")[0]
+        else:
+            raise VersionMismatch("The specified version has to be string or int i.e. 1, 1.1 or '1', '1.1'.")
+
+        current_version = freezeyt.__version__.split(".")[0]
+        if main_version != current_version:
+            raise VersionMismatch("The specified version does not match the freezeyt main version.")
 
     def add_hook(self, hook_name, func):
         self.hooks.setdefault(hook_name, []).append(func)

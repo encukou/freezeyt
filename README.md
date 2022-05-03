@@ -417,6 +417,19 @@ It is possible to configure this in the config file using the plugins
 `freezeyt.progressbar:ProgressBarPlugin` and `freezeyt.progressbar:LogPlugin`.
 See below on how to enable plugins.
 
+### Configuration version
+
+To ensure that your configuration will work unchanged in newer versions of freezeyt,
+you should add the current version number, `1`, to your configuration like this:
+
+```yaml
+version: 1
+```
+
+This is not mandatory. If the version is not given, the configuration may
+not work in future versions of freezeyt.
+
+The version parameter is not accepted on the command line.
 
 ### Plugins
 
