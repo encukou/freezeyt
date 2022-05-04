@@ -35,3 +35,11 @@
     * [must-know-about-unicode-and-character-sets-no-excuses](https://www.joelonsoftware.com/2003/10/08/the-absolute-minimum-every-software-developer-absolutely-positively-must-know-about-unicode-and-character-sets-no-excuses/)
     * [encodings and character sets to work with text](https://kunststube.net/encoding/)
     * [unicode table](https://www.utf8-chartable.de/unicode-utf8-table.pl)
+
+* **Rozdíl mezi použití argparse.namespace, SimpleNamespace, dict, namedtuple a dataclass**
+    * [freezeyt-yt-video-87 (00:11:35)](https://youtu.be/00_EJ1J0bcs?t=695)
+    * [argparse.Namespace](https://docs.python.org/3/library/argparse.html#the-namespace-object)
+    * [SimpleNamespace](https://docs.python.org/3/library/types.html#types.SimpleNamespace)
+    * [namedtuple](https://docs.python.org/3/library/collections.html#collections.namedtuple)
+    * [dataclass](https://docs.python.org/3/library/dataclasses.html#dataclasses.dataclass)
+
