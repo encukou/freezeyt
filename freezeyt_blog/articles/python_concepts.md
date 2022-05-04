@@ -43,12 +43,14 @@
     * [namedtuple](https://docs.python.org/3/library/collections.html#collections.namedtuple)
     * [dataclass](https://docs.python.org/3/library/dataclasses.html#dataclasses.dataclass)
 
-* **Vytvoření instalačního balíčku wheel, nahrání na pypi a příkazu build (wheel, sdist)**
+* **Vytvoření instalačního balíčku wheel a nahrání na pypi, použití příkazu build (wheel, sdist)**
     * [freezeyt-yt-video-87 (00:46:12)](https://youtu.be/00_EJ1J0bcs?t=2772)
     * [pip wheel](https://pip.pypa.io/en/stable/cli/pip_wheel/)
     * [příkaz build](https://pypa-build.readthedocs.io/en/latest/)
-        Příkaz `python -m build` vytvoří dva soubory ve složce `dist`:
-            * wheel - instalační balíček
-            * sdist - archiv zdrojového kódu (`.tar.gz`)
+
+    Příkaz `python -m build` vytvoří dva soubory ve složce `dist`:
+    * wheel - instalační balíček
+    * sdist - archiv zdrojového kódu (`.tar.gz`)
+
     * [nahraj wheel na pypi pomocí přikazu twine](https://twine.readthedocs.io/en/latest/#twine-upload)
     * [nahraný projekt na pypi](https://pypi.org/project/freezeyt/)
