@@ -31,6 +31,7 @@ from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 from freezeyt.saver import Saver
+from freezeyt.middleware import Middleware
 
 
 MAX_RUNNING_TASKS = 100
@@ -239,7 +240,7 @@ class Freezer:
     saver: Saver
 
     def __init__(self, app, config):
-        self.app = app
+        self.app = Middleware(app)
         self.config = config
         self.check_version(self.config.get('version'))
 
