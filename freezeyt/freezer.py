@@ -31,6 +31,7 @@ from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 from freezeyt.saver import Saver
+from freezeyt.middleware import Middleware
 
 
 MAX_RUNNING_TASKS = 100
@@ -251,16 +252,18 @@ class Freezer:
 
             if isinstance(app_config, str):
                 # config file/variable or command line argument
-                self.app = import_variable_from_module(
+                app = import_variable_from_module(
                     app_config, default_variable_name='app',
                 )
             else:
                 # config variable - app as object
-                self.app = app_config
+                app = app_config
         else:
             if app_config is not None:
                 raise ValueError("Application is specified both as parameter and in configuration")
-            self.app = app
+            app = app
+
+        self.app = Middleware(app)
 
         CONFIG_DATA = (
             ('extra_pages', ()),
