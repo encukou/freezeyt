@@ -211,7 +211,7 @@ class Task:
         return next(iter(self.urls))
 
     @property
-    def status(self):
+    def status(self) -> TaskStatus:
         for status, queue in self.freezer.task_queues.items():
             if self.path in queue:
                 return status
