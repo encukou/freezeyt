@@ -1,4 +1,5 @@
-from typing import Optional, List, Mapping, Dict
+from typing import Optional, List, Mapping, Dict, Callable, TypeAlias, Tuple
+from typing import Any
 from mimetypes import guess_type
 from pathlib import PurePosixPath
 import functools
@@ -34,6 +35,8 @@ def mime_db_mimetype(mime_db: dict, url: str) -> Optional[List[str]]:
     return mime_db.get(suffix)
 
 
+GetMimetype: TypeAlias = Callable[[str], Optional[List[str]]]
+
 def default_mimetype(url: str) -> Optional[List[str]]:
     """Returns file mimetype as a string from mimetype.guess_type.
     file mimetypes are guessed from file suffix.
@@ -46,9 +49,12 @@ def default_mimetype(url: str) -> Optional[List[str]]:
 
 
 def check_mimetype(
-    url_path, headers,
-    default='application/octet-stream', *, get_mimetype=default_mimetype,
-):
+    url_path: str,
+    headers: List[Tuple[str, str]],
+    default: str = 'application/octet-stream',
+    *,
+    get_mimetype: GetMimetype = default_mimetype,
+) -> None:
     """Ensure mimetype sent from headers with file mimetype guessed
     from its suffix.
     Raise WrongMimetypeError if they don't match.
@@ -60,9 +66,9 @@ def check_mimetype(
     if file_mimetypes is None:
         file_mimetypes = [default]
 
-    headers = Headers(headers)
+    parsed_headers = Headers(headers)
     headers_mimetype, encoding = parse_options_header(
-        headers.get('Content-Type')
+        parsed_headers.get('Content-Type')
     )
 
     if isinstance(file_mimetypes, str):
@@ -72,7 +78,9 @@ def check_mimetype(
         raise WrongMimetypeError(file_mimetypes, headers_mimetype, url_path)
 
 
-def get_mimetype_checker(config):
+MimetypeChecker: TypeAlias = Callable[[str, List[Tuple[str, str]]], None]
+
+def get_mimetype_checker(config: Dict[str, Any]) -> MimetypeChecker:
     get_mimetype = config.get('get_mimetype', default_mimetype)
     mime_db_file = config.get('mime_db_file', None)
 
