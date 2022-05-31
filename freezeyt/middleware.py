@@ -1,99 +1,11 @@
-from typing import Optional, List, Mapping, Dict
-import json
-from mimetypes import guess_type
-import functools
-from pathlib import PurePosixPath
+from freezeyt.mimetype_check import get_mimetype_checker
 
-from werkzeug.datastructures import Headers
-from werkzeug.http import parse_options_header
-
-from freezeyt.util import WrongMimetypeError
-from freezeyt.util import import_variable_from_module
-
-
-def convert_mime_db(mime_db: Mapping) -> Dict[str, List[str]]:
-    """Convert mime-db value 'extensions' to become a key
-    and origin mimetype key to dict value as item of list.
-    """
-    converted_db: Dict[str, List[str]] = {}
-    for mimetype, opts in mime_db.items():
-        extensions = opts.get('extensions')
-        if extensions is not None:
-            for extension in extensions:
-                mimetypes = converted_db.setdefault(extension.lower(), [])
-                mimetypes.append(mimetype.lower())
-
-    return converted_db
-
-
-def mime_db_mimetype(mime_db: dict, url: str) -> Optional[List[str]]:
-    """Determines file MIME type from file suffix. Decisions are made
-    by mime-db rules.
-    """
-    suffix = PurePosixPath(url).suffix[1:].lower()
-
-    return mime_db.get(suffix)
-
-
-def default_mimetype(url: str) -> Optional[List[str]]:
-    """Returns file mimetype as a string from mimetype.guess_type.
-    file mimetypes are guessed from file suffix.
-    """
-    file_mimetype, encoding = guess_type(url)
-    if file_mimetype is None:
-        return None
-    else:
-        return [file_mimetype]
-
-
-def check_mimetype(
-    url_path, headers,
-    default='application/octet-stream', *, get_mimetype=default_mimetype,
-):
-    """Ensure mimetype sent from headers with file mimetype guessed
-    from its suffix.
-    Raise WrongMimetypeError if they don't match.
-    """
-    if url_path.endswith('/'):
-        # Directories get saved as index.html
-        url_path = 'index.html'
-    file_mimetypes = get_mimetype(url_path)
-    if file_mimetypes is None:
-        file_mimetypes = [default]
-
-    headers = Headers(headers)
-    headers_mimetype, encoding = parse_options_header(
-        headers.get('Content-Type')
-    )
-
-    if isinstance(file_mimetypes, str):
-        raise TypeError("get_mimetype result must not be a string")
-
-    if headers_mimetype.lower() not in (m.lower() for m in file_mimetypes):
-        raise WrongMimetypeError(file_mimetypes, headers_mimetype, url_path)
 
 class Middleware:
     def __init__(self, app, config):
         self.app = app
 
-
-        CONFIG_DATA = (
-            ('default_mimetype', 'application/octet-stream'),
-            ('get_mimetype', default_mimetype),
-            ('mime_db_file', None),
-        )
-        for attr_name, default in CONFIG_DATA:
-            setattr(self, attr_name, config.get(attr_name, default))
-
-        if self.mime_db_file:
-            with open(self.mime_db_file) as file:
-                mime_db = json.load(file)
-
-            mime_db = convert_mime_db(mime_db)
-            self.get_mimetype = functools.partial(mime_db_mimetype, mime_db)
-
-        if isinstance(self.get_mimetype, str):
-            self.get_mimetype = import_variable_from_module(self.get_mimetype)
+        self.check_mimetype = get_mimetype_checker(config)
 
     def __call__(self, environ, start_response):
         headers = None
@@ -107,10 +19,5 @@ class Middleware:
         if headers is None:
             raise Exception('WSGI application did not call start_response')
 
-        check_mimetype(
-                environ['PATH_INFO'],
-                headers,
-                default=self.default_mimetype,
-                get_mimetype=self.get_mimetype
-            )
+        self.check_mimetype(environ['PATH_INFO'], headers)
         return result
