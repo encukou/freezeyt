@@ -178,8 +178,7 @@ class Freezer:
 
     def __init__(self, app, config):
         self.app = Middleware(app, config)
-        self.config = config
-        self.check_version(self.config.get('version'))
+        self.check_version(config.get('version'))
 
         self.freeze_info = hooks.FreezeInfo(self)
 
@@ -243,6 +242,8 @@ class Freezer:
         else:
             raise ValueError(f"unknown output type {output['type']}")
 
+        self.cleanup_requested = config.get("cleanup", True)
+
         # The tasks for individual pages are tracked in the followng sets
         # (actually dictionaries: {task.path: task})
         # Each task must be in exactly in one of these.
@@ -300,8 +301,7 @@ class Freezer:
 
     async def finish(self):
         success = not self.failed_tasks
-        cleanup = self.config.get("cleanup", True)
-        result = await self.saver.finish(success, cleanup)
+        result = await self.saver.finish(success, self.cleanup_requested)
         if success:
             return result
         try:
