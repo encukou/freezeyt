@@ -3,7 +3,7 @@ import json
 
 from testutil import context_for_test
 from freezeyt import freeze
-from freezeyt.freezer import convert_mime_db, mime_db_mimetype
+from freezeyt.middleware import convert_mime_db, mime_db_mimetype
 
 
 CONVERSION_TESTCASES = {

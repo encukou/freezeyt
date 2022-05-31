@@ -1,6 +1,6 @@
 import pytest
 
-from freezeyt.freezer import check_mimetype
+from freezeyt.middleware import check_mimetype
 
 
 TEST_DATA = {
