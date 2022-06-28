@@ -96,3 +96,12 @@ def check_responses_are_same(app_client, mw_client, url, expected_error=()):
     assert app_response.status == mw_response.status
     assert app_response.headers == mw_response.headers
     assert app_response.get_data() == mw_response.get_data()
+
+
+def test_middleware_rejects_wrong_mimetype():
+    with context_for_test('app_wrong_mimetype') as module:
+        app = module.app
+        mw_client = Client(Middleware(app, {}))
+
+        with pytest.raises(WrongMimetypeError):
+            mw_client.get('/image.jpg')
