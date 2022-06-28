@@ -67,31 +67,31 @@ def test_middleware_doesnt_change_app(app_name):
 
         check_responses_are_same(
             app_client, mw_client, '/nonexisting_url/',
-            expect_errors=True,
+            expected_error=WrongMimetypeError,
         )
-
-        if app_name in ('app_static_tree', 'app_with_extra_files'):
-            return
 
         try:
             expected_dict = module.expected_dict
         except AttributeError:
             check_responses_are_same(app_client, mw_client, '/')
         else:
+            expected_error = ()
+            if 'extra_files' in config:
+                expected_error = WrongMimetypeError
             for url in urls_from_expected_dict(expected_dict):
-                check_responses_are_same(app_client, mw_client, url)
+                check_responses_are_same(
+                    app_client, mw_client, url,
+                    expected_error=expected_error,
+                )
 
-def check_responses_are_same(app_client, mw_client, url, expect_errors=False):
+def check_responses_are_same(app_client, mw_client, url, expected_error=()):
     app_response = app_client.get(url)
     print(app_response)
     print(app_response.get_data())
     try:
         mw_response = mw_client.get(url)
-    except WrongMimetypeError:
-        if expect_errors:
-            return
-        else:
-            raise
+    except expected_error:
+        return
 
     assert app_response.status == mw_response.status
     assert app_response.headers == mw_response.headers
