@@ -3,6 +3,7 @@ from werkzeug.test import Client
 import pytest
 
 from freezeyt.middleware import Middleware
+from freezeyt.util import WrongMimetypeError
 
 from testutil import APP_NAMES, context_for_test
 
@@ -64,7 +65,10 @@ def test_middleware_doesnt_change_app(app_name):
         app_client = Client(app)
         mw_client = Client(Middleware(app, config))
 
-        check_responses_are_same(app_client, mw_client, '/')
+        check_responses_are_same(
+            app_client, mw_client, '/nonexisting_url/',
+            expect_errors=True,
+        )
 
         if app_name in ('app_static_tree', 'app_with_extra_files'):
             return
@@ -72,14 +76,22 @@ def test_middleware_doesnt_change_app(app_name):
         try:
             expected_dict = module.expected_dict
         except AttributeError:
-            pass
+            check_responses_are_same(app_client, mw_client, '/')
         else:
             for url in urls_from_expected_dict(expected_dict):
                 check_responses_are_same(app_client, mw_client, url)
 
-def check_responses_are_same(app_client, mw_client, url):
+def check_responses_are_same(app_client, mw_client, url, expect_errors=False):
     app_response = app_client.get(url)
-    mw_response = mw_client.get(url)
+    print(app_response)
+    print(app_response.get_data())
+    try:
+        mw_response = mw_client.get(url)
+    except WrongMimetypeError:
+        if expect_errors:
+            return
+        else:
+            raise
 
     assert app_response.status == mw_response.status
     assert app_response.headers == mw_response.headers
