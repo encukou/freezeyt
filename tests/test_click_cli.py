@@ -166,4 +166,3 @@ def test_cli_cleanup_command_line_has_higher_priority(tmp_path):
         cli_args = ['app', str(build_dir), '--cleanup', '--import-config', 'app:freeze_config']
         run_and_check(cli_args, app_name, build_dir)
     assert not build_dir.exists()
-
