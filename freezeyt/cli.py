@@ -65,12 +65,6 @@ def main(
     else:
         config = {}
 
-    if extra_pages:
-        config.setdefault('extra_pages', []).extend(extra_pages)
-
-    if prefix != None:
-        config['prefix'] = prefix
-
     if 'output' in config:
         if dest_path is not None:
             raise click.UsageError(
@@ -80,6 +74,12 @@ def main(
         if dest_path is None:
             raise click.UsageError('DEST_PATH argument is required')
         config['output'] = {'type': 'dir', 'dir': dest_path}
+
+    if prefix != None:
+        config['prefix'] = prefix
+
+    if extra_pages:
+        config.setdefault('extra_pages', []).extend(extra_pages)
 
     if progress is None:
         if sys.stdout.isatty():
