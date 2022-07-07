@@ -129,7 +129,7 @@ def test_cli_prefix_conflict(tmp_path):
         run_and_check(cli_args, app_name, build_dir)
 
 
-def test_nonstandard_app_name(tmp_path):
+def test_cli_nonstandard_app_name(tmp_path):
     build_dir = tmp_path / 'build'
     run_and_check(
         ['application:wsgi_application', str(build_dir)],
@@ -138,7 +138,7 @@ def test_nonstandard_app_name(tmp_path):
     )
 
 
-def test_nonstandard_dotted_app_name(tmp_path):
+def test_cli_nonstandard_dotted_app_name(tmp_path):
     build_dir = tmp_path / 'build'
     run_and_check(
         ['application:obj.app', str(build_dir)],
@@ -147,7 +147,7 @@ def test_nonstandard_dotted_app_name(tmp_path):
     )
 
 
-def test_cleanup_config_works_if_runs_from_cli(tmp_path):
+def test_cli_cleanup_config_works(tmp_path):
     app_name = 'app_cleanup_config'
     build_dir = tmp_path / 'build'
 
@@ -158,7 +158,7 @@ def test_cleanup_config_works_if_runs_from_cli(tmp_path):
     assert (build_dir / 'index.html').exists()
 
 
-def test_cleanup_from_cli_has_higher_priority(tmp_path):
+def test_cli_cleanup_command_line_has_higher_priority(tmp_path):
     app_name = 'app_cleanup_config'
     build_dir = tmp_path / 'build'
 
