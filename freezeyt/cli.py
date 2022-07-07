@@ -11,7 +11,7 @@ from freezeyt.util import import_variable_from_module
 
 
 @click.command()
-@click.argument('module_name')
+@click.argument('module_name', required=False)
 @click.argument('dest_path', required=False)
 @click.option('--prefix',
               help='URL where we want to deploy our static site '
@@ -65,6 +65,23 @@ def main(
     else:
         config = {}
 
+    if 'app_module' in config:
+        if module_name is not None:
+            raise click.UsageError(
+                'MODULE_NAME argument is not needed if "app_module" is configured from file'
+            )
+
+        app = import_variable_from_module(
+            config['app_module'], default_variable_name='app',
+        )
+    else:
+        if module_name is None:
+            raise click.UsageError('MODULE_NAME argument is required')
+
+        app = import_variable_from_module(
+            module_name, default_variable_name='app',
+        )
+
     if 'output' in config:
         if dest_path is not None:
             raise click.UsageError(
@@ -98,10 +115,6 @@ def main(
 
     if cleanup is not None:
         config['cleanup'] = cleanup
-
-    app = import_variable_from_module(
-        module_name, default_variable_name='app',
-    )
 
     try:
         freeze(app, config)
