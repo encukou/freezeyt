@@ -126,21 +126,26 @@ The following options are configurable:
 
 ### Module Name
 
-The module that contains the application must be given on the
-command line.
-In it, Freezyt looks for the variable `app`.
-A different variable can be specified using `:`.
+If module that contains the application is not specified in the configuration file, then the module must be given on the command line.
+Specifying it both on the command line and in the config file
+is an error.
 
-Examples:
+Freezyt looks for the variable `app` inside the module.
+A different variable can be specified by using `:`.
 
-    application
-or
+```yaml
+app_module: app_module
+```
 
-    folder1.folder2.application
-or
+Or more complicated destination of the module:
+```yaml
+app_module: folder1.folder2.app_module
+```
 
-    my_app:wsgi_application
-
+Or different application name from default:
+```yaml
+app_module: app_module:wsgi_application
+```
 
 ### Output
 
@@ -168,7 +173,6 @@ If there is any existing content in the output directory,
 freezeyt will either remove it (if the content looks like a previously
 frozen website) or raise an error.
 Best practice is to remove the output directory before freezing.
-
 
 
 #### Output to dict
