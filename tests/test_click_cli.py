@@ -100,12 +100,8 @@ def test_cli_with_extra_page_option(tmp_path):
     with context_for_test(app_name) as module:
         freeze_config = getattr(module, 'freeze_config')
 
-        extra_pages = []
-        for extra in freeze_config['extra_pages']:
-            extra_pages.append('--extra-page')
-            extra_pages.append(extra)
-
-        cli_args.extend(extra_pages)
+    for extra_page in freeze_config['extra_pages']:
+        cli_args.extend(['--extra-page', extra_page])
 
     run_and_check(cli_args, app_name, build_dir)
 
