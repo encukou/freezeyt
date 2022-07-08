@@ -74,7 +74,7 @@ def test_cli_with_prefix_option(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['app', str(build_dir)]
 
-    with context_for_test(app_name,) as module:
+    with context_for_test(app_name) as module:
         freeze_config = getattr(module, 'freeze_config')
         prefix = freeze_config['prefix']
 
@@ -88,7 +88,7 @@ def test_cli_with_config_variable(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['app', str(build_dir), '--import-config', 'app:freeze_config']
 
-    with context_for_test(app_name,):
+    with context_for_test(app_name):
         run_and_check(cli_args, app_name, build_dir)
 
 
