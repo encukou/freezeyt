@@ -60,13 +60,13 @@ def test_cli_with_fixtures_output(tmp_path, app_name):
         if not getattr(module, 'config_is_serializable', True):
             pytest.skip('Config is not serializable')
 
-        if freeze_config != None:
-            with open(config_file, mode='w') as file:
-                safe_dump(freeze_config, stream=file)
+    if freeze_config != None:
+        with open(config_file, mode='w') as file:
+            safe_dump(freeze_config, stream=file)
 
-            cli_args.extend(['--config', config_file])
+        cli_args.extend(['--config', config_file])
 
-        run_and_check(cli_args, app_name, build_dir)
+    run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_with_prefix_option(tmp_path):
@@ -107,7 +107,7 @@ def test_cli_with_extra_page_option(tmp_path):
 
         cli_args.extend(extra_pages)
 
-        run_and_check(cli_args, app_name, build_dir)
+    run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_prefix_conflict(tmp_path):
@@ -126,7 +126,7 @@ def test_cli_prefix_conflict(tmp_path):
 
     cli_args.extend(['--prefix', prefix, '--config', config_file])
 
-        run_and_check(cli_args, app_name, build_dir)
+    run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_nonstandard_app_name(tmp_path):
