@@ -12,7 +12,9 @@ from freezeyt.util import import_variable_from_module
 
 @click.command()
 @click.argument('module_name', required=False)
-@click.argument('dest_path', required=False)
+@click.argument('dest_path', required=False, type=click.Path(file_okay=False))
+@click.option('-o', '--out-path', type=click.Path(file_okay=False),
+              help='Absolute or relative path to the output directory')
 @click.option('--prefix',
               help='URL where we want to deploy our static site '
                 + '(the application root)')
@@ -81,6 +83,9 @@ def main(
         app = import_variable_from_module(
             module_name, default_variable_name='app',
         )
+
+    if dest_path is None and out_path is not None:
+        dest_path = out_path
 
     if 'output' in config:
         if dest_path is not None:
