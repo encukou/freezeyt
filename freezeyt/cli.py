@@ -33,8 +33,8 @@ from freezeyt.util import import_variable_from_module
               help='Remove incomplete directory (if error occured). Default is to clean up.')
 
 def main(
-    module_name, dest_path, prefix, extra_pages, config_file, config_var,
-    progress, cleanup,
+    module_name, dest_path, out_path, prefix,
+    extra_pages, config_file, config_var, progress, cleanup,
 ):
     """
     MODULE_NAME
