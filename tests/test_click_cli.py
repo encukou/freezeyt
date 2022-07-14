@@ -107,13 +107,12 @@ def test_cli_with_extra_page_option(tmp_path):
 
 
 def test_cli_prefix_conflict(tmp_path):
+    app_name = 'app_url_for_prefix'
+    build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
     config_content = {'prefix': 'http://pyladies.cz/lessons/'}
     with open(config_file, mode='w') as file:
         safe_dump(config_content, stream=file)
-
-    app_name = 'app_url_for_prefix'
-    build_dir = tmp_path / 'build'
     cli_args = ['app', str(build_dir)]
 
     with context_for_test(app_name) as module:
