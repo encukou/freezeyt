@@ -73,9 +73,12 @@ def main(
                 'MODULE_NAME argument is not needed if "app_module" is configured from file'
             )
 
-        app = import_variable_from_module(
-            config['app_module'], default_variable_name='app',
-        )
+        if isinstance(config['app_module'], str):
+            app = import_variable_from_module(
+                config['app_module'], default_variable_name='app',
+            )
+        else:
+            app = config['app_module'].app
     else:
         if module_name is None:
             raise click.UsageError('MODULE_NAME argument is required')
