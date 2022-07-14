@@ -9,7 +9,7 @@ from fixtures.app_with_extra_files.app import app, freeze_config
 from testutil import context_for_test, assert_dirs_same, FIXTURES_PATH
 
 
-def test_cli_to_files(tmp_path, monkeypatch):
+def test_cli_to_files(tmp_path):
     builddir = tmp_path / 'build'
     app_name = 'app_2pages'
 
