@@ -126,23 +126,23 @@ The following options are configurable:
 
 ### Module Name
 
-If module that contains the application is not specified in the configuration file, then the module must be given on the command line.
+If module that contains the application is not specified in the configuration file, then the module must be given on the command line as first argument.
 Specifying it both on the command line and in the config file
 is an error.
 
-Freezyt looks for the variable `app` inside the module.
-A different variable can be specified by using `:`.
+Examples:
 
+Freezyt looks for the variable `app` inside the module by default.
 ```yaml
 app_module: app_module
 ```
 
-Or more complicated destination of the module:
+Parents directories lead to module with `app` variable are separated by dot.
 ```yaml
 app_module: folder1.folder2.app_module
 ```
 
-Or different application name from default:
+A different variable can be specified by using `:`.
 ```yaml
 app_module: app_module:wsgi_application
 ```
@@ -165,9 +165,11 @@ output:
 ```
 
 If output is not specified in the configuration file,
-you must specify the oputput directory on the command line.
+you must specify the output directory on the command line.
 Specifying it both on the command line and in the config file
 is an error.
+
+There are a two ways how to specify the output on the command line by option `-o` resp. `--out-path` or as second argument. When the output directory is specified by both as argument and option, the argument value is used. Output directory is helpful to specify as option if first argument is given in configuration file and there is no way for output directory to be given as argument.
 
 If there is any existing content in the output directory,
 freezeyt will either remove it (if the content looks like a previously
