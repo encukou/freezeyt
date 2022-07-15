@@ -166,3 +166,115 @@ def test_cli_cleanup_command_line_has_higher_priority(tmp_path):
     with context_for_test(app_name):
         run_and_check(cli_args, app_name, build_dir)
     assert not build_dir.exists()
+
+
+def test_cli_module_name_conflict(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {'app_module': 'app'}
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+    cli_args = ['app', str(build_dir), '--config', config_file]
+
+    with pytest.raises(SystemExit):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_dest_path_conflict(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {'output': {'type': 'dir', 'dir': str(build_dir)}}
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+    cli_args = ['app', str(build_dir), '--config', config_file]
+
+    with pytest.raises(SystemExit):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_module_name_as_argument_no_dest_path(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    cli_args = ['app']
+
+    with pytest.raises(SystemExit):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_dest_path_as_argument_no_module_name(tmp_path):
+    app_name = 'cli_module_name'
+    build_dir = tmp_path / 'build'
+    cli_args = [str(build_dir)]
+
+    with pytest.raises(ModuleNotFoundError):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_module_name_from_config_file(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {'app_module': 'app'}
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+    cli_args = ['-o', str(build_dir), '--config', config_file]
+
+    run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_dest_path_from_config_file(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {'output': {'type': 'dir', 'dir': str(build_dir)}}
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+    cli_args = ['app', '--config', config_file]
+
+    run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_dest_path_and_module_name_from_config_file(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {
+        'app_module': 'app',
+        'output': {'type': 'dir', 'dir': str(build_dir)}
+    }
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+    cli_args = ['--config', config_file]
+
+    run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_module_name_from_config_variable(tmp_path):
+    app_name = 'cli_module_name'
+    build_dir = tmp_path / 'build'
+    cli_args = ['-o', str(build_dir), '--import-config', 'app_module:freeze_config']
+
+    run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_dest_path_out_path_at_once(tmp_path):
+    app_name = 'app_simple'
+    build_dir_1 = tmp_path / 'build_1'
+    build_dir_2 = tmp_path / 'build_2'
+
+    cli_args = ['app', str(build_dir_1), '-o', str(build_dir_2)]
+
+    run_and_check(cli_args, app_name, build_dir_1)
+
+
+def test_cli_dest_path_out_path_at_once_error(tmp_path):
+    app_name = 'app_simple'
+    build_dir_1 = tmp_path / 'build_1'
+    build_dir_2 = tmp_path / 'build_2'
+
+    cli_args = ['app', str(build_dir_1), '-o', str(build_dir_2)]
+
+    with pytest.raises(FileNotFoundError):
+        run_and_check(cli_args, app_name, build_dir_2)
