@@ -14,9 +14,9 @@ Python's [http.server].
 [http.server]: https://docs.python.org/3/library/http.server.html
 
 Freezeyt is compatible with all Python web frameworks that use the common
-[Web Server Gatweay Interface] (WSGI)
+[Web Server Gateway Interface] (WSGI)
 
-[Web Server Gatweay Interface]: https://www.python.org/dev/peps/pep-3333/
+[Web Server Gateway Interface]: https://www.python.org/dev/peps/pep-3333/
 
 
 ## Installation
