@@ -13,7 +13,7 @@ from freezeyt.util import import_variable_from_module
 @click.command()
 @click.argument('module_name', required=False)
 @click.argument('dest_path', required=False, type=click.Path(file_okay=False))
-@click.option('-o', '--out-path', type=click.Path(file_okay=False),
+@click.option('-o', '--output', type=click.Path(file_okay=False),
               help='Absolute or relative path to the output directory')
 @click.option('--prefix',
               help='URL where we want to deploy our static site '
@@ -33,7 +33,7 @@ from freezeyt.util import import_variable_from_module
               help='Remove incomplete directory (if error occured). Default is to clean up.')
 
 def main(
-    module_name, dest_path, out_path, prefix,
+    module_name, dest_path, output, prefix,
     extra_pages, config_file, config_var, progress, cleanup,
 ):
     """
@@ -87,11 +87,11 @@ def main(
             module_name, default_variable_name='app',
         )
 
-    if dest_path and out_path:
+    if dest_path and output:
         raise click.UsageError('Specify only DEST_PATH argument or --output')
 
     if dest_path is None:
-        dest_path = out_path
+        dest_path = output
 
     if 'output' in config:
         if dest_path is not None:
