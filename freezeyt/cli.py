@@ -87,18 +87,22 @@ def main(
             module_name, default_variable_name='app',
         )
 
-    if dest_path is None and out_path is not None:
+    if dest_path and out_path:
+        raise click.UsageError('Specify only DEST_PATH argument or --output')
+
+    if dest_path is None:
         dest_path = out_path
 
     if 'output' in config:
         if dest_path is not None:
             raise click.UsageError(
-                'DEST_PATH argument is not needed if output is configured from file'
+                'Output from CLI is not needed if output is configured from file'
             )
     else:
         if dest_path is None:
-            raise click.UsageError('DEST_PATH argument is required')
-        config['output'] = {'type': 'dir', 'dir': dest_path}
+            raise click.UsageError('Output path is required')
+
+        config['output'] = dest_path
 
     if prefix != None:
         config['prefix'] = prefix
