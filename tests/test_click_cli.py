@@ -88,8 +88,7 @@ def test_cli_with_config_variable(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['app', str(build_dir), '--import-config', 'app:freeze_config']
 
-    with context_for_test(app_name):
-        run_and_check(cli_args, app_name, build_dir)
+    run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_with_extra_page_option(tmp_path):
@@ -147,8 +146,7 @@ def test_cli_cleanup_config_works(tmp_path):
         'app', str(build_dir), '--import-config', 'app:freeze_config'
     ]
 
-    with context_for_test(app_name):
-        run_and_check(cli_args, app_name, build_dir)
+    run_and_check(cli_args, app_name, build_dir)
     assert build_dir.exists()
     assert (build_dir / 'index.html').exists()
 
@@ -163,8 +161,7 @@ def test_cli_cleanup_command_line_has_higher_priority(tmp_path):
         'app:freeze_config'
     ]
 
-    with context_for_test(app_name):
-        run_and_check(cli_args, app_name, build_dir)
+    run_and_check(cli_args, app_name, build_dir)
     assert not build_dir.exists()
 
 
