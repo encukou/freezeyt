@@ -200,6 +200,16 @@ def test_cli_module_name_as_argument_no_dest_path(tmp_path):
         run_and_check(cli_args, app_name, build_dir)
 
 
+def test_cli_output_argument_with_option(tmp_path):
+    app_name = 'app_simple'
+    build_dir_1 = tmp_path / 'build_1'
+    build_dir_2 = tmp_path / 'build_2'
+
+    cli_args = ['app', str(build_dir_1), '-o', str(build_dir_2)]
+    with pytest.raises(SystemExit):
+        run_and_check(cli_args, app_name, build_dir_1)
+
+
 def test_cli_dest_path_as_argument_no_module_name(tmp_path):
     app_name = 'cli_module_name'
     build_dir = tmp_path / 'build'
@@ -254,24 +264,3 @@ def test_cli_module_name_from_config_variable(tmp_path):
     cli_args = ['-o', str(build_dir), '--import-config', 'app_module:freeze_config']
 
     run_and_check(cli_args, app_name, build_dir)
-
-
-def test_cli_dest_path_out_path_at_once(tmp_path):
-    app_name = 'app_simple'
-    build_dir_1 = tmp_path / 'build_1'
-    build_dir_2 = tmp_path / 'build_2'
-
-    cli_args = ['app', str(build_dir_1), '-o', str(build_dir_2)]
-
-    run_and_check(cli_args, app_name, build_dir_1)
-
-
-def test_cli_dest_path_out_path_at_once_error(tmp_path):
-    app_name = 'app_simple'
-    build_dir_1 = tmp_path / 'build_1'
-    build_dir_2 = tmp_path / 'build_2'
-
-    cli_args = ['app', str(build_dir_1), '-o', str(build_dir_2)]
-
-    with pytest.raises(FileNotFoundError):
-        run_and_check(cli_args, app_name, build_dir_2)
