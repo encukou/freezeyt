@@ -166,10 +166,9 @@ output:
 
 If output is not specified in the configuration file,
 you must specify the output directory on the command line.
-Specifying it both on the command line and in the config file
-is an error.
+There are a two ways how to specify the output on the command line either by option `-o` resp. `--output` or as a second positional argument.
 
-There are a two ways how to specify the output on the command line by option `-o` resp. `--out-path` or as second argument. When the output directory is specified by both as argument and option, the argument value is used. Output directory is helpful to specify as option if first argument is given in configuration file and there is no way for output directory to be given as argument.
+The output must be specified just by one way otherwise is an error.
 
 If there is any existing content in the output directory,
 freezeyt will either remove it (if the content looks like a previously
