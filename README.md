@@ -126,25 +126,31 @@ The following options are configurable:
 
 ### Module Name
 
-If module that contains the application is not specified in the configuration file, then the module must be given on the command line as first argument.
-Specifying it both on the command line and in the config file
-is an error.
+The module that contains the application must be given on the command line as first argument or in the configuration file. Freezeyt looks for the variable *app* by default. A different variable can be specified using `:`.
+When the module is specified either by the command line and the config file
+an error is raised.
 
 Examples:
 
-Freezyt looks for the variable `app` inside the module by default.
+Freezeyt looks for the variable `app` inside the module by default.
 ```yaml
-app_module: app_module
+module_name: module
 ```
 
 Parents directories lead to module with `app` variable are separated by dot.
 ```yaml
-app_module: folder1.folder2.app_module
+module_name: folder1.folder2.module
 ```
 
-A different variable can be specified by using `:`.
+A different variable name can be specified by using `:`.
 ```yaml
-app_module: app_module:wsgi_application
+module_name: module:wsgi_application
+```
+
+A different variable name in namespace.
+
+```yaml
+module_name: module:namespace.wsgi_application
 ```
 
 ### Output
