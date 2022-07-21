@@ -72,20 +72,11 @@ def main(
             raise click.UsageError(
                 'MODULE_NAME argument is not needed if is configured from file'
             )
-
-        if isinstance(config['module_name'], str):
-            app = import_variable_from_module(
-                config['module_name'], default_variable_name='app',
-            )
-        else:
-            app = config['module_name'].app
     else:
         if module_name is None:
             raise click.UsageError('MODULE_NAME argument is required')
 
-        app = import_variable_from_module(
-            module_name, default_variable_name='app',
-        )
+        config['module_name'] = module_name
 
     if dest_path and output:
         raise click.UsageError('Specify only DEST_PATH argument or --output')
@@ -129,7 +120,7 @@ def main(
         config['cleanup'] = cleanup
 
     try:
-        freeze(app, config)
+        freeze(app=None, config=config)
     except MultiError as multierr:
         if sys.stderr.isatty():
             cols, lines = shutil.get_terminal_size()

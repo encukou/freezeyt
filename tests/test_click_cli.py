@@ -211,11 +211,12 @@ def test_cli_output_argument_with_option(tmp_path):
 
 
 def test_cli_dest_path_as_argument_no_module_name(tmp_path):
+    """Error: missing output which is required"""
     app_name = 'app_simple'
     build_dir = tmp_path / 'build'
     cli_args = [str(build_dir)]
 
-    with pytest.raises(ModuleNotFoundError):
+    with pytest.raises(SystemExit):
         run_and_check(cli_args, app_name, build_dir)
 
 
