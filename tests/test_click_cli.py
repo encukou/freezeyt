@@ -211,7 +211,7 @@ def test_cli_output_argument_with_option(tmp_path):
 
 
 def test_cli_dest_path_as_argument_no_module_name(tmp_path):
-    app_name = 'cli_module_name'
+    app_name = 'module_name_config_var'
     build_dir = tmp_path / 'build'
     cli_args = [str(build_dir)]
 
@@ -259,7 +259,7 @@ def test_cli_dest_path_and_module_name_from_config_file(tmp_path):
 
 
 def test_cli_module_name_from_config_variable(tmp_path):
-    app_name = 'cli_module_name'
+    app_name = 'module_name_config_var'
     build_dir = tmp_path / 'build'
     cli_args = ['-o', str(build_dir), '--import-config', 'app:freeze_config']
 
