@@ -261,6 +261,6 @@ def test_cli_dest_path_and_module_name_from_config_file(tmp_path):
 def test_cli_module_name_from_config_variable(tmp_path):
     app_name = 'cli_module_name'
     build_dir = tmp_path / 'build'
-    cli_args = ['-o', str(build_dir), '--import-config', 'app_module:freeze_config']
+    cli_args = ['-o', str(build_dir), '--import-config', 'app:freeze_config']
 
     run_and_check(cli_args, app_name, build_dir)
