@@ -2,8 +2,7 @@ from flask import Flask
 
 app = Flask(__name__)
 
-#freeze_config = {'app_module': Path(__file__).stem}
-freeze_config = {'app_module': __name__}
+freeze_config = {'module_name': __name__}
 
 @app.route('/')
 def index():

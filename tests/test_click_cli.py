@@ -169,7 +169,7 @@ def test_cli_module_name_conflict(tmp_path):
     app_name = 'app_simple'
     build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
-    config_content = {'app_module': 'app'}
+    config_content = {'module_name': 'app'}
     with open(config_file, mode='w') as file:
         safe_dump(config_content, stream=file)
     cli_args = ['app', str(build_dir), '--config', config_file]
@@ -223,7 +223,7 @@ def test_cli_module_name_from_config_file(tmp_path):
     app_name = 'app_simple'
     build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
-    config_content = {'app_module': 'app'}
+    config_content = {'module_name': 'app'}
     with open(config_file, mode='w') as file:
         safe_dump(config_content, stream=file)
     cli_args = ['-o', str(build_dir), '--config', config_file]
@@ -248,7 +248,7 @@ def test_cli_dest_path_and_module_name_from_config_file(tmp_path):
     build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
     config_content = {
-        'app_module': 'app',
+        'module_name': 'app',
         'output': {'type': 'dir', 'dir': str(build_dir)}
     }
     with open(config_file, mode='w') as file:
