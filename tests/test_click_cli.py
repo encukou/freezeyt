@@ -211,7 +211,7 @@ def test_cli_output_argument_with_option(tmp_path):
 
 
 def test_cli_dest_path_as_argument_no_module_name(tmp_path):
-    app_name = 'module_name_config_var'
+    app_name = 'app_simple'
     build_dir = tmp_path / 'build'
     cli_args = [str(build_dir)]
 
