@@ -53,3 +53,6 @@
 
     * [nahraj wheel na pypi pomocí přikazu twine](https://twine.readthedocs.io/en/latest/#twine-upload)
     * [nahraný projekt na pypi](https://pypi.org/project/freezeyt/)
+
+* **Metatřídy, metaclass**
+    * [freezeyt youtube video 94](https://youtu.be/ai8hpiECZ9c?t=2259)
