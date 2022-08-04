@@ -244,20 +244,20 @@ class Freezer:
 
         self.freeze_info = hooks.FreezeInfo(self)
 
-        module_name = config.get('module_name')
+        app_config = config.get('app')
         if app is None:
-            if module_name is None:
+            if app_config is None:
                 raise ValueError("Application is required")
 
-            if isinstance(module_name, str):
+            if isinstance(app_config, str):
                 self.app = import_variable_from_module(
-                    module_name, default_variable_name='app',
+                    app_config, default_variable_name='app',
                 )
             else:
                 # from config variable
-                self.app = module_name.app
+                self.app = app_config.app
         else:
-            if module_name is not None:
+            if app_config is not None:
                 raise ValueError("Application is specified either as parameter and in configuration")
             self.app = app
 

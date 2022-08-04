@@ -124,7 +124,7 @@ status_handlers:
 
 The following options are configurable:
 
-### Module Name
+### App
 
 The module that contains the application must be given on the command line as first argument or in the configuration file. Freezeyt looks for the variable *app* by default. A different variable can be specified using `:`.
 When the module is specified either by the command line and the config file
@@ -134,23 +134,23 @@ Examples:
 
 Freezeyt looks for the variable `app` inside the module by default.
 ```yaml
-module_name: module
+app: app_module
 ```
 
 Parents directories lead to module with `app` variable are separated by dot.
 ```yaml
-module_name: folder1.folder2.module
+app: folder1.folder2.app_module
 ```
 
 A different variable name can be specified by using `:`.
 ```yaml
-module_name: module:wsgi_application
+app: app_module:wsgi_application
 ```
 
 A different variable name in namespace.
 
 ```yaml
-module_name: module:namespace.wsgi_application
+app: app_module:namespace.wsgi_application
 ```
 
 ### Output

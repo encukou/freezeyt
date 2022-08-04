@@ -165,11 +165,11 @@ def test_cli_cleanup_command_line_has_higher_priority(tmp_path):
     assert not build_dir.exists()
 
 
-def test_cli_module_name_conflict(tmp_path):
+def test_cli_app_argument_and_config_conflict(tmp_path):
     app_name = 'app_simple'
     build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
-    config_content = {'module_name': 'app'}
+    config_content = {'app': 'app'}
     with open(config_file, mode='w') as file:
         safe_dump(config_content, stream=file)
     cli_args = ['app', str(build_dir), '--config', config_file]
@@ -191,7 +191,7 @@ def test_cli_dest_path_conflict(tmp_path):
         run_and_check(cli_args, app_name, build_dir)
 
 
-def test_cli_module_name_as_argument_no_dest_path(tmp_path):
+def test_cli_app_as_argument_no_dest_path(tmp_path):
     app_name = 'app_simple'
     build_dir = tmp_path / 'build'
     cli_args = ['app']
@@ -210,7 +210,7 @@ def test_cli_output_argument_with_option(tmp_path):
         run_and_check(cli_args, app_name, build_dir_1)
 
 
-def test_cli_dest_path_as_argument_no_module_name(tmp_path):
+def test_cli_dest_path_as_argument_no_app(tmp_path):
     """Error: missing output which is required"""
     app_name = 'app_simple'
     build_dir = tmp_path / 'build'
@@ -220,11 +220,11 @@ def test_cli_dest_path_as_argument_no_module_name(tmp_path):
         run_and_check(cli_args, app_name, build_dir)
 
 
-def test_cli_module_name_from_config_file(tmp_path):
+def test_cli_app_from_config_file(tmp_path):
     app_name = 'app_simple'
     build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
-    config_content = {'module_name': 'app'}
+    config_content = {'app': 'app'}
     with open(config_file, mode='w') as file:
         safe_dump(config_content, stream=file)
     cli_args = ['-o', str(build_dir), '--config', config_file]
@@ -244,12 +244,12 @@ def test_cli_dest_path_from_config_file(tmp_path):
     run_and_check(cli_args, app_name, build_dir)
 
 
-def test_cli_dest_path_and_module_name_from_config_file(tmp_path):
+def test_cli_dest_path_and_app_from_config_file(tmp_path):
     app_name = 'app_simple'
     build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
     config_content = {
-        'module_name': 'app',
+        'app': 'app',
         'output': {'type': 'dir', 'dir': str(build_dir)}
     }
     with open(config_file, mode='w') as file:
@@ -259,7 +259,7 @@ def test_cli_dest_path_and_module_name_from_config_file(tmp_path):
     run_and_check(cli_args, app_name, build_dir)
 
 
-def test_cli_module_name_from_config_variable(tmp_path):
+def test_cli_app_from_config_variable(tmp_path):
     app_name = 'module_name_config_var'
     build_dir = tmp_path / 'build'
     cli_args = ['-o', str(build_dir), '--import-config', 'app:freeze_config']

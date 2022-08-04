@@ -11,7 +11,7 @@ from freezeyt.util import import_variable_from_module
 
 
 @click.command()
-@click.argument('module_name', required=False)
+@click.argument('app', required=False)
 @click.argument('dest_path', required=False, type=click.Path(file_okay=False))
 @click.option('-o', '--output', type=click.Path(file_okay=False),
               help='Absolute or relative path to the output directory')
@@ -33,11 +33,11 @@ from freezeyt.util import import_variable_from_module
               help='Remove incomplete directory (if error occured). Default is to clean up.')
 
 def main(
-    module_name, dest_path, output, prefix,
+    app, dest_path, output, prefix,
     extra_pages, config_file, config_var, progress, cleanup,
 ):
     """
-    MODULE_NAME
+    APP
         Name of the Python web app module which will be frozen.
 
     DEST_PATH
@@ -67,16 +67,16 @@ def main(
     else:
         config = {}
 
-    if 'module_name' in config:
-        if module_name is not None:
+    if 'app' in config:
+        if app is not None:
             raise click.UsageError(
-                'MODULE_NAME argument is not needed if is configured from file'
+                'APP argument is not needed if is configured from file'
             )
     else:
-        if module_name is None:
-            raise click.UsageError('MODULE_NAME argument is required')
+        if app is None:
+            raise click.UsageError('APP argument is required')
 
-        config['module_name'] = module_name
+        config['app'] = app
 
     if dest_path and output:
         raise click.UsageError('Specify only DEST_PATH argument or --output')
