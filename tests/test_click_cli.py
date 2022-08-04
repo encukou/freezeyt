@@ -260,7 +260,7 @@ def test_cli_dest_path_and_app_from_config_file(tmp_path):
 
 
 def test_cli_app_as_str_from_config_variable(tmp_path):
-    app_name = 'module_name_config_var'
+    app_name = 'app_with_config_variable'
     build_dir = tmp_path / 'build'
     cli_args = ['-o', str(build_dir), '--import-config', 'app:freeze_config_str']
 
@@ -268,7 +268,7 @@ def test_cli_app_as_str_from_config_variable(tmp_path):
 
 
 def test_cli_app_as_object_from_config_variable(tmp_path):
-    app_name = 'module_name_config_var'
+    app_name = 'app_with_config_variable'
     build_dir = tmp_path / 'build'
     cli_args = ['-o', str(build_dir), '--import-config', 'app:freeze_config_object']
 
