@@ -250,12 +250,13 @@ class Freezer:
                 raise ValueError("Application is required")
 
             if isinstance(app_config, str):
+                # config file/variable or command line argument
                 self.app = import_variable_from_module(
                     app_config, default_variable_name='app',
                 )
             else:
-                # from config variable
-                self.app = app_config.app
+                # config variable - app as object
+                self.app = app_config
         else:
             if app_config is not None:
                 raise ValueError("Application is specified either as parameter and in configuration")
