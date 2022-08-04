@@ -4,7 +4,8 @@ config_is_serializable = False
 
 app = Flask(__name__)
 
-freeze_config = {'app': __name__}
+freeze_config_str = {'app': __name__}
+freeze_config_object = {'app': app}
 
 @app.route('/')
 def index():
