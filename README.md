@@ -153,6 +153,10 @@ A different variable name in namespace.
 app: app_module:namespace.wsgi_application
 ```
 
+**Note:**
+
+It is not allowed to specify only module if `app` is configured as python object in configuration variable.
+
 ### Output
 
 To outupt the frozen website to a directory, specify
