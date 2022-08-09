@@ -21,18 +21,20 @@ def context_for_test(app_name):
 
         with context_for_test('demo_app') as module:
             wsgi_app = module.app
+
+    Imports done in the context are undone at the end.
     """
     app_dir = FIXTURES_PATH / app_name
     sys.modules.pop('app', None)
+    original_modules = dict(sys.modules)
     try:
         with pytest.MonkeyPatch.context() as monkeypatch:
             monkeypatch.syspath_prepend(app_dir)
             module = importlib.import_module('app')
         yield module
     finally:
-        sys.modules.pop('app', None)
-
-
+        sys.modules.clear()
+        sys.modules.update(original_modules)
 
 
 def assert_dirs_same(got: Path, expected: Path):
