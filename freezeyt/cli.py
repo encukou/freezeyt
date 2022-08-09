@@ -1,3 +1,5 @@
+"""Command-Line Interface for freezeyt"""
+
 import sys
 import shutil
 
