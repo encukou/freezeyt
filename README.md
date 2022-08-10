@@ -44,7 +44,6 @@ You can use the [example Flask app].
 
 [example Flask app]: https://flask.palletsprojects.com/en/1.1.x/quickstart/
 
-Your WSGI application should be named `app`.
 Both the application and Freezeyt must be importable (installed)
 in your environment.
 
@@ -153,9 +152,7 @@ A different variable name in namespace.
 app: app_module:namespace.wsgi_application
 ```
 
-**Note:**
-
-It is not allowed to specify only module if `app` is configured as python object in configuration variable.
+When configuration is given as a Python dict, `app` can be given as the WSGI application object, rather than a string.
 
 ### Output
 
