@@ -129,7 +129,7 @@ def test_cli_nonstandard_app_name(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['application:wsgi_application', str(build_dir)]
 
-    with context_for_test(app_name):
+    with context_for_test(app_name, module_name='application'):
         run_and_check(cli_args, app_name, build_dir)
 
 
@@ -138,7 +138,7 @@ def test_cli_nonstandard_dotted_app_name(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['application:obj.app', str(build_dir)]
 
-    with context_for_test(app_name):
+    with context_for_test(app_name, module_name='application'):
         run_and_check(cli_args, app_name, build_dir)
 
 
@@ -271,7 +271,7 @@ def test_cli_app_as_str_from_config_variable(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['-o', str(build_dir), '--import-config', 'application:freeze_config_str']
 
-    with context_for_test(app_name):
+    with context_for_test(app_name, module_name='application'):
         run_and_check(cli_args, app_name, build_dir)
 
 
@@ -280,6 +280,6 @@ def test_cli_app_as_object_from_config_variable(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['-o', str(build_dir), '--import-config', 'application:freeze_config_object']
 
-    with context_for_test(app_name):
+    with context_for_test(app_name, module_name='application'):
         run_and_check(cli_args, app_name, build_dir)
 
