@@ -1,6 +1,5 @@
 from flask import Flask
 
-config_is_serializable = False
 
 app = Flask(__name__)
 
