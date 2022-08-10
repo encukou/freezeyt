@@ -88,7 +88,8 @@ def test_cli_with_config_variable(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['app', str(build_dir), '--import-config', 'app:freeze_config']
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_with_extra_page_option(tmp_path):
@@ -128,7 +129,8 @@ def test_cli_nonstandard_app_name(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['application:wsgi_application', str(build_dir)]
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_nonstandard_dotted_app_name(tmp_path):
@@ -136,7 +138,8 @@ def test_cli_nonstandard_dotted_app_name(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['application:obj.app', str(build_dir)]
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_cleanup_config_works(tmp_path):
@@ -146,7 +149,8 @@ def test_cli_cleanup_config_works(tmp_path):
         'app', str(build_dir), '--import-config', 'app:freeze_config'
     ]
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
     assert build_dir.exists()
     assert (build_dir / 'index.html').exists()
 
@@ -229,7 +233,8 @@ def test_cli_app_from_config_file(tmp_path):
         safe_dump(config_content, stream=file)
     cli_args = ['-o', str(build_dir), '--config', config_file]
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_dest_path_from_config_file(tmp_path):
@@ -241,7 +246,8 @@ def test_cli_dest_path_from_config_file(tmp_path):
         safe_dump(config_content, stream=file)
     cli_args = ['app', '--config', config_file]
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_dest_path_and_app_from_config_file(tmp_path):
@@ -256,7 +262,8 @@ def test_cli_dest_path_and_app_from_config_file(tmp_path):
         safe_dump(config_content, stream=file)
     cli_args = ['--config', config_file]
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_app_as_str_from_config_variable(tmp_path):
@@ -264,7 +271,8 @@ def test_cli_app_as_str_from_config_variable(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['-o', str(build_dir), '--import-config', 'app:freeze_config_str']
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_app_as_object_from_config_variable(tmp_path):
@@ -272,5 +280,6 @@ def test_cli_app_as_object_from_config_variable(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['-o', str(build_dir), '--import-config', 'app:freeze_config_object']
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
 
