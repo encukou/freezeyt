@@ -13,7 +13,7 @@ from freezeyt import MultiError
 FIXTURES_PATH = Path(__file__).parent / 'fixtures'
 
 @contextmanager
-def context_for_test(app_name):
+def context_for_test(app_name, module_name='app'):
     """Provide a context in which a testing app is imported
 
     The module with the app is available as the context manager
@@ -30,7 +30,7 @@ def context_for_test(app_name):
     try:
         with pytest.MonkeyPatch.context() as monkeypatch:
             monkeypatch.syspath_prepend(app_dir)
-            module = importlib.import_module('app')
+            module = importlib.import_module(module_name)
         yield module
     finally:
         sys.modules.clear()

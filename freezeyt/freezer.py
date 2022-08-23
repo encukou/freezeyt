@@ -239,11 +239,28 @@ class Freezer:
     saver: Saver
 
     def __init__(self, app, config):
-        self.app = app
         self.config = config
         self.check_version(self.config.get('version'))
 
         self.freeze_info = hooks.FreezeInfo(self)
+
+        app_config = config.get('app')
+        if app is None:
+            if app_config is None:
+                raise ValueError("Application is required")
+
+            if isinstance(app_config, str):
+                # config file/variable or command line argument
+                self.app = import_variable_from_module(
+                    app_config, default_variable_name='app',
+                )
+            else:
+                # config variable - app as object
+                self.app = app_config
+        else:
+            if app_config is not None:
+                raise ValueError("Application is specified both as parameter and in configuration")
+            self.app = app
 
         CONFIG_DATA = (
             ('extra_pages', ()),

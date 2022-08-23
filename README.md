@@ -44,7 +44,6 @@ You can use the [example Flask app].
 
 [example Flask app]: https://flask.palletsprojects.com/en/1.1.x/quickstart/
 
-Your WSGI application should be named `app`.
 Both the application and Freezeyt must be importable (installed)
 in your environment.
 
@@ -124,23 +123,36 @@ status_handlers:
 
 The following options are configurable:
 
-### Module Name
+### App
 
-The module that contains the application must be given on the
-command line.
-In it, Freezyt looks for the variable `app`.
-A different variable can be specified using `:`.
+The module that contains the application must be given on the command line as first argument or in the configuration file. Freezeyt looks for the variable *app* by default. A different variable can be specified using `:`.
+When the module is specified both by the command line and the config file
+an error is raised.
 
 Examples:
 
-    application
-or
+Freezeyt looks for the variable `app` inside the module by default.
+```yaml
+app: app_module
+```
 
-    folder1.folder2.application
-or
+If `app` is in a submodule, separate package names with a dot:
+```yaml
+app: folder1.folder2.app_module
+```
 
-    my_app:wsgi_application
+A different variable name can be specified by using `:`.
+```yaml
+app: app_module:wsgi_application
+```
 
+If the variable is an attribute of some namespace, use dots in the variable name:
+
+```yaml
+app: app_module:namespace.wsgi_application
+```
+
+When configuration is given as a Python dict, `app` can be given as the WSGI application object, rather than a string.
 
 ### Output
 
@@ -160,15 +172,15 @@ output:
 ```
 
 If output is not specified in the configuration file,
-you must specify the oputput directory on the command line.
-Specifying it both on the command line and in the config file
-is an error.
+you must specify the output directory on the command line.
+There are two ways to specify the output on the command line: either by the `--output` (`-o`) option or as a second positional argument.
+
+The output must be specified just by one way otherwise is an error.
 
 If there is any existing content in the output directory,
 freezeyt will either remove it (if the content looks like a previously
 frozen website) or raise an error.
 Best practice is to remove the output directory before freezing.
-
 
 
 #### Output to dict

@@ -107,13 +107,12 @@ def test_cli_with_extra_page_option(tmp_path):
 
 
 def test_cli_prefix_conflict(tmp_path):
+    app_name = 'app_url_for_prefix'
+    build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
     config_content = {'prefix': 'http://pyladies.cz/lessons/'}
     with open(config_file, mode='w') as file:
         safe_dump(config_content, stream=file)
-
-    app_name = 'app_url_for_prefix'
-    build_dir = tmp_path / 'build'
     cli_args = ['app', str(build_dir)]
 
     with context_for_test(app_name) as module:
@@ -130,7 +129,8 @@ def test_cli_nonstandard_app_name(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['application:wsgi_application', str(build_dir)]
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name, module_name='application'):
+        run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_nonstandard_dotted_app_name(tmp_path):
@@ -138,7 +138,8 @@ def test_cli_nonstandard_dotted_app_name(tmp_path):
     build_dir = tmp_path / 'build'
     cli_args = ['application:obj.app', str(build_dir)]
 
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name, module_name='application'):
+        run_and_check(cli_args, app_name, build_dir)
 
 
 def test_cli_cleanup_config_works(tmp_path):
@@ -164,6 +165,121 @@ def test_cli_cleanup_command_line_has_higher_priority(tmp_path):
         'app:freeze_config'
     ]
 
+    run_and_check(cli_args, app_name, build_dir)
+    assert not build_dir.exists()
+
+
+def test_cli_app_argument_and_config_conflict(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {'app': 'app'}
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+    cli_args = ['app', str(build_dir), '--config', config_file]
+
+    with pytest.raises(SystemExit):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_dest_path_conflict(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {'output': {'type': 'dir', 'dir': str(build_dir)}}
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+    cli_args = ['app', str(build_dir), '--config', config_file]
+
+    with pytest.raises(SystemExit):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_app_as_argument_no_dest_path(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    cli_args = ['app']
+
+    with pytest.raises(SystemExit):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_output_argument_with_option(tmp_path):
+    app_name = 'app_simple'
+    build_dir_1 = tmp_path / 'build_1'
+    build_dir_2 = tmp_path / 'build_2'
+
+    cli_args = ['app', str(build_dir_1), '-o', str(build_dir_2)]
+    with pytest.raises(SystemExit):
+        run_and_check(cli_args, app_name, build_dir_1)
+
+
+def test_cli_dest_path_as_argument_no_app(tmp_path):
+    """Error: missing output which is required"""
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    cli_args = [str(build_dir)]
+
+    with pytest.raises(SystemExit):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_app_from_config_file(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {'app': 'app'}
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+    cli_args = ['-o', str(build_dir), '--config', config_file]
+
     with context_for_test(app_name):
         run_and_check(cli_args, app_name, build_dir)
-    assert not build_dir.exists()
+
+
+def test_cli_dest_path_from_config_file(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {'output': {'type': 'dir', 'dir': str(build_dir)}}
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+    cli_args = ['app', '--config', config_file]
+
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_dest_path_and_app_from_config_file(tmp_path):
+    app_name = 'app_simple'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {
+        'app': 'app',
+        'output': {'type': 'dir', 'dir': str(build_dir)}
+    }
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+    cli_args = ['--config', config_file]
+
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_app_as_str_from_config_variable(tmp_path):
+    app_name = 'app_with_config_variable'
+    build_dir = tmp_path / 'build'
+    cli_args = ['-o', str(build_dir), '--import-config', 'application:freeze_config_str']
+
+    with context_for_test(app_name, module_name='application'):
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_app_as_object_from_config_variable(tmp_path):
+    app_name = 'app_with_config_variable'
+    build_dir = tmp_path / 'build'
+    cli_args = ['-o', str(build_dir), '--import-config', 'application:freeze_config_object']
+
+    with context_for_test(app_name, module_name='application'):
+        run_and_check(cli_args, app_name, build_dir)
+

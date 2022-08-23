@@ -11,8 +11,10 @@ from freezeyt.util import import_variable_from_module
 
 
 @click.command()
-@click.argument('module_name')
-@click.argument('dest_path', required=False)
+@click.argument('app', required=False)
+@click.argument('dest_path', required=False, type=click.Path(file_okay=False))
+@click.option('-o', '--output', type=click.Path(file_okay=False),
+              help='Absolute or relative path to the output directory')
 @click.option('--prefix',
               help='URL where we want to deploy our static site '
                 + '(the application root)')
@@ -31,11 +33,11 @@ from freezeyt.util import import_variable_from_module
               help='Remove incomplete directory (if error occured). Default is to clean up.')
 
 def main(
-    module_name, dest_path, prefix, extra_pages, config_file, config_var,
-    progress, cleanup,
+    app, dest_path, output, prefix,
+    extra_pages, config_file, config_var, progress, cleanup,
 ):
     """
-    MODULE_NAME
+    APP
         Name of the Python web app module which will be frozen.
 
     DEST_PATH
@@ -65,21 +67,39 @@ def main(
     else:
         config = {}
 
-    if extra_pages:
-        config.setdefault('extra_pages', []).extend(extra_pages)
+    if 'app' in config:
+        if app is not None:
+            raise click.UsageError(
+                'APP argument is not needed if is configured from file'
+            )
+    else:
+        if app is None:
+            raise click.UsageError('APP argument is required')
 
-    if prefix != None:
-        config['prefix'] = prefix
+        config['app'] = app
+
+    if dest_path and output:
+        raise click.UsageError('Specify only DEST_PATH argument or --output')
+
+    if dest_path is None:
+        dest_path = output
 
     if 'output' in config:
         if dest_path is not None:
             raise click.UsageError(
-                'DEST_PATH argument is not needed if output is configured from file'
+                'DEST_PATH/--output is not needed if output is configured from file'
             )
     else:
         if dest_path is None:
-            raise click.UsageError('DEST_PATH argument is required')
-        config['output'] = {'type': 'dir', 'dir': dest_path}
+            raise click.UsageError('DEST_PATH or --output is required')
+
+        config['output'] = dest_path
+
+    if prefix != None:
+        config['prefix'] = prefix
+
+    if extra_pages:
+        config.setdefault('extra_pages', []).extend(extra_pages)
 
     if progress is None:
         if sys.stdout.isatty():
@@ -99,12 +119,8 @@ def main(
     if cleanup is not None:
         config['cleanup'] = cleanup
 
-    app = import_variable_from_module(
-        module_name, default_variable_name='app',
-    )
-
     try:
-        freeze(app, config)
+        freeze(app=None, config=config)
     except MultiError as multierr:
         if sys.stderr.isatty():
             cols, lines = shutil.get_terminal_size()
