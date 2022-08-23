@@ -259,7 +259,7 @@ class Freezer:
                 self.app = app_config
         else:
             if app_config is not None:
-                raise ValueError("Application is specified either as parameter and in configuration")
+                raise ValueError("Application is specified both as parameter and in configuration")
             self.app = app
 
         CONFIG_DATA = (

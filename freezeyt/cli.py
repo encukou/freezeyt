@@ -87,11 +87,11 @@ def main(
     if 'output' in config:
         if dest_path is not None:
             raise click.UsageError(
-                'Output from CLI is not needed if output is configured from file'
+                'DEST_PATH/--output is not needed if output is configured from file'
             )
     else:
         if dest_path is None:
-            raise click.UsageError('Output path is required')
+            raise click.UsageError('DEST_PATH or --output is required')
 
         config['output'] = dest_path
 

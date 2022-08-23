@@ -126,7 +126,7 @@ The following options are configurable:
 ### App
 
 The module that contains the application must be given on the command line as first argument or in the configuration file. Freezeyt looks for the variable *app* by default. A different variable can be specified using `:`.
-When the module is specified either by the command line and the config file
+When the module is specified both by the command line and the config file
 an error is raised.
 
 Examples:
@@ -136,7 +136,7 @@ Freezeyt looks for the variable `app` inside the module by default.
 app: app_module
 ```
 
-Parents directories lead to module with `app` variable are separated by dot.
+If `app` is in a submodule, separate package names with a dot:
 ```yaml
 app: folder1.folder2.app_module
 ```
@@ -146,7 +146,7 @@ A different variable name can be specified by using `:`.
 app: app_module:wsgi_application
 ```
 
-A different variable name in namespace.
+If the variable is an attribute of some namespace, use dots in the variable name:
 
 ```yaml
 app: app_module:namespace.wsgi_application
@@ -173,7 +173,7 @@ output:
 
 If output is not specified in the configuration file,
 you must specify the output directory on the command line.
-There are a two ways how to specify the output on the command line either by option `-o` resp. `--output` or as a second positional argument.
+There are two ways to specify the output on the command line: either by the `--output` (`-o`) option or as a second positional argument.
 
 The output must be specified just by one way otherwise is an error.
 
