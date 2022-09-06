@@ -30,7 +30,6 @@ from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
-from freezeyt.mimetype_check import MimetypeChecker
 
 
 MAX_RUNNING_TASKS = 100
