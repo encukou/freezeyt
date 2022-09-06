@@ -201,7 +201,7 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
-        self.app = Middleware(app)
+        self.app = Middleware(app, config)
 
         CONFIG_DATA = (
             ('extra_pages', ()),
@@ -210,8 +210,6 @@ class Freezer:
         )
         for attr_name, default in CONFIG_DATA:
             setattr(self, attr_name, config.get(attr_name, default))
-
-        self.mimetype_checker = MimetypeChecker(config)
 
         if isinstance(self.url_to_path, str):
             self.url_to_path = import_variable_from_module(self.url_to_path)
@@ -458,7 +456,6 @@ class Freezer:
         status_action = status_handler(hooks.TaskInfo(task))
 
         if status_action == 'save':
-            self.mimetype_checker.check(url.path, headers)
             return wsgi_write
         elif status_action == 'ignore':
             raise IgnorePage()
