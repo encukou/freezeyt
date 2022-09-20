@@ -56,3 +56,7 @@
 
 * **Metatřídy, metaclass**
     * [freezeyt youtube video 94](https://youtu.be/ai8hpiECZ9c?t=2259)
+
+* **Deskriptory**
+    * [freezeyt youtube video 100](https://www.youtube.com/watch?v=94_EGSjIGyI)
+
