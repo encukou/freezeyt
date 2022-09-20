@@ -77,6 +77,20 @@ From asynchronous code running in an `asyncio` event loop,
 you can call `freeze_async` instead of `freeze`.
 
 
+### Middleware
+
+Some of Freezeyt's functionality is available as a WSGI middleware.
+To use it, wrap your application in `freezeyt.Middeleware`. For example:
+
+```python
+from freezeyt import Middleware
+
+config = {}  # use a configuration dict as for `freeze(app, config)`
+
+app = Middleware(app, config)
+```
+
+
 ## Configuration
 
 While common options can be given on the command line,
@@ -346,6 +360,8 @@ Freezeyt checks whether the file extensions in its output
 correspond to the MIME types served by the app.
 If there's a mismatch, freezeyt fails, because this means a server
 wouldn't be able to serve the page correctly.
+
+This funtionality is provided by `freezeyt.Middleware`.
 
 #### Default MIME type
 
