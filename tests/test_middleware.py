@@ -8,6 +8,10 @@ from freezeyt.util import WrongMimetypeError
 from testutil import APP_NAMES, context_for_test
 
 def urls_from_expected_dict(expected_dict, prefix=''):
+    """Generate URLs from an `expected_dict` found in tests
+
+    See test_urls_from_expected_dict for examples
+    """
     for name, value in expected_dict.items():
         if isinstance(value, bytes):
             if name == 'index.html':
@@ -65,6 +69,8 @@ def test_middleware_doesnt_change_app(app_name):
         app_client = Client(app)
         mw_client = Client(Middleware(app, config))
 
+        # Check that the middleware doesn't change the response
+        # for /nonexisting_url/, except possibly raising WrongMimetypeError
         check_responses_are_same(
             app_client, mw_client, '/nonexisting_url/',
             expected_error=WrongMimetypeError,
@@ -73,10 +79,16 @@ def test_middleware_doesnt_change_app(app_name):
         try:
             expected_dict = module.expected_dict
         except AttributeError:
+            # If expected_dict is not available, the app probably tests
+            # that freezing fails.
+            # Only check that the middleware doesn't change the homepage.
             check_responses_are_same(app_client, mw_client, '/')
         else:
+            # By default, we don't expect any errors.
             expected_error = ()
             if 'extra_files' in config:
+                # extra_files is a Freezeyt-only setting, not visible
+                # in the app. The mimetype of extra files might not match.
                 expected_error = WrongMimetypeError
             for url in urls_from_expected_dict(expected_dict):
                 check_responses_are_same(
