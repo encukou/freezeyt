@@ -8,9 +8,11 @@ import asyncio
 if sys.version_info >= (3, 11):
     from wsgiref.types import StartResponse
     from wsgiref.types import WSGIEnvironment
+    from wsgiref.types import WSGIApplication
 else:
     from typing import Callable as StartResponse
     WSGIEnvironment = dict
+    from typing import Callable as WSGIApplication
 
 
 def asyncio_run(awaitable):
