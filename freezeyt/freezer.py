@@ -27,6 +27,7 @@ from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
+from freezeyt.compat import StartResponse, WSGIEnvironment
 from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
@@ -533,7 +534,7 @@ class Freezer:
         if path_info.startswith(self.prefix.path):
             path_info = "/" + path_info[len(self.prefix.path):]
 
-        environ = {
+        environ: WSGIEnvironment = {
             'SERVER_NAME': self.prefix.ascii_host,
             'SERVER_PORT': str(self.prefix.port),
             'REQUEST_METHOD': 'GET',
@@ -563,7 +564,7 @@ class Freezer:
         # Set up the wsgi_write_data, and make its `append` method
         # available to `start_response` as first argument:
         wsgi_write_data = []
-        start_response = functools.partial(
+        start_response: StartResponse = functools.partial(
             self.start_response,
             task,
             url,

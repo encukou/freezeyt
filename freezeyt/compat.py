@@ -5,6 +5,13 @@ import sys
 
 import asyncio
 
+if sys.version_info >= (3, 11):
+    from wsgiref.types import StartResponse
+    from wsgiref.types import WSGIEnvironment
+else:
+    from typing import Callable as StartResponse
+    WSGIEnvironment = dict
+
 
 def asyncio_run(awaitable):
     """asyncio.run for Python 3.6"""
