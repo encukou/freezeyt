@@ -59,4 +59,6 @@
 
 * **Deskriptory**
     * [freezeyt youtube video 100](https://www.youtube.com/watch?v=94_EGSjIGyI)
+    * [Python - official documentation](https://docs.python.org/3/howto/descriptor.html)
+    * [Real Python - descriptory](https://realpython.com/python-descriptors/)
 
