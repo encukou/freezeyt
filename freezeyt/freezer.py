@@ -27,7 +27,7 @@ from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
-from freezeyt.compat import StartResponse, WSGIEnvironment
+from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
@@ -40,11 +40,11 @@ MAX_RUNNING_TASKS = 100
 STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
-def freeze(app, config):
+def freeze(app: WSGIApplication, config):
     return asyncio_run(freeze_async(app, config))
 
 
-async def freeze_async(app, config):
+async def freeze_async(app: WSGIApplication, config):
     freezer = Freezer(app, config)
     try:
         await freezer.prepare()
@@ -176,8 +176,9 @@ def needs_semaphore(func):
 
 class Freezer:
     saver: Saver
+    task_queues: dict[TaskStatus, dict[PurePosixPath, Task]]
 
-    def __init__(self, app, config):
+    def __init__(self, app: WSGIApplication, config):
         self.config = config
         self.check_version(self.config.get('version'))
 
