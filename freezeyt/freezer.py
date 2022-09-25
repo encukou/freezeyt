@@ -5,7 +5,7 @@ import itertools
 import functools
 import base64
 import dataclasses
-from typing import Optional, Mapping, Set
+from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -176,7 +176,15 @@ def needs_semaphore(func):
 
 class Freezer:
     saver: Saver
-    task_queues: dict[TaskStatus, dict[PurePosixPath, Task]]
+    task_queues: Dict[TaskStatus, Dict[PurePosixPath, Task]]
+    done_tasks: Dict[PurePosixPath, Task]
+    redirecting_tasks: Dict[PurePosixPath, Task]
+    inprogress_tasks: Dict[PurePosixPath, Task]
+    failed_tasks: Dict[PurePosixPath, Task]
+    extra_pages: Union[Dict[str, Union[Generator, str]], str, Generator]
+    hooks: Dict[str, Union[str, Callable]]
+    url_to_path: Union[str, Callable]
+    
 
     def __init__(self, app: WSGIApplication, config):
         self.config = config
