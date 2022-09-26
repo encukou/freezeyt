@@ -1,4 +1,5 @@
 import shutil
+from subprocess import check_call, CalledProcessError
 
 from . import compat
 from .saver import Saver
@@ -50,7 +51,20 @@ class FileSaver(Saver):
         return open(absolute_filename, 'rb')
 
     async def finish(self, success: bool, cleanup: bool):
-        """Delete incomplete directory after a failed freeze.
+        """Delete incomplete directory after a failed freeze or
+        add files from output directory to git gh-pages branch (and create it)
+        after a successful freeze.
         """
         if not success and cleanup and self.base_path.exists():
             shutil.rmtree(self.base_path)
+        elif success and not cleanup and self.base_path.exists():
+            with open(str(self.base_path / "CNAME"), 'w') as f:
+                f.write(self.prefix)
+            with open(str(self.base_path / ".nojekyll"), 'w'): 
+                pass # only create the file
+            try:
+                check_call("git init -b gh-pages", shell=True, cwd=self.base_path)
+                check_call("git add .", shell=True, cwd=self.base_path)
+                check_call('git commit -m "added all freezed files"', shell=True, cwd=self.base_path)
+            except CalledProcessError as e:
+                print(e.cmd, e.stderr, e.stdout)
