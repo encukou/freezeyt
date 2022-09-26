@@ -29,5 +29,5 @@ class DictSaver(Saver):
             target = target.setdefault(part, {})
         return BytesIO(target[parts[-1]])
 
-    async def finish(self, success, cleanup):
+    async def finish(self, success, cleanup, gh_pages):
         return self.contents

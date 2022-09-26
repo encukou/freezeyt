@@ -393,7 +393,8 @@ class Freezer:
     async def finish(self):
         success = not self.failed_tasks
         cleanup = self.config.get("cleanup", True)
-        result = await self.saver.finish(success, cleanup)
+        gh_pages = self.config.get("gh_pages", False)
+        result = await self.saver.finish(success, cleanup, gh_pages)
         if success:
             return result
         raise MultiError(self.failed_tasks.values())

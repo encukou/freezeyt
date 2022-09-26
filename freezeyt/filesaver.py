@@ -51,14 +51,14 @@ class FileSaver(Saver):
 
         return open(absolute_filename, 'rb')
 
-    async def finish(self, success: bool, cleanup: bool):
+    async def finish(self, success: bool, cleanup: bool, gh_pages: bool):
         """Delete incomplete directory after a failed freeze or
         add files from output directory to git gh-pages branch (and create it)
         after a successful freeze.
         """
         if not success and cleanup and self.base_path.exists():
             shutil.rmtree(self.base_path)
-        elif success and self.base_path.exists():
+        elif success and gh_pages and self.base_path.exists():
             with open(str(self.base_path / "CNAME"), 'w') as f:
                 f.write(self.prefix.host)
             with open(str(self.base_path / ".nojekyll"), 'w'): 

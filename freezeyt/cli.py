@@ -31,10 +31,12 @@ from freezeyt.util import import_variable_from_module
 @click.option('--cleanup/--no-cleanup', 'cleanup',
               default=None,
               help='Remove incomplete directory (if error occured). Default is to clean up.')
+@click.option('--gh-pages', 'gh_pages', is_flag=True,
+              help='If freeze was successful, create git gh-pages branch in output folder and commit all files to that branch.')
 
 def main(
     app, dest_path, output, prefix,
-    extra_pages, config_file, config_var, progress, cleanup,
+    extra_pages, config_file, config_var, progress, cleanup, gh_pages
 ):
     """
     APP
@@ -118,6 +120,10 @@ def main(
 
     if cleanup is not None:
         config['cleanup'] = cleanup
+    
+    print(gh_pages)
+    if gh_pages:
+        config['gh_pages'] = gh_pages
 
     try:
         freeze(app=None, config=config)

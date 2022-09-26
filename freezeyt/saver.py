@@ -21,10 +21,11 @@ class Saver(abc.ABC):
     ) -> BinaryIO:
         """Open the given path for reading bytes"""
 
-    async def finish(self, success: bool, cleanup: bool) -> Any:
+    async def finish(self, success: bool, cleanup: bool, gh_pages: bool) -> Any:
         """Clean up after a freeze and return the result, if any.
 
         success: true if the freeze was successful
         cleanup: If true, clean up after failed freezes
+        gh_pages: create git gh-pages branch and commit all files to it
         """
         return None
