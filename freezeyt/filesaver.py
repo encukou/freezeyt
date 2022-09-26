@@ -1,5 +1,6 @@
 import shutil
-from subprocess import check_call, CalledProcessError
+from subprocess import check_output, CalledProcessError, STDOUT
+from textwrap import dedent
 
 from . import compat
 from .saver import Saver
@@ -58,14 +59,18 @@ class FileSaver(Saver):
         if not success and cleanup and self.base_path.exists():
             shutil.rmtree(self.base_path)
         elif success and self.base_path.exists():
-            print("jsem zdeeeeeeeee")
             with open(str(self.base_path / "CNAME"), 'w') as f:
                 f.write(self.prefix.host)
             with open(str(self.base_path / ".nojekyll"), 'w'): 
-                pass # only create the file
+                pass # only create the empty file
             try:
-                check_call("git init -b gh-pages", shell=True, cwd=self.base_path)
-                check_call("git add .", shell=True, cwd=self.base_path)
-                check_call('git commit -m "added all freezed files"', shell=True, cwd=self.base_path)
+                sp_params = {"stderr": STDOUT, "shell": True, "cwd": self.base_path}
+                check_output("git init -b gh-pages", **sp_params)
+                check_output("git add .", **sp_params)
+                check_output('git commit -m "added all freezed files"', **sp_params)
             except CalledProcessError as e:
-                print(e.cmd, e.stderr, e.stdout)
+                print(dedent(f"""
+                      Freezing was successful, but a problem occurs during the execution of one of commands for creating git gh-pages branch:
+                      command: {e.cmd}
+                      captured standard output with error:
+                      {e.stdout.decode()}"""))
