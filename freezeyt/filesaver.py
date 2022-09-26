@@ -57,9 +57,10 @@ class FileSaver(Saver):
         """
         if not success and cleanup and self.base_path.exists():
             shutil.rmtree(self.base_path)
-        elif success and not cleanup and self.base_path.exists():
+        elif success and self.base_path.exists():
+            print("jsem zdeeeeeeeee")
             with open(str(self.base_path / "CNAME"), 'w') as f:
-                f.write(self.prefix)
+                f.write(self.prefix.host)
             with open(str(self.base_path / ".nojekyll"), 'w'): 
                 pass # only create the file
             try:
