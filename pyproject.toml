@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [tool.mypy]
 
 [[tool.mypy.overrides]]
-module = "css_parser"
+module = "cssutils"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

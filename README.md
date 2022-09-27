@@ -662,7 +662,7 @@ may be improved in the future.
 
 #### Default `get_css_links`
 
-The default URL finder for CSS uses the `css_parser` library to find all
+The default URL finder for CSS uses the [`cssutils`](https://pypi.org/project/cssutils/) library to find all
 links in a stylesheet.
 
 #### Disabling default URL finders
