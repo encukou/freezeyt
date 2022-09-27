@@ -5,7 +5,8 @@ import itertools
 import functools
 import base64
 import dataclasses
-from typing import Optional, Mapping, Set
+from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
+from typing import Tuple
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -27,6 +28,7 @@ from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
+from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
@@ -39,11 +41,11 @@ MAX_RUNNING_TASKS = 100
 STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
-def freeze(app, config):
+def freeze(app: WSGIApplication, config):
     return asyncio_run(freeze_async(app, config))
 
 
-async def freeze_async(app, config):
+async def freeze_async(app: WSGIApplication, config):
     freezer = Freezer(app, config)
     try:
         await freezer.prepare()
@@ -150,8 +152,8 @@ class Task:
 
     @property
     def status(self) -> TaskStatus:
-        for status, queue in self.freezer.task_queues.items():
-            if self.path in queue:
+        for status, collection in self.freezer.task_collections.items():
+            if self.path in collection:
                 return status
         raise ValueError(f'Task not registered with freezer: {self}')
 
@@ -173,10 +175,27 @@ def needs_semaphore(func):
         return result
     return wrapper
 
+
+TaskCollection = Dict[PurePosixPath, Task]
+ExtraPagesConfig = Union[
+    Dict[str, Union[Generator, str]],
+    str,
+    Generator,
+    Tuple[()],
+]
+
 class Freezer:
     saver: Saver
+    task_collections: Dict[TaskStatus, TaskCollection]
+    done_tasks: TaskCollection
+    redirecting_tasks: TaskCollection
+    inprogress_tasks: TaskCollection
+    failed_tasks: TaskCollection
+    extra_pages: ExtraPagesConfig
+    hooks: Dict[str, Union[str, Callable]]
+    url_to_path: Union[str, Callable[[str], str]]
 
-    def __init__(self, app, config):
+    def __init__(self, app: WSGIApplication, config: dict):
         self.config = config
         self.check_version(self.config.get('version'))
 
@@ -269,7 +288,7 @@ class Freezer:
         self.redirecting_tasks = {}
         self.inprogress_tasks = {}
         self.failed_tasks = {}
-        self.task_queues = {
+        self.task_collections = {
             TaskStatus.DONE: self.done_tasks,
             TaskStatus.REDIRECTING: self.redirecting_tasks,
             TaskStatus.IN_PROGRESS: self.inprogress_tasks,
@@ -362,9 +381,9 @@ class Freezer:
 
         path = get_path_from_url(self.prefix, url, self.url_to_path)
 
-        for queue in self.task_queues.values():
-            if path in queue:
-                task = queue[path]
+        for collection in self.task_collections.values():
+            if path in collection:
+                task = collection[path]
                 task.urls.add(url)
                 break
         else:
@@ -464,7 +483,7 @@ class Freezer:
             raise UnexpectedStatus(url, status)
 
 
-    def _add_extra_pages(self, prefix, extras):
+    def _add_extra_pages(self, prefix, extras: ExtraPagesConfig):
         """Add URLs of extra pages from config.
 
         Handles both literal URLs and generators.
@@ -533,7 +552,7 @@ class Freezer:
         if path_info.startswith(self.prefix.path):
             path_info = "/" + path_info[len(self.prefix.path):]
 
-        environ = {
+        environ: WSGIEnvironment = {
             'SERVER_NAME': self.prefix.ascii_host,
             'SERVER_PORT': str(self.prefix.port),
             'REQUEST_METHOD': 'GET',
@@ -563,7 +582,7 @@ class Freezer:
         # Set up the wsgi_write_data, and make its `append` method
         # available to `start_response` as first argument:
         wsgi_write_data = []
-        start_response = functools.partial(
+        start_response: StartResponse = functools.partial(
             self.start_response,
             task,
             url,
