@@ -5,14 +5,17 @@ import sys
 
 import asyncio
 
+
 if sys.version_info >= (3, 11):
-    from wsgiref.types import StartResponse
-    from wsgiref.types import WSGIEnvironment
-    from wsgiref.types import WSGIApplication
+    import wsgiref.types
+    StartResponse = wsgiref.types.StartResponse
+    WSGIEnvironment = wsgiref.types.WSGIEnvironment
+    WSGIApplication = wsgiref.types.WSGIApplication
 else:
-    from typing import Callable as StartResponse
+    import typing
+    StartResponse = typing.Callable
     WSGIEnvironment = dict
-    from typing import Callable as WSGIApplication
+    WSGIApplication = typing.Callable
 
 
 def asyncio_run(awaitable):
