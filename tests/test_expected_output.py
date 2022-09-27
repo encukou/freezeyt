@@ -5,14 +5,10 @@ import traceback
 import pytest
 
 from freezeyt import freeze, InfiniteRedirection, MultiError, UnexpectedStatus
-from testutil import FIXTURES_PATH, context_for_test, assert_dirs_same
+from testutil import FIXTURES_PATH, APP_NAMES, context_for_test
+from testutil import assert_dirs_same
 
 
-APP_NAMES = [
-    p.name
-    for p in FIXTURES_PATH.iterdir()
-    if (p / 'app.py').exists()
-]
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
 def test_output(tmp_path, monkeypatch, app_name):

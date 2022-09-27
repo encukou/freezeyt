@@ -1,13 +1,11 @@
 import sys
 from pathlib import Path, PurePosixPath
-from mimetypes import guess_type
 import io
 import itertools
-import json
 import functools
 import base64
 import dataclasses
-from typing import Optional, Mapping, Set, List, Dict
+from typing import Optional, Mapping, Set
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -26,11 +24,12 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, add_port
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
-from freezeyt.util import WrongMimetypeError, UnexpectedStatus
+from freezeyt.util import UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt import hooks
 from freezeyt.saver import Saver
+from freezeyt.middleware import Middleware
 
 
 MAX_RUNNING_TASKS = 100
@@ -71,52 +70,6 @@ DEFAULT_STATUS_HANDLERS = {
     '5xx': 'error',
 }
 
-def mime_db_mimetype(mime_db: dict, url: str) -> Optional[List[str]]:
-    """Determines file MIME type from file suffix. Decisions are made
-    by mime-db rules.
-    """
-    suffix = PurePosixPath(url).suffix[1:].lower()
-
-    return mime_db.get(suffix)
-
-
-def default_mimetype(url: str) -> Optional[List[str]]:
-    """Returns file mimetype as a string from mimetype.guess_type.
-    file mimetypes are guessed from file suffix.
-    """
-    file_mimetype, encoding = guess_type(url)
-    if file_mimetype is None:
-        return None
-    else:
-        return [file_mimetype]
-
-
-def check_mimetype(
-    url_path, headers,
-    default='application/octet-stream', *, get_mimetype=default_mimetype,
-):
-    """Ensure mimetype sent from headers with file mimetype guessed
-    from its suffix.
-    Raise WrongMimetypeError if they don't match.
-    """
-    if url_path.endswith('/'):
-        # Directories get saved as index.html
-        url_path = 'index.html'
-    file_mimetypes = get_mimetype(url_path)
-    if file_mimetypes is None:
-        file_mimetypes = [default]
-
-    headers = Headers(headers)
-    headers_mimetype, encoding = parse_options_header(
-        headers.get('Content-Type')
-    )
-
-    if isinstance(file_mimetypes, str):
-        raise TypeError("get_mimetype result must not be a string")
-
-    if headers_mimetype.lower() not in (m.lower() for m in file_mimetypes):
-        raise WrongMimetypeError(file_mimetypes, headers_mimetype, url_path)
-
 
 def parse_handlers(
     handlers: Mapping, default_module: Optional[str]=None
@@ -138,21 +91,6 @@ def parse_handlers(
         result[key] = handler
 
     return result
-
-
-def convert_mime_db(mime_db: Mapping) -> Dict[str, List[str]]:
-    """Convert mime-db value 'extensions' to become a key
-    and origin mimetype key to dict value as item of list.
-    """
-    converted_db: Dict[str, List[str]] = {}
-    for mimetype, opts in mime_db.items():
-        extensions = opts.get('extensions')
-        if extensions is not None:
-            for extension in extensions:
-                mimetypes = converted_db.setdefault(extension.lower(), [])
-                mimetypes.append(mimetype.lower())
-
-    return converted_db
 
 
 def default_url_to_path(path: str) -> str:
@@ -251,37 +189,26 @@ class Freezer:
 
             if isinstance(app_config, str):
                 # config file/variable or command line argument
-                self.app = import_variable_from_module(
+                app = import_variable_from_module(
                     app_config, default_variable_name='app',
                 )
             else:
                 # config variable - app as object
-                self.app = app_config
+                app = app_config
         else:
             if app_config is not None:
                 raise ValueError("Application is specified both as parameter and in configuration")
-            self.app = app
+            app = app
+
+        self.app = Middleware(app, config)
 
         CONFIG_DATA = (
             ('extra_pages', ()),
             ('extra_files', None),
-            ('default_mimetype', 'application/octet-stream'),
-            ('get_mimetype', default_mimetype),
-            ('mime_db_file', None),
             ('url_to_path', default_url_to_path)
         )
         for attr_name, default in CONFIG_DATA:
             setattr(self, attr_name, config.get(attr_name, default))
-
-        if self.mime_db_file:
-            with open(self.mime_db_file) as file:
-                mime_db = json.load(file)
-
-            mime_db = convert_mime_db(mime_db)
-            self.get_mimetype = functools.partial(mime_db_mimetype, mime_db)
-
-        if isinstance(self.get_mimetype, str):
-            self.get_mimetype = import_variable_from_module(self.get_mimetype)
 
         if isinstance(self.url_to_path, str):
             self.url_to_path = import_variable_from_module(self.url_to_path)
@@ -528,11 +455,6 @@ class Freezer:
         status_action = status_handler(hooks.TaskInfo(task))
 
         if status_action == 'save':
-            check_mimetype(
-                url.path, headers,
-                default=self.default_mimetype,
-                get_mimetype=self.get_mimetype
-            )
             return wsgi_write
         elif status_action == 'ignore':
             raise IgnorePage()
