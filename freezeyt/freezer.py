@@ -6,6 +6,7 @@ import functools
 import base64
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
+from typing import Tuple
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -176,6 +177,12 @@ def needs_semaphore(func):
 
 
 TaskCollection = Dict[PurePosixPath, Task]
+ExtraPagesConfig = Union[
+    Dict[str, Union[Generator, str]],
+    str,
+    Generator,
+    Tuple[()],
+]
 
 class Freezer:
     saver: Saver
@@ -184,11 +191,11 @@ class Freezer:
     redirecting_tasks: TaskCollection
     inprogress_tasks: TaskCollection
     failed_tasks: TaskCollection
-    extra_pages: Union[Dict[str, Union[Generator, str]], str, Generator]
+    extra_pages: ExtraPagesConfig
     hooks: Dict[str, Union[str, Callable]]
-    url_to_path: Union[str, Callable]
+    url_to_path: Union[str, Callable[[str], str]]
 
-    def __init__(self, app: WSGIApplication, config):
+    def __init__(self, app: WSGIApplication, config: dict):
         self.config = config
         self.check_version(self.config.get('version'))
 
@@ -476,7 +483,7 @@ class Freezer:
             raise UnexpectedStatus(url, status)
 
 
-    def _add_extra_pages(self, prefix, extras):
+    def _add_extra_pages(self, prefix, extras: ExtraPagesConfig):
         """Add URLs of extra pages from config.
 
         Handles both literal URLs and generators.
