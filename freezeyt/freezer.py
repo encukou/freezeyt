@@ -151,8 +151,8 @@ class Task:
 
     @property
     def status(self) -> TaskStatus:
-        for status, queue in self.freezer.task_queues.items():
-            if self.path in queue:
+        for status, collection in self.freezer.task_collections.items():
+            if self.path in collection:
                 return status
         raise ValueError(f'Task not registered with freezer: {self}')
 
@@ -174,17 +174,19 @@ def needs_semaphore(func):
         return result
     return wrapper
 
+
+TaskCollection = Dict[PurePosixPath, Task]
+
 class Freezer:
     saver: Saver
-    task_queues: Dict[TaskStatus, Dict[PurePosixPath, Task]]
-    done_tasks: Dict[PurePosixPath, Task]
-    redirecting_tasks: Dict[PurePosixPath, Task]
-    inprogress_tasks: Dict[PurePosixPath, Task]
-    failed_tasks: Dict[PurePosixPath, Task]
+    task_collections: Dict[TaskStatus, TaskCollection]
+    done_tasks: TaskCollection
+    redirecting_tasks: TaskCollection
+    inprogress_tasks: TaskCollection
+    failed_tasks: TaskCollection
     extra_pages: Union[Dict[str, Union[Generator, str]], str, Generator]
     hooks: Dict[str, Union[str, Callable]]
     url_to_path: Union[str, Callable]
-    
 
     def __init__(self, app: WSGIApplication, config):
         self.config = config
@@ -279,7 +281,7 @@ class Freezer:
         self.redirecting_tasks = {}
         self.inprogress_tasks = {}
         self.failed_tasks = {}
-        self.task_queues = {
+        self.task_collections = {
             TaskStatus.DONE: self.done_tasks,
             TaskStatus.REDIRECTING: self.redirecting_tasks,
             TaskStatus.IN_PROGRESS: self.inprogress_tasks,
@@ -372,9 +374,9 @@ class Freezer:
 
         path = get_path_from_url(self.prefix, url, self.url_to_path)
 
-        for queue in self.task_queues.values():
-            if path in queue:
-                task = queue[path]
+        for collection in self.task_collections.values():
+            if path in collection:
+                task = collection[path]
                 task.urls.add(url)
                 break
         else:

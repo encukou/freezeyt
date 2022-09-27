@@ -49,7 +49,9 @@ class FreezeInfo:
 
     @property
     def total_task_count(self):
-        return sum(len(tasks) for tasks in self._freezer.task_queues.values())
+        return sum(
+            len(tasks) for tasks in self._freezer.task_collections.values()
+        )
 
     @property
     def done_task_count(self):
@@ -57,12 +59,12 @@ class FreezeInfo:
         # (since freezer imports hooks)
         from freezeyt.freezer import TaskStatus
         return (
-            len(self._freezer.task_queues[TaskStatus.FAILED])
-            + len(self._freezer.task_queues[TaskStatus.DONE])
+            len(self._freezer.task_collections[TaskStatus.FAILED])
+            + len(self._freezer.task_collections[TaskStatus.DONE])
         )
 
     @property
     def failed_task_count(self):
         # Import TaskStatus here, see done_task_count
         from freezeyt.freezer import TaskStatus
-        return len(self._freezer.task_queues[TaskStatus.FAILED])
+        return len(self._freezer.task_collections[TaskStatus.FAILED])
