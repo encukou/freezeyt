@@ -121,7 +121,6 @@ def main(
     if cleanup is not None:
         config['cleanup'] = cleanup
     
-    print(gh_pages)
     if gh_pages:
         config['gh_pages'] = gh_pages
 
