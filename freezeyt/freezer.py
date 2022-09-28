@@ -290,6 +290,7 @@ class Freezer:
         else:
             raise ValueError(f"unknown output type {output['type']}")
 
+        self.warnings = []
         # The tasks for individual pages are tracked in the followng sets
         # (actually dictionaries: {task.path: task})
         # Each task must be in exactly in one of these.
