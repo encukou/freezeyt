@@ -4,10 +4,10 @@ import sys
 import enlighten
 import click
 
-bar_format = '{percentage:3.0f}%▕{bar}▏{elapsed}, {rate:.2f} pg/s'
 
 class ProgressBarPlugin:
     def __init__(self, freeze_info):
+        bar_format = '{percentage:3.0f}%▕{bar}▏{elapsed}, {rate:.2f} pg/s'
         self.manager = enlighten.get_manager()
         self.counter = self.manager.counter(
             total=100, color='red', bar_format=bar_format)
@@ -53,3 +53,5 @@ class LogPlugin:
         exc = task_info.exception
         traceback.print_exception(type(exc), exc, exc.__traceback__)
 
+class GHPagesPlugin:
+    pass

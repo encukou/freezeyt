@@ -112,12 +112,12 @@ def main(
 
     if progress == 'bar':
         config.setdefault(
-            'plugins', []).append('freezeyt.progressbar:ProgressBarPlugin')
+            'plugins', []).append('freezeyt.plugins:ProgressBarPlugin')
     if progress in ('log', 'bar'):
         # The 'log' plugin is activated both with --progress=log and
         # --progress=bar.
         config.setdefault(
-            'plugins', []).append('freezeyt.progressbar:LogPlugin')
+            'plugins', []).append('freezeyt.plugins:LogPlugin')
 
     if cleanup is not None:
         config['cleanup'] = cleanup
