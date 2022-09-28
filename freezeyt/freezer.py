@@ -351,6 +351,9 @@ class Freezer:
         cleanup = self.config.get("cleanup", True)
         result = await self.saver.finish(success, cleanup)
         if success:
+            for warning in self.warnings:
+                print(f"WARNING: {warning}")
+
             return result
         raise MultiError(self.failed_tasks.values())
 
