@@ -54,4 +54,5 @@ class LogPlugin:
         traceback.print_exception(type(exc), exc, exc.__traceback__)
 
 class GHPagesPlugin:
-    pass
+    def __init__(self, freeze_info):
+        pass

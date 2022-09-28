@@ -32,7 +32,7 @@ from freezeyt.util import import_variable_from_module
               default=None,
               help='Remove incomplete directory (if error occured). Default is to clean up.')
 @click.option('--gh-pages/--no-gh-pages', 'gh_pages',
-              default=None,
+              default=False,
               help='If activated and freeze was successful, create git gh-pages branch in output folder and commit all files to that branch.')
 
 def main(
@@ -122,8 +122,13 @@ def main(
     if cleanup is not None:
         config['cleanup'] = cleanup
     
-    if gh_pages is not None:
-        config['gh_pages'] = gh_pages
+    if gh_pages:
+        config.setdefault(
+            'plugins', []).append('freezeyt.plugins:GHPagesPlugin')
+    if gh_pages is False:
+        plugins = config.setdefault('plugins', [])
+        if 'freezeyt.plugins:GHPagesPlugin' in plugins:
+            plugins.remove('freezeyt.plugins:GHPagesPlugin')
 
     try:
         freeze(app=None, config=config)
