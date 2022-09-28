@@ -31,8 +31,9 @@ from freezeyt.util import import_variable_from_module
 @click.option('--cleanup/--no-cleanup', 'cleanup',
               default=None,
               help='Remove incomplete directory (if error occured). Default is to clean up.')
-@click.option('--gh-pages', 'gh_pages', is_flag=True,
-              help='If freeze was successful, create git gh-pages branch in output folder and commit all files to that branch.')
+@click.option('--gh-pages/--no-gh-pages', 'gh_pages',
+              default=None,
+              help='If activated and freeze was successful, create git gh-pages branch in output folder and commit all files to that branch.')
 
 def main(
     app, dest_path, output, prefix,
@@ -121,7 +122,7 @@ def main(
     if cleanup is not None:
         config['cleanup'] = cleanup
     
-    if gh_pages:
+    if gh_pages is not None:
         config['gh_pages'] = gh_pages
 
     try:
