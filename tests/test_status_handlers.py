@@ -42,7 +42,7 @@ def test_warn_handler(capsys, response_status):
         return Response(response='Hello world!', status=response_status)
 
     expected_output = (
-        f"WARNING: URL http://localhost:8000/,"
+        f"[WARNING] URL http://localhost:8000/,"
         f" status code: {response_status} was freezed\n"
     )
 
