@@ -1,6 +1,4 @@
 import shutil
-from subprocess import check_output, CalledProcessError, STDOUT
-from textwrap import dedent
 
 from . import compat
 from .saver import Saver
