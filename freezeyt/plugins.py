@@ -1,5 +1,7 @@
 import traceback
 import sys
+from subprocess import check_output, CalledProcessError, STDOUT
+from textwrap import dedent
 
 import enlighten
 import click
@@ -55,4 +57,22 @@ class LogPlugin:
 
 class GHPagesPlugin:
     def __init__(self, freeze_info):
-        pass
+        success = not freeze_info._freezer.failed_tasks
+        base_path = freeze_info._freezer.saver.base_path
+        prefix_host = freeze_info._freezer.prefix.host
+        if success and base_path.exists():
+            with open(str(base_path / "CNAME"), 'w') as f:
+                f.write(prefix_host)
+            with open(str(base_path / ".nojekyll"), 'w'): 
+                pass # only create the empty file
+            try:
+                sp_params = {"stderr": STDOUT, "shell": True, "cwd": base_path}
+                check_output("git init -b gh-pages", **sp_params)
+                check_output("git add .", **sp_params)
+                check_output('git commit -m "added all freezed files"', **sp_params)
+            except CalledProcessError as e:
+                print(dedent(f"""
+                      Freezing was successful, but a problem occurs during the execution of one of commands for creating git gh-pages branch:
+                      command: {e.cmd}
+                      captured standard output with error:
+                      {e.stdout.decode()}"""))
