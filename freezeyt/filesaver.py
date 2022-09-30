@@ -1,4 +1,6 @@
 import shutil
+import os
+import stat
 
 from . import compat
 from .saver import Saver
@@ -30,7 +32,7 @@ class FileSaver(Saver):
                     + 'If you are sure, remove the directory before running '
                     + 'freezeyt.'
                 )
-            shutil.rmtree(self.base_path)
+            shutil.rmtree(self.base_path, onerror=lambda func, path, _: (os.chmod(path, stat.S_IWRITE), func(path)))
 
     async def save_to_filename(self, filename, content_iterable):
         absolute_filename = self.base_path / filename
