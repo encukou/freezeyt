@@ -59,9 +59,9 @@ class GHPagesPlugin:
     def __init__(self, freeze_info):
         self.base_path = freeze_info._freezer.saver.base_path
         self.prefix_host = freeze_info._freezer.prefix.host
-        freeze_info.add_hook('success', self.git_gh_pages)
+        freeze_info.add_hook('success', self.github_pages)
 
-    def git_gh_pages(self):
+    def github_pages(self):
         if self.base_path.exists():
             with open(str(self.base_path / "CNAME"), 'w') as f:
                 f.write(self.prefix_host)
