@@ -1,7 +1,6 @@
 import traceback
 import sys
 from subprocess import check_output, CalledProcessError, STDOUT
-from textwrap import dedent
 
 import enlighten
 import click
@@ -71,11 +70,11 @@ class GHPagesPlugin:
                 sp_params = {"stderr": STDOUT, "cwd": self.base_path}
                 check_output(["git", "init", "-b", "gh-pages"], **sp_params)
                 check_output(["git", "add", "."], **sp_params)
-                check_output(["git", "commit", "-m", "\"added all freezed files\""], **sp_params)
+                check_output(["git", "commit", "-m", "\"added all freezed files\""], **sp_params, env={"GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "gh_pages", "GIT_AUTHOR_EMAIL": "gh@no.mail", "GIT_COMMITTER_NAME": "gh_pages", "GIT_COMMITTER_EMAIL": "gh@no.mail"})
             except CalledProcessError as e:
                 #raise e
-                print(dedent(f"""
+                print(f"""
                       Freezing was successful, but a problem occurs during the execution of one of commands for creating git gh-pages branch:
                       command: {e.cmd}
                       captured standard output with error:
-                      {e.stdout.decode()}"""))
+                      {e.stdout.decode()}""")
