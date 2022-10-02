@@ -164,9 +164,27 @@ def test_cli_cleanup_command_line_has_higher_priority(tmp_path):
         '--import-config',
         'app:freeze_config'
     ]
-
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
     assert not build_dir.exists()
+
+
+def test_cli_gh_pages_command_line_has_higher_priority(tmp_path):
+    app_name = 'app_2pages'
+    output_dir = tmp_path / 'output_dir'
+    with open(tmp_path / "gh_pages_true.yaml", "w") as f:
+        f.write("gh_pages: True") # config gh_pages to True
+    cli_args = [
+        'app', str(output_dir),
+        '--no-gh-pages', # disable gh_pages in CLI
+        '--config',
+        f'{str(tmp_path / "gh_pages_true.yaml")}',
+    ]
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, output_dir)
+    assert not (output_dir / ".git").exists() # the .git directory has not to exist
+    assert not (output_dir / "CNAME").exists() # the CNAME file has not to exist
+    assert not (output_dir / ".nojekyll").exists() # the .nojekyll has not to exist
 
 
 def test_cli_app_argument_and_config_conflict(tmp_path):
@@ -282,4 +300,3 @@ def test_cli_app_as_object_from_config_variable(tmp_path):
 
     with context_for_test(app_name, module_name='application'):
         run_and_check(cli_args, app_name, build_dir)
-

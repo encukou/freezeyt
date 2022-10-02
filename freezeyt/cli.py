@@ -123,9 +123,11 @@ def main(
         config['cleanup'] = cleanup
     
     if gh_pages:
+        config['gh_pages'] = gh_pages
         config.setdefault(
             'plugins', []).append('freezeyt.plugins:GHPagesPlugin')
     if gh_pages is False:
+        config['gh_pages'] = gh_pages
         plugins = config.setdefault('plugins', [])
         if 'freezeyt.plugins:GHPagesPlugin' in plugins:
             plugins.remove('freezeyt.plugins:GHPagesPlugin')

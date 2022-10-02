@@ -48,7 +48,7 @@ def test_git_gh_pages_branch_is_ok(tmp_path):
         assert file_committed == file_expected
 
 def test_gh_pages_is_disabled(tmp_path):
-    """Test if with disabled gh_pages config (set to False)."""
+    """Test with disabled gh_pages config (set to False)."""
     output_dir = tmp_path / "output"
     config = {"gh_pages": False, "output": str(output_dir)}
     freeze(app, config)
@@ -57,7 +57,7 @@ def test_gh_pages_is_disabled(tmp_path):
     assert not (output_dir / ".nojekyll").exists() # the .nojekyll has not to exist
 
 def test_gh_pages_is_disabled_by_default(tmp_path):
-    """Test if gh_pages config is completely ommited, so disabled by default."""
+    """Test that gh_pages config is completely ommited, so disabled by default."""
     output_dir = tmp_path / "output"
     config = {"output": str(output_dir)}
     freeze(app, config)

@@ -261,11 +261,11 @@ class Freezer:
             if app_config is not None:
                 raise ValueError("Application is specified both as parameter and in configuration")
             self.app = app
-
+       
         if self.config.get("gh_pages", False):
-            config.setdefault(
+            self.config.setdefault(
                 'plugins', []).append('freezeyt.plugins:GHPagesPlugin')
-        
+
         CONFIG_DATA = (
             ('extra_pages', ()),
             ('extra_files', None),
