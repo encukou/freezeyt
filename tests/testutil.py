@@ -12,6 +12,12 @@ from freezeyt import MultiError
 
 FIXTURES_PATH = Path(__file__).parent / 'fixtures'
 
+APP_NAMES = [
+    p.name
+    for p in FIXTURES_PATH.iterdir()
+    if (p / 'app.py').exists()
+]
+
 @contextmanager
 def context_for_test(app_name, module_name='app'):
     """Provide a context in which a testing app is imported

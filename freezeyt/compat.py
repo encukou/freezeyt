@@ -6,6 +6,18 @@ import sys
 import asyncio
 
 
+if sys.version_info >= (3, 11):
+    import wsgiref.types
+    StartResponse = wsgiref.types.StartResponse
+    WSGIEnvironment = wsgiref.types.WSGIEnvironment
+    WSGIApplication = wsgiref.types.WSGIApplication
+else:
+    import typing
+    StartResponse = typing.Callable
+    WSGIEnvironment = dict
+    WSGIApplication = typing.Callable
+
+
 def asyncio_run(awaitable):
     """asyncio.run for Python 3.6"""
     try:
