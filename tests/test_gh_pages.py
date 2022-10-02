@@ -7,9 +7,7 @@ from fixtures.app_2pages.app import app
 def test_gh_pages_files_were_created(tmp_path):
     """Test if CNAME and .nojekyll files were created."""
     output_dir = tmp_path / "output"
-    config = {"output": str(output_dir)}
-    config.setdefault(
-            'plugins', []).append('freezeyt.plugins:GHPagesPlugin')
+    config = {"gh_pages": True, "output": str(output_dir)}
     freeze(app, config)
     assert (output_dir / "CNAME").exists() # the CNAME file has to exist
     assert (output_dir / ".nojekyll").exists() # the .nojekyll has to exist
@@ -18,20 +16,20 @@ def test_gh_pages_files_were_created(tmp_path):
 def test_cname_has_prefix(tmp_path):
     """Test if CNAME has prefix text writen inside."""
     output_dir = tmp_path / "output"
-    config = {"prefix": "https://jiri.one/", "output": str(output_dir)}
-    config.setdefault(
-            'plugins', []).append('freezeyt.plugins:GHPagesPlugin')
+    config = {"gh_pages": True,
+              "prefix": "https://jiri.one/",
+              "output": str(output_dir)}
     freeze(app, config)
     assert (output_dir / "CNAME").exists() # the CNAME file has to exist
     with open(output_dir / "CNAME", "r") as f:
-            assert "jiri.one" == f.read()
+        assert "jiri.one" == f.read()
 
 def test_git_gh_pages_branch_is_ok(tmp_path):
     """Test if gh-pages branch created and all files are added to it correctly."""
     output_dir = tmp_path / "output"
-    config = {"prefix": "https://jiri.one/", "output": str(output_dir)}
-    config.setdefault(
-            'plugins', []).append('freezeyt.plugins:GHPagesPlugin')
+    config = {"gh_pages": True,
+              "prefix": "https://jiri.one/",
+              "output": str(output_dir)}
     freeze(app, config)
     assert (output_dir / ".git").exists() # the .git directory has to exist
     assert (output_dir / ".git").is_dir() # the .git directory has to be directory
@@ -48,3 +46,21 @@ def test_git_gh_pages_branch_is_ok(tmp_path):
     expected_files = ['.nojekyll', 'CNAME', 'index.html', 'second_page.html']
     for file_committed, file_expected in zip(commited_files, expected_files):
         assert file_committed == file_expected
+
+def test_gh_pages_is_disabled(tmp_path):
+    """Test if with disabled gh_pages config (set to False)."""
+    output_dir = tmp_path / "output"
+    config = {"gh_pages": False, "output": str(output_dir)}
+    freeze(app, config)
+    assert not (output_dir / ".git").exists() # the .git directory has not to exist
+    assert not (output_dir / "CNAME").exists() # the CNAME file has not to exist
+    assert not (output_dir / ".nojekyll").exists() # the .nojekyll has not to exist
+
+def test_gh_pages_is_disabled_by_default(tmp_path):
+    """Test if gh_pages config is completely ommited, so disabled by default."""
+    output_dir = tmp_path / "output"
+    config = {"output": str(output_dir)}
+    freeze(app, config)
+    assert not (output_dir / ".git").exists() # the .git directory has not to exist
+    assert not (output_dir / "CNAME").exists() # the CNAME file has not to exist
+    assert not (output_dir / ".nojekyll").exists() # the .nojekyll has not to exist
