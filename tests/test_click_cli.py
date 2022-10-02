@@ -164,8 +164,8 @@ def test_cli_cleanup_command_line_has_higher_priority(tmp_path):
         '--import-config',
         'app:freeze_config'
     ]
-
-    run_and_check(cli_args, app_name, build_dir)
+    with context_for_test(app_name):
+        run_and_check(cli_args, app_name, build_dir)
     assert not build_dir.exists()
 
 
@@ -282,4 +282,3 @@ def test_cli_app_as_object_from_config_variable(tmp_path):
 
     with context_for_test(app_name, module_name='application'):
         run_and_check(cli_args, app_name, build_dir)
-
