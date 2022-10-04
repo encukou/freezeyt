@@ -2,7 +2,7 @@ import xml.etree.ElementTree
 from typing import Iterable, BinaryIO, List, Optional, Tuple
 
 import html5lib
-import css_parser
+import cssutils
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -17,8 +17,8 @@ def _get_css_links(
     content: bytes, base_url: str, headers: _Headers,
 )  -> Iterable[str]:
     """Get all links from a CSS file."""
-    parsed = css_parser.parseString(content)
-    return list(css_parser.getUrls(parsed))
+    parsed = cssutils.parseString(content)
+    return list(cssutils.getUrls(parsed))
 
 
 def _get_html_links(
