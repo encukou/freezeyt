@@ -17,6 +17,21 @@ class FileSaver(Saver):
     prefix - Base URL to deploy web app in production
         (eg. url_parse('http://example.com:8000/foo/')
     """
+    @staticmethod
+    def add_write_flag(function, path, excinfo):
+        """A function that adds a write attribute/flag for a path where such an attribute is missing. This function is not necessary on Linux, but on Windows, attempting to delete a file where such an attribute is missing will raise an exception.
+        
+        Function parameters are:
+        function: function which raised the exception,
+        path: path name passed to function,
+        excinfo: exception information returned by sys.exc_info()
+        """
+        if not os.access(path, os.W_OK):
+            os.chmod(path, stat.S_IWRITE)
+            function(path)
+        else:
+            raise
+    
     def __init__(self, base_path, prefix):
         self.base_path = base_path.resolve()
         self.prefix = prefix
@@ -32,7 +47,8 @@ class FileSaver(Saver):
                     + 'If you are sure, remove the directory before running '
                     + 'freezeyt.'
                 )
-            shutil.rmtree(self.base_path, onerror=lambda func, path, _: (os.chmod(path, stat.S_IWRITE), func(path)))
+            
+            shutil.rmtree(self.base_path, onerror=self.add_write_flag)
 
     async def save_to_filename(self, filename, content_iterable):
         absolute_filename = self.base_path / filename
