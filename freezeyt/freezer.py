@@ -222,8 +222,13 @@ class Freezer:
         self.app = Middleware(app, config)
        
         if self.config.get("gh_pages", False):
-            self.config.setdefault(
-                'plugins', []).append('freezeyt.plugins:GHPagesPlugin')
+            plugins = config.setdefault('plugins', [])
+            if 'freezeyt.plugins:GHPagesPlugin' not in plugins:
+                plugins.append('freezeyt.plugins:GHPagesPlugin')
+        if self.config.get("gh_pages", False) is False:
+            plugins = config.setdefault('plugins', [])
+            if 'freezeyt.plugins:GHPagesPlugin' in plugins:
+                plugins.remove('freezeyt.plugins:GHPagesPlugin')
 
         CONFIG_DATA = (
             ('extra_pages', ()),
