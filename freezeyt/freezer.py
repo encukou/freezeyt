@@ -6,7 +6,7 @@ import functools
 import base64
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple
+from typing import Tuple, TypeVar
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -32,6 +32,8 @@ from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
+from freezeyt.status_handlers import StatusHandler
+from freezeyt.url_finders import UrlFinder
 
 
 MAX_RUNNING_TASKS = 100
@@ -73,9 +75,13 @@ DEFAULT_STATUS_HANDLERS = {
 }
 
 
+K = TypeVar('K')
+Func = TypeVar('Func', bound=Callable)
+
 def parse_handlers(
-    handlers: Mapping, default_module: Optional[str]=None
-) -> Mapping:
+    handlers: Mapping[K, Union[str, Func]],
+    default_module: Optional[str]=None
+) -> Dict[K, Func]:
     result = {}
     for key, handler_or_name in handlers.items():
         if isinstance(handler_or_name, str):
@@ -194,6 +200,9 @@ class Freezer:
     extra_pages: ExtraPagesConfig
     hooks: Dict[str, Union[str, Callable]]
     url_to_path: Union[str, Callable[[str], str]]
+
+    url_finders: Dict[str, UrlFinder]
+    status_handlers: Dict[str, StatusHandler]
 
     def __init__(self, app: WSGIApplication, config: dict):
         self.config = config
