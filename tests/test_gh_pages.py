@@ -64,3 +64,10 @@ def test_gh_pages_is_disabled_by_default(tmp_path):
     assert not (output_dir / ".git").exists() # the .git directory has not to exist
     assert not (output_dir / "CNAME").exists() # the CNAME file has not to exist
     assert not (output_dir / ".nojekyll").exists() # the .nojekyll has not to exist
+
+# ONLY FOR DISCUSSION
+# def test_gh_pages_with_dict_output():
+#     """Test that gh_pages config is enabled together with dict output"""
+#     config = {'output': {'type': 'dict'},
+#               "gh_pages": True}
+#     freeze(app, config)
