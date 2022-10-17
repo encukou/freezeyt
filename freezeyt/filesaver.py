@@ -27,7 +27,7 @@ class FileSaver(Saver):
         excinfo: exception information returned by sys.exc_info()
         """
         if not os.access(path, os.W_OK):
-            os.chmod(path, stat(path).st_mode | stat.S_IWRITE)
+            os.chmod(path, os.stat(path).st_mode | stat.S_IWRITE)
             function(path)
         else:
             raise excinfo[1]
