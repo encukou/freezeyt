@@ -73,7 +73,7 @@ class GHPagesPlugin:
                 env={   "GIT_CONFIG_NOSYSTEM": "1",
                         "GIT_AUTHOR_NAME": "gh_pages",
                         "GIT_AUTHOR_EMAIL": "gh@no.mail",
-                        "GIT_COMMITTER_NAME": "gh_pages", "GIT_COMMITTER_EMAIL": "gh@no.mail"
+                        "GIT_COMMITTER_NAME": "gh_pages", "GIT_COMMITTER_EMAIL": "gh@mail.invalid"
                         }
                 check_output(["git", "init", "-b", "gh-pages"], **sp_params, env=env)
                 check_output(["git", "add", "."], **sp_params, env=env)
