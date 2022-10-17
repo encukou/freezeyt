@@ -172,8 +172,7 @@ def test_cli_cleanup_command_line_has_higher_priority(tmp_path):
 def test_cli_gh_pages_command_line_has_higher_priority(tmp_path):
     app_name = 'app_2pages'
     output_dir = tmp_path / 'output_dir'
-    with open(tmp_path / "gh_pages_true.yaml", "w") as f:
-        f.write("gh_pages: True") # config gh_pages to True
+    (tmp_path / "gh_pages_true.yaml").write_text("gh_pages: True")
     cli_args = [
         'app', str(output_dir),
         '--no-gh-pages', # disable gh_pages in CLI
