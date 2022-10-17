@@ -21,9 +21,7 @@ def test_cname_has_prefix(tmp_path):
               "prefix": "https://jiri.one/",
               "output": str(output_dir)}
     freeze(app, config)
-    assert (output_dir / "CNAME").exists() # the CNAME file has to exist
-    with open(output_dir / "CNAME", "r") as f:
-        assert "jiri.one" == f.read()
+    assert "jiri.one" == (output_dir / "CNAME").read_text()
 
 def test_git_gh_pages_branch_is_ok(tmp_path):
     """Test if gh-pages branch created and all files are added to it correctly."""
