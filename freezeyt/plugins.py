@@ -7,11 +7,11 @@ import click
 
 
 class ProgressBarPlugin:
+    bar_format = '{percentage:3.0f}%▕{bar}▏{elapsed}, {rate:.2f} pg/s'
     def __init__(self, freeze_info):
-        bar_format = '{percentage:3.0f}%▕{bar}▏{elapsed}, {rate:.2f} pg/s'
         self.manager = enlighten.get_manager()
         self.counter = self.manager.counter(
-            total=100, color='red', bar_format=bar_format)
+            total=100, color='red', bar_format=self.bar_format)
         self.failure_counter = self.counter
         self.success_counter = self.counter.add_subcounter('cyan')
         freeze_info.add_hook('page_frozen', self.update_bar)
