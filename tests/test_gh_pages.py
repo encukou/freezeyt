@@ -38,7 +38,7 @@ def test_git_gh_pages_branch_is_ok(tmp_path):
     with open(output_dir / ".git/HEAD", "r") as f:
         assert "gh-pages" in f.read().strip().split("/") # the gh-pages has to be git head branch
     with open(output_dir / ".git/COMMIT_EDITMSG", "r") as f:
-        assert "\"added all freezed files\"" == f.read().strip() # text of last commit with all files
+        assert "added all freezed files" == f.read().strip() # text of last commit with all files
     with open(output_dir / ".git/refs/heads/gh-pages", "r") as f:
         commit_hash = f.read().strip() # get last commit hash
     # get list of all committed files

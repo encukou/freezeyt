@@ -73,7 +73,7 @@ class GHPagesPlugin:
                 check_output(["git", "init", "-b", "gh-pages"], **sp_params)
                 check_output(["git", "add", "."], **sp_params)
                 check_output(
-                    ["git", "commit", "-m", "\"added all freezed files\""], **sp_params,
+                    ["git", "commit", "-m", "added all freezed files"], **sp_params,
                     env={   "GIT_CONFIG_NOSYSTEM": "1",
                             "GIT_AUTHOR_NAME": "gh_pages",
                             "GIT_AUTHOR_EMAIL": "gh@no.mail",
