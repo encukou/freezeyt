@@ -1,5 +1,6 @@
 from subprocess import check_output
-
+import pytest
+# internal imports
 from freezeyt import freeze
 from fixtures.app_2pages.app import app
 
@@ -64,6 +65,16 @@ def test_gh_pages_is_disabled_by_default(tmp_path):
     assert not (output_dir / ".git").exists() # the .git directory has not to exist
     assert not (output_dir / "CNAME").exists() # the CNAME file has not to exist
     assert not (output_dir / ".nojekyll").exists() # the .nojekyll has not to exist
+
+
+def test_gh_pages_raise_exception_if_path_in_prefix(tmp_path):
+    """Test that if the user specifies path in the prefix while using the gh-pages plugin, an exception will be thrown."""
+    output_dir = tmp_path / "output"
+    config = {"gh_pages": True,
+              "prefix": "https://jiri.one/SOME_PATH/",
+              "output": str(output_dir)}
+    with pytest.raises(ValueError, match="When using the Github Pages plugin, you can't specify a path in the prefix, so github can't handle it."):
+        freeze(app, config)
 
 # ONLY FOR DISCUSSION
 # def test_gh_pages_with_dict_output():
