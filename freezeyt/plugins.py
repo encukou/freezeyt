@@ -5,6 +5,8 @@ from subprocess import check_output, CalledProcessError, STDOUT
 import enlighten
 import click
 
+class GitCommandError(ValueError):
+    """An exception occurred while executing git commands."""
 
 class ProgressBarPlugin:
     bar_format = '{percentage:3.0f}%▕{bar}▏{elapsed}, {rate:.2f} pg/s'
@@ -78,7 +80,7 @@ class GHPagesPlugin:
                             "GIT_COMMITTER_NAME": "gh_pages", "GIT_COMMITTER_EMAIL": "gh@no.mail"
                         })
             except CalledProcessError as e:
-                print(f"""
+                raise GitCommandError(f"""
                       Freezing was successful, but a problem occurs during the execution of one of commands for creating git gh-pages branch:
                       command: {e.cmd}
                       captured standard output with error:
