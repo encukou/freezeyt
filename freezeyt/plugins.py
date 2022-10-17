@@ -64,10 +64,8 @@ class GHPagesPlugin:
 
     def github_pages(self):
         if self.base_path.exists():
-            with open(str(self.base_path / "CNAME"), 'w') as f:
-                f.write(self.prefix_host)
-            with open(str(self.base_path / ".nojekyll"), 'w'): 
-                pass # only create the empty file
+            (self.base_path / "CNAME").write_text(self.prefix_host)
+            (self.base_path / ".nojekyll").write_text("")
             try:
                 sp_params = {"stderr": STDOUT, "cwd": self.base_path}
                 check_output(["git", "init", "-b", "gh-pages"], **sp_params)
