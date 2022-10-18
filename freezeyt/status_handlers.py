@@ -1,5 +1,9 @@
+from typing import Callable, TYPE_CHECKING
+
 from freezeyt.hooks import TaskInfo
 from freezeyt.util import add_port
+
+StatusHandler = Callable[[TaskInfo], str]
 
 
 def warn(task: TaskInfo) -> str:
@@ -38,3 +42,13 @@ def save(task: TaskInfo) -> str:
 
 def error(task: TaskInfo) -> str:
     return 'error'
+
+
+if TYPE_CHECKING:
+    # Check that the default functions have the proper types
+    _: StatusHandler
+    _ = warn
+    _ = follow
+    _ = ignore
+    _ = save
+    _ = error
