@@ -33,14 +33,14 @@ def test_git_gh_pages_branch_is_ok(tmp_path):
     assert (output_dir / ".git").exists() # the .git directory has to exist
     assert (output_dir / ".git").is_dir() # the .git directory has to be directory
     assert (output_dir / ".git/refs/heads/gh-pages").exists() # the gh-pages has to be git head branch
-    with open(output_dir / ".git/HEAD", "r") as f:
-        assert "gh-pages" in f.read().strip().split("/") # the gh-pages has to be git head branch
-    with open(output_dir / ".git/COMMIT_EDITMSG", "r") as f:
-        assert "added all freezed files" == f.read().strip() # text of last commit with all files
-    with open(output_dir / ".git/refs/heads/gh-pages", "r") as f:
-        commit_hash = f.read().strip() # get last commit hash
+    head_name = check_output(["git", "name-rev", "--name-only", "HEAD"], cwd=output_dir).decode().strip() # get name of HEAD branch
+    assert "gh-pages" == head_name # the gh-pages has to be git head branch
+    last_commit_info = check_output(["git", "rev-list", "--oneline", "HEAD"], cwd=output_dir).decode().strip()
+    last_commit_hash = last_commit_info[:7]
+    last_commit_text = last_commit_info[8:]
+    assert "added all freezed files" == last_commit_text # text of last commit with all files
     # get list of all committed files
-    commited_files = check_output(["git", "show", "--pretty=", "--name-only", commit_hash], cwd=output_dir).decode().strip().split()
+    commited_files = check_output(["git", "ls-tree", "--name-only", "-r", last_commit_hash], cwd=output_dir).decode().strip().split()
     # list of expected files, which has to be same like commited_files
     expected_files = ['.nojekyll', 'CNAME', 'index.html', 'second_page.html']
     for file_committed, file_expected in zip(commited_files, expected_files):
