@@ -74,6 +74,23 @@ def test_gh_pages_raise_exception_if_path_in_prefix(tmp_path):
     with pytest.raises(ValueError, match="When using the Github Pages plugin, you can't specify a path in the prefix, so github can't handle it."):
         freeze(app, config)
 
+
+def test_gh_pages_two_times_in_same_folder(tmp_path):
+    """Test in which we run freezeyt twice with the same output directory - we do not expect an exception and the directory at the end must contain only the correct files."""
+    output_dir = tmp_path / "output"
+    config = {"gh_pages": True,
+              "output": str(output_dir)}
+    freeze(app, config)
+    freeze(app, config)
+    expected_files = ['.nojekyll', 'CNAME', 'index.html', 'second_page.html']
+    number_of_files = 0
+    for file in output_dir.iterdir():
+        # the .git directory is not created on all systems/configurations
+        if file.name != ".git": 
+            assert file.name in expected_files
+            number_of_files += 1
+    assert number_of_files == len(expected_files)
+
 # ONLY FOR DISCUSSION
 # def test_gh_pages_with_dict_output():
 #     """Test that gh_pages config is enabled together with dict output"""
