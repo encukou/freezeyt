@@ -1,8 +1,9 @@
 import xml.etree.ElementTree
-from typing import Iterable, BinaryIO, List, Optional, Tuple
+from typing import Iterable, BinaryIO, List, Optional, Tuple, Callable
+from typing import Coroutine, Union, Any, TYPE_CHECKING
 
 import html5lib
-import css_parser
+import cssutils
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -12,13 +13,18 @@ from .util import process_pool_executor
 
 
 _Headers = Optional[List[Tuple[str, str]]]
+UrlFinder = Callable[
+    [BinaryIO, str, _Headers],
+    Union[Iterable[str], Coroutine[Any, Any, Iterable[str]]],
+]
+
 
 def _get_css_links(
     content: bytes, base_url: str, headers: _Headers,
 )  -> Iterable[str]:
     """Get all links from a CSS file."""
-    parsed = css_parser.parseString(content)
-    return list(css_parser.getUrls(parsed))
+    parsed = cssutils.parseString(content)
+    return list(cssutils.getUrls(parsed))
 
 
 def _get_html_links(
@@ -85,3 +91,11 @@ async def get_html_links_async(
     return await loop.run_in_executor(
         process_pool_executor, _get_html_links, content, base_url, headers,
     )
+
+if TYPE_CHECKING:
+    # Check that the default functions have the proper types
+    _: UrlFinder
+    _ = get_css_links
+    _ = get_css_links_async
+    _ = get_html_links
+    _ = get_html_links_async
