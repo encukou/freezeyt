@@ -61,7 +61,8 @@ def test_overwrite_dir_with_index(tmp_path):
 
 
 def test_rm_output_dir_with_protected_file(tmp_path):
-    """We test that if there is an index.html in the directory and a file with permissions 000 (protected file) is in dir too, the directory will be overwritten successfully."""
+    """We test that if there is an index.html in the directory and a file with permissions 000
+    (protected file) is in dir too, the directory will be overwritten successfully."""
     output_dir = tmp_path / "output"
     output_dir.mkdir()
     protected_file = output_dir / "protected.file"
@@ -78,7 +79,11 @@ def test_rm_output_dir_with_protected_file(tmp_path):
 
 
 def test_rm_output_dir_with_protected_file_on_windows_fail(tmp_path, monkeypatch):
-    """We test that if there is an index.html file in the directory and a file with permissions 000 (protected file) is in dir too, then if we use rmtree without the onerror parameter, which otherwise calls the internal add_write_flag method, an exception is raised on Windows systems (os.name == 'nt'). On other systems, the deletion should be successful without the internal add_write_flag method too."""
+    """We test that if there is an index.html file in the directory and a file with permissions
+    000 (protected file) is in dir too, then if we use rmtree without the onerror parameter,
+    which otherwise calls the internal add_write_flag method, an exception is raised on Windows
+    systems (os.name == 'nt'). On other systems, the deletion should be successful without the
+    internal add_write_flag method too."""
     from shutil import rmtree as rmtree_for_mocking
     def mock_rmtree(path, onerror=None):
         """Mocked rmtree method, which only get rid of the onerror parameter."""
