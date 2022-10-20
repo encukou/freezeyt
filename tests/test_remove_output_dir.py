@@ -61,7 +61,7 @@ def test_overwrite_dir_with_index(tmp_path):
 
 
 def test_rm_output_dir_with_protected_file(tmp_path):
-    """We test that if there is an index.html in the directory and a file with permissions 000 (protected file), the directory will be overwritten successfully."""
+    """We test that if there is an index.html in the directory and a file with permissions 000 (protected file) is in dir too, the directory will be overwritten successfully."""
     output_dir = tmp_path / "output"
     output_dir.mkdir()
     protected_file = output_dir / "protected.file"
