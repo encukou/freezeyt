@@ -86,10 +86,3 @@ def test_gh_pages_two_times_in_same_folder(tmp_path):
             assert file.name in expected_files
             number_of_files += 1
     assert number_of_files == len(expected_files)
-
-# ONLY FOR DISCUSSION
-# def test_gh_pages_with_dict_output():
-#     """Test that gh_pages config is enabled together with dict output"""
-#     config = {'output': {'type': 'dict'},
-#               "gh_pages": True}
-#     freeze(app, config)
