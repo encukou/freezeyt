@@ -30,9 +30,6 @@ def test_git_gh_pages_branch_is_ok(tmp_path):
               "prefix": "https://jiri.one/",
               "output": str(output_dir)}
     freeze(app, config)
-    assert (output_dir / ".git").exists() # the .git directory has to exist
-    assert (output_dir / ".git").is_dir() # the .git directory has to be directory
-    assert (output_dir / ".git/refs/heads/gh-pages").exists() # the gh-pages has to be git head branch
     head_name = check_output(["git", "name-rev", "--name-only", "HEAD"], cwd=output_dir).decode().strip() # get name of HEAD branch
     assert "gh-pages" == head_name # the gh-pages has to be git head branch
     last_commit_info = check_output(["git", "rev-list", "--oneline", "HEAD"], cwd=output_dir).decode().strip()
