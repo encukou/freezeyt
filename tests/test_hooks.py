@@ -36,7 +36,7 @@ def test_page_frozen_hook():
 
 def test_success_hook():
     hook_called = False
-    def start_hook():
+    def start_hook(freezeinfo):
         nonlocal hook_called
         hook_called = True
 

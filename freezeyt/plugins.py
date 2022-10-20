@@ -64,7 +64,7 @@ class GHPagesPlugin:
         self.prefix_host = freeze_info._freezer.prefix.host
         freeze_info.add_hook('success', self.github_pages)
 
-    def github_pages(self):
+    def github_pages(self, freeze_info):
         if self.base_path.exists():
             (self.base_path / "CNAME").write_text(self.prefix_host)
             (self.base_path / ".nojekyll").write_text("")

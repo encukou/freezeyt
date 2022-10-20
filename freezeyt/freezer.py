@@ -350,7 +350,7 @@ class Freezer:
         cleanup = self.config.get("cleanup", True)
         result = await self.saver.finish(success, cleanup)
         if success:
-            self.call_hook('success')
+            self.call_hook('success', self.freeze_info)
             return result
         raise MultiError(self.failed_tasks.values())
 
