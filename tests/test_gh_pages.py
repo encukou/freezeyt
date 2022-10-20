@@ -33,8 +33,7 @@ def test_git_gh_pages_branch_is_ok(tmp_path):
     head_name = check_output(["git", "name-rev", "--name-only", "HEAD"], cwd=output_dir).decode().strip() # get name of HEAD branch
     assert "gh-pages" == head_name # the gh-pages has to be git head branch
     last_commit_info = check_output(["git", "rev-list", "--oneline", "HEAD"], cwd=output_dir).decode().strip()
-    last_commit_hash = last_commit_info[:7]
-    last_commit_text = last_commit_info[8:]
+    last_commit_hash, last_commit_text = last_commit_info.split(" ", 1)
     assert "added all freezed files" == last_commit_text # text of last commit with all files
     # get list of all committed files
     commited_files = check_output(["git", "ls-tree", "--name-only", "-r", last_commit_hash], cwd=output_dir).decode().strip().split()
