@@ -1,4 +1,5 @@
 from werkzeug.test import Client
+import freezegun
 
 import pytest
 
@@ -61,6 +62,7 @@ def test_urls_from_expected_dict():
 
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
+@freezegun.freeze_time()  # freeze time so that Date headers don't change
 def test_middleware_doesnt_change_app(app_name):
     with context_for_test(app_name) as module:
         app = module.app
