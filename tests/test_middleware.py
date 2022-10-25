@@ -117,3 +117,44 @@ def test_middleware_rejects_wrong_mimetype():
 
         with pytest.raises(WrongMimetypeError):
             mw_client.get('/image.jpg')
+
+
+def test_server_extra_files():
+    with context_for_test('app_with_extra_files') as module:
+        client = Client(Middleware(module.app, module.freeze_config))
+
+        response = client.get('/CNAME')
+        assert response.status[:3] == "200"
+        assert response.get_data() == b'pylades.cz'
+        assert response.content_type == 'application/octet-stream'
+
+        response = client.get('/CNAME/')
+        assert response.status[:3] == "404"
+
+        response = client.get('/.nojekyll')
+        assert response.status[:3] == "200"
+        assert response.get_data() == b''
+        assert response.content_type == 'application/octet-stream'
+
+        response = client.get('/config/xyz')
+        assert response.status[:3] == "200"
+        assert response.get_data() == b'abc'
+        assert response.content_type == 'application/octet-stream'
+
+        response = client.get('/config/xyz/')
+        assert response.status[:3] == "404"
+
+        response = client.get('/smile.png')
+        assert response.status[:3] == "200"
+        assert response.get_data()[1:4] == b'PNG'
+        assert response.content_type == 'image/png'
+
+        response = client.get('/bin_range.dat')
+        assert response.status[:3] == "200"
+        assert response.get_data() == bytes(range(10))
+        assert response.content_type == 'application/octet-stream'
+
+        response = client.get('/smile2.png')
+        assert response.status[:3] == "200"
+        assert response.get_data()[1:4] == b'PNG'
+        assert response.content_type == 'image/png'
