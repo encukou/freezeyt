@@ -59,7 +59,7 @@ def test_several_warns(capsys):
     }
 
     with context_for_test("app_3pages_deep") as module:
-        freeze_result = freeze(module.app, config)
+        freeze(module.app, config)
         captured = capsys.readouterr()
 
     expected_output = (
