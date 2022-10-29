@@ -53,9 +53,16 @@ def test_warn_handler(capsys, response_status):
 
 
 def test_several_warns(capsys):
+    warnings = []
+
+    def record_warnings(freeze_info):
+        warnings.clear()
+        warnings.extend(freeze_info._freezer.warnings)
+
     config = {
         'output': {'type': 'dict'},
         'status_handlers': {'200': 'warn'},
+        'hooks': {'page_frozen': [record_warnings]},
     }
 
     with context_for_test("app_3pages_deep") as module:
@@ -70,8 +77,14 @@ def test_several_warns(capsys):
         "[WARNING] URL http://localhost:8000/third_page.html,"
         " status code: 200 was freezed\n"
     )
+    expected_warnings = [
+        'URL http://localhost:8000/, status code: 200 was freezed',
+        'URL http://localhost:8000/second_page.html, status code: 200 was freezed',
+        'URL http://localhost:8000/third_page.html, status code: 200 was freezed',
+    ]
 
     assert expected_output == captured.out
+    assert warnings == expected_warnings
 
 
 @pytest.mark.parametrize('response_status', STATUSES)
