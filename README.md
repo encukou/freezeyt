@@ -354,6 +354,28 @@ The command line switch has priority over the configuration.
 Use `--no-cleanup` to override `cleanup: False` from the config.
 
 
+### Github Pages Plugin
+
+To make it easier to upload freezed pages to Github ([Github Pages service](https://pages.github.com/)), you can also use the `--gh-pages` switch or the `gh_pages` key  in the configuration file, which creates a gh-pages git branch in the output directory.
+
+By default, the Github Pages Plugin is not active, but if you want to override the current configuration, you can use the `--no-gh-pages` switch in the CLI.
+
+Configuration example:
+```yaml
+gh_pages: True
+```
+
+To deploy a site to Github, you can then work with the git repository directly in the output directory or pull the files into another repository/directory.
+You can then pull/fetch files from the newly created gh-pages git branch in many ways, e.g:
+```shell
+git pull output_dir gh-pages
+```
+or:
+```shell
+git fetch output_dir gh-pages
+git checkout -b gh-pages FETCH_HEAD
+```
+
 ### Comparison of MIME type and file type
 
 Freezeyt checks whether the file extensions in its output
