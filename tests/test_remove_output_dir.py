@@ -1,4 +1,3 @@
-from msilib.schema import File
 import pytest
 import os
 import shutil
