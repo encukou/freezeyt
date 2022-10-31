@@ -78,11 +78,7 @@ def test_gh_pages_two_times_in_same_folder(tmp_path):
               "output": str(output_dir)}
     freeze(app, config)
     freeze(app, config)
-    expected_files = ['.nojekyll', 'CNAME', 'index.html', 'second_page.html']
-    number_of_files = 0
-    for file in output_dir.iterdir():
-        # the .git directory is not created on all systems/configurations
-        if file.name != ".git": 
-            assert file.name in expected_files
-            number_of_files += 1
-    assert number_of_files == len(expected_files)
+    expected_files = {'.nojekyll', 'CNAME', 'index.html', 'second_page.html'}
+    # the .git directory is not created on all systems/configurations
+    got_files = {path.name for path in output_dir.iterdir() if path.name != ".git"}
+    assert got_files == expected_files
