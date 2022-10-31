@@ -358,7 +358,7 @@ Use `--no-cleanup` to override `cleanup: False` from the config.
 
 To make it easier to upload freezed pages to Github ([Github Pages service](https://pages.github.com/)), you can also use the `--gh-pages` switch or the `gh_pages` key  in the configuration file, which creates a gh-pages git branch in the output directory.
 
-By default, the Github Pages Plugin is not active, but if you want to override the current configuration, you can use the `--no-gh-pages` switch in the CLI.
+By default, the Github Pages Plugin is not active, however, if you have activated this plugin in your configuration, you can always override the current configuration with `--no-gh-pages` switch in the CLI.
 
 Configuration example:
 ```yaml
