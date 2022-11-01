@@ -6,7 +6,7 @@ from flask import Flask, Response
 
 from freezeyt import freeze, UnexpectedStatus
 
-from testutil import raises_multierror_with_one_exception
+from testutil import raises_multierror_with_one_exception, context_for_test
 
 
 STATUSES = ('100', '201', '204', '301', '406', '503', '600', '709', '888')
@@ -42,7 +42,7 @@ def test_warn_handler(capsys, response_status):
         return Response(response='Hello world!', status=response_status)
 
     expected_output = (
-        f"WARNING: URL http://localhost:8000/,"
+        f"[WARNING] URL http://localhost:8000/,"
         f" status code: {response_status} was freezed\n"
     )
 
@@ -50,6 +50,41 @@ def test_warn_handler(capsys, response_status):
     captured = capsys.readouterr()
 
     assert expected_output in captured.out
+
+
+def test_several_warns(capsys):
+    warnings = []
+
+    def record_warnings(task_info):
+        nonlocal warnings
+        warnings = list(task_info._freezer.warnings)
+
+    config = {
+        'output': {'type': 'dict'},
+        'status_handlers': {'200': 'warn'},
+        'hooks': {'page_frozen': [record_warnings]},
+    }
+
+    with context_for_test("app_3pages_deep") as module:
+        freeze(module.app, config)
+        captured = capsys.readouterr()
+
+    expected_output = (
+        "[WARNING] URL http://localhost:8000/,"
+        " status code: 200 was freezed\n"
+        "[WARNING] URL http://localhost:8000/second_page.html,"
+        " status code: 200 was freezed\n"
+        "[WARNING] URL http://localhost:8000/third_page.html,"
+        " status code: 200 was freezed\n"
+    )
+    expected_warnings = [
+        'URL http://localhost:8000/, status code: 200 was freezed',
+        'URL http://localhost:8000/second_page.html, status code: 200 was freezed',
+        'URL http://localhost:8000/third_page.html, status code: 200 was freezed',
+    ]
+
+    assert expected_output == captured.out
+    assert warnings == expected_warnings
 
 
 @pytest.mark.parametrize('response_status', STATUSES)

@@ -5,7 +5,7 @@ import itertools
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, TypeVar
+from typing import Tuple, List, TypeVar
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -289,6 +289,7 @@ class Freezer:
         else:
             raise ValueError(f"unknown output type {output['type']}")
 
+        self.warnings: List[str] = []
         # The tasks for individual pages are tracked in the followng sets
         # (actually dictionaries: {task.path: task})
         # Each task must be in exactly in one of these.
@@ -354,6 +355,9 @@ class Freezer:
         cleanup = self.config.get("cleanup", True)
         result = await self.saver.finish(success, cleanup)
         if success:
+            for warning in self.warnings:
+                print(f"[WARNING] {warning}")
+
             return result
         raise MultiError(self.failed_tasks.values())
 
