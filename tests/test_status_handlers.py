@@ -55,9 +55,9 @@ def test_warn_handler(capsys, response_status):
 def test_several_warns(capsys):
     warnings = []
 
-    def record_warnings(freeze_info):
-        warnings.clear()
-        warnings.extend(freeze_info._freezer.warnings)
+    def record_warnings(task_info):
+        nonlocal warnings
+        warnings = list(task_info._freezer.warnings)
 
     config = {
         'output': {'type': 'dict'},
