@@ -1,6 +1,7 @@
 import traceback
 import sys
 from subprocess import check_output, CalledProcessError, STDOUT
+from textwrap import dedent
 
 import enlighten
 import click
@@ -59,7 +60,7 @@ class LogPlugin:
 class GHPagesPlugin:
     def __init__(self, freeze_info):
         if freeze_info._freezer.prefix.path != "/":
-            raise ValueError("When using the Github Pages plugin, you can't specify a path in the prefix, so github can't handle it.") 
+            raise ValueError("When using the Github Pages plugin, you can't specify a path in the prefix, so github can't handle it.")
         self.base_path = freeze_info._freezer.saver.base_path
         self.prefix_host = freeze_info._freezer.prefix.host
         freeze_info.add_hook('success', self.github_pages)
@@ -88,3 +89,8 @@ class GHPagesPlugin:
                       command: {e.cmd}
                       captured standard output with error:
                       {e.stdout.decode()}""")
+            else:
+                print(dedent("""
+                      The gh-pages git branch has been successfully created,
+                      you can work with it in the output directory.
+                      See the README.md for tips on how to do this."""))
