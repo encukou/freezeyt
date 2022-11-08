@@ -315,12 +315,21 @@ class Freezer:
 
         try:
             self.add_task(prefix_parsed, reason='site root (homepage)')
-            for url_part, content in get_extra_files(config):
-                self.add_static_task(
-                    self.prefix.join(url_part),
-                    reason="from extra_files",
-                    content=content,
-                )
+            for url_part, kind, content_or_path in get_extra_files(config):
+                if kind == 'content':
+                    self.add_static_task(
+                        self.prefix.join(url_part),
+                        reason="from extra_files",
+                        content=content_or_path,
+                    )
+                elif kind == 'path':
+                    self.add_file_task(
+                        self.prefix.join(url_part),
+                        reason="from extra_files",
+                        path=content_or_path,
+                    )
+                else:
+                    raise ValueError(kind)
             self._add_extra_pages(prefix, self.extra_pages)
 
             self.hooks = {}
@@ -381,6 +390,20 @@ class Freezer:
         task = self._add_task(url, external_ok=external_ok, reason=reason)
         if task and task.asyncio_task is None:
             coroutine = self.handle_content_task(task, content)
+            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
+        return task
+
+    def add_file_task(
+        self, url: URL, path: Path, *, external_ok: bool = False,
+        reason: str = None,
+    ) -> Optional[Task]:
+        """Add a task to save contents of the given file at the given URL.
+
+        If no task is added (e.g. for external URLs), return None.
+        """
+        task = self._add_task(url, external_ok=external_ok, reason=reason)
+        if task and task.asyncio_task is None:
+            coroutine = self.handle_file_task(task, path)
             task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
         return task
 
@@ -521,6 +544,23 @@ class Freezer:
     @needs_semaphore
     async def handle_content_task(self, task, content):
         await self.saver.save_to_filename(task.path, [content])
+        del self.inprogress_tasks[task.path]
+        self.done_tasks[task.path] = task
+        self.call_hook('page_frozen', hooks.TaskInfo(task))
+
+    @needs_semaphore
+    async def handle_file_task(self, task, path):
+        try:
+            content = path.read_bytes()
+        except IsADirectoryError:
+            for subpath in path.iterdir():
+                self.add_file_task(
+                    task.get_a_url().join(subpath.name),
+                    reason=f"content of {path}",
+                    path=subpath,
+                )
+        else:
+            await self.saver.save_to_filename(task.path, [content])
         del self.inprogress_tasks[task.path]
         self.done_tasks[task.path] = task
         self.call_hook('page_frozen', hooks.TaskInfo(task))
