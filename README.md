@@ -564,6 +564,12 @@ exception.
 It is passed a `TaskInfo` object as argument (see the `page_frozen` hook).
 
 
+#### `success`
+
+The function will be called after the app is successfully frozen.
+It is passed a `FreezeInfo` object as argument (see the `start` hook).
+
+
 ### Status handling
 
 The `status_handlers` option defines the way to handle HTTP statuses.
