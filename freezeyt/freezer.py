@@ -363,7 +363,7 @@ class Freezer:
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,
-        reason: str = None,
+        reason: Optional[str] = None,
     ) -> Optional[Task]:
         """Add a task to save the given content at the given URL.
 
@@ -376,7 +376,7 @@ class Freezer:
         return task
 
     def add_task(
-        self, url: URL, *, external_ok: bool = False, reason: str = None,
+        self, url: URL, *, external_ok: bool = False, reason: Optional[str] = None,
     ) -> Optional[Task]:
         """Add a task to freeze the given URL
 
@@ -389,7 +389,7 @@ class Freezer:
         return task
 
     def _add_task(
-        self, url: URL, *, external_ok: bool = False, reason: str = None,
+        self, url: URL, *, external_ok: bool = False, reason: Optional[str] = None,
     ) -> Optional[Task]:
         if is_external(url, self.prefix):
             if external_ok:
