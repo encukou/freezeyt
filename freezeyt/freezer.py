@@ -227,8 +227,17 @@ class Freezer:
             if app_config is not None:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
-
+        
         self.app = Middleware(app, config)
+       
+        if self.config.get("gh_pages", False):
+            plugins = config.setdefault('plugins', [])
+            if 'freezeyt.plugins:GHPagesPlugin' not in plugins:
+                plugins.append('freezeyt.plugins:GHPagesPlugin')
+        if self.config.get("gh_pages", False) is False:
+            plugins = config.setdefault('plugins', [])
+            if 'freezeyt.plugins:GHPagesPlugin' in plugins:
+                plugins.remove('freezeyt.plugins:GHPagesPlugin')
 
         CONFIG_DATA = (
             ('extra_pages', ()),
@@ -355,9 +364,9 @@ class Freezer:
         cleanup = self.config.get("cleanup", True)
         result = await self.saver.finish(success, cleanup)
         if success:
+            self.call_hook('success', self.freeze_info)
             for warning in self.warnings:
                 print(f"[WARNING] {warning}")
-
             return result
         raise MultiError(self.failed_tasks.values())
 

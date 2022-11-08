@@ -354,6 +354,25 @@ The command line switch has priority over the configuration.
 Use `--no-cleanup` to override `cleanup: False` from the config.
 
 
+### Github Pages Plugin
+
+To make it easier to upload frozen pages to ([Github Pages service](https://pages.github.com/)), you can also use the `--gh-pages` switch or the `gh_pages` key  in the configuration file, which creates a gh-pages git branch in the output directory.
+
+By default, the Github Pages Plugin is not active, however, if you have activated this plugin in your configuration, you can always override the current configuration with `--no-gh-pages` switch in the CLI.
+
+Configuration example:
+```yaml
+gh_pages: True
+```
+
+To deploy a site to Github, you can then work with the git repository directly in the output directory or pull the files into another repository/directory.
+You can then pull/fetch files from the newly created gh-pages git branch in many ways, e.g:
+```shell
+git fetch output_dir gh-pages
+git branch --force gh-pages FETCH_HEAD
+```
+Note: This will overwrite the current contents of the `gh-pages` branch, because of the `--force` switch.
+
 ### Comparison of MIME type and file type
 
 Freezeyt checks whether the file extensions in its output
@@ -543,6 +562,12 @@ The object has the following attributes:
 The function will be called whenever a page is not saved due to an
 exception.
 It is passed a `TaskInfo` object as argument (see the `page_frozen` hook).
+
+
+#### `success`
+
+The function will be called after the app is successfully frozen.
+It is passed a `FreezeInfo` object as argument (see the `start` hook).
 
 
 ### Status handling

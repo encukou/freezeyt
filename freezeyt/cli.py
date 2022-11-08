@@ -31,10 +31,13 @@ from freezeyt.util import import_variable_from_module
 @click.option('--cleanup/--no-cleanup', 'cleanup',
               default=None,
               help='Remove incomplete directory (if error occured). Default is to clean up.')
+@click.option('--gh-pages/--no-gh-pages', 'gh_pages',
+              default=None,
+              help='If activated and freeze was successful, create git gh-pages branch in output folder and commit all files to that branch.')
 
 def main(
     app, dest_path, output, prefix,
-    extra_pages, config_file, config_var, progress, cleanup,
+    extra_pages, config_file, config_var, progress, cleanup, gh_pages
 ):
     """
     APP
@@ -109,15 +112,18 @@ def main(
 
     if progress == 'bar':
         config.setdefault(
-            'plugins', []).append('freezeyt.progressbar:ProgressBarPlugin')
+            'plugins', []).append('freezeyt.plugins:ProgressBarPlugin')
     if progress in ('log', 'bar'):
         # The 'log' plugin is activated both with --progress=log and
         # --progress=bar.
         config.setdefault(
-            'plugins', []).append('freezeyt.progressbar:LogPlugin')
+            'plugins', []).append('freezeyt.plugins:LogPlugin')
 
     if cleanup is not None:
         config['cleanup'] = cleanup
+    
+    if gh_pages is not None:
+        config['gh_pages'] = gh_pages
 
     try:
         freeze(app=None, config=config)

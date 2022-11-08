@@ -34,6 +34,24 @@ def test_page_frozen_hook():
     assert info.path == 'second_page.html'
 
 
+def test_success_hook():
+    hook_called = False
+    def start_hook(freezeinfo):
+        nonlocal hook_called
+        hook_called = True
+
+    with context_for_test('app_2pages') as module:
+        config = {
+            'output': {'type': 'dict'},
+            'prefix': 'https://jiri.one/',
+            'hooks': {'success': [start_hook]},
+        }
+
+        output = freeze(module.app, config)
+        assert hook_called
+        assert output == module.expected_dict
+
+
 _recorded_hook_calls = []
 def hook(task_info):
     _recorded_hook_calls.append(task_info)
