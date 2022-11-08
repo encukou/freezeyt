@@ -93,4 +93,4 @@ class GHPagesPlugin:
                 print(dedent("""
                       The gh-pages git branch has been successfully created,
                       you can work with it in the output directory.
-                      See the README.md for tips on how to do this."""))
+                      Check the page https://github.com/encukou/freezeyt#github-pages-plugin for tips on how to do this."""))
