@@ -84,14 +84,12 @@ if os.name == "nt": # this test will run only on Windows systems
         parameter to the rmtree method) on Windows, otherwise rmtree on Windows will not be
         able to delete protected files in output dir - for example, some files in the .git
         directory."""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        protected_file = output_dir / "protected.file"
+        protected_file = tmp_path / "protected.file"
         protected_file.touch()
         protected_file.chmod(0o000)
         with pytest.raises(PermissionError): # without onerror=add_write_flag
-            shutil.rmtree(output_dir)
+            shutil.rmtree(tmp_path)
         assert protected_file.exists()
-        shutil.rmtree(output_dir, onerror=FileSaver.add_write_flag)
-        assert not output_dir.exists()
+        shutil.rmtree(tmp_path, onerror=FileSaver.add_write_flag)
+        assert not tmp_path.exists()
         assert not protected_file.exists()
