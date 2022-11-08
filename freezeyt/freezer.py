@@ -372,7 +372,7 @@ class Freezer:
 
     def add_static_task(
         self, url: URL, content: bytes, *, external_ok: bool = False,
-        reason: str = None,
+        reason: Optional[str] = None,
     ) -> Optional[Task]:
         """Add a task to save the given content at the given URL.
 
@@ -385,7 +385,7 @@ class Freezer:
         return task
 
     def add_task(
-        self, url: URL, *, external_ok: bool = False, reason: str = None,
+        self, url: URL, *, external_ok: bool = False, reason: Optional[str] = None,
     ) -> Optional[Task]:
         """Add a task to freeze the given URL
 
@@ -398,7 +398,7 @@ class Freezer:
         return task
 
     def _add_task(
-        self, url: URL, *, external_ok: bool = False, reason: str = None,
+        self, url: URL, *, external_ok: bool = False, reason: Optional[str] = None,
     ) -> Optional[Task]:
         if is_external(url, self.prefix):
             if external_ok:
@@ -526,7 +526,7 @@ class Freezer:
         self.call_hook('page_frozen', hooks.TaskInfo(task))
 
     @needs_semaphore
-    async def handle_one_task(self, task):
+    async def handle_one_task(self, task: Task) -> None:
         # Get an URL from the task's set of URLs
         url_parsed = task.get_a_url()
         url = url_parsed
@@ -568,7 +568,7 @@ class Freezer:
 
         # Set up the wsgi_write_data, and make its `append` method
         # available to `start_response` as first argument:
-        wsgi_write_data = []
+        wsgi_write_data: List[bytes] = []
         start_response: StartResponse = functools.partial(
             self.start_response,
             task,
@@ -598,13 +598,11 @@ class Freezer:
             await self.saver.save_to_filename(task.path, full_result)
 
         finally:
-            try:
-                close = result_iterable.close
-            except AttributeError:
-                pass
-            else:
+            close = getattr(result_iterable, 'close', None)
+            if close is not None:
                 close()
 
+        assert task.response_headers is not None
         content_type = task.response_headers.get('Content-Type')
         mime_type, encoding = parse_options_header(content_type)
         url_finder = self.url_finders.get(mime_type)
