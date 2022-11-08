@@ -7,8 +7,8 @@ StatusHandler = Callable[[TaskInfo], str]
 
 
 def warn(task: TaskInfo) -> str:
-    print(
-        f"WARNING: URL {task.get_a_url()},"
+    task._freezer.warnings.append(
+        f"URL {task.get_a_url()},"
         + f" status code: {task._task.response_status[:3]} was freezed"
     )
 

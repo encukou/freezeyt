@@ -3,10 +3,9 @@ from pathlib import Path, PurePosixPath
 import io
 import itertools
 import functools
-import base64
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, TypeVar
+from typing import Tuple, List, TypeVar
 import enum
 from urllib.parse import urljoin
 import asyncio
@@ -34,6 +33,7 @@ from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
 from freezeyt.status_handlers import StatusHandler
 from freezeyt.url_finders import UrlFinder
+from freezeyt.extra_files import get_extra_files
 
 
 MAX_RUNNING_TASKS = 100
@@ -241,7 +241,6 @@ class Freezer:
 
         CONFIG_DATA = (
             ('extra_pages', ()),
-            ('extra_files', None),
             ('url_to_path', default_url_to_path)
         )
         for attr_name, default in CONFIG_DATA:
@@ -299,6 +298,7 @@ class Freezer:
         else:
             raise ValueError(f"unknown output type {output['type']}")
 
+        self.warnings: List[str] = []
         # The tasks for individual pages are tracked in the followng sets
         # (actually dictionaries: {task.path: task})
         # Each task must be in exactly in one of these.
@@ -315,7 +315,12 @@ class Freezer:
 
         try:
             self.add_task(prefix_parsed, reason='site root (homepage)')
-            self._add_extra_files()
+            for url_part, content in get_extra_files(config):
+                self.add_static_task(
+                    self.prefix.join(url_part),
+                    reason="from extra_files",
+                    content=content,
+                )
             self._add_extra_pages(prefix, self.extra_pages)
 
             self.hooks = {}
@@ -360,6 +365,8 @@ class Freezer:
         result = await self.saver.finish(success, cleanup)
         if success:
             self.call_hook('success', self.freeze_info)
+            for warning in self.warnings:
+                print(f"[WARNING] {warning}")
             return result
         raise MultiError(self.failed_tasks.values())
 
@@ -414,45 +421,6 @@ class Freezer:
         if reason:
             task.reasons.add(reason)
         return task
-
-    def _add_extra_files(self):
-        if self.extra_files is not None:
-            for url_part, content in self.extra_files.items():
-                if isinstance(content, str):
-                    content = content.encode()
-                elif isinstance(content, dict):
-                    if 'base64' in content:
-                        content = base64.b64decode(content['base64'])
-                    elif 'copy_from' in content:
-                        path = Path(content['copy_from'])
-                        self.freeze_extra_files_from_path(
-                            url_path=PurePosixPath(url_part),
-                            disk_path=path,
-                        )
-                        continue
-                    else:
-                        raise ValueError(
-                            'a mapping in extra_files must contain '
-                            + '"base64" or "copy_from"'
-                        )
-                url = self.prefix.join(url_part)
-                self.add_static_task(
-                    url=url, reason="from extra_files", content=content,
-                )
-
-    def freeze_extra_files_from_path(self, url_path, disk_path):
-        if disk_path.is_dir():
-            for subpath in disk_path.iterdir():
-                self.freeze_extra_files_from_path(
-                    url_path / subpath.name, subpath)
-        else:
-            url = self.prefix.join(str(url_path))
-            self.add_static_task(
-                url=url,
-                reason="from extra_files",
-                content=disk_path.read_bytes(),
-            )
-
 
     async def prepare(self):
         await self.saver.prepare()
