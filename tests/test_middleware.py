@@ -6,7 +6,7 @@ import pytest
 from freezeyt.middleware import Middleware
 from freezeyt.util import WrongMimetypeError
 
-from testutil import APP_NAMES, context_for_test
+from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
 
 def urls_from_expected_dict(expected_dict, prefix=''):
     """Generate URLs from an `expected_dict` found in tests
@@ -64,12 +64,22 @@ def test_urls_from_expected_dict():
 @pytest.mark.parametrize('app_name', APP_NAMES)
 @freezegun.freeze_time()  # freeze time so that Date headers don't change
 def test_middleware_doesnt_change_app(app_name):
+    app_path = FIXTURES_PATH / app_name
+    error_path = app_path / 'error.txt'
     with context_for_test(app_name) as module:
         app = module.app
         config = getattr(module, 'freeze_config', {})
 
         app_client = Client(app)
-        mw_client = Client(Middleware(app, config))
+        try:
+            mw_client = Client(Middleware(app, config))
+        except ValueError:
+            # If creating the Middleware fails, it should raise the same
+            # exception as freezing the app.
+            # Currently, only ValueError can be raised in the initialization
+            assert error_path.exists()
+            assert error_path.read_text().strip() == 'ValueError'
+            return  # test was successful
 
         # Check that the middleware doesn't change the response
         # for /nonexisting_url/, except possibly raising WrongMimetypeError
@@ -88,23 +98,33 @@ def test_middleware_doesnt_change_app(app_name):
         else:
             # By default, we don't expect any errors.
             expected_error = ()
-            if 'extra_files' in config:
-                # extra_files is a Freezeyt-only setting, not visible
-                # in the app. The mimetype of extra files might not match.
-                expected_error = WrongMimetypeError
+            #if 'extra_files' in config:
+                ## extra_files is a Freezeyt-only setting, not visible
+                ## in the app. The mimetype of extra files might not match.
+                #expected_error = WrongMimetypeError
             for url in urls_from_expected_dict(expected_dict):
                 check_responses_are_same(
                     app_client, mw_client, url,
                     expected_error=expected_error,
+                    expect_extra_files=('extra_files' in config),
                 )
 
-def check_responses_are_same(app_client, mw_client, url, expected_error=()):
+def check_responses_are_same(
+    app_client, mw_client, url, expected_error=(), expect_extra_files=False,
+):
     app_response = app_client.get(url)
     print(app_response)
     print(app_response.get_data())
     try:
         mw_response = mw_client.get(url)
     except expected_error:
+        return
+
+    if (expect_extra_files
+        and app_response.status.startswith('404')
+        and mw_response.status.startswith('200')
+    ):
+        # expected extra page
         return
 
     assert app_response.status == mw_response.status
