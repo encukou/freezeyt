@@ -38,6 +38,13 @@ class MimetypeChecker:
             get_mimetype=self.get_mimetype,
         )
 
+    def guess_mimetype(self, url):
+        """Return a single best guess of the mimetype for url"""
+        types = self.get_mimetype(url)
+        if types is None:
+            return self.default_mimetype
+        return types[0]
+
 
 def default_mimetype(url: str) -> Optional[List[str]]:
     """Returns file mimetype as a string from mimetype.guess_type.
