@@ -316,22 +316,10 @@ class Freezer:
         try:
             self.add_task(prefix_parsed, reason='site root (homepage)')
             for url_part, kind, content_or_path in get_extra_files(config):
-                if kind == 'content':
-                    assert isinstance(content_or_path, bytes)
-                    self.add_static_task(
-                        self.prefix.join(url_part),
-                        reason="from extra_files",
-                        content=content_or_path,
-                    )
-                elif kind == 'path':
-                    assert isinstance(content_or_path, Path)
-                    self.add_file_task(
-                        self.prefix.join(url_part),
-                        reason="from extra_files",
-                        path=content_or_path,
-                    )
-                else:
-                    raise ValueError(kind)
+                self.add_task(
+                    self.prefix.join(url_part),
+                    reason="from extra_files",
+                )
             self._add_extra_pages(prefix, self.extra_pages)
 
             self.hooks = {}
@@ -380,34 +368,6 @@ class Freezer:
                 print(f"[WARNING] {warning}")
             return result
         raise MultiError(self.failed_tasks.values())
-
-    def add_static_task(
-        self, url: URL, content: bytes, *, external_ok: bool = False,
-        reason: Optional[str] = None,
-    ) -> Optional[Task]:
-        """Add a task to save the given content at the given URL.
-
-        If no task is added (e.g. for external URLs), return None.
-        """
-        task = self._add_task(url, external_ok=external_ok, reason=reason)
-        if task and task.asyncio_task is None:
-            coroutine = self.handle_content_task(task, content)
-            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
-        return task
-
-    def add_file_task(
-        self, url: URL, path: Path, *, external_ok: bool = False,
-        reason: Optional[str] = None,
-    ) -> Optional[Task]:
-        """Add a task to save contents of the given file at the given URL.
-
-        If no task is added (e.g. for external URLs), return None.
-        """
-        task = self._add_task(url, external_ok=external_ok, reason=reason)
-        if task and task.asyncio_task is None:
-            coroutine = self.handle_file_task(task, path)
-            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
-        return task
 
     def add_task(
         self, url: URL, *, external_ok: bool = False, reason: Optional[str] = None,
@@ -542,21 +502,6 @@ class Freezer:
                 self.call_hook('page_failed', hooks.TaskInfo(task))
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
-
-    @needs_semaphore
-    async def handle_content_task(self, task, content):
-        await self.saver.save_to_filename(task.path, [content])
-        del self.inprogress_tasks[task.path]
-        self.done_tasks[task.path] = task
-        self.call_hook('page_frozen', hooks.TaskInfo(task))
-
-    @needs_semaphore
-    async def handle_file_task(self, task, path):
-        content = path.read_bytes()
-        await self.saver.save_to_filename(task.path, [content])
-        del self.inprogress_tasks[task.path]
-        self.done_tasks[task.path] = task
-        self.call_hook('page_frozen', hooks.TaskInfo(task))
 
     @needs_semaphore
     async def handle_one_task(self, task: Task) -> None:
