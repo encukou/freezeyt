@@ -31,7 +31,8 @@ def get_extra_files(
                     content = base64.b64decode(content['base64'])
                     yield url_part, "content", content
                 elif 'copy_from' in content:
-                    yield url_part, "path", Path(content['copy_from'])
+                    yield from get_extra_files_from_disk(
+                        url_part, Path(content['copy_from']))
                 else:
                     raise ValueError(
                         'a mapping in extra_files must contain '
@@ -42,3 +43,13 @@ def get_extra_files(
                     'extra_files values must be bytes, str or mappings;'
                     + f' got a {type(content).__name__}'
                 )
+
+def get_extra_files_from_disk(url_part, path):
+    if path.is_dir():
+        for subpath in path.iterdir():
+            yield from get_extra_files_from_disk(
+                url_part=url_part.rstrip('/') + '/' + subpath.name,
+                path=subpath,
+            )
+    else:
+        yield url_part, "path", path

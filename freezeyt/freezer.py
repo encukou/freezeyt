@@ -550,17 +550,8 @@ class Freezer:
 
     @needs_semaphore
     async def handle_file_task(self, task, path):
-        try:
-            content = path.read_bytes()
-        except IsADirectoryError:
-            for subpath in path.iterdir():
-                self.add_file_task(
-                    task.get_a_url().join(subpath.name),
-                    reason=f"content of {path}",
-                    path=subpath,
-                )
-        else:
-            await self.saver.save_to_filename(task.path, [content])
+        content = path.read_bytes()
+        await self.saver.save_to_filename(task.path, [content])
         del self.inprogress_tasks[task.path]
         self.done_tasks[task.path] = task
         self.call_hook('page_frozen', hooks.TaskInfo(task))
