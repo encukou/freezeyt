@@ -317,12 +317,14 @@ class Freezer:
             self.add_task(prefix_parsed, reason='site root (homepage)')
             for url_part, kind, content_or_path in get_extra_files(config):
                 if kind == 'content':
+                    assert isinstance(content_or_path, bytes)
                     self.add_static_task(
                         self.prefix.join(url_part),
                         reason="from extra_files",
                         content=content_or_path,
                     )
                 elif kind == 'path':
+                    assert isinstance(content_or_path, Path)
                     self.add_file_task(
                         self.prefix.join(url_part),
                         reason="from extra_files",
@@ -395,7 +397,7 @@ class Freezer:
 
     def add_file_task(
         self, url: URL, path: Path, *, external_ok: bool = False,
-        reason: str = None,
+        reason: Optional[str] = None,
     ) -> Optional[Task]:
         """Add a task to save contents of the given file at the given URL.
 

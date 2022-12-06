@@ -1,13 +1,23 @@
 import base64
 from pathlib import Path
 import collections.abc
-from typing import Mapping, Iterator, Tuple, Literal, Union
+from typing import Mapping, Iterator, Tuple, Union
+import sys
+
+if sys.version_info > (3, 8):
+    from typing import Literal
+    literal_content = Literal["content"]
+    literal_path = Literal["path"]
+else:
+    literal_content = str
+    literal_path = str
+
 
 def get_extra_files(
     config: Mapping
 ) -> Iterator[Union[
-    Tuple[str, Literal["content"], bytes],
-    Tuple[str, Literal["path"], Path],
+    Tuple[str, literal_content, bytes],
+    Tuple[str, literal_path, Path],
 ]]:
     """Extracts the extra_files from Freezeyt configuration.
 
