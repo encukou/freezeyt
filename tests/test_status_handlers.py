@@ -9,7 +9,7 @@ from freezeyt import freeze, UnexpectedStatus
 from testutil import raises_multierror_with_one_exception, context_for_test
 
 
-STATUSES = ('100', '201', '204', '301', '406', '503', '600', '709', '888')
+STATUSES = ('100', '200', '201', '204', '301', '406', '503', '600', '709', '888')
 
 @pytest.mark.parametrize('response_status', STATUSES )
 def test_error_handler(response_status):
