@@ -65,15 +65,6 @@ DEFAULT_URL_FINDERS = {
             'text/css': 'get_css_links_async'
         }
 
-DEFAULT_STATUS_HANDLERS = {
-    '1xx': 'error',
-    '200': 'save',
-    '2xx': 'error',
-    '3xx': 'error',
-    '4xx': 'error',
-    '5xx': 'error',
-}
-
 
 K = TypeVar('K')
 Func = TypeVar('Func', bound=Callable)
@@ -260,18 +251,17 @@ class Freezer:
             _url_finders, default_module='freezeyt.url_finders'
         )
 
-        _status_handlers = dict(
-            DEFAULT_STATUS_HANDLERS, **config.get('status_handlers', {})
-        )
-        self.status_handlers = parse_handlers(
-            _status_handlers, default_module='freezeyt.status_handlers'
-        )
-        for key in self.status_handlers:
+        _status_handlers = config.get('status_handlers', {})
+        for key in _status_handlers:
             if not STATUS_KEY_RE.fullmatch(key):
                 raise ValueError(
                     'Status descriptions must be strings with 3 digits or one '
                     + f'digit and "xx", got f{key!r}'
                 )
+
+        self.status_handlers = parse_handlers(
+            _status_handlers, default_module='freezeyt.status_handlers'
+        )
 
         prefix = config.get('prefix', 'http://localhost:8000/')
 
@@ -448,10 +438,14 @@ class Freezer:
             if value is not None:
                 raise value
 
-        if self.status_handlers.get(status[:3]):
+        if self.status_handlers.get(status[:3]): # handle particular status from configuration
             status_handler = self.status_handlers.get(status[:3])
-        elif self.status_handlers.get(status[0] + 'xx'):
+        elif self.status_handlers.get(status[0] + 'xx'): # handle group statuses from configuration
             status_handler = self.status_handlers.get(status[0] + 'xx')
+        elif status.startswith('200'): # default for status 200
+            status_handler = freezeyt.status_handlers.save
+        elif status[0] in '12345': # default for groups 1xx, 2xx, ...
+            status_handler = freezeyt.status_handlers.error
         else:
             raise UnexpectedStatus(url, status)
 
