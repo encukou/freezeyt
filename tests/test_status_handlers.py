@@ -98,10 +98,15 @@ def test_default_handlers(response_status):
     def index():
         return Response(response='Hello world!', status=response_status)
 
-    with raises_multierror_with_one_exception(UnexpectedStatus) as e:
-        freeze(app, config)
+    if response_status == '200':
+        result = freeze(app, config)
+        assert result == {'index.html': b'Hello world!'}
+    else:
+        with raises_multierror_with_one_exception(UnexpectedStatus) as e:
+            freeze(app, config)
 
-    assert e.value.status[:3] == f'{response_status}'
+        assert e.value.status[:3] == f'{response_status}'
+
 
 def custom_handler(task):
     return "non_sense"
