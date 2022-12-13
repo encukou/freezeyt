@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from freezeyt.extra_files import get_extra_files
 
 from testutil import FIXTURES_PATH
@@ -10,38 +12,26 @@ def test_simple():
             'foo': 'abc',
         }
     }
-    assert dict(get_extra_files(config)) == {'foo': b'abc'}
+    assert list(get_extra_files(config)) == [('foo', 'content', b'abc')]
 
 def test_content():
     config = {
         'extra_files': {
-            'str': 'ábč',
-            'bytes': b'def',
-            'base64': {'base64': 'Z2hp'},
-            'copied': {
+            'str.txt': 'ábč',
+            'bytes.dat': b'def',
+            'base64.dat': {'base64': 'Z2hp'},
+            'copied.png': {
                 'copy_from': FIXTURES_PATH / 'app_with_extra_files/smile2.png'
             },
-        }
-    }
-    assert dict(get_extra_files(config)) == {
-        'str': 'ábč'.encode(),
-        'bytes': b'def',
-        'base64': b'ghi',
-        'copied': IMAGE_BYTES,
-    }
-
-def test_tree():
-    config = {
-        'extra_files': {
-            'tree': {
-                'copy_from': FIXTURES_PATH / 'app_static_tree/static_dir'
+            'directory': {
+                'copy_from': 'some/dir',
             },
         }
     }
-    result = dict(get_extra_files(config))
-    assert set(result) == {
-        'tree/subdir/static.txt',
-        'tree/smile.png',
-        'tree/static.txt',
-    }
-    assert result['tree/static.txt'] == b'Hello\n'
+    assert sorted(get_extra_files(config)) == sorted([
+        ('str.txt', 'content', 'ábč'.encode()),
+        ('bytes.dat', 'content', b'def'),
+        ('base64.dat', 'content', b'ghi'),
+        ('copied.png', 'path', FIXTURES_PATH / 'app_with_extra_files/smile2.png'),
+        ('directory', 'path', Path('some/dir')),
+    ])

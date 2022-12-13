@@ -22,6 +22,7 @@ def index():
         <body>
             Hello world!
             <img src='/static/smile.png'>
+            <a href='/static/subdir/subdir2/subdir3/subdir4/deep.txt'>text file</a>
         </body>
     </html>
     """
@@ -35,6 +36,7 @@ expected_dict = {
         <body>
             Hello world!
             <img src='/static/smile.png'>
+            <a href='/static/subdir/subdir2/subdir3/subdir4/deep.txt'>text file</a>
         </body>
     </html>
     """,
@@ -43,6 +45,13 @@ expected_dict = {
         'static.txt': b'Hello\n',
         'subdir': {
             'static.txt': b'Hello\n',
-        }
+            'subdir2': {
+                'subdir3': {
+                    'subdir4': {
+                        'deep.txt': b'',
+                    },
+                },
+            },
+        },
     },
 }
