@@ -87,8 +87,8 @@ def test_several_warns(capsys):
     assert warnings == expected_warnings
 
 
-@pytest.mark.parametrize('response_status', STATUSES)
-def test_default_handlers(response_status):
+@pytest.mark.parametrize('response_status', ['100', '201', '302', '404', '500'])
+def test_default_handlers_error(response_status):
     app = Flask(__name__)
     config = {
         'output': {'type': 'dict'},
@@ -98,14 +98,25 @@ def test_default_handlers(response_status):
     def index():
         return Response(response='Hello world!', status=response_status)
 
-    if response_status == '200':
-        result = freeze(app, config)
-        assert result == {'index.html': b'Hello world!'}
-    else:
-        with raises_multierror_with_one_exception(UnexpectedStatus) as e:
-            freeze(app, config)
+    with raises_multierror_with_one_exception(UnexpectedStatus) as e:
+        freeze(app, config)
 
-        assert e.value.status[:3] == f'{response_status}'
+    assert e.value.status[:3] == f'{response_status}'
+
+
+def test_default_behaviour_status_200():
+    app = Flask(__name__)
+    config = {
+        'output': {'type': 'dict'},
+    }
+
+    @app.route('/')
+    def index():
+        return Response(response='Hello world!', status='200')
+
+
+    result = freeze(app, config)
+    assert result == {'index.html': b'Hello world!'}
 
 
 def custom_handler(task):
