@@ -442,11 +442,10 @@ class Freezer:
             status_handler = self.status_handlers.get(status[:3])
         elif self.status_handlers.get(status[0] + 'xx'): # handle group statuses from configuration
             status_handler = self.status_handlers.get(status[0] + 'xx')
-        elif status.startswith('200'): # default for status 200
+        elif status.startswith('200'): # default behaviour for status 200
             status_handler = freezeyt.status_handlers.save
-        elif status[0] in '12345': # default for groups 1xx, 2xx, ...
-            status_handler = freezeyt.status_handlers.error
         else:
+        # default behaviour for cases which are not handle by conditions above (e.g. groups 1xx, 2xx, ...)
             raise UnexpectedStatus(url, status)
 
         task.response_headers = Headers(headers)
