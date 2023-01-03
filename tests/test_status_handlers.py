@@ -9,7 +9,7 @@ from freezeyt import freeze, UnexpectedStatus
 from testutil import raises_multierror_with_one_exception, context_for_test
 
 
-STATUSES = ('100', '201', '204', '301', '406', '503', '600', '709', '888')
+STATUSES = ('100', '200', '201', '300', '301', '400', '406', '500', '503', '888')
 
 @pytest.mark.parametrize('response_status', STATUSES )
 def test_error_handler(response_status):
@@ -87,8 +87,8 @@ def test_several_warns(capsys):
     assert warnings == expected_warnings
 
 
-@pytest.mark.parametrize('response_status', STATUSES)
-def test_default_handlers(response_status):
+@pytest.mark.parametrize('response_status', ['100', '201', '302', '404', '500'])
+def test_default_handlers_error(response_status):
     app = Flask(__name__)
     config = {
         'output': {'type': 'dict'},
@@ -102,6 +102,22 @@ def test_default_handlers(response_status):
         freeze(app, config)
 
     assert e.value.status[:3] == f'{response_status}'
+
+
+def test_default_behaviour_status_200():
+    app = Flask(__name__)
+    config = {
+        'output': {'type': 'dict'},
+    }
+
+    @app.route('/')
+    def index():
+        return Response(response='Hello world!', status='200')
+
+
+    result = freeze(app, config)
+    assert result == {'index.html': b'Hello world!'}
+
 
 def custom_handler(task):
     return "non_sense"
