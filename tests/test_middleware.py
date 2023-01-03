@@ -139,3 +139,24 @@ def test_middleware_rejects_wrong_mimetype():
 
         with pytest.raises(WrongMimetypeError):
             mw_client.get('/image.jpg')
+
+
+def test_middleware_tricky_extra_files():
+    with context_for_test('tricky_extra_files') as module:
+        app = module.app
+        mw_client = Client(Middleware(app, module.freeze_config))
+
+        # This file is looked up in static_dir:
+        assert mw_client.get('/static/file.txt').status.startswith('200')
+
+        # This file doesn't exist in static_dir; we shouldn't request it
+        # from the app
+        assert mw_client.get('/static/missing.html').status.startswith('404')
+
+        # This page should be requested from the app (where it exists)
+        assert mw_client.get('/static-not.html').status.startswith('200')
+
+        # This page should also be requested from the app; but it doesn't
+        # exist there.
+        assert mw_client.get('/static-not-missing.html').status.startswith('404')
+
