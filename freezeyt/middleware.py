@@ -49,6 +49,11 @@ class Middleware:
                     content = path.joinpath(extra_path.lstrip('/')).read_bytes()
                 except FileNotFoundError:
                     response = NotFound().get_response()
+                except OSError:
+                    # This could have several different behaviors,
+                    # see https://github.com/encukou/freezeyt/issues/331
+                    # For now, return a 404
+                    response = NotFound().get_response()
                 else:
                     response = Response(
                         content,

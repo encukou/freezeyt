@@ -160,3 +160,12 @@ def test_middleware_tricky_extra_files():
         # exist there.
         assert mw_client.get('/static-not-missing.html').status.startswith('404')
 
+        # When getting a directory, there are several things Freezeyt could do:
+        # - look for index.html, and serve it if found
+        # - generate an index of the files in this directory
+        # - fail with 404
+        # It should do the same thing whether or not there's a trailing slash,
+        # or one version could redirect to the other.
+        assert mw_client.get('/static').status.startswith('404')
+        assert mw_client.get('/static/').status.startswith('404')
+
