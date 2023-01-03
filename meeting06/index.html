@@ -46,7 +46,7 @@
 <p><em>4th minute</em></p>
 <p><a href="https://github.com/encukou/freezeyt/commit/36bd13b4de3900cf356e4cd079ee7a06802be99b">Handle relative links correctly</a> - <a href="https://github.com/encukou/freezeyt/blob/master/test_demo.py">according to test_structured</a> which tests on <a href="https://github.com/encukou/freezeyt/blob/master/demo_app_structured.py">demo_app_structured.py</a>:</p>
 <pre><code class="language-python"><span class="k">def</span> <span class="nf">test_structured</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Test if an app with relative URLs works.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test if an app with relative URLs works.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">freeze</span><span class="p">(</span><span class="n">app_structured</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
@@ -82,7 +82,7 @@ The freeze() function takes two parameters, base and url:</p>
 The changes made to <code>get_all_links()</code> and <code>get_links_from_node()</code> (the addition of a base_url argument and the <code>urljoin</code> method) are visible bellow:</p>
 <pre><code class="language-python"><span class="o">-</span><span class="k">def</span> <span class="nf">get_all_links</span><span class="p">(</span><span class="n">page_content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="o">+</span><span class="k">def</span> <span class="nf">get_all_links</span><span class="p">(</span><span class="n">page_content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-     <span class="sd">&quot;&quot;&quot;Get all links from &quot;page_content&quot;.</span>
+<span class="w">     </span><span class="sd">&quot;&quot;&quot;Get all links from &quot;page_content&quot;.</span>
 
 <span class="sd">     Return an iterable of strings.</span>
 <span class="sd">+</span>
@@ -94,7 +94,7 @@ The changes made to <code>get_all_links()</code> and <code>get_links_from_node()
 
 <span class="o">-</span><span class="k">def</span> <span class="nf">get_links_from_node</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="o">+</span><span class="k">def</span> <span class="nf">get_links_from_node</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-     <span class="sd">&quot;&quot;&quot;Get all links from xml.dom.minidom Node.&quot;&quot;&quot;</span>
+<span class="w">     </span><span class="sd">&quot;&quot;&quot;Get all links from xml.dom.minidom Node.&quot;&quot;&quot;</span>
      <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
      <span class="k">if</span> <span class="s1">&#39;href&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
 <span class="o">-</span>        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;href&#39;</span><span class="p">])</span>
@@ -141,7 +141,7 @@ In case <code>get_all_links()</code> was called with a path like <code>http://lo
 </code></pre>
 <p>To get a clearer picture as to why and how this happens, here is how the <code>url_to_filename()</code> function looks like at the moment:</p>
 <pre><code class="language-python"><span class="k">def</span> <span class="nf">url_to_filename</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Return the filename to which the page is frozen.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the filename to which the page is frozen.</span>
 <span class="sd">    Parameters:</span>
 <span class="sd">    base - Filesystem base path (eg. /tmp/)</span>
 <span class="sd">    url - Absolute URL (eg. http://localhost:8000/second.html)</span>
@@ -316,7 +316,7 @@ Ideally, freezeyt should notify the user of non-existent links when trying to fr
 <p>Our new adjustments to freezing.py need to pass a negative test. We want to test that
 calling freeze() with <em>app_broken</em> raises a ValueError:</p>
 <pre><code class="language-python"><span class="k">def</span> <span class="nf">test_broken_link</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Test if an app with an image works.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test if an app with an image works.&quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
         <span class="n">freeze</span><span class="p">(</span><span class="n">app_broken_link</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
 </code></pre>

@@ -70,11 +70,11 @@ Jak by mohl vypadat konfigurační soubor, který zapíná věci které chceme
 umožnit?
 Aby to šlo líp přemýšleli jsme nad konkrétním příkladem/ukázkou.
 Zatím konfigurák vypadá asi takhle:</p>
-<pre><code class="language-yaml"><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;localhost:8080&quot;</span><span class="w"></span>
-<span class="nt">extra_pages</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/extra.html</span><span class="w"></span>
-<span class="nt">extra_files</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">/CNAME</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my.site.example&quot;</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;localhost:8080&quot;</span>
+<span class="nt">extra_pages</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/extra.html</span>
+<span class="nt">extra_files</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">/CNAME</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my.site.example&quot;</span>
 </code></pre>
 <p>Pro <code>extra_files</code> by bylo fajn umožnit vzít obsah ze souboru, ne jen z řetězce.
 Takové věci se dají docela jednoduše doplnit: zatím může být obsah zadaný jen
@@ -90,19 +90,19 @@ Třeba soubor, ze kterého odkaz vzít:</p>
 příklad to stačí.)</p>
 <p>První rozšíření, které jsme minule navrhli, je progressbar.
 Ten se by se měl dát nastavit docela jednoduše:</p>
-<pre><code class="language-yaml"><span class="nt">progressbar</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">progressbar</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </code></pre>
 <p>Kdyby bylo někdy potřeba víc detailů, můžeme potom povolit
 použtí slovníku s detailním nastavením.
 Teď ale bude stačit <code>True</code>.</p>
 <p>Další rozšíření bude možnost vybrat, kam se bude ukládat výstup.
 Může to být do adresáře, slovníku nebo Gitové větve:</p>
-<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;_build&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">dict</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">git</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;.&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gh-pages</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;_build&quot;</span>
+<span class="w">    </span><span class="nt">dict</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">git</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;.&quot;</span>
+<span class="w">        </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gh-pages</span>
 </code></pre>
 <blockquote>
 <p>Spousta podobných nástrojů dává výstup do adresáře <code>_build</code> nebo <code>.build</code>.
@@ -127,40 +127,40 @@ Kdyby někco začal přidávat další možnosti (např. kopírovat soubory př�
 vzdálený server, nebo použít jiné verzovací systémy než Git.), mohl by
 v tom být docela chaos.
 Stálo by za to udělat z nich seznam?</p>
-<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;_build&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dict</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;.&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gh-pages</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;_build&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dict</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;.&quot;</span>
+<span class="w">        </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gh-pages</span>
 </code></pre>
 <p>Případně mít ve slovníku přímo klíč s typem výstupu?
 (Taklhe to dělá např. Ansible)</p>
-<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dir</span><span class="w"></span>
-<span class="w">      </span><span class="nt">dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;_build&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dict</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git</span><span class="w"></span>
-<span class="w">      </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;.&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gh-pages</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dir</span>
+<span class="w">      </span><span class="nt">dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;_build&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dict</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git</span>
+<span class="w">      </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;.&quot;</span>
+<span class="w">      </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gh-pages</span>
 </code></pre>
 <p>Zapřemýšleli jsme a nepřišli jsme na důvod umožnit víc druhů výstupů.
 I kdyby to bylo potřeba, dát adresář do Gitu nebo rozbalit Gitovou větev na
 disk není velký problém.
 A tak bude asi nejlepší umožnit jen jednu variantu:</p>
-<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dir</span><span class="w"></span>
-<span class="w">    </span><span class="nt">dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;_build&quot;</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dir</span>
+<span class="w">    </span><span class="nt">dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;_build&quot;</span>
 </code></pre>
 <p>nebo</p>
-<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dict</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dict</span>
 </code></pre>
 <p>nebo</p>
-<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git</span><span class="w"></span>
-<span class="w">    </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;.&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gh-pages</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">output</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git</span>
+<span class="w">    </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;.&quot;</span>
+<span class="w">    </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gh-pages</span>
 </code></pre>
 <p>Další „rozšíření“ je validace.
 Tady už dává smysl umožnit validátorů víc, třeba:</p>
@@ -173,30 +173,30 @@ Tady už dává smysl umožnit validátorů víc, třeba:</p>
 </code></pre>
 <p>Protože ale mají všechny validátory stejný klíč <code>type</code>,
 daly by se nakonfigurovat i slovníkem:</p>
-<pre><code class="language-yaml"><span class="nt">validate</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">css</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">html</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">content-types</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/html</span><span class="w"></span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/html+xml</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">validate</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">css</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">html</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">content-types</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/html</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/html+xml</span>
 </code></pre>
 <p>Podobně by mohlo fungovat nastavení pro sbírání odkazů:</p>
-<pre><code class="language-yaml"><span class="nt">get_links</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">html</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">css</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">get_links</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">html</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">css</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </code></pre>
 <p>Další na řadě je možnost nadefinovat adresář se statickými soubory,
 které se jen nakopírují do výstupu.
 Na to je potřeba znát jen začátek URL a příslušný adresář:</p>
-<pre><code class="language-yaml"><span class="nt">static_files</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">/static/</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./static/</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">static_files</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">/static/</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./static/</span>
 </code></pre>
 <p>A poslední na řadě je načítání vlastních pluginů, tedy načtení nějaké
 Pythonní funkce/třídy z nějakého modulu.
 Na podobné věci se dá použít syntax s dvojtečkou, která odděluje jméno
 modulu od jména objektu v něm:</p>
-<pre><code class="language-yaml"><span class="nt">plugins</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="s">&quot;freezeyt_validate_png:Validator&quot;</span><span class="w"></span>
+<pre><code class="language-yaml"><span class="nt">plugins</span><span class="p">:</span>
+<span class="w">    </span><span class="s">&quot;freezeyt_validate_png:Validator&quot;</span>
 </code></pre>
 <p>Python samotný používá tečky, ale pokud jsou obsaženy jak ve jménu modulu
 tak ve jménu objektu, není jasné co je potřeba naimportovat a co pak dostat
