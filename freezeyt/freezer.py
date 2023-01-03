@@ -33,7 +33,7 @@ from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
 from freezeyt.status_handlers import StatusHandler
 from freezeyt.url_finders import UrlFinder
-from freezeyt.extra_files import get_extra_files
+from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
 
 
 MAX_RUNNING_TASKS = 100
@@ -316,10 +316,19 @@ class Freezer:
         try:
             self.add_task(prefix_parsed, reason='site root (homepage)')
             for url_part, kind, content_or_path in get_extra_files(config):
-                self.add_task(
-                    self.prefix.join(url_part),
-                    reason="from extra_files",
-                )
+                if kind == 'content':
+                    self.add_task(
+                        self.prefix.join(url_part),
+                        reason="from extra_files",
+                    )
+                elif kind == 'path':
+                    for part in get_url_parts_from_directory(
+                        url_part, content_or_path
+                    ):
+                        self.add_task(
+                            self.prefix.join(part),
+                            reason="from extra_files",
+                        )
             self._add_extra_pages(prefix, self.extra_pages)
 
             self.hooks = {}

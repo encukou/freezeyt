@@ -1,6 +1,7 @@
 from typing import Iterable
 
 from werkzeug.wrappers import Response
+from werkzeug.exceptions import NotFound
 
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
@@ -39,13 +40,20 @@ class Middleware:
 
         # XXX: This is a temporary hack
         for extra_file_url_part, path in self.extra_file_paths.items():
-            if stripped_path_info.startswith(extra_file_url_part):
+            if (
+                stripped_path_info == extra_file_url_part
+                or stripped_path_info.startswith(extra_file_url_part + '/')
+            ):
                 extra_path = stripped_path_info[len(extra_file_url_part):]
-                content = path.joinpath(extra_path.lstrip('/')).read_bytes()
-                response = Response(
-                    content,
-                    mimetype=self.mimetype_checker.guess_mimetype(path_info),
-                )
+                try:
+                    content = path.joinpath(extra_path.lstrip('/')).read_bytes()
+                except FileNotFoundError:
+                    response = NotFound().get_response()
+                else:
+                    response = Response(
+                        content,
+                        mimetype=self.mimetype_checker.guess_mimetype(path_info),
+                    )
                 return response(environ, server_start_response)
 
         def mw_start_response(status, headers, exc_info=None):
