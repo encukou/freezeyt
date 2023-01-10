@@ -1,4 +1,5 @@
-from typing import Iterable
+from typing import Iterable, Dict
+from pathlib import Path
 
 from werkzeug.wrappers import Response
 from werkzeug.exceptions import NotFound
@@ -9,6 +10,9 @@ from freezeyt.extra_files import get_extra_files
 
 
 class Middleware:
+    extra_file_contents: Dict[str, bytes]
+    extra_file_paths: Dict[str, Path]
+
     def __init__(self, app: WSGIApplication, config):
         self.app = app
         self.mimetype_checker = MimetypeChecker(config)
@@ -16,8 +20,10 @@ class Middleware:
         self.extra_file_paths = {}
         for url_part, kind, content_or_path in get_extra_files(config):
             if kind == 'content':
+                assert isinstance(content_or_path, bytes)
                 self.extra_file_contents[url_part] = content_or_path
             elif kind == 'path':
+                assert isinstance(content_or_path, Path)
                 self.extra_file_paths[url_part] = content_or_path
             else:
                 raise ValueError(kind)
