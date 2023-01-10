@@ -1,8 +1,8 @@
-from typing import Iterable, Dict
-from pathlib import Path
+from typing import Iterable
 
 from werkzeug.wrappers import Response
 from werkzeug.exceptions import NotFound
+from werkzeug.routing import Map, Rule
 
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
@@ -10,21 +10,30 @@ from freezeyt.extra_files import get_extra_files
 
 
 class Middleware:
-    extra_file_contents: Dict[str, bytes]
-    extra_file_paths: Dict[str, Path]
-
     def __init__(self, app: WSGIApplication, config):
         self.app = app
         self.mimetype_checker = MimetypeChecker(config)
-        self.extra_file_contents = {}
-        self.extra_file_paths = {}
+        self.url_map = Map()
         for url_part, kind, content_or_path in get_extra_files(config):
+            if '<' in url_part:
+                raise NotImplementedError("the extra file URL cannot include '<'")
             if kind == 'content':
-                assert isinstance(content_or_path, bytes)
-                self.extra_file_contents[url_part] = content_or_path
+                self.url_map.add(Rule(
+                    f'/{url_part}',
+                    endpoint='content',
+                    defaults={'content': content_or_path},
+                ))
             elif kind == 'path':
-                assert isinstance(content_or_path, Path)
-                self.extra_file_paths[url_part] = content_or_path
+                self.url_map.add(Rule(
+                    f'/{url_part}',
+                    endpoint='path',
+                    defaults={'path': content_or_path, 'subpath': None},
+                ))
+                self.url_map.add(Rule(
+                    f'/{url_part}/<path:subpath>',
+                    endpoint='path',
+                    defaults={'path': content_or_path},
+                ))
             else:
                 raise ValueError(kind)
 
@@ -36,36 +45,41 @@ class Middleware:
 
         path_info = environ.get('PATH_INFO', '')
 
-        stripped_path_info = path_info.lstrip('/')
-        if stripped_path_info in self.extra_file_contents:
+        map_adapter = self.url_map.bind_to_environ(environ)
+        try:
+            endpoint, args = map_adapter.match()
+        except NotFound:
+            endpoint = 'app'
+            args = {}
+
+        if endpoint == 'content':
             response = Response(
-                self.extra_file_contents[stripped_path_info],
+                args['content'],
                 mimetype=self.mimetype_checker.guess_mimetype(path_info),
             )
             return response(environ, server_start_response)
-
-        # XXX: This is a temporary hack
-        for extra_file_url_part, path in self.extra_file_paths.items():
-            if (
-                stripped_path_info == extra_file_url_part
-                or stripped_path_info.startswith(extra_file_url_part + '/')
-            ):
-                extra_path = stripped_path_info[len(extra_file_url_part):]
-                try:
-                    content = path.joinpath(extra_path.lstrip('/')).read_bytes()
-                except FileNotFoundError:
-                    response = NotFound().get_response()
-                except OSError:
-                    # This could have several different behaviors,
-                    # see https://github.com/encukou/freezeyt/issues/331
-                    # For now, return a 404
-                    response = NotFound().get_response()
-                else:
-                    response = Response(
-                        content,
-                        mimetype=self.mimetype_checker.guess_mimetype(path_info),
-                    )
-                return response(environ, server_start_response)
+        if endpoint == 'path':
+            base_path = args['path']
+            extra_path = args['subpath']
+            if extra_path:
+                file_path = base_path / extra_path
+            else:
+                file_path = base_path
+            try:
+                content = file_path.read_bytes()
+            except FileNotFoundError:
+                response = NotFound().get_response()
+            except OSError:
+                # This could have several different behaviors,
+                # see https://github.com/encukou/freezeyt/issues/331
+                # For now, return a 404
+                response = NotFound().get_response()
+            else:
+                response = Response(
+                    content,
+                    mimetype=self.mimetype_checker.guess_mimetype(path_info),
+                )
+            return response(environ, server_start_response)
 
         def mw_start_response(status, headers, exc_info=None):
             result = server_start_response(status, headers, exc_info)
