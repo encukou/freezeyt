@@ -299,3 +299,13 @@ def test_cli_app_as_object_from_config_variable(tmp_path):
 
     with context_for_test(app_name, module_name='application'):
         run_and_check(cli_args, app_name, build_dir)
+
+def test_cli_fail_fast_option(tmp_path):
+    app_name = 'app_fail_fast'
+    build_dir = tmp_path / 'build'
+    cli_args = ['app', str(build_dir), '-x']
+
+    with context_for_test(app_name):
+        with pytest.raises(ValueError):
+            run_freezeyt_cli(cli_args, app_name, build_dir)
+
