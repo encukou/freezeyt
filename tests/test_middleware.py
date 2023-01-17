@@ -98,10 +98,6 @@ def test_middleware_doesnt_change_app(app_name):
         else:
             # By default, we don't expect any errors.
             expected_error = ()
-            #if 'extra_files' in config:
-                ## extra_files is a Freezeyt-only setting, not visible
-                ## in the app. The mimetype of extra files might not match.
-                #expected_error = WrongMimetypeError
             for url in urls_from_expected_dict(expected_dict):
                 check_responses_are_same(
                     app_client, mw_client, url,
