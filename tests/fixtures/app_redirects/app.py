@@ -46,7 +46,9 @@ def app(environ, start_response):
 
     # Helper for pages we don't handle
     def respond_404():
-        start_response('404 Not Found', [])
+        start_response('404 Not Found', [
+            ('Content-Type', 'text/html'),
+        ])
         return [b'Not found']
 
     # Parse the request's path to get the redirect URL type and code
