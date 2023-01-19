@@ -36,7 +36,7 @@ from freezeyt.util import import_variable_from_module
               help='If activated and freeze was successful, create git gh-pages branch in output folder and commit all files to that branch.')
 @click.option('-x', '--fail-fast/--no-fail-fast',
               default=None,
-              help='Enable fail fast mode, error fails the freezing immediately.')
+              help='Stop on the first error')
 def main(
     app, dest_path, output, prefix,
     extra_pages, config_file, config_var, progress, cleanup, gh_pages, fail_fast
