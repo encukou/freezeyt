@@ -1,5 +1,12 @@
 from flask import Flask, url_for
 
+
+class TestFailFastError(ValueError):
+    """
+    Error defined for purpose of this test to indetify source of exception easily.
+    """
+
+
 app = Flask(__name__)
 freeze_config = {'fail_fast': True}
 app.config['PROPAGATE_EXCEPTIONS'] = True
@@ -14,17 +21,17 @@ def index():
         </head>
         <body>
             Hello world!
-            <a href="{url_for('value_error')}">Link</a>
-            <a href="{url_for('value_error2')}">Link</a>
+            <a href="{url_for('invoke_error')}">Link</a>
+            <a href="{url_for('invoke_error2')}">Link</a>
         </body>
     </html>
     """
 
 @app.route('/value_error')
-def value_error():
-    raise ValueError()
+def invoke_error():
+    raise TestFailFastError()
 
 @app.route('/value_error2')
-def value_error2():
-    raise ValueError()
+def invoke_error2():
+    raise TestFailFastError()
 
