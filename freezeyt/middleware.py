@@ -1,9 +1,11 @@
 from typing import Iterable
+from pathlib import Path
 
 from werkzeug.wrappers import Response
 from werkzeug.exceptions import NotFound, Forbidden
 from werkzeug.routing import Map, Rule
 from werkzeug.routing.exceptions import RequestRedirect
+from werkzeug.security import safe_join
 
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
@@ -66,17 +68,11 @@ class Middleware:
             extra_path = args['subpath']
             try:
                 if extra_path:
-                    file_path = base_path / extra_path
-                    file_path = file_path.resolve()
-                    # Verify that file_path is inside base_path.
-                    # (Python 3.9 addds an is_relative_to method with this
-                    # try/except, but to support older versions we write it
-                    # out.)
-                    try:
-                        file_path.relative_to(base_path)
-                    except ValueError:
+                    file_path = safe_join(str(base_path), str(extra_path))
+                    if file_path is None:
                         response = Forbidden().get_response()
                         return response(environ, server_start_response)
+                    file_path = Path(file_path)
                 else:
                     file_path = base_path
                 content = file_path.read_bytes()
