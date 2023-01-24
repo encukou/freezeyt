@@ -221,6 +221,8 @@ class Freezer:
 
         self.app = Middleware(app, config)
 
+        self.fail_fast = self.config.get('fail_fast', False)
+
         if self.config.get("gh_pages", False):
             plugins = config.setdefault('plugins', [])
             if 'freezeyt.plugins:GHPagesPlugin' not in plugins:
@@ -529,10 +531,12 @@ class Freezer:
                 break
             try:
                 await task.asyncio_task
-            except Exception:
+            except Exception as exc:
                 del self.inprogress_tasks[task.path]
                 self.failed_tasks[task.path] = task
                 self.call_hook('page_failed', hooks.TaskInfo(task))
+                if self.fail_fast:
+                    raise exc
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
 

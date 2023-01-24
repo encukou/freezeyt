@@ -55,7 +55,8 @@ class LogPlugin:
         summary = click.style(self._summary(task_info.freeze_info), fg='red')
         click.echo(f'{summary} ERROR in {task_info.path}', file=sys.stderr)
         exc = task_info.exception
-        traceback.print_exception(type(exc), exc, exc.__traceback__)
+        if not task_info._freezer.freeze_info.fail_fast:
+            traceback.print_exception(type(exc), exc, exc.__traceback__)
 
 class GHPagesPlugin:
     def __init__(self, freeze_info):

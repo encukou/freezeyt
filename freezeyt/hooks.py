@@ -48,6 +48,10 @@ class FreezeInfo:
         self._freezer.add_hook(hook_name, func)
 
     @property
+    def fail_fast(self):
+        return self._freezer.fail_fast
+
+    @property
     def total_task_count(self):
         return sum(
             len(tasks) for tasks in self._freezer.task_collections.values()
