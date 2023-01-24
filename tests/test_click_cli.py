@@ -307,5 +307,42 @@ def test_cli_fail_fast_option(tmp_path):
 
     with context_for_test(app_name):
         with pytest.raises(ValueError):
-            run_freezeyt_cli(cli_args, app_name, build_dir)
+            run_freezeyt_cli(cli_args, app_name)
+
+
+def test_cli_fail_fast_option_priority_disable(tmp_path):
+    """
+    Test CLI option --no-fail-fast overwrite freezeyt config 'fail_fast with value True'
+    """
+    app_name = 'app_fail_fast'
+    build_dir = tmp_path / 'build'
+    cli_args = [
+        'app', str(build_dir), '--no-fail-fast', '--import-config', 'app:freeze_config'
+    ]
+
+    with context_for_test(app_name):
+        # If program finish with exit code 1, that means it ended with MultiError
+        run_and_check(cli_args, app_name, build_dir)
+
+
+def test_cli_fail_fast_option_priority_enable(tmp_path):
+    """
+    Test CLI option -x overwrite freezeyt config 'fail_fast' with value False
+    """
+    app_name = 'app_fail_fast'
+    build_dir = tmp_path / 'build'
+    config_file = tmp_path / 'config.yaml'
+    config_content = {
+        'fail_fast': False
+    }
+    with open(config_file, mode='w') as file:
+        safe_dump(config_content, stream=file)
+
+    cli_args = [
+        'app', str(build_dir), '-x', '--config', config_file
+    ]
+
+    with context_for_test(app_name):
+        with pytest.raises(ValueError):
+            run_freezeyt_cli(cli_args, app_name)
 
