@@ -6,6 +6,7 @@ from werkzeug.exceptions import NotFound, Forbidden
 from werkzeug.routing import Map, Rule
 from werkzeug.routing.exceptions import RequestRedirect
 from werkzeug.security import safe_join
+from werkzeug.utils import send_file
 
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
@@ -64,18 +65,21 @@ class Middleware:
             )
             return response(environ, server_start_response)
         if endpoint == 'path':
-            base_path = args['path'].resolve()
+            base_path = args['path']
             extra_path = args['subpath']
+            if extra_path:
+                file_path = safe_join(str(base_path), str(extra_path))
+                if file_path is None:
+                    response = Forbidden().get_response()
+                    return response(environ, server_start_response)
+            else:
+                file_path = base_path
             try:
-                if extra_path:
-                    file_path = safe_join(str(base_path), str(extra_path))
-                    if file_path is None:
-                        response = Forbidden().get_response()
-                        return response(environ, server_start_response)
-                    file_path = Path(file_path)
-                else:
-                    file_path = base_path
-                content = file_path.read_bytes()
+                response = send_file(
+                    file_path,
+                    environ,
+                    mimetype=self.mimetype_checker.guess_mimetype(path_info),
+                )
             except FileNotFoundError:
                 response = NotFound().get_response()
             except OSError:
@@ -83,11 +87,6 @@ class Middleware:
                 # see https://github.com/encukou/freezeyt/issues/331
                 # For now, return a 404
                 response = NotFound().get_response()
-            else:
-                response = Response(
-                    content,
-                    mimetype=self.mimetype_checker.guess_mimetype(path_info),
-                )
             return response(environ, server_start_response)
 
         def mw_start_response(status, headers, exc_info=None):
