@@ -165,3 +165,11 @@ def test_middleware_tricky_extra_files():
         assert mw_client.get('/static').status.startswith('404')
         assert mw_client.get('/static/').status.startswith('404')
 
+        # Looking outside the static directory is forbidden
+        assert mw_client.get('/static/../app.py').status.startswith('403')
+
+        # Same as above, but in this case werkzeug.routing.Map returns a
+        # redirect to '/static/etc/passwd' before Middleware gets a chance
+        # to return `403 Forbidden`. This is a detail that might change in
+        # the future, so just assert that this isn't successful.
+        assert not mw_client.get('/static//etc/passwd').status.startswith('200')

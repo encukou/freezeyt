@@ -1,8 +1,9 @@
 from typing import Iterable
 
 from werkzeug.wrappers import Response
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import NotFound, Forbidden
 from werkzeug.routing import Map, Rule
+from werkzeug.routing.exceptions import RequestRedirect
 
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
@@ -51,6 +52,8 @@ class Middleware:
         except NotFound:
             endpoint = 'app'
             args = {}
+        except RequestRedirect as redirect:
+            return redirect(environ, server_start_response)
 
         if endpoint == 'content':
             response = Response(
@@ -59,13 +62,23 @@ class Middleware:
             )
             return response(environ, server_start_response)
         if endpoint == 'path':
-            base_path = args['path']
+            base_path = args['path'].resolve()
             extra_path = args['subpath']
-            if extra_path:
-                file_path = base_path / extra_path
-            else:
-                file_path = base_path
             try:
+                if extra_path:
+                    file_path = base_path / extra_path
+                    file_path = file_path.resolve()
+                    # Verify that file_path is inside base_path.
+                    # (Python 3.9 addds an is_relative_to method with this
+                    # try/except, but to support older versions we write it
+                    # out.)
+                    try:
+                        file_path.relative_to(base_path)
+                    except ValueError:
+                        response = Forbidden().get_response()
+                        return response(environ, server_start_response)
+                else:
+                    file_path = base_path
                 content = file_path.read_bytes()
             except FileNotFoundError:
                 response = NotFound().get_response()
