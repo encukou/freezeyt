@@ -56,7 +56,7 @@ async def freeze_async(app: WSGIApplication, config):
         await freezer.handle_redirects()
         return await freezer.finish()
     except:
-        freezer.cancel_tasks()
+        await freezer.cancel_tasks()
         raise
 
 
@@ -338,7 +338,8 @@ class Freezer:
 
             self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
         except:
-            self.cancel_tasks()
+            loop = asyncio.get_running_loop()
+            asyncio.run_coroutine_threadsafe(self.cancel_tasks(), loop)
             raise
 
     def check_version(self, config_version):
@@ -356,9 +357,13 @@ class Freezer:
     def add_hook(self, hook_name, func):
         self.hooks.setdefault(hook_name, []).append(func)
 
-    def cancel_tasks(self):
+    async def cancel_tasks(self):
         for task in self.inprogress_tasks.values():
             task.asyncio_task.cancel()
+            try:
+                await task.asyncio_task
+            except asyncio.CancelledError:
+                pass
 
     async def finish(self):
         success = not self.failed_tasks
