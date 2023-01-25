@@ -26,7 +26,7 @@ from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError, MultiError
-from freezeyt.compat import asyncio_run, asyncio_create_task
+from freezeyt.compat import asyncio_run, asyncio_create_task, get_running_loop
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
@@ -338,8 +338,8 @@ class Freezer:
 
             self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
         except:
-            loop = asyncio.get_running_loop()
-            asyncio.run_coroutine_threadsafe(self.cancel_tasks(), loop)
+            loop = get_running_loop()
+            cancel_task = loop.create_task(self.cancel_tasks())
             raise
 
     def check_version(self, config_version):
