@@ -344,7 +344,7 @@ This prevents, for example, uploading incomplete results to a web hosting by mis
 
 If you want to keep the incomplete directory (for example,
 to help debugging), you can use the `--no-cleanup` switch
-or the `cleanup` key  in the configuration file:
+or the `cleanup` key in the configuration file:
 
 ```yaml
 cleanup: False
@@ -352,6 +352,29 @@ cleanup: False
 
 The command line switch has priority over the configuration.
 Use `--no-cleanup` to override `cleanup: False` from the config.
+
+
+### Fail fast
+
+Fail fast mode stops the freezing of the app when the first error occurs.
+
+Fail fast may be specified simultaneously from CLI as well as in configuration file.
+The command line `fail fast` switch has always priority over the configuration file.
+The fail fast is defined as `boolean` option.
+
+If you want to specified fail fast in configuration file, use key `fail_fast` with
+ `boolean` values `True` or `False`:
+
+```yaml
+fail_fast: True
+```
+
+If you want to specified fail fast from command line, use switches
+ `--fail-fast` (short `-x`) resp. `--no-fail-fast` to disable it:
+
+```shell
+$ freezeyt app -o output -x
+```
 
 
 ### Github Pages Plugin
