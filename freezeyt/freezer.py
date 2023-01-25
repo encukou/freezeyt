@@ -358,7 +358,13 @@ class Freezer:
         self.hooks.setdefault(hook_name, []).append(func)
 
     async def cancel_tasks(self):
-        for task in self.inprogress_tasks.values():
+        keys = list(self.inprogress_tasks.keys())
+        while keys:
+            key = keys.pop()
+            try:
+                task = self.inprogress_tasks.pop(key)
+            except KeyError:
+                continue
             task.asyncio_task.cancel()
             try:
                 await task.asyncio_task
