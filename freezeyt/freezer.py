@@ -358,13 +358,16 @@ class Freezer:
         self.hooks.setdefault(hook_name, []).append(func)
 
     async def cancel_tasks(self):
+        cancelled_atasks = []
         while self.inprogress_tasks:
             path, task = self.inprogress_tasks.popitem()
             task.asyncio_task.cancel()
-            try:
-                await task.asyncio_task
-            except asyncio.CancelledError:
-                pass
+            cancelled_atasks.append(task.asyncio_task)
+        try:
+            for atask in cancelled_atasks:
+                await atask
+        except asyncio.CancelledError:
+            pass
 
     async def finish(self):
         success = not self.failed_tasks
