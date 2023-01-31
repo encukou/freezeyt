@@ -1,5 +1,4 @@
 from typing import Iterable
-from pathlib import Path
 
 from werkzeug.wrappers import Response
 from werkzeug.exceptions import NotFound, Forbidden
