@@ -358,8 +358,7 @@ Use `--no-cleanup` to override `cleanup: False` from the config.
 
 Fail fast mode stops the freezing of the app when the first error occurs.
 
-Fail fast may be specified simultaneously from CLI as well as in configuration file.
-The command line `fail fast` switch has always priority over the configuration file.
+As with most settings, fail fast can be set both in the configuration file and in the command line using switches (the command line always overrides the configuration file).
 The fail fast is defined as `boolean` option.
 
 If you want to specified fail fast in configuration file, use key `fail_fast` with
