@@ -57,6 +57,7 @@ class Middleware:
         except RequestRedirect as redirect:
             return redirect(environ, server_start_response)
 
+        response: WSGIApplication
         if endpoint == 'content':
             response = Response(
                 args['content'],
@@ -69,7 +70,7 @@ class Middleware:
             if extra_path:
                 file_path = safe_join(str(base_path), str(extra_path))
                 if file_path is None:
-                    response = Forbidden().get_response()
+                    response = Forbidden()
                     return response(environ, server_start_response)
             else:
                 file_path = base_path
@@ -80,12 +81,12 @@ class Middleware:
                     mimetype=self.mimetype_checker.guess_mimetype(path_info),
                 )
             except FileNotFoundError:
-                response = NotFound().get_response()
+                response = NotFound()
             except OSError:
                 # This could have several different behaviors,
                 # see https://github.com/encukou/freezeyt/issues/331
                 # For now, return a 404
-                response = NotFound().get_response()
+                response = NotFound()
             return response(environ, server_start_response)
 
         def mw_start_response(status, headers, exc_info=None):
