@@ -363,11 +363,11 @@ class Freezer:
             path, task = self.inprogress_tasks.popitem()
             task.asyncio_task.cancel()
             cancelled_atasks.append(task.asyncio_task)
-        try:
-            for atask in cancelled_atasks:
+        for atask in cancelled_atasks:
+            try:
                 await atask
-        except asyncio.CancelledError:
-            pass
+            except asyncio.CancelledError:
+                pass
 
     async def finish(self):
         success = not self.failed_tasks
