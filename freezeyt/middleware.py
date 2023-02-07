@@ -75,6 +75,7 @@ class Middleware:
             else:
                 file_path = base_path
             try:
+                assert file_path is not None
                 response = send_file(
                     file_path,
                     environ,
