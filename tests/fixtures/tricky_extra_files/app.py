@@ -8,7 +8,11 @@ app = Flask(__name__)
 
 
 freeze_config = {
-    'extra_files': {'static': {'copy_from': str(APP_DIR / 'static_dir')}},
+    'extra_files': {
+        'static': {'copy_from': str(APP_DIR / 'static_dir')},
+        '/static2/': {'copy_from': str(APP_DIR / 'static_dir2')},
+        'config.txt': {'copy_from': str(APP_DIR / 'include' )},
+    },
 }
 
 
@@ -22,6 +26,8 @@ def index():
         <body>
             Hello world!
             <a href='/static/file.txt'>text file</a>
+            <a href='/static2/static/file2.txt'>text file</a>
+            <a href='/config.txt/a/b.txt'>config file</a>
             <a href='/static-not.html'>Trick page</a>
         </body>
     </html>
@@ -49,13 +55,18 @@ expected_dict = {
         <body>
             Hello world!
             <a href='/static/file.txt'>text file</a>
+            <a href='/static2/static/file2.txt'>text file</a>
+            <a href='/config.txt/a/b.txt'>config file</a>
             <a href='/static-not.html'>Trick page</a>
         </body>
     </html>
     """,
     'static-not.html': b'<html>...</html>',
+    'config.txt': {'a': {'b.txt': b'b\n'}, 'config.txt': b'Config file...\n'},
     'static': {
         'file.txt': b'Hello\n',
-
+    },
+    'static2': {
+        'static': {'file2.txt': b'Hello!\n'}
     },
 }

@@ -37,6 +37,8 @@ class Middleware:
                     endpoint='path',
                     defaults={'path': content_or_path},
                 ))
+                print("--MIDDLEWARE--")
+                print(f"{self.url_map=}")
             else:
                 raise ValueError(kind)
 
@@ -51,6 +53,7 @@ class Middleware:
         map_adapter = self.url_map.bind_to_environ(environ)
         try:
             endpoint, args = map_adapter.match()
+            print(f"{(endpoint, args)=}")
         except NotFound:
             endpoint = 'app'
             args = {}
@@ -76,6 +79,7 @@ class Middleware:
                 file_path = base_path
             try:
                 assert file_path is not None
+                print(f"{file_path=}")
                 response = send_file(
                     file_path,
                     environ,
