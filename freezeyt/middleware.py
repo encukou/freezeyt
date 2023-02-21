@@ -2,8 +2,7 @@ from typing import Iterable
 
 from werkzeug.wrappers import Response
 from werkzeug.exceptions import NotFound, Forbidden
-from werkzeug.routing import Map, Rule
-from werkzeug.routing.exceptions import RequestRedirect
+from werkzeug.routing import Map, Rule, RequestRedirect
 from werkzeug.security import safe_join
 from werkzeug.utils import send_file
 
