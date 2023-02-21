@@ -6,7 +6,7 @@ import pytest
 from freezeyt.middleware import Middleware
 from freezeyt.util import WrongMimetypeError
 
-from testutil import APP_NAMES, context_for_test
+from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
 
 def urls_from_expected_dict(expected_dict, prefix=''):
     """Generate URLs from an `expected_dict` found in tests
@@ -64,12 +64,22 @@ def test_urls_from_expected_dict():
 @pytest.mark.parametrize('app_name', APP_NAMES)
 @freezegun.freeze_time()  # freeze time so that Date headers don't change
 def test_middleware_doesnt_change_app(app_name):
+    app_path = FIXTURES_PATH / app_name
+    error_path = app_path / 'error.txt'
     with context_for_test(app_name) as module:
         app = module.app
         config = getattr(module, 'freeze_config', {})
 
         app_client = Client(app)
-        mw_client = Client(Middleware(app, config))
+        try:
+            mw_client = Client(Middleware(app, config))
+        except ValueError:
+            # If creating the Middleware fails, it should raise the same
+            # exception as freezing the app.
+            # Currently, only ValueError can be raised in the initialization
+            assert error_path.exists()
+            assert error_path.read_text().strip() == 'ValueError'
+            return  # test was successful
 
         # Check that the middleware doesn't change the response
         # for /nonexisting_url/, except possibly raising WrongMimetypeError
@@ -88,23 +98,29 @@ def test_middleware_doesnt_change_app(app_name):
         else:
             # By default, we don't expect any errors.
             expected_error = ()
-            if 'extra_files' in config:
-                # extra_files is a Freezeyt-only setting, not visible
-                # in the app. The mimetype of extra files might not match.
-                expected_error = WrongMimetypeError
             for url in urls_from_expected_dict(expected_dict):
                 check_responses_are_same(
                     app_client, mw_client, url,
                     expected_error=expected_error,
+                    expect_extra_files=('extra_files' in config),
                 )
 
-def check_responses_are_same(app_client, mw_client, url, expected_error=()):
+def check_responses_are_same(
+    app_client, mw_client, url, expected_error=(), expect_extra_files=False,
+):
     app_response = app_client.get(url)
     print(app_response)
     print(app_response.get_data())
     try:
         mw_response = mw_client.get(url)
     except expected_error:
+        return
+
+    if (expect_extra_files
+        and app_response.status.startswith('404')
+        and mw_response.status.startswith('200')
+    ):
+        # expected extra page
         return
 
     assert app_response.status == mw_response.status
@@ -119,3 +135,41 @@ def test_middleware_rejects_wrong_mimetype():
 
         with pytest.raises(WrongMimetypeError):
             mw_client.get('/image.jpg')
+
+
+def test_middleware_tricky_extra_files():
+    with context_for_test('tricky_extra_files') as module:
+        app = module.app
+        mw_client = Client(Middleware(app, module.freeze_config))
+
+        # This file is looked up in static_dir:
+        assert mw_client.get('/static/file.txt').status.startswith('200')
+
+        # This file doesn't exist in static_dir; we shouldn't request it
+        # from the app
+        assert mw_client.get('/static/missing.html').status.startswith('404')
+
+        # This page should be requested from the app (where it exists)
+        assert mw_client.get('/static-not.html').status.startswith('200')
+
+        # This page should also be requested from the app; but it doesn't
+        # exist there.
+        assert mw_client.get('/static-not-missing.html').status.startswith('404')
+
+        # When getting a directory, there are several things Freezeyt could do:
+        # - look for index.html, and serve it if found
+        # - generate an index of the files in this directory
+        # - fail with 404
+        # It should do the same thing whether or not there's a trailing slash,
+        # or one version could redirect to the other.
+        assert mw_client.get('/static').status.startswith('404')
+        assert mw_client.get('/static/').status.startswith('404')
+
+        # Looking outside the static directory is forbidden
+        assert mw_client.get('/static/../app.py').status.startswith('403')
+
+        # Same as above, but in this case werkzeug.routing.Map returns a
+        # redirect to '/static/etc/passwd' before Middleware gets a chance
+        # to return `403 Forbidden`. This is a detail that might change in
+        # the future, so just assert that this isn't successful.
+        assert not mw_client.get('/static//etc/passwd').status.startswith('200')
