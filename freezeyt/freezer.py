@@ -26,7 +26,7 @@ from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError, MultiError
-from freezeyt.compat import asyncio_run, asyncio_create_task, get_running_loop
+from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
@@ -263,15 +263,15 @@ class Freezer:
             _status_handlers, default_module='freezeyt.status_handlers'
         )
 
-        prefix = config.get('prefix', 'http://localhost:8000/')
+        prefix = self.orig_prefix = config.get('prefix', 'http://localhost:8000/')
 
         # Decode path in the prefix URL.
         # Save the parsed version of prefix as self.prefix
-        prefix_parsed = parse_absolute_url(prefix)
-        decoded_path = decode_input_path(prefix_parsed.path)
+        self.prefix_parsed = parse_absolute_url(prefix)
+        decoded_path = decode_input_path(self.prefix_parsed.path)
         if not decoded_path.endswith('/'):
             raise ValueError('prefix must end with /')
-        self.prefix = prefix_parsed.replace(path=decoded_path)
+        self.prefix = self.prefix_parsed.replace(path=decoded_path)
 
         output = config['output']
         if isinstance(output, str):
@@ -303,44 +303,20 @@ class Freezer:
             TaskStatus.FAILED: self.failed_tasks,
         }
 
-        try:
-            self.add_task(prefix_parsed, reason='site root (homepage)')
-            for url_part, kind, content_or_path in get_extra_files(config):
-                if kind == 'content':
-                    assert isinstance(content_or_path, bytes)
-                    self.add_static_task(
-                        self.prefix.join(url_part),
-                        reason="from extra_files",
-                        content=content_or_path,
-                    )
-                elif kind == 'path':
-                    assert isinstance(content_or_path, Path)
-                    self.add_file_task(
-                        self.prefix.join(url_part),
-                        reason="from extra_files",
-                        path=content_or_path,
-                    )
-                else:
-                    raise ValueError(kind)
-            self._add_extra_pages(prefix, self.extra_pages)
+        self.hooks = {}
+        for name, funcs in config.get('hooks', {}).items():
+            for func in funcs:
+                if isinstance(func, str):
+                    func = import_variable_from_module(func)
+                self.add_hook(name, func)
 
-            self.hooks = {}
-            for name, funcs in config.get('hooks', {}).items():
-                for func in funcs:
-                    if isinstance(func, str):
-                        func = import_variable_from_module(func)
-                    self.add_hook(name, func)
+        for plugin in config.get('plugins', {}):
+            if isinstance(plugin, str):
+                plugin = import_variable_from_module(plugin)
+            plugin(self.freeze_info)
 
-            for plugin in config.get('plugins', {}):
-                if isinstance(plugin, str):
-                    plugin = import_variable_from_module(plugin)
-                plugin(self.freeze_info)
+        self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
-            self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
-        except:
-            loop = get_running_loop()
-            cancel_task = loop.create_task(self.cancel_tasks())
-            raise
 
     def check_version(self, config_version):
         if config_version is None:
@@ -447,6 +423,33 @@ class Freezer:
         return task
 
     async def prepare(self):
+        """Preparatory method for creating tasks and preparing the saver."""
+        # prapare the tasks
+        try:
+            self.add_task(self.prefix_parsed, reason='site root (homepage)')
+            for url_part, kind, content_or_path in get_extra_files(self.config):
+                if kind == 'content':
+                    assert isinstance(content_or_path, bytes)
+                    self.add_static_task(
+                        self.prefix.join(url_part),
+                        reason="from extra_files",
+                        content=content_or_path,
+                    )
+                elif kind == 'path':
+                    assert isinstance(content_or_path, Path)
+                    self.add_file_task(
+                        self.prefix.join(url_part),
+                        reason="from extra_files",
+                        path=content_or_path,
+                    )
+                else:
+                    raise ValueError(kind)
+            self._add_extra_pages(self.orig_prefix, self.extra_pages)
+        except:
+            await self.cancel_tasks()
+            raise
+        
+        # and at the end prepare the saver
         await self.saver.prepare()
 
     def start_response(
