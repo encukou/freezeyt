@@ -34,10 +34,12 @@ from freezeyt.util import import_variable_from_module
 @click.option('--gh-pages/--no-gh-pages', 'gh_pages',
               default=None,
               help='If activated and freeze was successful, create git gh-pages branch in output folder and commit all files to that branch.')
-
+@click.option('-x', '--fail-fast/--no-fail-fast',
+              default=None,
+              help='Stop on the first error')
 def main(
     app, dest_path, output, prefix,
-    extra_pages, config_file, config_var, progress, cleanup, gh_pages
+    extra_pages, config_file, config_var, progress, cleanup, gh_pages, fail_fast
 ):
     """
     APP
@@ -121,9 +123,12 @@ def main(
 
     if cleanup is not None:
         config['cleanup'] = cleanup
-    
+
     if gh_pages is not None:
         config['gh_pages'] = gh_pages
+
+    if fail_fast is not None:
+        config['fail_fast'] = fail_fast
 
     try:
         freeze(app=None, config=config)

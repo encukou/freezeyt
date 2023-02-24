@@ -15,7 +15,7 @@ else:
     import typing
     StartResponse = typing.Callable
     WSGIEnvironment = dict
-    WSGIApplication = typing.Callable
+    WSGIApplication = typing.Any
 
 
 def asyncio_run(awaitable):

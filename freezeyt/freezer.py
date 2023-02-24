@@ -33,7 +33,7 @@ from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
 from freezeyt.status_handlers import StatusHandler
 from freezeyt.url_finders import UrlFinder
-from freezeyt.extra_files import get_extra_files
+from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
 
 
 MAX_RUNNING_TASKS = 100
@@ -221,6 +221,8 @@ class Freezer:
 
         self.app = Middleware(app, config)
 
+        self.fail_fast = self.config.get('fail_fast', False)
+
         if self.config.get("gh_pages", False):
             plugins = config.setdefault('plugins', [])
             if 'freezeyt.plugins:GHPagesPlugin' not in plugins:
@@ -315,8 +317,6 @@ class Freezer:
                 plugin = import_variable_from_module(plugin)
             plugin(self.freeze_info)
 
-        self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
-
 
     def check_version(self, config_version):
         if config_version is None:
@@ -355,34 +355,6 @@ class Freezer:
                 print(f"[WARNING] {warning}")
             return result
         raise MultiError(self.failed_tasks.values())
-
-    def add_static_task(
-        self, url: URL, content: bytes, *, external_ok: bool = False,
-        reason: Optional[str] = None,
-    ) -> Optional[Task]:
-        """Add a task to save the given content at the given URL.
-
-        If no task is added (e.g. for external URLs), return None.
-        """
-        task = self._add_task(url, external_ok=external_ok, reason=reason)
-        if task and task.asyncio_task is None:
-            coroutine = self.handle_content_task(task, content)
-            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
-        return task
-
-    def add_file_task(
-        self, url: URL, path: Path, *, external_ok: bool = False,
-        reason: Optional[str] = None,
-    ) -> Optional[Task]:
-        """Add a task to save contents of the given file at the given URL.
-
-        If no task is added (e.g. for external URLs), return None.
-        """
-        task = self._add_task(url, external_ok=external_ok, reason=reason)
-        if task and task.asyncio_task is None:
-            coroutine = self.handle_file_task(task, path)
-            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
-        return task
 
     def add_task(
         self, url: URL, *, external_ok: bool = False, reason: Optional[str] = None,
@@ -425,25 +397,22 @@ class Freezer:
     async def prepare(self):
         """Preparatory method for creating tasks and preparing the saver."""
         # prapare the tasks
-        self.add_task(self.prefix_parsed, reason='site root (homepage)')
-        for url_part, kind, content_or_path in get_extra_files(self.config):
+        self.add_task(prefix_parsed, reason='site root (homepage)')
+        for url_part, kind, content_or_path in get_extra_files(config):
             if kind == 'content':
-                assert isinstance(content_or_path, bytes)
-                self.add_static_task(
+                self.add_task(
                     self.prefix.join(url_part),
                     reason="from extra_files",
-                    content=content_or_path,
                 )
             elif kind == 'path':
-                assert isinstance(content_or_path, Path)
-                self.add_file_task(
-                    self.prefix.join(url_part),
-                    reason="from extra_files",
-                    path=content_or_path,
-                )
-            else:
-                raise ValueError(kind)
-        self._add_extra_pages(self.orig_prefix, self.extra_pages)
+                for part in get_url_parts_from_directory(
+                    url_part, content_or_path
+                ):
+                    self.add_task(
+                        self.prefix.join(part),
+                        reason="from extra_files",
+                    )
+        self._add_extra_pages(prefix, self.extra_pages)
       
         # and at the end prepare the saver
         await self.saver.prepare()
@@ -537,27 +506,14 @@ class Freezer:
                 break
             try:
                 await task.asyncio_task
-            except Exception:
+            except Exception as exc:
                 del self.inprogress_tasks[task.path]
                 self.failed_tasks[task.path] = task
                 self.call_hook('page_failed', hooks.TaskInfo(task))
+                if self.fail_fast:
+                    raise exc
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
-
-    @needs_semaphore
-    async def handle_content_task(self, task, content):
-        await self.saver.save_to_filename(task.path, [content])
-        del self.inprogress_tasks[task.path]
-        self.done_tasks[task.path] = task
-        self.call_hook('page_frozen', hooks.TaskInfo(task))
-
-    @needs_semaphore
-    async def handle_file_task(self, task, path):
-        content = path.read_bytes()
-        await self.saver.save_to_filename(task.path, [content])
-        del self.inprogress_tasks[task.path]
-        self.done_tasks[task.path] = task
-        self.call_hook('page_frozen', hooks.TaskInfo(task))
 
     @needs_semaphore
     async def handle_one_task(self, task: Task) -> None:
