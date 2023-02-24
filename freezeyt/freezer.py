@@ -425,30 +425,26 @@ class Freezer:
     async def prepare(self):
         """Preparatory method for creating tasks and preparing the saver."""
         # prapare the tasks
-        try:
-            self.add_task(self.prefix_parsed, reason='site root (homepage)')
-            for url_part, kind, content_or_path in get_extra_files(self.config):
-                if kind == 'content':
-                    assert isinstance(content_or_path, bytes)
-                    self.add_static_task(
-                        self.prefix.join(url_part),
-                        reason="from extra_files",
-                        content=content_or_path,
-                    )
-                elif kind == 'path':
-                    assert isinstance(content_or_path, Path)
-                    self.add_file_task(
-                        self.prefix.join(url_part),
-                        reason="from extra_files",
-                        path=content_or_path,
-                    )
-                else:
-                    raise ValueError(kind)
-            self._add_extra_pages(self.orig_prefix, self.extra_pages)
-        except:
-            await self.cancel_tasks()
-            raise
-        
+        self.add_task(self.prefix_parsed, reason='site root (homepage)')
+        for url_part, kind, content_or_path in get_extra_files(self.config):
+            if kind == 'content':
+                assert isinstance(content_or_path, bytes)
+                self.add_static_task(
+                    self.prefix.join(url_part),
+                    reason="from extra_files",
+                    content=content_or_path,
+                )
+            elif kind == 'path':
+                assert isinstance(content_or_path, Path)
+                self.add_file_task(
+                    self.prefix.join(url_part),
+                    reason="from extra_files",
+                    path=content_or_path,
+                )
+            else:
+                raise ValueError(kind)
+        self._add_extra_pages(self.orig_prefix, self.extra_pages)
+      
         # and at the end prepare the saver
         await self.saver.prepare()
 
