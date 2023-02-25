@@ -265,11 +265,11 @@ class Freezer:
             _status_handlers, default_module='freezeyt.status_handlers'
         )
 
-        prefix = self.orig_prefix = config.get('prefix', 'http://localhost:8000/')
+        self.orig_prefix = config.get('prefix', 'http://localhost:8000/')
 
         # Decode path in the prefix URL.
         # Save the parsed version of prefix as self.prefix
-        self.prefix_parsed = parse_absolute_url(prefix)
+        self.prefix_parsed = parse_absolute_url(self.orig_prefix)
         decoded_path = decode_input_path(self.prefix_parsed.path)
         if not decoded_path.endswith('/'):
             raise ValueError('prefix must end with /')
