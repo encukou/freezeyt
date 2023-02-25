@@ -316,6 +316,8 @@ class Freezer:
             if isinstance(plugin, str):
                 plugin = import_variable_from_module(plugin)
             plugin(self.freeze_info)
+        
+        self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
 
     def check_version(self, config_version):
@@ -396,9 +398,9 @@ class Freezer:
 
     async def prepare(self):
         """Preparatory method for creating tasks and preparing the saver."""
-        # prapare the tasks
-        self.add_task(prefix_parsed, reason='site root (homepage)')
-        for url_part, kind, content_or_path in get_extra_files(config):
+        # prepare the tasks
+        self.add_task(self.prefix_parsed, reason='site root (homepage)')
+        for url_part, kind, content_or_path in get_extra_files(self.config):
             if kind == 'content':
                 self.add_task(
                     self.prefix.join(url_part),
@@ -412,7 +414,7 @@ class Freezer:
                         self.prefix.join(part),
                         reason="from extra_files",
                     )
-        self._add_extra_pages(prefix, self.extra_pages)
+        self._add_extra_pages(self.orig_prefix, self.extra_pages)
       
         # and at the end prepare the saver
         await self.saver.prepare()
