@@ -25,6 +25,7 @@ def test_cancellederror_was_raised(monkeypatch, tmp_path):
     currently_processed_pages = 0
 
     async def fake_func(*args, **kwargs):
+        """Fake func for replace the save_to_filename method from FileSaver"""
         nonlocal cancelled_error
         nonlocal currently_processed_pages
         if currently_processed_pages == NUM_PAGES:
@@ -32,32 +33,21 @@ def test_cancellederror_was_raised(monkeypatch, tmp_path):
         try:
             await asyncio.sleep(1)
         except asyncio.CancelledError:
-            cancelled_error = "yes"
+            cancelled_error = "raised"
             raise
  
     monkeypatch.setattr(FileSaver, 'save_to_filename', fake_func, raising=True)
 
-    class ResultIterator:
-        def __init__(self):
-            self.contents = iter([b'a', b'b'])
-        def __iter__(self):
-            return self
-        def __next__(self):
-            result = next(self.contents)
-            return result
-        def close(self):
-            ...
-
     def app(environ, start_response):
         nonlocal currently_processed_pages
         currently_processed_pages += 1
-        print("currently_processed_pages", currently_processed_pages)
         start_response('200 OK', [('Content-type', 'text/html')])
 
     config = {
         'output': str(tmp_path),
         'extra_pages': [f'{n}.html' for n in range(NUM_PAGES)],
-    }
-    with pytest.raises(MultiError):
+        'fail_fast': True}
+
+    with pytest.raises(ValueError):
         freeze(app, config)
-    assert cancelled_error == "yes"
+    assert cancelled_error == "raised"
