@@ -2,7 +2,7 @@ from freezeyt import freeze, UnexpectedStatus
 from freezeyt.freezer import Freezer
 from freezeyt.filesaver import FileSaver
 from fixtures.app_cleanup_config.app import app
-from testutil import raises_multierror_with_one_exception, MultiError
+from testutil import raises_multierror_with_one_exception
 import asyncio
 import pytest
 
