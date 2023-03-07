@@ -7,7 +7,6 @@ import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
 from typing import Tuple, List, TypeVar
 import enum
-from urllib.parse import urljoin
 import asyncio
 import inspect
 import re
