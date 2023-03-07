@@ -265,15 +265,15 @@ class Freezer:
             _status_handlers, default_module='freezeyt.status_handlers'
         )
 
-        self.orig_prefix = config.get('prefix', 'http://localhost:8000/')
+        prefix = config.get('prefix', 'http://localhost:8000/')
 
         # Decode path in the prefix URL.
         # Save the parsed version of prefix as self.prefix
-        self.prefix_parsed = parse_absolute_url(self.orig_prefix)
-        decoded_path = decode_input_path(self.prefix_parsed.path)
+        prefix_parsed = parse_absolute_url(prefix)
+        decoded_path = decode_input_path(prefix_parsed.path)
         if not decoded_path.endswith('/'):
             raise ValueError('prefix must end with /')
-        self.prefix = self.prefix_parsed.replace(path=decoded_path)
+        self.prefix = prefix_parsed.replace(path=decoded_path)
 
         output = config['output']
         if isinstance(output, str):
@@ -399,7 +399,7 @@ class Freezer:
     async def prepare(self):
         """Preparatory method for creating tasks and preparing the saver."""
         # prepare the tasks
-        self.add_task(self.prefix_parsed, reason='site root (homepage)')
+        self.add_task(self.prefix, reason='site root (homepage)')
         for url_part, kind, content_or_path in get_extra_files(self.config):
             if kind == 'content':
                 self.add_task(
@@ -414,7 +414,7 @@ class Freezer:
                         self.prefix.join(part),
                         reason="from extra_files",
                     )
-        self._add_extra_pages(self.orig_prefix, self.extra_pages)
+        self._add_extra_pages(self.prefix, self.extra_pages)
       
         # and at the end prepare the saver
         await self.saver.prepare()
@@ -485,7 +485,7 @@ class Freezer:
                     generator = import_variable_from_module(generator)
                 self._add_extra_pages(prefix, generator(self.app))
             elif isinstance(extra, str):
-                url = parse_absolute_url(urljoin(prefix, decode_input_path(extra)))
+                url = add_port(prefix.join(decode_input_path(extra)))
                 try:
                     self.add_task(
                         url,
