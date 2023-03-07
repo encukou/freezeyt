@@ -5,18 +5,15 @@ from fixtures.app_cleanup_config.app import app
 from testutil import raises_multierror_with_one_exception
 import asyncio
 import pytest
+from unittest.mock import patch
 
 
-def test_cancel_tasks_was_called(monkeypatch):
-    result = None
-    async def fake_cancel_tasks(instance):
-        nonlocal result
-        result = 'called'
-
-    monkeypatch.setattr(Freezer, 'cancel_tasks', fake_cancel_tasks)
-    with raises_multierror_with_one_exception(UnexpectedStatus):
-        freeze(app, {'output': {'type': 'dict'}})
-    assert result == 'called'
+def test_cancel_tasks_was_called():  
+    with patch.object(Freezer, 'cancel_tasks', return_value=None) as mock_method:
+        with raises_multierror_with_one_exception(UnexpectedStatus):
+            freeze(app, {'output': {'type': 'dict'}})
+    
+    assert mock_method.called
 
 
 def test_cancellederror_was_raised(monkeypatch, tmp_path):
