@@ -171,3 +171,23 @@ def test_bad_status(status):
 
     with pytest.raises((ValueError, TypeError)):
         freeze(hello_app, config)
+
+
+def test_actions_from_header():
+    app = Flask(__name__)
+    @app.route('/')
+    def index():
+        return '<a href="/ignore_me/">...</a>'
+
+    @app.route('/ignore_me/')
+    def ignored_page():
+        return 'ignored', {'freezeyt-action': 'ignore'}
+
+    config = {
+        'output': {'type': 'dict'},
+    }
+
+    result = freeze(app, config)
+    assert result == {
+        'index.html': b'<a href="/ignore_me/">...</a>',
+    }
