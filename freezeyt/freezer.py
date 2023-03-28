@@ -7,7 +7,6 @@ import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
 from typing import Tuple, List, TypeVar
 import enum
-from urllib.parse import urljoin
 import asyncio
 import inspect
 import re
@@ -56,7 +55,7 @@ async def freeze_async(app: WSGIApplication, config):
         await freezer.handle_redirects()
         return await freezer.finish()
     except:
-        freezer.cancel_tasks()
+        await freezer.cancel_tasks()
         raise
 
 
@@ -305,40 +304,20 @@ class Freezer:
             TaskStatus.FAILED: self.failed_tasks,
         }
 
-        try:
-            self.add_task(prefix_parsed, reason='site root (homepage)')
-            for url_part, kind, content_or_path in get_extra_files(config):
-                if kind == 'content':
-                    self.add_task(
-                        self.prefix.join(url_part),
-                        reason="from extra_files",
-                    )
-                elif kind == 'path':
-                    for part in get_url_parts_from_directory(
-                        url_part, content_or_path
-                    ):
-                        self.add_task(
-                            self.prefix.join(part),
-                            reason="from extra_files",
-                        )
-            self._add_extra_pages(prefix, self.extra_pages)
+        self.hooks = {}
+        for name, funcs in config.get('hooks', {}).items():
+            for func in funcs:
+                if isinstance(func, str):
+                    func = import_variable_from_module(func)
+                self.add_hook(name, func)
 
-            self.hooks = {}
-            for name, funcs in config.get('hooks', {}).items():
-                for func in funcs:
-                    if isinstance(func, str):
-                        func = import_variable_from_module(func)
-                    self.add_hook(name, func)
+        for plugin in config.get('plugins', {}):
+            if isinstance(plugin, str):
+                plugin = import_variable_from_module(plugin)
+            plugin(self.freeze_info)
+        
+        self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
-            for plugin in config.get('plugins', {}):
-                if isinstance(plugin, str):
-                    plugin = import_variable_from_module(plugin)
-                plugin(self.freeze_info)
-
-            self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
-        except:
-            self.cancel_tasks()
-            raise
 
     def check_version(self, config_version):
         if config_version is None:
@@ -355,9 +334,17 @@ class Freezer:
     def add_hook(self, hook_name, func):
         self.hooks.setdefault(hook_name, []).append(func)
 
-    def cancel_tasks(self):
-        for task in self.inprogress_tasks.values():
+    async def cancel_tasks(self):
+        cancelled_atasks = []
+        while self.inprogress_tasks:
+            path, task = self.inprogress_tasks.popitem()
             task.asyncio_task.cancel()
+            cancelled_atasks.append(task.asyncio_task)
+        for atask in cancelled_atasks:
+            try:
+                await atask
+            except asyncio.CancelledError:
+                pass
 
     async def finish(self):
         success = not self.failed_tasks
@@ -409,6 +396,26 @@ class Freezer:
         return task
 
     async def prepare(self):
+        """Preparatory method for creating tasks and preparing the saver."""
+        # prepare the tasks
+        self.add_task(self.prefix, reason='site root (homepage)')
+        for url_part, kind, content_or_path in get_extra_files(self.config):
+            if kind == 'content':
+                self.add_task(
+                    self.prefix.join(url_part),
+                    reason="from extra_files",
+                )
+            elif kind == 'path':
+                for part in get_url_parts_from_directory(
+                    url_part, content_or_path
+                ):
+                    self.add_task(
+                        self.prefix.join(part),
+                        reason="from extra_files",
+                    )
+        self._add_extra_pages(self.prefix, self.extra_pages)
+      
+        # and at the end prepare the saver
         await self.saver.prepare()
 
     def start_response(
@@ -477,7 +484,7 @@ class Freezer:
                     generator = import_variable_from_module(generator)
                 self._add_extra_pages(prefix, generator(self.app))
             elif isinstance(extra, str):
-                url = parse_absolute_url(urljoin(prefix, decode_input_path(extra)))
+                url = add_port(prefix.join(decode_input_path(extra)))
                 try:
                     self.add_task(
                         url,
