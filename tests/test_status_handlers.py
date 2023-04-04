@@ -103,19 +103,18 @@ def test_default_handlers_error(response_status):
 
     assert e.value.status[:3] == f'{response_status}'
 
+hello_app = Flask(__name__)
+@hello_app.route('/')
+def index():
+    return 'Hello world!'
+
 
 def test_default_behaviour_status_200():
-    app = Flask(__name__)
     config = {
         'output': {'type': 'dict'},
     }
 
-    @app.route('/')
-    def index():
-        return Response(response='Hello world!', status='200')
-
-
-    result = freeze(app, config)
+    result = freeze(hello_app, config)
     assert result == {'index.html': b'Hello world!'}
 
 
@@ -123,29 +122,72 @@ def custom_handler(task):
     return "non_sense"
 
 def test_error_custom_handler():
-    app = Flask(__name__)
     config = {
         'output': {'type': 'dict'},
         'status_handlers': {'200': custom_handler}
     }
 
-    @app.route('/')
-    def index():
-        return 'Hello world!'
-
     with raises_multierror_with_one_exception(UnexpectedStatus):
-        freeze(app, config)
+        freeze(hello_app, config)
+
+
+def old_custom_ignore_handler(task):
+    from freezeyt.status_handlers import ignore
+    return ignore(task)
+
+def test_old_custom_ignore_handler():
+    config = {
+        'output': {'type': 'dict'},
+        'status_handlers': {'200': old_custom_ignore_handler}
+    }
+
+    with pytest.deprecated_call():
+        result = freeze(hello_app, config)
+    assert result == {}
+
+
+def new_custom_ignore_handler(task):
+    from freezeyt.actions import ignore
+    return ignore(task)
+
+def test_new_custom_ignore_handler():
+    config = {
+        'output': {'type': 'dict'},
+        'status_handlers': {'200': new_custom_ignore_handler}
+    }
+
+    result = freeze(hello_app, config)
+    assert result == {}
 
 @pytest.mark.parametrize(
     'status',
     ['ldaskfjhfasdlkdasjh', '', '50x', '50', 50, 'xxx', 'a8xx', '123a'],
 )
 def test_bad_status(status):
-    app = Flask(__name__)
     config = {
         'output': {'type': 'dict'},
         'status_handlers': {status: 'save'}
     }
 
     with pytest.raises((ValueError, TypeError)):
-        freeze(app, config)
+        freeze(hello_app, config)
+
+
+def test_actions_from_header():
+    app = Flask(__name__)
+    @app.route('/')
+    def index():
+        return '<a href="/ignore_me/">...</a>'
+
+    @app.route('/ignore_me/')
+    def ignored_page():
+        return 'ignored', {'freezeyt-action': 'ignore'}
+
+    config = {
+        'output': {'type': 'dict'},
+    }
+
+    result = freeze(app, config)
+    assert result == {
+        'index.html': b'<a href="/ignore_me/">...</a>',
+    }

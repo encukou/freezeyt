@@ -16,6 +16,7 @@ from werkzeug.http import parse_options_header
 from werkzeug.urls import URL
 
 import freezeyt
+import freezeyt.actions
 from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
@@ -30,7 +31,7 @@ from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
-from freezeyt.status_handlers import StatusHandler
+from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
 
@@ -192,7 +193,7 @@ class Freezer:
     url_to_path: Union[str, Callable[[str], str]]
 
     url_finders: Dict[str, UrlFinder]
-    status_handlers: Dict[str, StatusHandler]
+    status_handlers: Dict[str, ActionFunction]
 
     def __init__(self, app: WSGIApplication, config: dict):
         self.config = config
@@ -261,7 +262,7 @@ class Freezer:
                 )
 
         self.status_handlers = parse_handlers(
-            _status_handlers, default_module='freezeyt.status_handlers'
+            _status_handlers, default_module='freezeyt.actions'
         )
 
         prefix = config.get('prefix', 'http://localhost:8000/')
@@ -441,20 +442,26 @@ class Freezer:
             if value is not None:
                 raise value
 
-        if self.status_handlers.get(status[:3]): # handle particular status from configuration
-            status_handler = self.status_handlers.get(status[:3])
-        elif self.status_handlers.get(status[0] + 'xx'): # handle group statuses from configuration
-            status_handler = self.status_handlers.get(status[0] + 'xx')
-        elif status.startswith('200'): # default behaviour for status 200
-            status_handler = freezeyt.status_handlers.save
-        else:
-        # default behaviour for cases which are not handle by conditions above (e.g. groups 1xx, 2xx, ...)
-            raise UnexpectedStatus(url, status)
-
         task.response_headers = Headers(headers)
         task.response_status = status
 
-        status_action = status_handler(hooks.TaskInfo(task))
+        status_action = task.response_headers.get('Freezeyt-Action')
+        if not status_action:
+            if self.status_handlers.get(status[:3]):
+                # handle particular status from configuration
+                status_handler = self.status_handlers.get(status[:3])
+            elif self.status_handlers.get(status[0] + 'xx'):
+                # handle group statuses from configuration
+                status_handler = self.status_handlers.get(status[0] + 'xx')
+            elif status.startswith('200'):
+                # default behaviour for status 200
+                status_handler = freezeyt.actions.save
+            else:
+                # default behaviour for cases which are not handled by
+                # conditions above (e.g. groups 1xx, 2xx, ...)
+                raise UnexpectedStatus(url, status)
+
+            status_action = status_handler(hooks.TaskInfo(task))
 
         if status_action == 'save':
             return wsgi_write

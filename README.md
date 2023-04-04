@@ -592,40 +592,39 @@ The function will be called after the app is successfully frozen.
 It is passed a `FreezeInfo` object as argument (see the `start` hook).
 
 
-### Status handling
+### Freeze actions
 
-The `status_handlers` option defines the way to handle HTTP statuses.
-For example, the default reaction to a `404 NOT FOUND` status is to quit with an error,
-but you can customize `freezeyt` to ignore the default error.
+By default, `freezeyt` will save the pages it finds.
+You can instruct it to instead ignore certain pages, or treat them as errors.
+This is most useful as a response to certain HTTP statuses (e.g. treat all
+`404 NOT FOUND` pages as errors), but can be used independently.
+
+To tell `freezeyt` what to do from within the application (or middleware),
+set the `Freezeyt-Action` HTTP header to one of these values:
+
+* `'save'`: `freezeyt` will save the body of the page.
+* `'ignore'`: `freezeyt` will not save any content for the page
+* `'warn'`: will save the content and send warn message to stdout
+* `'follow'`: `freezeyt` will save content from the redirected location
+  (this requires a `Location` header, which is usually added for redirects).
+  Redirects to external pages are not supported.
+* `'error'`: fail; the page will not be saved and `freeze()` will raise
+  an exception.
+
+
+#### Status handling
+
+If the `Freezeyt-Action` header is not set, `freezeyt` will determine what to
+do based on the status.
+By default, `200 OK` pages are saved and any others cause errors.
+The behavior can be customized using the `status_handlers` setting.
+For example, to ignore pages with the `404 NOT FOUND` status, set the
+`404` handler to `'ignore'`:
 
 ```yaml
 status_handlers:
     '404': ignore
 ```
-
-`freezeyt` includes a few pre-defined handlers:
-* `'warn'`: will save the content and send warn message to stdout
-* `'save'`: `freezeyt` will save the body of the page.
-  This is the default for status `200 OK`.
-* `'follow'`: `freezeyt` will save content from the redirected location
-  (this requires a `Location` header, which is usually added for redirects – `3xx` statuses).
-  Redirects to external pages are not supported.
-* `'ignore'`: `freezeyt` will not save any content for the page
-* `'error'`: fail; the page will not be saved and `freeze()` will raise
-  an exception.
-
-The user can also define a custom handler as:
-* a string in the form `'my_module:custom_handler'`, which names a handler
-  function to call,
-* a Python function (if configuring `freezeyt` from Python rather than from
-  YAML).
-
-The handler function takes one argument, `task` (TaskInfo): information about the freezing task.
-See the `TaskInfo` hook for a description.
-A custom handler should call one of the pre-defined handlers (e.g. `freezeyt.status_handlers.follow`) and return the return value from it.
-
-Freezeyt's default functions, like `follow`, can be imported from `freezeyt.status_handlers` and used
-from the custom handlers.
 
 For example, `status_handlers` would be specified as:
 
@@ -634,7 +633,7 @@ status_handlers:
     '202': warn
     '301': follow
     '404': ignore
-    '418': my_module:custom_handler
+    '418': my_module:custom_action  # see below
     '429': ignore
     '5xx': error
 ```
@@ -645,6 +644,20 @@ A range of statuses can be specified as a number (`1-5`) followed by lowercase `
 (Other "wildcards" like `50x` are not supported.)
 
 Status handlers cannot be specified in the CLI.
+
+#### Custom actions
+
+You can also define a custom action in `status_handlers` as:
+* a string in the form `'my_module:custom_action'`, which names a handler
+  function to call,
+* a Python function (if configuring `freezeyt` from Python rather than from
+  YAML).
+
+The action function takes one argument, `task` (TaskInfo): information about the freezing task.
+See the `TaskInfo` hook for a description.
+Freezeyt's default actions, like `follow`, can be imported from `freezeyt.actions`
+(e.g. `freezeyt.actions.follow`).
+A custom action should call one of these default actions and return the return value from it.
 
 
 ### URL finding
