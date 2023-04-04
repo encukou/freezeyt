@@ -92,6 +92,11 @@ async def get_html_links_async(
         process_pool_executor, _get_html_links, content, base_url, headers,
     )
 
+def none(
+    html_file: BinaryIO, base_url: str, headers: _Headers=None,
+)  -> Iterable[str]:
+    return []
+
 if TYPE_CHECKING:
     # Check that the default functions have the proper types
     _: UrlFinder
@@ -99,3 +104,4 @@ if TYPE_CHECKING:
     _ = get_css_links_async
     _ = get_html_links
     _ = get_html_links_async
+    _ = none

@@ -130,6 +130,30 @@ def test_get_no_links(tmp_path):
     assert not (builddir / 'static' / 'TurretRoad-Regular.ttf').exists()
 
 
+def test_get_no_links_by_none(tmp_path):
+    """Test configuration of all url_finders set to 'none'.
+    We should get just root page.
+    """
+    builddir = tmp_path / 'build'
+
+    with context_for_test('app_links_css') as module:
+        freeze_config = {
+            'output': str(builddir),
+            'url_finders': {
+                'text/html': 'none',
+                'text/css': 'none',
+            },
+        }
+
+        freeze(module.app, freeze_config)
+
+    assert (builddir / 'index.html').exists()
+    assert not (builddir / 'second_page.html').exists()
+    assert not (builddir / 'static' / 'OFL.txt').exists()
+    assert not (builddir / 'static' / 'style.css').exists()
+    assert not (builddir / 'static' / 'TurretRoad-Regular.ttf').exists()
+
+
 @pytest.mark.parametrize('found_url', (
     'http://localhost:8000/third_page.html',
     '/third_page.html',
