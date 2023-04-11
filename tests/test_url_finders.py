@@ -1,6 +1,7 @@
 import asyncio
 
 import pytest
+from flask import Flask
 
 from freezeyt import freeze
 from freezeyt.freezer import parse_handlers as parse_url_finders
@@ -225,3 +226,36 @@ def test_get_url_finder_by_name_defined_by_user(tmp_path, name):
     assert not (builddir / 'second_page.html').exists()
     assert (builddir / 'third_page.html').exists()
 
+
+@pytest.mark.parametrize('name', (
+    'url_finder_sync', 'url_finder_async',
+    'url_generator_sync', 'url_generator_async',
+))
+def test_get_url_finder_by_name_from_header(tmp_path, name):
+    """Test if we freezer honors the Freezeyt-URL-Finder header.
+    """
+
+    app = Flask(__name__)
+
+    @app.route('/')
+    def index():
+        return (
+            '<a href="ignored_page_1.html">...</a>',
+            {'Freezeyt-URL-Finder': f'{__name__}:{name}'},
+        )
+
+    @app.route('/third_page.html')
+    def visited():
+        return '<a href="ignored_page_2.html">...</a>'
+
+    freeze_config = {
+        'output': {'type': 'dict'},
+        'url_finders': {'text/html': 'none'},
+    }
+
+    result = freeze(app, freeze_config)
+
+    assert result == {
+        'index.html': b'<a href="ignored_page_1.html">...</a>',
+        'third_page.html': b'<a href="ignored_page_2.html">...</a>',
+    }

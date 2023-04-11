@@ -601,9 +601,13 @@ class Freezer:
                 close()
 
         assert task.response_headers is not None
-        content_type = task.response_headers.get('Content-Type')
-        mime_type, encoding = parse_options_header(content_type)
-        url_finder = self.url_finders.get(mime_type)
+        finder_name = task.response_headers.get('Freezeyt-URL-Finder')
+        if finder_name is not None:
+            url_finder = import_variable_from_module(finder_name)
+        else:
+            content_type = task.response_headers.get('Content-Type')
+            mime_type, encoding = parse_options_header(content_type)
+            url_finder = self.url_finders.get(mime_type)
         if url_finder is not None:
             with await self.saver.open_filename(task.path) as f:
                 finder_result = url_finder(
