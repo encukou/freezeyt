@@ -99,6 +99,13 @@ def default_url_to_path(path: str) -> str:
 
 
 def get_path_from_url(prefix: URL, url: URL, url_to_path) -> PurePosixPath:
+    """Return the disk path to which `url` should be saved.
+
+    `url_to_path` is the function given in the config. It takes a string
+    and returns a string.
+
+    Both arguments should be results of parse_absolute_url.
+    """
     if is_external(url, prefix):
         raise ValueError(f'external url {url}')
 
@@ -622,40 +629,26 @@ class Freezer:
                     async for link in links:
                         new_links.append(link)
                     links = new_links
-                for new_url_text in links:
-                    new_url = url.join(decode_input_path(new_url_text))
-                    try:
-                        new_url = add_port(new_url)
-                    except UnsupportedSchemeError:
-                        # If this has a scheme other than http and https,
-                        # it's an external url and we don't follow it.
-                        pass
-                    else:
-                        self.add_task(
-                            new_url, external_ok=True,
-                            reason=f'linked from: {task.path}',
-                        )
+                for link_text in links:
+                    new_url = urljoin(url, link_text)
+                    self.add_task(
+                        new_url, external_ok=True,
+                        reason=f'linked from: {task.path}',
+                    )
 
         for link_header in task.response_headers.getlist('Link'):
             for link in parse_list_header(link_header):
                 link = link.strip()
                 if not link.startswith('<'):
                     raise ...
-                new_url_text, sep, rest = link[1:].partition('>')
+                link_text, sep, rest = link[1:].partition('>')
                 if not sep:
                     raise ...
-                new_url = url.join(decode_input_path(new_url_text))
-                try:
-                    new_url = add_port(new_url)
-                except UnsupportedSchemeError:
-                    # If this has a scheme other than http and https,
-                    # it's an external url and we don't follow it.
-                    pass
-                else:
-                    self.add_task(
-                        new_url, external_ok=True,
-                        reason=f'Link header from: {task.path}',
-                    )
+                new_url = urljoin(url, link_text)
+                self.add_task(
+                    new_url, external_ok=True,
+                    reason=f'Link header from: {task.path}',
+                )
 
         del self.inprogress_tasks[task.path]
         self.done_tasks[task.path] = task
@@ -691,3 +684,13 @@ class Freezer:
     def call_hook(self, hook_name, *arguments):
         for hook in self.hooks.get(hook_name, ()):
             hook(*arguments)
+
+def urljoin(url: URL, link_text: str):
+    result = url.join(decode_input_path(link_text))
+    try:
+        result = add_port(result)
+    except UnsupportedSchemeError:
+        # If this has a scheme other than http and https,
+        # it's an external url; we don't need the port in it.
+        pass
+    return result
