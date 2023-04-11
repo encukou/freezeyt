@@ -231,7 +231,7 @@ def test_get_url_finder_by_name_defined_by_user(tmp_path, name):
     'url_finder_sync', 'url_finder_async',
     'url_generator_sync', 'url_generator_async',
 ))
-def test_get_url_finder_by_name_from_header(tmp_path, name):
+def test_get_url_finder_by_name_from_header(name):
     """Test if we freezer honors the Freezeyt-URL-Finder header.
     """
 
@@ -259,3 +259,35 @@ def test_get_url_finder_by_name_from_header(tmp_path, name):
         'index.html': b'<a href="ignored_page_1.html">...</a>',
         'third_page.html': b'<a href="ignored_page_2.html">...</a>',
     }
+
+
+def test_get_url_from_link_header():
+    app = Flask(__name__)
+    @app.route('/')
+    def index():
+        return (
+            'index',
+            [
+                ('Link', '<page_a.html>; rel="preload", <page_b.html>; rel="alternate prerender"; crossorigin="anonymous"'),
+                ('Link', '<https://localhost/page_c.html>; rel="preload"'),
+            ],
+        )
+
+    @app.route('/page_<n>.html')
+    def page(n):
+        return f'page {n}'
+
+    freeze_config = {
+        'output': {'type': 'dict'},
+        'prefix': 'https://localhost/',
+    }
+
+    result = freeze(app, freeze_config)
+
+    assert result == {
+        'index.html': b'index',
+        'page_a.html': b'page a',
+        'page_b.html': b'page b',
+        'page_c.html': b'page c',
+    }
+

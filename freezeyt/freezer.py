@@ -12,7 +12,7 @@ import inspect
 import re
 
 from werkzeug.datastructures import Headers
-from werkzeug.http import parse_options_header
+from werkzeug.http import parse_options_header, parse_list_header
 from werkzeug.urls import URL
 
 import freezeyt
@@ -635,6 +635,27 @@ class Freezer:
                             new_url, external_ok=True,
                             reason=f'linked from: {task.path}',
                         )
+
+        for link_header in task.response_headers.getlist('Link'):
+            for link in parse_list_header(link_header):
+                link = link.strip()
+                if not link.startswith('<'):
+                    raise ...
+                new_url_text, sep, rest = link[1:].partition('>')
+                if not sep:
+                    raise ...
+                new_url = url.join(decode_input_path(new_url_text))
+                try:
+                    new_url = add_port(new_url)
+                except UnsupportedSchemeError:
+                    # If this has a scheme other than http and https,
+                    # it's an external url and we don't follow it.
+                    pass
+                else:
+                    self.add_task(
+                        new_url, external_ok=True,
+                        reason=f'Link header from: {task.path}',
+                    )
 
         del self.inprogress_tasks[task.path]
         self.done_tasks[task.path] = task
