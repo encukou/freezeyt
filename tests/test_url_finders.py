@@ -8,6 +8,7 @@ from freezeyt.freezer import parse_handlers as parse_url_finders
 from freezeyt.url_finders import get_html_links
 from freezeyt.url_finders import get_css_links
 from testutil import context_for_test
+from testutil import raises_multierror_with_one_exception
 
 
 TEST_DATA = {
@@ -291,3 +292,29 @@ def test_get_url_from_link_header():
         'page_c.html': b'page c',
     }
 
+
+@pytest.mark.parametrize('link', (
+    'Bad link.',
+    '<bad/link',
+    'bad1, bad2',
+    '<https://good.example/>, <bad',
+    '<https://good.example/>; foo, bad',
+))
+def test_bad_link_header(link):
+    app = Flask(__name__)
+    @app.route('/')
+    def index():
+        return (
+            'index',
+            [
+                ('Link', link),
+            ],
+        )
+
+    freeze_config = {
+        'output': {'type': 'dict'},
+        'prefix': 'https://localhost/',
+    }
+
+    with raises_multierror_with_one_exception(ValueError):
+        freeze(app, freeze_config)

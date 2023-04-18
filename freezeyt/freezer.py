@@ -640,10 +640,10 @@ class Freezer:
             for link in parse_list_header(link_header):
                 link = link.strip()
                 if not link.startswith('<'):
-                    raise ...
+                    raise ValueError(f'Invalid Link header: {link!r}')
                 link_text, sep, rest = link[1:].partition('>')
                 if not sep:
-                    raise ...
+                    raise ValueError(f'Invalid Link header: {link!r}')
                 new_url = urljoin(url, link_text)
                 self.add_task(
                     new_url, external_ok=True,
