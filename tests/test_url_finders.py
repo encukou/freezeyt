@@ -318,3 +318,31 @@ def test_bad_link_header(link):
 
     with raises_multierror_with_one_exception(ValueError):
         freeze(app, freeze_config)
+
+
+@pytest.mark.parametrize('link', (
+    '<https://localhost/page_c.html>; rel="preload"',
+    'Bad link.',
+))
+def test_link_header_disabled(link):
+    app = Flask(__name__)
+    @app.route('/')
+    def index():
+        return (
+            'index',
+            [
+                ('Link', link),
+            ],
+        )
+
+    freeze_config = {
+        'output': {'type': 'dict'},
+        'prefix': 'https://localhost/',
+        'urls_from_link_headers': False,
+    }
+
+    result = freeze(app, freeze_config)
+
+    assert result == {
+        'index.html': b'index',
+    }

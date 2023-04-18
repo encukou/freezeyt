@@ -636,19 +636,20 @@ class Freezer:
                         reason=f'linked from: {task.path}',
                     )
 
-        for link_header in task.response_headers.getlist('Link'):
-            for link in parse_list_header(link_header):
-                link = link.strip()
-                if not link.startswith('<'):
-                    raise ValueError(f'Invalid Link header: {link!r}')
-                link_text, sep, rest = link[1:].partition('>')
-                if not sep:
-                    raise ValueError(f'Invalid Link header: {link!r}')
-                new_url = urljoin(url, link_text)
-                self.add_task(
-                    new_url, external_ok=True,
-                    reason=f'Link header from: {task.path}',
-                )
+        if self.config.get('urls_from_link_headers', True):
+            for link_header in task.response_headers.getlist('Link'):
+                for link in parse_list_header(link_header):
+                    link = link.strip()
+                    if not link.startswith('<'):
+                        raise ValueError(f'Invalid Link header: {link!r}')
+                    link_text, sep, rest = link[1:].partition('>')
+                    if not sep:
+                        raise ValueError(f'Invalid Link header: {link!r}')
+                    new_url = urljoin(url, link_text)
+                    self.add_task(
+                        new_url, external_ok=True,
+                        reason=f'Link header from: {task.path}',
+                    )
 
         del self.inprogress_tasks[task.path]
         self.done_tasks[task.path] = task
