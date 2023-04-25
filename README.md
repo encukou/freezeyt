@@ -707,11 +707,19 @@ Finder functions may be asynchronous:
 - The function may be an asynchronous generator (defined with `async def`
   and use `yield`). If so, freezeyt will use async iteration to handle it.
 
-The `freezeyt.url_finders` module includes the default finders `get_html_links`
-and `get_css_links`, and their asynchronous variants `get_html_links_async`
-and `get_css_links_async`.
+The `freezeyt.url_finders` module includes:
+- `get_html_links`, the default finder for HTML
+- `get_css_links`, the default finder for CSS
+- `get_html_links_async` and `get_css_links_async`, asynchronous variants
+  of the above
+- `none`, a finder that doesn't find any links.
 
 URL finders cannot be specified in the CLI.
+
+#### URL finder header
+
+You can specify a finder in the `Freezeyt-URL-Finder` HTTP header.
+If given, it overrides the `url_finders` configuration.
 
 #### Default `get_html_links`
 
@@ -737,6 +745,17 @@ You can disable this behaviour:
 ```yaml
 use_default_url_finders: false
 ```
+
+
+#### Finding URLs in Link headers
+
+By default, `freezeyt` will follow URLs in `Link` HTTP headers.
+To disable this, specify:
+
+```yaml
+urls_from_link_headers: false
+```
+
 
 ### Path generation
 

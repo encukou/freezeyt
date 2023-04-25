@@ -57,3 +57,11 @@ def test_is_external_no_port():
             url_parse('http://localhost:80/a/'),
             url_parse('http://localhost/a/'),
         )
+
+
+def test_is_external_relative():
+    with pytest.raises(ValueError):
+        is_external(
+            url_parse('http://localhost:80/a/'),
+            url_parse('/a/'),
+        )

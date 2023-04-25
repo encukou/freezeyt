@@ -74,6 +74,10 @@ def is_external(parsed_url, prefix):
 
     Both arguments should be results of parse_absolute_url
     """
+    if parsed_url.scheme not in ('http', 'https'):
+        # We know the prefix has a supported scheme.
+        # If parsed_url has a different scheme, it must be external.
+        return True
     for url in parsed_url, prefix:
         if url.port is None:
             raise ValueError(
