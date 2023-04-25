@@ -329,11 +329,15 @@ def test_link_header_disabled(link):
     @app.route('/')
     def index():
         return (
-            'index',
+            '<a href="second.html">...</a>',
             [
                 ('Link', link),
             ],
         )
+
+    @app.route('/second.html')
+    def second():
+        return 'second'
 
     freeze_config = {
         'output': {'type': 'dict'},
@@ -344,5 +348,6 @@ def test_link_header_disabled(link):
     result = freeze(app, freeze_config)
 
     assert result == {
-        'index.html': b'index',
+        'index.html': b'<a href="second.html">...</a>',
+        'second.html': b'second',
     }
