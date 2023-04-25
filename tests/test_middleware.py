@@ -1,5 +1,6 @@
 from werkzeug.test import Client
 import freezegun
+from flask import Flask
 
 import pytest
 
@@ -173,3 +174,28 @@ def test_middleware_tricky_extra_files():
         # to return `403 Forbidden`. This is a detail that might change in
         # the future, so just assert that this isn't successful.
         assert not mw_client.get('/static//etc/passwd').status.startswith('200')
+
+
+METHODS = 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'
+@pytest.mark.parametrize('method', METHODS)
+def test_static_mode_disallows_methods(method):
+    config = {
+        'static-mode': True,
+    }
+    app = Flask(__name__)
+
+    @app.route('/index.html', methods=METHODS)
+    def index():
+        return 'OK'
+
+    # Test the test app (behaviour without the Middleware)
+    app_client = Client(app)
+    assert app_client.open('/index.html', method='GET').status.startswith('200')
+    assert app_client.open('/index.html', method=method).status.startswith('200')
+
+    # Test behaviour with Middleware
+    mw_client = Client(Middleware(app, config))
+    assert mw_client.open('/index.html', method='GET').status.startswith('200')
+
+    # HTTP status 405: Method Not Allowed
+    assert mw_client.open('/index.html', method=method).status.startswith('405')
