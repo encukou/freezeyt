@@ -782,6 +782,23 @@ if the URL path ends with `/`.
 `url_to_path` cannot be specified in the CLI.
 
 
+### Middleware static mode
+
+When using the `freezeyt` middleware, you can enable *static mode*,
+which simulates behaviour after the app is saved to static pages:
+
+```yaml
+static-mode: true
+```
+
+Currently in static mode, HTTP methods other than GET and HEAD are disallowed.
+
+Other restrictions and features may be added in the future, without regard
+to backwards compatibility.
+The static mode is intended for interactive use -- testing your app without
+having to freeze all of it after each change.
+
+
 ## Examples of CLI usage
 
 ```shell
