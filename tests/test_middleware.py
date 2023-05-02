@@ -220,3 +220,31 @@ def test_static_mode_options(path):
     assert response.status.startswith('200')
     assert response.get_data() == b''
     assert response.headers == Headers({'Allow': 'GET, HEAD, OPTIONS'})
+
+@pytest.mark.parametrize('app_name', APP_NAMES)
+@freezegun.freeze_time()  # freeze time so that Date headers don't change
+def test_static_mode_head(app_name):
+    config = {
+        'static_mode': True,
+    }
+
+    with context_for_test(app_name) as module:
+        app = module.app
+        app_client = Client(app)
+        mw_client = Client(Middleware(app, config))
+
+        try:
+            expected_dict = module.expected_dict
+        except AttributeError:
+            # If expected_dict is not available, the app probably tests
+            # that freezing fails.
+            # Skip it.
+            pass
+        else:
+            for url in urls_from_expected_dict(expected_dict):
+                app_response = app_client.get(url)
+                mw_response = mw_client.head(url)
+
+                assert mw_response.status == app_response.status
+                assert mw_response.headers == app_response.headers
+                assert mw_response.get_data() == b''
