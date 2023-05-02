@@ -137,6 +137,10 @@ def test_middleware_rejects_wrong_mimetype():
         with pytest.raises(WrongMimetypeError):
             mw_client.get('/image.jpg')
 
+        # Non-GET requests aren't checked
+        mw_client.post('/image.jpg')
+        mw_client.put('/image.jpg')
+
 
 def test_middleware_tricky_extra_files():
     with context_for_test('tricky_extra_files') as module:
