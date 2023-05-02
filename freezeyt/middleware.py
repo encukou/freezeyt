@@ -48,36 +48,10 @@ class Middleware:
     ) -> Iterable[bytes]:
 
         if environ['REQUEST_METHOD'] != 'GET':
-            # The Freezer only sends GET requests. When we get another method,
-            # we know it came from another WSGI server.
-            if not self.static_mode:
-                # Normally, pass all other requests to the app unchanged.
-                return self.app(environ, server_start_response)
-            else:
-                # In static mode, disallow everything but GET, HEAD, OPTIONS.
-                if environ['REQUEST_METHOD'] == 'HEAD':
-                    # For HEAD, call the app but ignore the response body
-                    body_iterator = self.app(environ, server_start_response)
-                    try:
-                        close = body_iterator.close
-                    except AttributeError:
-                        pass
-                    else:
-                        close()
-                    return []
-                elif environ['REQUEST_METHOD'] == 'OPTIONS':
-                    # For OPTIONS, give our own response
-                    # (The status should be '204 No Content', but according to
-                    # MDN, some browsers misinterpret that, so '200' is safer.)
-                    server_start_response(
-                        '200 No Content',
-                        {'Allow': 'GET, HEAD, OPTIONS'},
-                    )
-                    return []
-                else:
-                    # Disallow other methods
-                    response = MethodNotAllowed()
-                    return response(environ, server_start_response)
+            # The Freezer only sends GET requests.
+            # When we get another method, we know it came from another WSGI
+            # server. Handle it specially.
+            return self.handle_non_get(environ, server_start_response)
 
         path_info = environ.get('PATH_INFO', '')
 
@@ -129,3 +103,35 @@ class Middleware:
             return result
 
         return self.app(environ, mw_start_response)
+
+    def  handle_non_get(self, environ, server_start_response):
+        # Handle requests other than GET. These can't come from Freezeyt.
+        if not self.static_mode:
+            # Normally, pass all other requests to the app unchanged.
+            return self.app(environ, server_start_response)
+
+        # In static mode, disallow everything but GET, HEAD, OPTIONS.
+
+        if environ['REQUEST_METHOD'] == 'HEAD':
+            # For HEAD, call the app but ignore the response body
+            body_iterator = self.app(environ, server_start_response)
+            try:
+                close = body_iterator.close
+            except AttributeError:
+                pass
+            else:
+                close()
+            return []
+        elif environ['REQUEST_METHOD'] == 'OPTIONS':
+            # For OPTIONS, give our own response
+            # (The status should be '204 No Content', but according to
+            # MDN, some browsers misinterpret that, so '200' is safer.)
+            server_start_response(
+                '200 No Content',
+                {'Allow': 'GET, HEAD, OPTIONS'},
+            )
+            return []
+        else:
+            # Disallow other methods
+            response = MethodNotAllowed()
+            return response(environ, server_start_response)
