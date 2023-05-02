@@ -1,7 +1,7 @@
 from typing import Iterable
 
 from werkzeug.wrappers import Response
-from werkzeug.exceptions import NotFound, Forbidden
+from werkzeug.exceptions import NotFound, Forbidden, MethodNotAllowed
 from werkzeug.routing import Map, Rule, RequestRedirect
 from werkzeug.security import safe_join
 from werkzeug.utils import send_file
@@ -39,11 +39,45 @@ class Middleware:
             else:
                 raise ValueError(kind)
 
+        self.static_mode = config.get('static_mode', False)
+
     def __call__(
         self,
         environ: WSGIEnvironment,
         server_start_response: StartResponse,
     ) -> Iterable[bytes]:
+
+        if environ['REQUEST_METHOD'] != 'GET':
+            # The Freezer only sends GET requests. When we get another method,
+            # we know it came from another WSGI server.
+            if not self.static_mode:
+                # Normally, pass all other requests to the app unchanged.
+                return self.app(environ, server_start_response)
+            else:
+                # In static mode, disallow everything but GET, HEAD, OPTIONS.
+                if environ['REQUEST_METHOD'] == 'HEAD':
+                    # For HEAD, call the app but ignore the response body
+                    body_iterator = self.app(environ, server_start_response)
+                    try:
+                        close = body_iterator.close
+                    except AttributeError:
+                        pass
+                    else:
+                        close()
+                    return []
+                elif environ['REQUEST_METHOD'] == 'OPTIONS':
+                    # For OPTIONS, give our own response
+                    # (The status should be '204 No Content', but according to
+                    # MDN, some browsers misinterpret that, so '200' is safer.)
+                    server_start_response(
+                        '200 No Content',
+                        {'Allow': 'GET, HEAD, OPTIONS'},
+                    )
+                    return []
+                else:
+                    # Disallow other methods
+                    response = MethodNotAllowed()
+                    return response(environ, server_start_response)
 
         path_info = environ.get('PATH_INFO', '')
 

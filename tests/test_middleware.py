@@ -1,4 +1,5 @@
 from werkzeug.test import Client
+from werkzeug.datastructures import Headers
 import freezegun
 from flask import Flask
 
@@ -180,15 +181,15 @@ def test_middleware_tricky_extra_files():
         assert not mw_client.get('/static//etc/passwd').status.startswith('200')
 
 
-METHODS = 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'
-@pytest.mark.parametrize('method', METHODS)
+DYNAMIC_METHODS = 'POST', 'PUT', 'PATCH', 'DELETE'
+@pytest.mark.parametrize('method', DYNAMIC_METHODS)
 def test_static_mode_disallows_methods(method):
     config = {
         'static_mode': True,
     }
     app = Flask(__name__)
 
-    @app.route('/index.html', methods=METHODS)
+    @app.route('/index.html', methods=('GET', *DYNAMIC_METHODS))
     def index():
         return 'OK'
 
@@ -218,4 +219,4 @@ def test_static_mode_options(path):
     response = mw_client.options(path)
     assert response.status.startswith('200')
     assert response.get_data() == b''
-    assert response.headers == {'Allow': 'GET, HEAD, OPTIONS'}
+    assert response.headers == Headers({'Allow': 'GET, HEAD, OPTIONS'})
