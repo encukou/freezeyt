@@ -199,3 +199,19 @@ def test_static_mode_disallows_methods(method):
 
     # HTTP status 405: Method Not Allowed
     assert mw_client.open('/index.html', method=method).status.startswith('405')
+
+@pytest.mark.parametrize('path', ('/index.html', '*'))
+def test_static_mode_options(path):
+    config = {
+        'static-mode': True,
+    }
+    app = Flask(__name__)
+    @app.route('/index.html')
+    def index():
+        return 'OK'
+    mw_client = Client(Middleware(app, config))
+
+    response = mw_client.options(path)
+    assert response.status.startswith('200')
+    assert response.get_data() == b''
+    assert response.headers == {'Allow': 'GET, HEAD, OPTIONS'}
