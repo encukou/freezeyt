@@ -184,7 +184,7 @@ METHODS = 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'
 @pytest.mark.parametrize('method', METHODS)
 def test_static_mode_disallows_methods(method):
     config = {
-        'static-mode': True,
+        'static_mode': True,
     }
     app = Flask(__name__)
 
@@ -207,7 +207,7 @@ def test_static_mode_disallows_methods(method):
 @pytest.mark.parametrize('path', ('/index.html', '*'))
 def test_static_mode_options(path):
     config = {
-        'static-mode': True,
+        'static_mode': True,
     }
     app = Flask(__name__)
     @app.route('/index.html')

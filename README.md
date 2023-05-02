@@ -788,7 +788,7 @@ When using the `freezeyt` middleware, you can enable *static mode*,
 which simulates behaviour after the app is saved to static pages:
 
 ```yaml
-static-mode: true
+static_mode: true
 ```
 
 Currently in static mode, HTTP methods other than GET and HEAD are disallowed.
