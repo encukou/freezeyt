@@ -114,6 +114,7 @@ class Middleware:
 
         if environ['REQUEST_METHOD'] == 'HEAD':
             # For HEAD, call the app but ignore the response body
+            environ['REQUEST_METHOD'] = 'GET'
             body_iterator = self.app(environ, server_start_response)
             try:
                 close = body_iterator.close
