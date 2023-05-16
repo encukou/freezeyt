@@ -1,7 +1,9 @@
+import werkzeug
 from werkzeug.test import Client
 from werkzeug.datastructures import Headers
 import freezegun
 from flask import Flask
+from packaging.version import Version
 
 import pytest
 
@@ -219,7 +221,13 @@ def test_static_mode_options(path):
     response = mw_client.options(path)
     assert response.status.startswith('200')
     assert response.get_data() == b''
-    assert response.headers == Headers({'Allow': 'GET, HEAD, OPTIONS'})
+
+    # Werkzeug's response headers were fixed in 2.2.0,
+    # see https://github.com/pallets/werkzeug/issues/2450
+    if Version(werkzeug.__version__) >= Version('2.2.0'):
+        assert response.headers == Headers({'Allow': 'GET, HEAD, OPTIONS'})
+    else:
+        assert response.headers['Allow'] == 'GET, HEAD, OPTIONS'
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
 @freezegun.freeze_time()  # freeze time so that Date headers don't change
