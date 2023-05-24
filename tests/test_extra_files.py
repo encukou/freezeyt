@@ -25,6 +25,7 @@ def test_slashes():
             '/d//': 'd',
             '//e/': 'e',
             '/f//g/': 'fg',
+            '/h///i/': 'hi',
         },
         'output': {'type': 'dict'},
     }
@@ -33,7 +34,15 @@ def test_slashes():
         result = freeze(module.app, config)
 
     result.pop('index.html')
-    assert result == {}
+    assert result == {
+        'a': b'a',
+        'b': b'b',
+        'c': {'index.html': b'c'},
+        'd': {'index.html': b'd'},
+        'e': {'index.html': b'e'},
+        'f': {'g': {'index.html': b'fg'}}
+        'h': {'i': {'index.html': b'hi'}}
+    }
 
 
 def test_content():
