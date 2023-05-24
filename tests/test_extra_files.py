@@ -26,6 +26,7 @@ def test_slashes():
             '//e/': 'e',
             '/f//g/': 'fg',
             '/h///i/': 'hi',
+            'j///k': 'jk',
         },
         'output': {'type': 'dict'},
     }
@@ -42,6 +43,7 @@ def test_slashes():
         'e': {'index.html': b'e'},
         'f': {'g': {'index.html': b'fg'}},
         'h': {'i': {'index.html': b'hi'}},
+        'j': {'k': b'jk'},
     }
 
 
