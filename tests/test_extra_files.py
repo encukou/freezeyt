@@ -40,8 +40,8 @@ def test_slashes():
         'c': {'index.html': b'c'},
         'd': {'index.html': b'd'},
         'e': {'index.html': b'e'},
-        'f': {'g': {'index.html': b'fg'}}
-        'h': {'i': {'index.html': b'hi'}}
+        'f': {'g': {'index.html': b'fg'}},
+        'h': {'i': {'index.html': b'hi'}},
     }
 
 
