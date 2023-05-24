@@ -21,12 +21,13 @@ def test_slashes():
         'extra_files': {
             'a': 'a',
             '/b': 'b',
-            '/c/': 'c',
-            '/d//': 'd',
-            '//e/': 'e',
-            '/f//g/': 'fg',
-            '/h///i/': 'hi',
-            'j///k': 'jk',
+            'c/': 'c',
+            '/d/': 'd',
+            '/e//': 'e',
+            '//f/': 'f',
+            '/g//h/': 'gh',
+            '/i///j/': 'ij',
+            'k///l': 'kl',
         },
         'output': {'type': 'dict'},
     }
@@ -41,9 +42,10 @@ def test_slashes():
         'c': {'index.html': b'c'},
         'd': {'index.html': b'd'},
         'e': {'index.html': b'e'},
-        'f': {'g': {'index.html': b'fg'}},
-        'h': {'i': {'index.html': b'hi'}},
-        'j': {'k': b'jk'},
+        'f': {'index.html': b'f'},
+        'g': {'h': {'index.html': b'gh'}},
+        'i': {'j': {'index.html': b'ij'}},
+        'k': {'l': b'kl'},
     }
 
 
