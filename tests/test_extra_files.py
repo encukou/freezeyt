@@ -1,3 +1,4 @@
+import pytest
 from pathlib import Path
 
 from freezeyt.extra_files import get_extra_files
@@ -16,19 +17,57 @@ def test_simple():
     assert list(get_extra_files(config)) == [('foo', 'content', b'abc')]
 
 
-def test_slashes():
+EXTRA_FILES = (
+    pytest.param(
+        {'url_part': 'a'},
+        {'url_part': b'a'},
+        id='url_part'
+    ),
+    pytest.param(
+        {'/url_part':  'a'},
+        {'url_part': b'a'},
+        id='/url_part'
+    ),
+    pytest.param(
+        {'url_part/':  'a'},
+        {'url_part': {'index.html': b'a'}},
+        id='url_part/'
+    ),
+    pytest.param(
+        {'/url_part/': 'a'},
+        {'url_part': {'index.html': b'a'}},
+        id='/url_part/'
+    ),
+    pytest.param(
+        {'/url_part//': 'a'},
+        {'url_part': {'index.html': b'a'}},
+        id='/url_part//'
+    ),
+    pytest.param(
+        {'//url_part/': 'a'},
+        {'url_part': {'index.html': b'a'}},
+        id='//url_part/'
+    ),
+    pytest.param(
+        {'/path_to//file': 'a'},
+        {'path_to': {'file': b'a'}},
+        id='/path_to//file'
+    ),
+    pytest.param(
+        {'path_to///file': 'a'},
+        {'path_to': {'file': b'a'}},
+        id='path_to///file'
+    ),
+    pytest.param(
+        {'/part1///part2/': 'a'},
+        {'part1': {'part2': {'index.html': b'a'}}},
+        id='/part1///part2/'
+    ),
+)
+@pytest.mark.parametrize('extra_file,expected', EXTRA_FILES)
+def test_slashes(extra_file, expected):
     config = {
-        'extra_files': {
-            'a': 'a',
-            '/b': 'b',
-            'c/': 'c',
-            '/d/': 'd',
-            '/e//': 'e',
-            '//f/': 'f',
-            '/g//h/': 'gh',
-            '/i///j': 'ij',
-            'k///l': 'kl',
-        },
+        'extra_files': extra_file,
         'output': {'type': 'dict'},
     }
 
@@ -36,17 +75,7 @@ def test_slashes():
         result = freeze(module.app, config)
 
     result.pop('index.html')
-    assert result == {
-        'a': b'a',
-        'b': b'b',
-        'c': {'index.html': b'c'},
-        'd': {'index.html': b'd'},
-        'e': {'index.html': b'e'},
-        'f': {'index.html': b'f'},
-        'g': {'h': {'index.html': b'gh'}},
-        'i': {'j': b'ij'},
-        'k': {'l': b'kl'},
-    }
+    assert result == expected
 
 
 def test_content():
