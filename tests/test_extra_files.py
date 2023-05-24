@@ -74,7 +74,10 @@ def test_slashes(extra_file, expected):
     with context_for_test('app_simple') as module:
         result = freeze(module.app, config)
 
+    # pop to simplify syntax of expected dict
+    # index.html is root page for app_simple, not useful for this test
     result.pop('index.html')
+
     assert result == expected
 
 
