@@ -25,6 +25,7 @@ def test_slashes():
             '/d//': 'd',
             '//e/': 'e',
             '/f//g/': 'fg',
+            '/h///i/': 'hi',
         },
         'output': {'type': 'dict'},
     }
