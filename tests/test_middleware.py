@@ -2,7 +2,7 @@ import werkzeug
 from werkzeug.test import Client
 from werkzeug.datastructures import Headers
 import freezegun
-from flask import Flask
+from flask import Flask, request
 from packaging.version import Version
 
 import pytest
@@ -256,3 +256,24 @@ def test_static_mode_head(app_name):
                 assert mw_response.status == app_response.status
                 assert mw_response.headers == app_response.headers
                 assert mw_response.get_data() == b''
+
+def test_parameter_removal():
+    config = {
+        'static_mode': True,
+    }
+
+    # An app that returns the parameters it gets as the response body
+    app = Flask(__name__)
+    @app.route('/')
+    def echo_params():
+        return request.query_string
+
+    # Ensure the app works
+    app_client = Client(app)
+    app_response = app_client.get('/?a=b')
+    assert app_response.get_data() == b'a=b'
+
+    # Ensure the middleware deletes parameters
+    mw_client = Client(Middleware(app, config))
+    mw_response = mw_client.get('/?a=b')
+    assert mw_response.get_data() == b''
