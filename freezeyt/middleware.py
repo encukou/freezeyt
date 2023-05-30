@@ -47,6 +47,26 @@ class Middleware:
         server_start_response: StartResponse,
     ) -> Iterable[bytes]:
 
+        if self.static_mode:
+            new_environ = {
+                'REQUEST_METHOD': environ['REQUEST_METHOD'],
+                'SCRIPT_NAME': environ.get('SCRIPT_NAME', ''),
+                'PATH_INFO': environ.get('PATH_INFO', ''),
+                'SERVER_NAME': environ.get('SERVER_NAME', ''),
+                'SERVER_PORT': environ.get('SERVER_PORT', ''),
+                'SERVER_PROTOCOL': environ.get('SERVER_PROTOCOL', ''),
+                'HTTP_HOST': environ.get('HTTP_HOST', ''),
+                'wsgi.version': environ.get('wsgi.version', ''),
+                'wsgi.url_scheme': environ.get('wsgi.url_scheme', ''),
+                'wsgi.input': 'XXX_TODO',
+                'wsgi.errors': environ.get('wsgi.errors', ''),
+                'wsgi.multithread': environ.get('wsgi.multithread', ''),
+                'wsgi.multiprocess': environ.get('wsgi.multiprocess', ''),
+                'wsgi.run_once': environ.get('wsgi.run_once', ''),
+                'freezeyt.freezing': environ.get('freezeyt.freezing', ''),
+            }
+            environ = new_environ
+
         if environ['REQUEST_METHOD'] != 'GET':
             # The Freezer only sends GET requests.
             # When we get another method, we know it came from another WSGI
