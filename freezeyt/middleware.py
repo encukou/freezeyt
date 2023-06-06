@@ -55,10 +55,14 @@ class Middleware:
             return self.handle_non_get(environ, server_start_response)
 
         if self.static_mode:
+            # Construct a new environment, only keeping the info that a server
+            # of static pages would use
             new_environ = {
                 'REQUEST_METHOD': environ['REQUEST_METHOD'],
                 'SCRIPT_NAME': environ.get('SCRIPT_NAME', ''),
                 'PATH_INFO': environ.get('PATH_INFO', ''),
+                # QUERY_STRING (URL parameters) is missing
+                # CONTENT_TYPE & CONTENT_LENGTH (request body) is missing
                 'SERVER_NAME': environ.get('SERVER_NAME', ''),
                 'SERVER_PORT': environ.get('SERVER_PORT', ''),
                 'SERVER_PROTOCOL': environ.get('SERVER_PROTOCOL', ''),
