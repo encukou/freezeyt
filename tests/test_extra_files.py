@@ -17,55 +17,21 @@ def test_simple():
     assert list(get_extra_files(config)) == [('foo', 'content', b'abc')]
 
 
-EXTRA_FILES = (
-    pytest.param(
-        {'url_part': 'a'},
-        {'url_part': b'a'},
-        id='url_part'
-    ),
-    pytest.param(
-        {'/url_part':  'a'},
-        {'url_part': b'a'},
-        id='/url_part'
-    ),
-    pytest.param(
-        {'url_part/':  'a'},
-        {'url_part': {'index.html': b'a'}},
-        id='url_part/'
-    ),
-    pytest.param(
-        {'/url_part/': 'a'},
-        {'url_part': {'index.html': b'a'}},
-        id='/url_part/'
-    ),
-    pytest.param(
-        {'/url_part//': 'a'},
-        {'url_part': {'index.html': b'a'}},
-        id='/url_part//'
-    ),
-    pytest.param(
-        {'//url_part/': 'a'},
-        {'url_part': {'index.html': b'a'}},
-        id='//url_part/'
-    ),
-    pytest.param(
-        {'/path_to//file': 'a'},
-        {'path_to': {'file': b'a'}},
-        id='/path_to//file'
-    ),
-    pytest.param(
-        {'path_to///file': 'a'},
-        {'path_to': {'file': b'a'}},
-        id='path_to///file'
-    ),
-    pytest.param(
-        {'/part1///part2/': 'a'},
-        {'part1': {'part2': {'index.html': b'a'}}},
-        id='/part1///part2/'
-    ),
-)
-@pytest.mark.parametrize('extra_file,expected', EXTRA_FILES)
-def test_slashes(extra_file, expected):
+EXTRA_FILES = {
+    'url_part': {'url_part': b'a'},
+    '/url_part': {'url_part': b'a'},
+    'url_part/': {'url_part': {'index.html': b'a'}},
+    '/url_part/': {'url_part': {'index.html': b'a'}},
+    '/url_part//': {'url_part': {'index.html': b'a'}},
+    '//url_part/': {'url_part': {'index.html': b'a'}},
+    '/path_to//file': {'path_to': {'file': b'a'}},
+    'path_to///file': {'path_to': {'file': b'a'}},
+    '/part1///part2/': {'part1': {'part2': {'index.html': b'a'}}},
+}
+@pytest.mark.parametrize('test_case', EXTRA_FILES)
+def test_slashes(test_case):
+    extra_file = {test_case: 'a'}
+    expected = EXTRA_FILES[test_case]
     config = {
         'extra_files': extra_file,
         'output': {'type': 'dict'},
