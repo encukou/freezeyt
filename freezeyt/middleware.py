@@ -57,24 +57,30 @@ class Middleware:
         if self.static_mode:
             # Construct a new environment, only keeping the info that a server
             # of static pages would use
-            new_environ = {
-                'REQUEST_METHOD': environ['REQUEST_METHOD'],
-                'SCRIPT_NAME': environ.get('SCRIPT_NAME', ''),
-                'PATH_INFO': environ.get('PATH_INFO', ''),
+            COPIED_KEYS = {
+                'REQUEST_METHOD',
+                'SCRIPT_NAME',
+                'PATH_INFO',
                 # QUERY_STRING (URL parameters) is missing
                 # CONTENT_TYPE & CONTENT_LENGTH (request body) is missing
-                'SERVER_NAME': environ.get('SERVER_NAME', ''),
-                'SERVER_PORT': environ.get('SERVER_PORT', ''),
-                'SERVER_PROTOCOL': environ.get('SERVER_PROTOCOL', ''),
-                'HTTP_HOST': environ.get('HTTP_HOST', ''),
-                'wsgi.version': environ.get('wsgi.version', ''),
-                'wsgi.url_scheme': environ.get('wsgi.url_scheme', ''),
+                'SERVER_NAME',
+                'SERVER_PORT',
+                'SERVER_PROTOCOL',
+                'HTTP_HOST',
+                'wsgi.version',
+                'wsgi.url_scheme',
+                'wsgi.errors',
+                'wsgi.multithread',
+                'wsgi.multiprocess',
+                'wsgi.run_once',
+                'freezeyt.freezing',
+            }
+            new_environ = {
+                **{
+                    key: environ[key] for key
+                    in COPIED_KEYS.intersection(environ)
+                },
                 'wsgi.input': io.BytesIO(b''),  # discard the request body
-                'wsgi.errors': environ.get('wsgi.errors', ''),
-                'wsgi.multithread': environ.get('wsgi.multithread', ''),
-                'wsgi.multiprocess': environ.get('wsgi.multiprocess', ''),
-                'wsgi.run_once': environ.get('wsgi.run_once', ''),
-                'freezeyt.freezing': environ.get('freezeyt.freezing', ''),
             }
             environ = new_environ
 
