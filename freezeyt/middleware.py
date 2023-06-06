@@ -1,4 +1,5 @@
 from typing import Iterable
+import io
 
 from werkzeug.wrappers import Response
 from werkzeug.exceptions import NotFound, Forbidden, MethodNotAllowed
@@ -47,6 +48,12 @@ class Middleware:
         server_start_response: StartResponse,
     ) -> Iterable[bytes]:
 
+        if environ['REQUEST_METHOD'] != 'GET':
+            # The Freezer only sends GET requests.
+            # When we get another method, we know it came from another WSGI
+            # server. Handle it specially.
+            return self.handle_non_get(environ, server_start_response)
+
         if self.static_mode:
             new_environ = {
                 'REQUEST_METHOD': environ['REQUEST_METHOD'],
@@ -58,7 +65,7 @@ class Middleware:
                 'HTTP_HOST': environ.get('HTTP_HOST', ''),
                 'wsgi.version': environ.get('wsgi.version', ''),
                 'wsgi.url_scheme': environ.get('wsgi.url_scheme', ''),
-                'wsgi.input': 'XXX_TODO',
+                'wsgi.input': io.BytesIO(b''),  # discard the request body
                 'wsgi.errors': environ.get('wsgi.errors', ''),
                 'wsgi.multithread': environ.get('wsgi.multithread', ''),
                 'wsgi.multiprocess': environ.get('wsgi.multiprocess', ''),
@@ -66,12 +73,6 @@ class Middleware:
                 'freezeyt.freezing': environ.get('freezeyt.freezing', ''),
             }
             environ = new_environ
-
-        if environ['REQUEST_METHOD'] != 'GET':
-            # The Freezer only sends GET requests.
-            # When we get another method, we know it came from another WSGI
-            # server. Handle it specially.
-            return self.handle_non_get(environ, server_start_response)
 
         path_info = environ.get('PATH_INFO', '')
 

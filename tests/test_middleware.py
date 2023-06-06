@@ -277,3 +277,25 @@ def test_parameter_removal():
     mw_client = Client(Middleware(app, config))
     mw_response = mw_client.get('/?a=b')
     assert mw_response.get_data() == b''
+
+def test_request_body_removal():
+    config = {
+        'static_mode': True,
+    }
+
+    # An app that returns the request body it gets as the response body
+    app = Flask(__name__)
+    @app.route('/')
+    def echo_body():
+        return request.get_data()
+
+    # Ensure the app works
+    app_client = Client(app)
+    app_response = app_client.get('/', data=b'abc')
+    assert app_response.get_data() == b'abc'
+
+    # Ensure the middleware deletes parameters
+    mw_client = Client(Middleware(app, config))
+    mw_response = mw_client.get('/', data='abc')
+    assert mw_response.get_data() == b''
+

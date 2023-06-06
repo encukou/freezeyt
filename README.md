@@ -794,6 +794,7 @@ static_mode: true
 Currently in static mode:
 - HTTP methods other than GET and HEAD are disallowed.
 - URL parameters are removed
+- The request body is discarded
 
 Other restrictions and features may be added in the future, without regard
 to backwards compatibility.
