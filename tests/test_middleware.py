@@ -1,5 +1,9 @@
+import werkzeug
 from werkzeug.test import Client
+from werkzeug.datastructures import Headers
 import freezegun
+from flask import Flask
+from packaging.version import Version
 
 import pytest
 
@@ -136,6 +140,10 @@ def test_middleware_rejects_wrong_mimetype():
         with pytest.raises(WrongMimetypeError):
             mw_client.get('/image.jpg')
 
+        # Non-GET requests aren't checked
+        mw_client.post('/image.jpg')
+        mw_client.put('/image.jpg')
+
 
 def test_middleware_tricky_extra_files():
     with context_for_test('tricky_extra_files') as module:
@@ -173,3 +181,78 @@ def test_middleware_tricky_extra_files():
         # to return `403 Forbidden`. This is a detail that might change in
         # the future, so just assert that this isn't successful.
         assert not mw_client.get('/static//etc/passwd').status.startswith('200')
+
+
+DYNAMIC_METHODS = 'POST', 'PUT', 'PATCH', 'DELETE'
+@pytest.mark.parametrize('method', DYNAMIC_METHODS)
+def test_static_mode_disallows_methods(method):
+    config = {
+        'static_mode': True,
+    }
+    app = Flask(__name__)
+
+    @app.route('/index.html', methods=('GET', *DYNAMIC_METHODS))
+    def index():
+        return 'OK'
+
+    # Test the test app (behaviour without the Middleware)
+    app_client = Client(app)
+    assert app_client.open('/index.html', method='GET').status.startswith('200')
+    assert app_client.open('/index.html', method=method).status.startswith('200')
+
+    # Test behaviour with Middleware
+    mw_client = Client(Middleware(app, config))
+    assert mw_client.open('/index.html', method='GET').status.startswith('200')
+
+    # HTTP status 405: Method Not Allowed
+    assert mw_client.open('/index.html', method=method).status.startswith('405')
+
+@pytest.mark.parametrize('path', ('/index.html', '*'))
+def test_static_mode_options(path):
+    config = {
+        'static_mode': True,
+    }
+    app = Flask(__name__)
+    @app.route('/index.html')
+    def index():
+        return 'OK'
+    mw_client = Client(Middleware(app, config))
+
+    response = mw_client.options(path)
+    assert response.status.startswith('200')
+    assert response.get_data() == b''
+
+    # Werkzeug's response headers were fixed in 2.2.0,
+    # see https://github.com/pallets/werkzeug/issues/2450
+    if Version(werkzeug.__version__) >= Version('2.2.0'):
+        assert response.headers == Headers({'Allow': 'GET, HEAD, OPTIONS'})
+    else:
+        assert response.headers['Allow'] == 'GET, HEAD, OPTIONS'
+
+@pytest.mark.parametrize('app_name', APP_NAMES)
+@freezegun.freeze_time()  # freeze time so that Date headers don't change
+def test_static_mode_head(app_name):
+    config = {
+        'static_mode': True,
+    }
+
+    with context_for_test(app_name) as module:
+        app = module.app
+        app_client = Client(app)
+        mw_client = Client(Middleware(app, config))
+
+        try:
+            expected_dict = module.expected_dict
+        except AttributeError:
+            # If expected_dict is not available, the app probably tests
+            # that freezing fails.
+            # Skip it.
+            pass
+        else:
+            for url in urls_from_expected_dict(expected_dict):
+                app_response = app_client.get(url)
+                mw_response = mw_client.head(url)
+
+                assert mw_response.status == app_response.status
+                assert mw_response.headers == app_response.headers
+                assert mw_response.get_data() == b''
