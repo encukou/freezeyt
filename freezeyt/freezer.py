@@ -52,7 +52,7 @@ async def freeze_async(app: WSGIApplication, config):
     try:
         await freezer.prepare()
         freezer.call_hook('start', freezer.freeze_info)
-        await freezer.handle_urls()
+        #await freezer.handle_urls()
         await freezer.handle_redirects()
         return await freezer.finish()
     except:
@@ -160,6 +160,26 @@ class Task:
             if self.path in collection:
                 return status
         raise ValueError(f'Task not registered with freezer: {self}')
+
+    def run(self, coro):
+        self.asyncio_task = asyncio_create_task(self._run_atask(coro), name=self.path)
+    
+    async def _run_atask(self, coro):
+        try:
+            await coro
+        except Exception as exc:
+            del self.freezer.inprogress_tasks[self.path]
+            self.freezer.failed_tasks[self.path] = self
+            self.freezer.call_hook('page_failed', hooks.TaskInfo(self))
+            if self.freezer.fail_fast:
+                raise exc
+        else:
+            del self.freezer.inprogress_tasks[self.path]
+            self.freezer.done_tasks[self.path] = self
+            if self.path in self.inprogress_tasks:
+                raise ValueError(f'{self} is in_progress after it was handled')
+
+            self.freezer.call_hook('page_frozen', hooks.TaskInfo(self))
 
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
@@ -375,7 +395,7 @@ class Freezer:
         task = self._add_task(url, external_ok=external_ok, reason=reason)
         if task and task.asyncio_task is None:
             coroutine = self.handle_one_task(task)
-            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
+            task.run(coroutine)
         return task
 
     def _add_task(
@@ -651,10 +671,6 @@ class Freezer:
                         reason=f'Link header from: {task.path}',
                     )
 
-        del self.inprogress_tasks[task.path]
-        self.done_tasks[task.path] = task
-
-        self.call_hook('page_frozen', hooks.TaskInfo(task))
 
     @needs_semaphore
     async def handle_redirects(self):
