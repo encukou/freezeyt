@@ -52,7 +52,7 @@ async def freeze_async(app: WSGIApplication, config):
     try:
         await freezer.prepare()
         freezer.call_hook('start', freezer.freeze_info)
-        #await freezer.handle_urls()
+        await freezer.handle_urls()
         await freezer.handle_redirects()
         return await freezer.finish()
     except:
@@ -146,6 +146,7 @@ class Task:
     redirects_to: "Optional[Task]" = None
     reasons: set = dataclasses.field(default_factory=set)
     asyncio_task: "Optional[asyncio.Task]" = None
+    exception: Optional[Exception] = None
 
     def __repr__(self):
         return f"<Task for {self.path}, {self.status.name}>"
@@ -162,12 +163,16 @@ class Task:
         raise ValueError(f'Task not registered with freezer: {self}')
 
     def run(self, coro):
+        assert self.path not in self.freezer.inprogress_tasks
+        self.freezer.inprogress_tasks[self.path] = self
+
         self.asyncio_task = asyncio_create_task(self._run_atask(coro), name=self.path)
-    
+
     async def _run_atask(self, coro):
         try:
             await coro
         except Exception as exc:
+            self.exception = exc
             del self.freezer.inprogress_tasks[self.path]
             self.freezer.failed_tasks[self.path] = self
             self.freezer.call_hook('page_failed', hooks.TaskInfo(self))
@@ -176,8 +181,6 @@ class Task:
         else:
             del self.freezer.inprogress_tasks[self.path]
             self.freezer.done_tasks[self.path] = self
-            if self.path in self.inprogress_tasks:
-                raise ValueError(f'{self} is in_progress after it was handled')
 
             self.freezer.call_hook('page_frozen', hooks.TaskInfo(self))
 
@@ -418,7 +421,6 @@ class Freezer:
             # (not with `break`, or exception, return, etc.)
             # Here, this means the task wasn't found.
             task = Task(path, {url}, self)
-            self.inprogress_tasks[path] = task
         if reason:
             task.reasons.add(reason)
         return task
@@ -542,13 +544,16 @@ class Freezer:
             try:
                 await task.asyncio_task
             except Exception as exc:
-                del self.inprogress_tasks[task.path]
-                self.failed_tasks[task.path] = task
-                self.call_hook('page_failed', hooks.TaskInfo(task))
                 if self.fail_fast:
                     raise exc
+            if self.fail_fast and task.exception:
+                raise task.exception
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
+
+            if self.fail_fast:
+                for task in self.failed_tasks.values():
+                    raise task.exception
 
     @needs_semaphore
     async def handle_one_task(self, task: Task) -> None:

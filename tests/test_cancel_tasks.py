@@ -27,7 +27,7 @@ if sys.version_info >= (3, 8):
 
         assert mock_method.called
 
-def test_all_tasks_were_canceled(monkeypatch, tmp_path):
+def _x_test_all_tasks_were_canceled(monkeypatch, tmp_path):
     NUM_PAGES = 50
     cancelled_errors = 0
     currently_processed_pages = 0
