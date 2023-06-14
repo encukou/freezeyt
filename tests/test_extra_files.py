@@ -27,6 +27,7 @@ EXTRA_FILES = {
     '/path_to//file': {'path_to': {'file': b'a'}},
     'path_to///file': {'path_to': {'file': b'a'}},
     '/part1///part2/': {'part1': {'part2': {'index.html': b'a'}}},
+    '/http/https/': {'http': {'https': {'index.html': b'a'}}},
 }
 @pytest.mark.parametrize('test_case', EXTRA_FILES)
 def test_slashes(test_case):
