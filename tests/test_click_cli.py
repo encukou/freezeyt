@@ -306,6 +306,9 @@ def test_cli_fail_fast_option(tmp_path):
     cli_args = ['app', str(build_dir), '-x']
 
     with context_for_test(app_name):
+        # We expect a TestFailFastError, but use ValueError
+        # (a superclass) so we don't need to import
+        # TestFailFastError itself.
         with pytest.raises(ValueError):
             run_freezeyt_cli(cli_args, app_name)
 
