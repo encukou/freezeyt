@@ -32,6 +32,7 @@ def get_extra_files(
     extra_files_config = config.get('extra_files')
     if extra_files_config is not None:
         for url_part, content in extra_files_config.items():
+            url_part = url_part.replace("\\", "/")
             while "//" in url_part:
                 url_part = url_part.replace("//", "/")
             if isinstance(content, str):
