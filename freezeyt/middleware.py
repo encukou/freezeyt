@@ -1,4 +1,5 @@
 from typing import Iterable
+import io
 
 from werkzeug.wrappers import Response
 from werkzeug.exceptions import NotFound, Forbidden, MethodNotAllowed
@@ -52,6 +53,36 @@ class Middleware:
             # When we get another method, we know it came from another WSGI
             # server. Handle it specially.
             return self.handle_non_get(environ, server_start_response)
+
+        if self.static_mode:
+            # Construct a new environment, only keeping the info that a server
+            # of static pages would use
+            COPIED_KEYS = {
+                'REQUEST_METHOD',
+                'SCRIPT_NAME',
+                'PATH_INFO',
+                # QUERY_STRING (URL parameters) is missing
+                # CONTENT_TYPE & CONTENT_LENGTH (request body) is missing
+                'SERVER_NAME',
+                'SERVER_PORT',
+                'SERVER_PROTOCOL',
+                'HTTP_HOST',
+                'wsgi.version',
+                'wsgi.url_scheme',
+                'wsgi.errors',
+                'wsgi.multithread',
+                'wsgi.multiprocess',
+                'wsgi.run_once',
+                'freezeyt.freezing',
+            }
+            new_environ = {
+                **{
+                    key: environ[key] for key
+                    in COPIED_KEYS.intersection(environ)
+                },
+                'wsgi.input': io.BytesIO(b''),  # discard the request body
+            }
+            environ = new_environ
 
         path_info = environ.get('PATH_INFO', '')
 
