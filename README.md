@@ -302,6 +302,8 @@ This is useful for configuration of your static server.
 (For pages that are part of your website, we recommend
 adding them to your application rather than as extra files.)
 
+If you specify backslashes in `url part`, `freezeyt` convert them to forward slashes.
+
 For example, the following config will add 3 files to
 the output:
 

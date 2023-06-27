@@ -323,7 +323,7 @@ class Freezer:
             if isinstance(plugin, str):
                 plugin = import_variable_from_module(plugin)
             plugin(self.freeze_info)
-        
+
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
 
@@ -422,7 +422,7 @@ class Freezer:
                         reason="from extra_files",
                     )
         self._add_extra_pages(self.prefix, self.extra_pages)
-      
+
         # and at the end prepare the saver
         await self.saver.prepare()
 
