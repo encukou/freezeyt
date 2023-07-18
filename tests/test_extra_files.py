@@ -48,6 +48,32 @@ def test_slashes(test_case):
 
     assert result == expected
 
+EXTRA_FILE_DOT = {
+    # http: without leading forward slash become absolute url instead of url part
+    'http:': {'http:': b'a'},
+    '/http:': {'http:': b'a'},
+    '/http:/': {'http:': {'index.html': b'a'}},
+    '/https:/': {'https:': {'index.html': b'a'}},
+    '/https://': {'https:': {'index.html': b'a'}},
+    '/http:/https/': {'http:': {'https': {'index.html': b'a'}}},
+}
+@pytest.mark.parametrize('test_case', EXTRA_FILE_DOT)
+def test_dots(test_case):
+    extra_file = {test_case: 'a'}
+    expected = EXTRA_FILE_DOT[test_case]
+    config = {
+        'extra_files': extra_file,
+        'output': {'type': 'dict'},
+    }
+
+    with context_for_test('app_simple') as module:
+        result = freeze(module.app, config)
+
+    # pop to simplify syntax of expected dict
+    # index.html is root page for app_simple, not useful for this test
+    result.pop('index.html')
+
+    assert result == expected
 
 def test_content():
     config = {
