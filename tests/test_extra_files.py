@@ -17,7 +17,7 @@ def test_simple():
     assert list(get_extra_files(config)) == [('foo', 'content', b'abc')]
 
 
-EXTRA_FILES = {
+EXTRA_FILE_SLASH = {
     'url_part': {'url_part': b'a'},
     '/url_part': {'url_part': b'a'},
     'url_part/': {'url_part': {'index.html': b'a'}},
@@ -30,10 +30,10 @@ EXTRA_FILES = {
     '/http/https/': {'http': {'https': {'index.html': b'a'}}},
     r'/http\https/': {'http': {'https': {'index.html': b'a'}}},
 }
-@pytest.mark.parametrize('test_case', EXTRA_FILES)
+@pytest.mark.parametrize('test_case', EXTRA_FILE_SLASH)
 def test_slashes(test_case):
     extra_file = {test_case: 'a'}
-    expected = EXTRA_FILES[test_case]
+    expected = EXTRA_FILE_SLASH[test_case]
     config = {
         'extra_files': extra_file,
         'output': {'type': 'dict'},
