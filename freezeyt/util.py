@@ -167,3 +167,21 @@ def import_variable_from_module(
         result = getattr(result, attribute_name)
 
     return result
+
+
+def clean_url_path(url_path: str) -> str:
+    """Fix url path by rules:
+
+        - any backslash replace by forward slash
+        - multiple slashes reduce to only one
+        - relative path does not start with slash
+    """
+
+    backslash = "\\"
+    url_path = url_path.replace(backslash, "/")
+
+    while "//" in url_path:
+        url_path = url_path.replace("//", "/")
+
+    return url_path.lstrip("/")
+
