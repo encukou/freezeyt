@@ -51,6 +51,8 @@ def test_slashes(test_case):
 EXTRA_FILE_DOT = {
     ':': {':': b'a'},
     ':/': {':': {'index.html': b'a'}},
+    '.nojekyll': {'.nojekyll': b'a'},
+    '/.nojekyll': {'.nojekyll': b'a'},
     # http: without leading forward slash become absolute url instead of url part
     'http:': {'http:': b'a'},
     '/http:': {'http:': b'a'},
