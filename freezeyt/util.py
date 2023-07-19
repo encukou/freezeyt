@@ -1,7 +1,7 @@
 import importlib
 import concurrent.futures
 
-from werkzeug.urls import url_parse
+from werkzeug.urls import url_parse, BaseURL
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 
@@ -184,4 +184,15 @@ def clean_url_path(url_path: str) -> str:
         url_path = url_path.replace("//", "/")
 
     return url_path.lstrip("/")
+
+
+def join_url_path(prefix: BaseURL, url_path: str) -> BaseURL:
+    # prefix does not end with forward slash
+    if not prefix.path:
+        return prefix.join(url_path)
+
+    # if path exist at least forward slash is the path
+    # we must add prefix path to url_path to solve problem with http:
+    url_path = prefix.path.rstrip("/") + "/" + url_path
+    return prefix.join(url_path)
 
