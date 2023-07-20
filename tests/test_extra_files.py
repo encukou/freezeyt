@@ -79,6 +79,50 @@ def test_dots(test_case):
 
     assert result == expected
 
+EXTRA_FILE_WITH_PREFIX = {
+    # url_part - from configuration: expected url_part - after clean
+    ':':            ':',
+    ':/':           ':/',
+    '.nojekyll':    '.nojekyll',
+    '/.nojekyll':   '.nojekyll',
+    'http':         'http',
+    # http: without leading forward slash alter prefix by werkzeug.url_parse(<prefix>).join("http:")
+    # http: become the protocol of prefix instead url path
+    'http:':        'http:',
+    '/http:':       'http:',
+    '/http:/':      'http:/',
+    '/https:/':     'https:/',
+    '/https://':    'https:/',
+    '/http:/https/': 'http:/https/',
+    r'/http\https/': 'http/https/',
+}
+@pytest.mark.parametrize('url_part', EXTRA_FILE_WITH_PREFIX)
+def test_join_with_prefix(url_part):
+    recorded_tasks = {}
+
+    def record_page(task_info):
+        recorded_tasks[task_info.get_a_url()] = task_info
+
+    extra_file = {url_part: 'a'}
+
+    config = {
+        'prefix': 'https://example.com:443/freezeyt/',
+        'extra_files': extra_file,
+        'output': {'type': 'dict'},
+        'hooks': {'page_frozen': [record_page]},
+    }
+
+    with context_for_test('app_simple') as module:
+        freeze(module.app, config)
+
+    expected = [
+        config['prefix'],
+        config['prefix'] + EXTRA_FILE_WITH_PREFIX[url_part],
+    ]
+
+    assert sorted(recorded_tasks) == expected
+
+
 def test_content():
     config = {
         'extra_files': {
