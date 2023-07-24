@@ -175,6 +175,7 @@ def clean_url_path(url_path: str) -> str:
 
         - decode to unicode
         - any backslash replace by forward slash
+        - simple dot as path part is removed
         - multiple slashes reduce to only one
         - relative path does not start with slash
     """
@@ -186,6 +187,15 @@ def clean_url_path(url_path: str) -> str:
 
     backslash = "\\"
     url_path = url_path.replace(backslash, "/")
+
+    while "/./" in url_path:
+        url_path = url_path.replace("/./", "/")
+
+    if url_path.startswith("./"):
+        url_path = url_path[2:]
+
+    if url_path.endswith("/."):
+        url_path = url_path[:-1]
 
     while "//" in url_path:
         url_path = url_path.replace("//", "/")
