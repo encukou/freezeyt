@@ -2,6 +2,7 @@ import importlib
 import concurrent.futures
 
 from werkzeug.urls import url_parse, BaseURL
+from urllib.parse import unquote
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 
@@ -172,10 +173,13 @@ def import_variable_from_module(
 def clean_url_path(url_path: str) -> str:
     """Fix url path by rules:
 
+        - decode to unicode
         - any backslash replace by forward slash
         - multiple slashes reduce to only one
         - relative path does not start with slash
     """
+
+    url_path = unquote(url_path)
 
     backslash = "\\"
     url_path = url_path.replace(backslash, "/")
