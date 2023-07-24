@@ -79,6 +79,30 @@ def test_dots(test_case):
 
     assert result == expected
 
+
+EXTRA_FILE_QUOTED = {
+    '%C3%A1/':  {'á': {'index.html': b'a'}},
+    'á/':       {'á': {'index.html': b'a'}},
+    '/a%5cb/':  {'a': {'b': {'index.html': b'a'}}},
+}
+@pytest.mark.parametrize('test_case', EXTRA_FILE_QUOTED)
+def test_quoted_url_path(test_case):
+    extra_file = {test_case: 'a'}
+    expected = EXTRA_FILE_QUOTED[test_case]
+    config = {
+        'extra_files': extra_file,
+        'output': {'type': 'dict'},
+    }
+
+    with context_for_test('app_simple') as module:
+        result = freeze(module.app, config)
+
+    # pop to simplify syntax of expected dict
+    # index.html is root page for app_simple, not useful for this test
+    result.pop('index.html')
+
+    assert result == expected
+
 EXTRA_FILE_WITH_PREFIX = {
     # url_part - from configuration: expected url_part - after clean
     ':':            ':',
@@ -86,6 +110,9 @@ EXTRA_FILE_WITH_PREFIX = {
     '.nojekyll':    '.nojekyll',
     '/.nojekyll':   '.nojekyll',
     'http':         'http',
+    '/a%5cb/':      'a/b/',
+    '%C3%A1/':      'á/',
+    'á/':           'á/',
     # http: without leading forward slash alter prefix by werkzeug.url_parse(<prefix>).join("http:")
     # http: become the protocol of prefix instead url path
     'http:':        'http:',
