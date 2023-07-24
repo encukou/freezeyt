@@ -179,6 +179,9 @@ def clean_url_path(url_path: str) -> str:
         - relative path does not start with slash
     """
 
+    if ".." in url_path:
+        raise ValueError("'..' can not be used in url path")
+
     url_path = unquote(url_path)
 
     backslash = "\\"
