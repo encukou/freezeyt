@@ -53,6 +53,7 @@ EXTRA_FILE_DOT = {
     ':/': {':': {'index.html': b'a'}},
     '.nojekyll': {'.nojekyll': b'a'},
     '/.nojekyll': {'.nojekyll': b'a'},
+    '/info.txt': {'info.txt': b'a'},
     # http: without leading forward slash become absolute url instead of url part
     'http:': {'http:': b'a'},
     '/http:': {'http:': b'a'},
@@ -109,6 +110,7 @@ EXTRA_FILE_WITH_PREFIX = {
     ':/':               ':/',
     '.nojekyll':        '.nojekyll',
     '/.nojekyll':       '.nojekyll',
+    'http:/info.txt':   'http:/info.txt',
     'http':             'http',
     '/a%5cb/':          'a/b/',
     '%C3%A1/':          'á/',
