@@ -150,6 +150,24 @@ def test_join_with_prefix(url_part):
     assert sorted(recorded_tasks) == expected
 
 
+EXTRA_FILE_INVALID = (
+    '../a/b.txt',
+    '/a/../b.txt',
+    '/a/b/..',
+)
+@pytest.mark.parametrize('url_path', EXTRA_FILE_INVALID)
+def test_invalid_url_part(url_path):
+    extra_file = {url_path: 'a'}
+    config = {
+        'extra_files': extra_file,
+        'output': {'type': 'dict'},
+    }
+
+    with context_for_test('app_simple') as module:
+        with pytest.raises(ValueError):
+            freeze(module.app, config)
+
+
 def test_content():
     config = {
         'extra_files': {
