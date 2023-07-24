@@ -105,23 +105,23 @@ def test_quoted_url_path(test_case):
 
 EXTRA_FILE_WITH_PREFIX = {
     # url_part - from configuration: expected url_part - after clean
-    ':':            ':',
-    ':/':           ':/',
-    '.nojekyll':    '.nojekyll',
-    '/.nojekyll':   '.nojekyll',
-    'http':         'http',
-    '/a%5cb/':      'a/b/',
-    '%C3%A1/':      'á/',
-    'á/':           'á/',
+    ':':                ':',
+    ':/':               ':/',
+    '.nojekyll':        '.nojekyll',
+    '/.nojekyll':       '.nojekyll',
+    'http':             'http',
+    '/a%5cb/':          'a/b/',
+    '%C3%A1/':          'á/',
+    'á/':               'á/',
     # http: without leading forward slash alter prefix by werkzeug.url_parse(<prefix>).join("http:")
     # http: become the protocol of prefix instead url path
-    'http:':        'http:',
-    '/http:':       'http:',
-    '/http:/':      'http:/',
-    '/https:/':     'https:/',
-    '/https://':    'https:/',
-    '/http:/https/': 'http:/https/',
-    r'/http\https/': 'http/https/',
+    'http:':            'http:',
+    '/http:':           'http:',
+    '/http:/':          'http:/',
+    '/https:/':         'https:/',
+    '/https://':        'https:/',
+    '/http:/https/':    'http:/https/',
+    r'/http\https/':    'http/https/',
 }
 @pytest.mark.parametrize('url_part', EXTRA_FILE_WITH_PREFIX)
 def test_join_with_prefix(url_part):
