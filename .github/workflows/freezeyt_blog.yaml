@@ -2,11 +2,11 @@
 on:
   push:
     branches:
-    - master
+    - main
 
   pull_request:
     branches:
-    - master
+    - main
 
 name: Freezeyt blog
 
@@ -41,7 +41,7 @@ jobs:
         run: |
           python -m freezeyt freezeyt_blog.app freezeyt_blog/build -c freezeyt_blog/config.yaml
 
-      - if: ${{ github.ref == 'refs/heads/master' }}
+      - if: ${{ github.ref == 'refs/heads/main' }}
         name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
