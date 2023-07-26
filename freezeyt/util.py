@@ -170,7 +170,7 @@ def import_variable_from_module(
     return result
 
 
-def clean_url_path(part: str) -> str:
+def get_url_part(part: str) -> str:
     """Fix url path by rules:
 
         - decode to unicode

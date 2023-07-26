@@ -4,7 +4,7 @@ import collections.abc
 from typing import Mapping, Iterator, Tuple, Union
 import sys
 
-from freezeyt.util import clean_url_path
+from freezeyt.util import get_url_part
 
 
 if sys.version_info > (3, 8):
@@ -35,7 +35,7 @@ def get_extra_files(
     extra_files_config = config.get('extra_files')
     if extra_files_config is not None:
         for url_part, content in extra_files_config.items():
-            url_part = clean_url_path(url_part)
+            url_part = get_url_part(url_part)
             if isinstance(content, str):
                 yield url_part, "content", content.encode()
             elif isinstance(content, bytes):
