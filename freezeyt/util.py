@@ -188,7 +188,7 @@ def get_url_part(part: str) -> str:
     items = ["" if p == "." else p for p in part.split("/")]
 
     if ".." in items:
-        raise ValueError("'..' can not be used in url path")
+        raise ValueError("The filesystem hardlink '..' not allowed in url part")
 
     part = "/".join(items)
 
