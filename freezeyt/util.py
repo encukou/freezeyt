@@ -180,9 +180,6 @@ def get_url_part(part: str) -> str:
         - relative path does not start with slash
     """
 
-    if ".." in url_path:
-        raise ValueError("'..' can not be used in url path")
-
     part = unquote(part)
 
     backslash = "\\"
@@ -190,6 +187,8 @@ def get_url_part(part: str) -> str:
 
     items = ["" if p == "." else p for p in part.split("/")]
 
+    if ".." in items:
+        raise ValueError("'..' can not be used in url path")
 
     part = "/".join(items)
 
