@@ -171,11 +171,13 @@ def import_variable_from_module(
 
 
 def get_url_part(part: str) -> str:
-    """Fix url path by rules:
+    """Get normalized url_part from string.
 
+    Normalizing rules are:
         - decode to unicode
         - any backslash replace by forward slash
-        - simple dot as path part is removed
+        - simple dot as filesystem hardlink is removed
+        - filesystem hardlink '..' is not allowed
         - multiple slashes reduce to only one
         - relative path does not start with slash
     """
