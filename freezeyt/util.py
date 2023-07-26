@@ -170,7 +170,7 @@ def import_variable_from_module(
     return result
 
 
-def clean_url_path(url_path: str) -> str:
+def clean_url_path(part: str) -> str:
     """Fix url path by rules:
 
         - decode to unicode
@@ -183,20 +183,20 @@ def clean_url_path(url_path: str) -> str:
     if ".." in url_path:
         raise ValueError("'..' can not be used in url path")
 
-    url_path = unquote(url_path)
+    part = unquote(part)
 
     backslash = "\\"
-    url_path = url_path.replace(backslash, "/")
+    part = part.replace(backslash, "/")
 
-    items = ["" if p == "." else p for p in url_path.split("/")]
+    items = ["" if p == "." else p for p in part.split("/")]
 
 
-    url_path = "/".join(items)
+    part = "/".join(items)
 
-    while "//" in url_path:
-        url_path = url_path.replace("//", "/")
+    while "//" in part:
+        part = part.replace("//", "/")
 
-    return url_path.lstrip("/")
+    return part.lstrip("/")
 
 
 def join_url_path(prefix: BaseURL, url_path: str) -> BaseURL:
