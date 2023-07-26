@@ -144,7 +144,8 @@ EXTRA_FILE_WITH_PREFIX = {
     r'/http\https/':    'http/https/',
 }
 @pytest.mark.parametrize('url_part', EXTRA_FILE_WITH_PREFIX)
-def test_join_with_prefix(url_part):
+@pytest.mark.parametrize('prefix', ('https://example.com:443/freezeyt/', 'https://example.com:443/'))
+def test_join_with_prefix(url_part, prefix):
     recorded_tasks = {}
 
     def record_page(task_info):
@@ -153,7 +154,7 @@ def test_join_with_prefix(url_part):
     extra_file = {url_part: 'a'}
 
     config = {
-        'prefix': 'https://example.com:443/freezeyt/',
+        'prefix': prefix,
         'extra_files': extra_file,
         'output': {'type': 'dict'},
         'hooks': {'page_frozen': [record_page]},
