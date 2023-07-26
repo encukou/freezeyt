@@ -188,14 +188,10 @@ def clean_url_path(url_path: str) -> str:
     backslash = "\\"
     url_path = url_path.replace(backslash, "/")
 
-    while "/./" in url_path:
-        url_path = url_path.replace("/./", "/")
+    items = ["" if p == "." else p for p in url_path.split("/")]
 
-    if url_path.startswith("./"):
-        url_path = url_path[2:]
 
-    if url_path.endswith("/."):
-        url_path = url_path[:-1]
+    url_path = "/".join(items)
 
     while "//" in url_path:
         url_path = url_path.replace("//", "/")
