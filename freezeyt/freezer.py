@@ -22,7 +22,7 @@ from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, add_port
-from freezeyt.util import import_variable_from_module, join_url_path
+from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus
 from freezeyt.util import UnsupportedSchemeError, MultiError
@@ -409,16 +409,20 @@ class Freezer:
         self.add_task(self.prefix, reason='site root (homepage)')
         for url_part, kind, content_or_path in get_extra_files(self.config):
             if kind == 'content':
+                # join part with path, otherwise filename 'http:' overwrite prefix
+                url_part = self.prefix.path + url_part
                 self.add_task(
-                    join_url_path(self.prefix, url_part),
+                    self.prefix.join(url_part),
                     reason="from extra_files",
                 )
             elif kind == 'path':
                 for part in get_url_parts_from_directory(
                     url_part, content_or_path
                 ):
+                # join part with path, otherwise filename 'http:' overwrite prefix
+                    part = self.prefix.path + part
                     self.add_task(
-                        join_url_path(self.prefix, part),
+                        self.prefix.join(part),
                         reason="from extra_files",
                     )
         self._add_extra_pages(self.prefix, self.extra_pages)
