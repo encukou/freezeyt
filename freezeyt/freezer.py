@@ -10,6 +10,7 @@ import enum
 import asyncio
 import inspect
 import re
+import urllib.parse
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header
@@ -21,7 +22,7 @@ from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
-from freezeyt.util import parse_absolute_url, is_external, add_port
+from freezeyt.util import parse_absolute_url, is_external, add_port, urljoin
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus
@@ -119,13 +120,15 @@ def get_path_from_url(prefix: URL, url: URL, url_to_path) -> PurePosixPath:
     result = PurePosixPath(result)
 
     if result.is_absolute():
+        url_text = urllib.parse.urlunsplit(url)
         raise ValueError(
-            f"Path may not be absolute: {result}(from {url.to_url()})"
+            f"Path may not be absolute: {result}(from {url_text})"
         )
     assert '.' not in result.parts
     if '..' in result.parts:
+        url_text = urllib.parse.urlunsplit(url)
         raise ValueError(
-            f"Path may not contain /../ segment: {result}(from {url.to_url()})"
+            f"Path may not contain /../ segment: {result}(from {url_text})"
         )
 
     return result
@@ -280,7 +283,7 @@ class Freezer:
         decoded_path = decode_input_path(prefix_parsed.path)
         if not decoded_path.endswith('/'):
             raise ValueError('prefix must end with /')
-        self.prefix = prefix_parsed.replace(path=decoded_path)
+        self.prefix = prefix_parsed._replace(path=decoded_path)
 
         output = config['output']
         if isinstance(output, str):
@@ -414,7 +417,7 @@ class Freezer:
                 assert not url_part.startswith('/')
                 url_part = self.prefix.path + url_part
                 self.add_task(
-                    self.prefix.join(url_part),
+                    urljoin(self.prefix, url_part),
                     reason="from extra_files",
                 )
             elif kind == 'path':
@@ -426,7 +429,7 @@ class Freezer:
                     assert not url_part.startswith('/')
                     part = self.prefix.path + part
                     self.add_task(
-                        self.prefix.join(part),
+                        urljoin(self.prefix, part),
                         reason="from extra_files",
                     )
         self._add_extra_pages(self.prefix, self.extra_pages)
@@ -474,6 +477,7 @@ class Freezer:
             else:
                 # default behaviour for cases which are not handled by
                 # conditions above (e.g. groups 1xx, 2xx, ...)
+                print(f'{task.response_headers.get("Location")=} {url=}')
                 raise UnexpectedStatus(url, status)
 
             status_action = status_handler(hooks.TaskInfo(task))
@@ -506,7 +510,7 @@ class Freezer:
                     generator = import_variable_from_module(generator)
                 self._add_extra_pages(prefix, generator(self.app))
             elif isinstance(extra, str):
-                url = add_port(prefix.join(decode_input_path(extra)))
+                url = urljoin(prefix, decode_input_path(extra))
                 try:
                     self.add_task(
                         url,
@@ -545,7 +549,7 @@ class Freezer:
         url = url_parsed
 
         # url_string should not be needed (except for debug messages)
-        url_string = url_parsed.to_url()
+        url_string = urllib.parse.urlunsplit(url_parsed)
 
         path_info = url_parsed.path
 
@@ -553,7 +557,7 @@ class Freezer:
             path_info = "/" + path_info[len(self.prefix.path):]
 
         environ: WSGIEnvironment = {
-            'SERVER_NAME': self.prefix.ascii_host,
+            'SERVER_NAME': self.prefix.hostname,
             'SERVER_PORT': str(self.prefix.port),
             'REQUEST_METHOD': 'GET',
             'PATH_INFO': encode_wsgi_path(path_info),
@@ -693,13 +697,3 @@ class Freezer:
     def call_hook(self, hook_name, *arguments):
         for hook in self.hooks.get(hook_name, ()):
             hook(*arguments)
-
-def urljoin(url: URL, link_text: str):
-    result = url.join(decode_input_path(link_text))
-    try:
-        result = add_port(result)
-    except UnsupportedSchemeError:
-        # If this has a scheme other than http and https,
-        # it's an external url; we don't need the port in it.
-        pass
-    return result

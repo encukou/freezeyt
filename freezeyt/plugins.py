@@ -63,7 +63,7 @@ class GHPagesPlugin:
         if freeze_info._freezer.prefix.path != "/":
             raise ValueError("When using the Github Pages plugin, you can't specify a path in the prefix, so github can't handle it.")
         self.base_path = freeze_info._freezer.saver.base_path
-        self.prefix_host = freeze_info._freezer.prefix.host
+        self.prefix_host = freeze_info._freezer.prefix.hostname
         freeze_info.add_hook('success', self.github_pages)
 
     def github_pages(self, freeze_info):

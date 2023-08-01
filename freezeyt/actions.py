@@ -1,7 +1,7 @@
 from typing import Callable, TYPE_CHECKING
 
 from freezeyt.hooks import TaskInfo
-from freezeyt.util import add_port
+from freezeyt.util import urljoin
 
 ActionFunction = Callable[[TaskInfo], str]
 
@@ -17,7 +17,7 @@ def warn(task: TaskInfo) -> str:
 
 def follow(task: TaskInfo) -> str:
     location = task._task.response_headers['Location']
-    location = add_port(task._task.get_a_url().join(location))
+    location = urljoin(task._task.get_a_url(), location)
 
     target_task = task._freezer.add_task(
         location,

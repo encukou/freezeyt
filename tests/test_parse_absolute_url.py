@@ -38,7 +38,7 @@ def test_port():
 
 def test_netloc():
     parsed = parse_absolute_url("http://freezeyt.test:1234/foo/")
-    assert parsed.netloc == parsed.host + ':1234'
+    assert parsed.netloc == parsed.hostname + ':1234'
 
 def test_scheme():
     parsed = parse_absolute_url("https://freezeyt.test:1234/foo/")
@@ -58,4 +58,4 @@ def test_fragment():
 
 def test_unicode_host():
     parsed = parse_absolute_url("https://čau☺フ.даль.рф:1234/foo/")
-    assert parsed.ascii_host == 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai'
+    assert parsed.hostname == 'čau☺フ.даль.рф'

@@ -1,7 +1,8 @@
 import importlib
 import concurrent.futures
+import urllib.parse
 
-from werkzeug.urls import url_parse
+from werkzeug.urls import URL
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 from freezeyt.encoding import decode_input_path
@@ -30,7 +31,7 @@ class UnsupportedSchemeError(ValueError):
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
     def __init__(self, url, status):
-        self.url = str(url)
+        self.url = urllib.parse.urlunsplit(url)
         self.status = status
         message = str(status)
         super().__init__(message)
@@ -70,7 +71,7 @@ class MultiError(_MultiErrorBase):
         return MultiError([e._freezeyt_exception_task for e in excs])
 
 
-def is_external(parsed_url, prefix):
+def is_external(parsed_url, prefix) -> bool:
     """Return true if the given URL is within a web app at `prefix`
 
     Both arguments should be results of parse_absolute_url
@@ -89,22 +90,50 @@ def is_external(parsed_url, prefix):
         raise ValueError('prefix must end with /')
     if prefix_path == '/':
         prefix_path = ''
-    return (
+
+    if (
         parsed_url.scheme != prefix.scheme
-        or parsed_url.ascii_host != prefix.ascii_host
         or parsed_url.port != prefix.port
         or not parsed_url.path.startswith(prefix_path)
-    )
+    ):
+        # Differing scheme, port, or path prefix: URL is external
+        return True
+    if parsed_url.hostname == prefix.hostname:
+        # Same hostname -- URL is not external
+        return False
+    # Normalize the hostname before final comparison
+    a = _host_to_ascii(parsed_url.hostname)
+    b = _host_to_ascii(prefix.hostname)
+    return a != b
+
+
+def _host_to_ascii(host: str) -> str:
+    """Restrict a hostname to ASCII.
+
+    If `host` is not ASCII, it will attempt to IDNA decode it.
+    This is useful for socket operations when the URL might include
+    internationalized characters.
+    """
+
+    # Taken from werkzeug.urls.BaseURL.ascii_host before it was deprecated:
+    # https://github.com/pallets/werkzeug/blob/41b74e7a92685bc18b6a472bd10524bba20cb4a2/src/werkzeug/urls.py#L97
+
+    if host is not None and isinstance(host, str):
+        try:
+            host = host.encode("idna").decode("ascii")
+        except UnicodeError:
+            pass
+    return host
 
 
 def parse_absolute_url(url):
     """Parse absolute URL
 
-    Returns the same result as werkzeug.urls.url_parse, but works on
+    Returns the same result as urllib.parse.urlsplit, but works on
     absolute HTTP and HTTPS URLs only.
     The result port is always an integer.
     """
-    parsed = url_parse(url)
+    parsed = urllib.parse.urlsplit(url)
     if not parsed.scheme:
         raise RelativeURLError(f"Expected an absolute URL, not {url}")
 
@@ -123,12 +152,27 @@ def add_port(url):
     """Returns url with the port set, using the default for HTTP or HTTPS scheme"""
     if url.port == None:
         if url.scheme == 'http':
-            url = url.replace(netloc=url.host + ':80')
+            url = url._replace(netloc=url.hostname + ':80')
         elif url.scheme == 'https':
-            url = url.replace(netloc=url.host + ':443')
+            url = url._replace(netloc=url.hostname + ':443')
         else:
             raise UnsupportedSchemeError("URL scheme must be http or https")
     return url
+
+
+def urljoin(url: URL, link_text: str):
+    """Add a string to the URL, adding a default port for http/https"""
+    url_text = urllib.parse.urlunsplit(url)
+    result_text = urllib.parse.urljoin(url_text, decode_input_path(link_text))
+    result = urllib.parse.urlsplit(result_text)
+    try:
+        result = add_port(result)
+    except UnsupportedSchemeError:
+        # If this has a scheme other than http and https,
+        # it's an external url; we don't need the port in it.
+        pass
+    return result
+
 
 def import_variable_from_module(
     name, *, default_module_name=None, default_variable_name=None):
