@@ -69,7 +69,8 @@ EXTRA_FILE_DOT = {
     '/http:/': {'http:': {'index.html': b'a'}},
     '/https:/': {'https:': {'index.html': b'a'}},
     '/https://': {'https:': {'index.html': b'a'}},
-    '/http:/https/': {'http:': {'https': {'index.html': b'a'}}},
+    '/http:/https:/': {'http:': {'https:': {'index.html': b'a'}}},
+    '/http:/foo/': {'http:': {'foo': {'index.html': b'a'}}},
 }
 @pytest.mark.parametrize('test_case', EXTRA_FILE_DOT)
 def test_dots(test_case):
