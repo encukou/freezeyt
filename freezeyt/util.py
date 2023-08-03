@@ -190,7 +190,7 @@ def get_url_part(part: str) -> str:
     items = ["" if p == "." else p for p in part.split("/")]
 
     if ".." in items:
-        raise ValueError("The filesystem hardlink '..' not allowed in url part")
+        raise ValueError("'..' component not allowed in URL part")
 
     part = "/".join(items)
 
