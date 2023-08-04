@@ -2,9 +2,9 @@ import importlib
 import concurrent.futures
 
 from werkzeug.urls import url_parse
-from urllib.parse import unquote
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
+from freezeyt.encoding import decode_input_path
 
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
@@ -182,7 +182,7 @@ def get_url_part(part: str) -> str:
         - relative path does not start with slash
     """
 
-    part = unquote(part)
+    part = decode_input_path(part)
 
     backslash = "\\"
     part = part.replace(backslash, "/")
