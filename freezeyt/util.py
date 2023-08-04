@@ -175,17 +175,17 @@ def get_url_part(part: str) -> str:
 
     Normalizing rules are:
         - decode to unicode
-        - any backslash replace by forward slash
+        - any backslash replace by forward slash, except encoded backslash
         - simple dot as filesystem hardlink is removed
         - filesystem hardlink '..' is not allowed
         - multiple slashes reduce to only one
         - relative path does not start with slash
     """
 
-    part = decode_input_path(part)
-
     backslash = "\\"
     part = part.replace(backslash, "/")
+
+    part = decode_input_path(part)
 
     items = ["" if p == "." else p for p in part.split("/")]
 

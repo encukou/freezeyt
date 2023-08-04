@@ -94,7 +94,7 @@ def test_dots(test_case):
 EXTRA_FILE_QUOTED = {
     '%C3%A1/':  {'á': {'index.html': b'a'}},
     'á/':       {'á': {'index.html': b'a'}},
-    '/a%5cb/':  {'a': {'b': {'index.html': b'a'}}},
+    '/a%5cb/':  {'a\\b': {'index.html': b'a'}},
 }
 @pytest.mark.parametrize('test_case', EXTRA_FILE_QUOTED)
 def test_quoted_url_path(test_case):
@@ -131,7 +131,7 @@ EXTRA_FILE_WITH_PREFIX = {
     '/..b../':          '..b../',
     '/..b..':           '..b..',
     'http':             'http',
-    '/a%5cb/':          'a/b/',
+    '/a%5cb/':          'a\\b/',
     '%C3%A1/':          'á/',
     'á/':               'á/',
     # http: without leading forward slash alter prefix by werkzeug.url_parse(<prefix>).join("http:")
