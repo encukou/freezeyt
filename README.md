@@ -302,6 +302,8 @@ This is useful for configuration of your static server.
 (For pages that are part of your website, we recommend
 adding them to your application rather than as extra files.)
 
+If you specify backslashes in `url part`, `freezeyt` convert them to forward slashes.
+
 For example, the following config will add 3 files to
 the output:
 
@@ -780,6 +782,26 @@ The default function, available as `freezeyt.url_to_path`, adds `index.html`
 if the URL path ends with `/`.
 
 `url_to_path` cannot be specified in the CLI.
+
+
+### Middleware static mode
+
+When using the `freezeyt` middleware, you can enable *static mode*,
+which simulates behaviour after the app is saved to static pages:
+
+```yaml
+static_mode: true
+```
+
+Currently in static mode:
+- HTTP methods other than GET and HEAD are disallowed.
+- URL parameters are removed
+- The request body is discarded
+
+Other restrictions and features may be added in the future, without regard
+to backwards compatibility.
+The static mode is intended for interactive use -- testing your app without
+having to freeze all of it after each change.
 
 
 ## Examples of CLI usage
