@@ -34,8 +34,8 @@ def get_extra_files(
     """
     extra_files_config = config.get('extra_files')
     if extra_files_config is not None:
-        for url_part, content in extra_files_config.items():
-            url_part = get_url_part(url_part)
+        for text, content in extra_files_config.items():
+            url_part = get_url_part(text)
             if isinstance(content, str):
                 yield url_part, "content", content.encode()
             elif isinstance(content, bytes):
