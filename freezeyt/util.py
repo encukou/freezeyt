@@ -4,6 +4,7 @@ import concurrent.futures
 from werkzeug.urls import url_parse
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
+from freezeyt.encoding import decode_input_path
 
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
@@ -167,3 +168,34 @@ def import_variable_from_module(
         result = getattr(result, attribute_name)
 
     return result
+
+
+def get_url_part(part: str) -> str:
+    """Get normalized url_part from string.
+
+    Normalizing rules are:
+        - decode to unicode
+        - any backslash replace by forward slash, except encoded backslash
+        - simple dot as filesystem hardlink is removed
+        - filesystem hardlink '..' is not allowed
+        - multiple slashes reduce to only one
+        - relative path does not start with slash
+    """
+
+    backslash = "\\"
+    part = part.replace(backslash, "/")
+
+    part = decode_input_path(part)
+
+    items = ["" if p == "." else p for p in part.split("/")]
+
+    if ".." in items:
+        raise ValueError("'..' component not allowed in URL part")
+
+    part = "/".join(items)
+
+    while "//" in part:
+        part = part.replace("//", "/")
+
+    return part.lstrip("/")
+

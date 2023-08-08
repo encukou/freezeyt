@@ -409,6 +409,10 @@ class Freezer:
         self.add_task(self.prefix, reason='site root (homepage)')
         for url_part, kind, content_or_path in get_extra_files(self.config):
             if kind == 'content':
+                # join part with path, otherwise filename 'http:' overwrite prefix
+                assert self.prefix.path.endswith('/')
+                assert not url_part.startswith('/')
+                url_part = self.prefix.path + url_part
                 self.add_task(
                     self.prefix.join(url_part),
                     reason="from extra_files",
@@ -417,6 +421,10 @@ class Freezer:
                 for part in get_url_parts_from_directory(
                     url_part, content_or_path
                 ):
+                # join part with path, otherwise filename 'http:' overwrite prefix
+                    assert self.prefix.path.endswith('/')
+                    assert not url_part.startswith('/')
+                    part = self.prefix.path + part
                     self.add_task(
                         self.prefix.join(part),
                         reason="from extra_files",
