@@ -477,7 +477,6 @@ class Freezer:
             else:
                 # default behaviour for cases which are not handled by
                 # conditions above (e.g. groups 1xx, 2xx, ...)
-                print(f'{task.response_headers.get("Location")=} {url=}')
                 raise UnexpectedStatus(url, status)
 
             status_action = status_handler(hooks.TaskInfo(task))
