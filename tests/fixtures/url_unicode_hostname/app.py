@@ -1,3 +1,6 @@
+import sys
+
+import pytest
 from flask import Flask, url_for
 
 app = Flask(__name__)
@@ -8,6 +11,13 @@ no_expected_directory = True
 @app.route('/')
 def index():
     """Create the index page of the web app."""
+    if '8000-uye2a' in url_for("page4", _external=True):
+        # On Python 3.6 & 3.7, the result of this url_for is
+        # http://xn--au--eqa2078bpkn.xn--80ahw2e.xn--:8000-uye2a/page4.html
+        # (with the *port* encoded).
+        # If that's the case, let's skip the test.
+        assert sys.version_info < (3, 8)
+        pytest.skip('url_for() result has encoded port')
     return f"""
     <html>
         <head>
