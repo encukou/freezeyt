@@ -3,6 +3,7 @@ import concurrent.futures
 import urllib.parse
 
 from werkzeug.urls import URL
+from werkzeug.urls import iri_to_uri
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 from freezeyt.encoding import decode_input_path
@@ -102,28 +103,14 @@ def is_external(parsed_url, prefix) -> bool:
         # Same hostname -- URL is not external
         return False
     # Normalize the hostname before final comparison
-    a = _host_to_ascii(parsed_url.hostname)
-    b = _host_to_ascii(prefix.hostname)
+    a = parsed_iri_to_parsed_uri(parsed_url).hostname
+    b = parsed_iri_to_parsed_uri(prefix).hostname
+
     return a != b
 
 
-def _host_to_ascii(host: str) -> str:
-    """Restrict a hostname to ASCII.
-
-    If `host` is not ASCII, it will attempt to IDNA decode it.
-    This is useful for socket operations when the URL might include
-    internationalized characters.
-    """
-
-    # Taken from werkzeug.urls.BaseURL.ascii_host before it was deprecated:
-    # https://github.com/pallets/werkzeug/blob/41b74e7a92685bc18b6a472bd10524bba20cb4a2/src/werkzeug/urls.py#L97
-
-    if host is not None and isinstance(host, str):
-        try:
-            host = host.encode("idna").decode("ascii")
-        except UnicodeError:
-            pass
-    return host
+def parsed_iri_to_parsed_uri(url):
+    return urllib.parse.urlsplit(iri_to_uri(urllib.parse.urlunsplit(url)))
 
 
 def parse_absolute_url(url):

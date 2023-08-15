@@ -1083,6 +1083,3 @@ See GitHub history for all [contributors](https://github.com/encukou/freezeyt/gr
 
 This project is licensed under the [MIT License](LICENCE.MIT).
 May it serve you well.
-
-The project contains snippets of code taken from older versions of
-`werkzeug`, under [a BSD License](`LICENCE.werkzeug`).
