@@ -2,7 +2,7 @@ from urllib.parse import urlsplit, urlunsplit, urljoin
 
 import pytest
 
-from freezeyt.util import parse_absolute_url, add_port
+from freezeyt.util import parse_absolute_url, _add_port
 
 url_with_port = parse_absolute_url('http://localhost:80/')
 
@@ -17,25 +17,25 @@ def _join(url1, url2_text):
 def test_add_http_port():
     tested_url = _join(url_with_port, 'http://localhost/')
     assert urlunsplit(tested_url) == 'http://localhost/'
-    assert urlunsplit(add_port(tested_url)) == 'http://localhost:80/'
+    assert urlunsplit(_add_port(tested_url)) == 'http://localhost:80/'
 
 def test_add_https_port():
     tested_url = _join(url_with_port, 'https://localhost/')
     assert urlunsplit(tested_url) == 'https://localhost/'
-    assert urlunsplit(add_port(tested_url)) == 'https://localhost:443/'
+    assert urlunsplit(_add_port(tested_url)) == 'https://localhost:443/'
 
 def test_add_port_unknown_scheme():
     tested_url = _join(url_with_port, 'unknownscheme://localhost/')
     assert urlunsplit(tested_url) == 'unknownscheme://localhost/'
     with pytest.raises(ValueError):
-        add_port(tested_url)
+        _add_port(tested_url)
 
 def test_no_add_http_port():
     tested_url = _join(url_with_port, 'http://localhost:1234/')
     assert urlunsplit(tested_url) == 'http://localhost:1234/'
-    assert urlunsplit(add_port(tested_url)) == 'http://localhost:1234/'
+    assert urlunsplit(_add_port(tested_url)) == 'http://localhost:1234/'
 
 def test_no_add_https_port():
     tested_url = _join(url_with_port, 'https://localhost:1234/')
     assert urlunsplit(tested_url) == 'https://localhost:1234/'
-    assert urlunsplit(add_port(tested_url)) == 'https://localhost:1234/'
+    assert urlunsplit(_add_port(tested_url)) == 'https://localhost:1234/'

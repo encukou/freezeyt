@@ -14,7 +14,6 @@ import urllib.parse
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header
-from werkzeug.urls import URL
 
 import freezeyt
 import freezeyt.actions
@@ -25,8 +24,7 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, urljoin
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
-from freezeyt.util import UnexpectedStatus
-from freezeyt.util import MultiError
+from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
@@ -99,7 +97,9 @@ def default_url_to_path(path: str) -> str:
     return encode_file_path(path)
 
 
-def get_path_from_url(prefix: URL, url: URL, url_to_path) -> PurePosixPath:
+def get_path_from_url(
+    prefix: AbsoluteURL, url: AbsoluteURL, url_to_path,
+) -> PurePosixPath:
     """Return the disk path to which `url` should be saved.
 
     `url_to_path` is the function given in the config. It takes a string
@@ -142,7 +142,7 @@ class TaskStatus(enum.Enum):
 @dataclasses.dataclass
 class Task:
     path: PurePosixPath
-    urls: "Set[URL]"
+    urls: "Set[AbsoluteURL]"
     freezer: "Freezer"
     response_headers: Optional[Headers] = None
     response_status: Optional[str] = None
@@ -153,7 +153,7 @@ class Task:
     def __repr__(self):
         return f"<Task for {self.path}, {self.status.name}>"
 
-    def get_a_url(self):
+    def get_a_url(self) -> AbsoluteURL:
         """Get an arbitrary one of the task's URLs."""
         return next(iter(self.urls))
 
@@ -369,7 +369,11 @@ class Freezer:
         raise MultiError(self.failed_tasks.values())
 
     def add_task(
-        self, url: URL, *, external_ok: bool = False, reason: Optional[str] = None,
+        self,
+        url: AbsoluteURL,
+        *,
+        external_ok: bool = False,
+        reason: Optional[str] = None,
     ) -> Optional[Task]:
         """Add a task to freeze the given URL
 
@@ -382,7 +386,11 @@ class Freezer:
         return task
 
     def _add_task(
-        self, url: URL, *, external_ok: bool = False, reason: Optional[str] = None,
+        self,
+        url: AbsoluteURL,
+        *,
+        external_ok: bool = False,
+        reason: Optional[str] = None,
     ) -> Optional[Task]:
         if is_external(url, self.prefix):
             if external_ok:

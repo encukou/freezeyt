@@ -1,15 +1,20 @@
 import importlib
 import concurrent.futures
 import urllib.parse
+import typing
 
-from werkzeug.urls import URL
-from werkzeug.urls import iri_to_uri
+from werkzeug.urls import iri_to_uri, uri_to_iri
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 from freezeyt.encoding import decode_input_path
 
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
+
+
+# An URL as used internally by Freezeyt.
+# Absolute IRI, with an explicit port if it's `http` or `https`
+AbsoluteURL = typing.NewType('AbsoluteURL', urllib.parse.SplitResult)
 
 
 class InfiniteRedirection(Exception):
@@ -72,10 +77,8 @@ class MultiError(_MultiErrorBase):
         return MultiError([e._freezeyt_exception_task for e in excs])
 
 
-def is_external(parsed_url, prefix) -> bool:
+def is_external(parsed_url: AbsoluteURL, prefix: AbsoluteURL) -> bool:
     """Return true if the given URL is within a web app at `prefix`
-
-    Both arguments should be results of parse_absolute_url
     """
     if parsed_url.scheme not in ('http', 'https'):
         # We know the prefix has a supported scheme.
@@ -102,9 +105,14 @@ def is_external(parsed_url, prefix) -> bool:
     if parsed_url.hostname == prefix.hostname:
         # Same hostname -- URL is not external
         return False
+
     # Normalize the hostname before final comparison
     a = parsed_iri_to_parsed_uri(parsed_url).hostname
     b = parsed_iri_to_parsed_uri(prefix).hostname
+
+    # XXX: if AbsoluteURL is normalized enough, we don't need
+    # the parsed_iri_to_parsed_uri calls
+    assert a != b
 
     return a != b
 
@@ -113,14 +121,14 @@ def parsed_iri_to_parsed_uri(url):
     return urllib.parse.urlsplit(iri_to_uri(urllib.parse.urlunsplit(url)))
 
 
-def parse_absolute_url(url):
+def parse_absolute_url(url: str) -> AbsoluteURL:
     """Parse absolute URL
 
     Returns the same result as urllib.parse.urlsplit, but works on
     absolute HTTP and HTTPS URLs only.
     The result port is always an integer.
     """
-    parsed = urllib.parse.urlsplit(url)
+    parsed = urllib.parse.urlsplit(uri_to_iri(url))
     if not parsed.scheme:
         raise RelativeURLError(f"Expected an absolute URL, not {url}")
 
@@ -130,35 +138,43 @@ def parse_absolute_url(url):
     if not parsed.netloc:
         raise RelativeURLError(f"Expected an absolute URL, not {url}")
 
-    parsed = add_port(parsed)
+    parsed = _add_port(parsed)
 
     return parsed
 
 
-def add_port(url):
-    """Returns url with the port set, using the default for HTTP or HTTPS scheme"""
+def _add_port(url: urllib.parse.SplitResult) -> AbsoluteURL:
+    """Returns url with the port set, using the default for HTTP or HTTPS scheme
+
+    `url` must be
+        - an absolute IRI, that is, the result of
+          urllib.parse.urlsplit(werkzeug.urls.uri_to_iri(...)), or
+        - a non-http/https URL, such as `mailto:...` (we don't add the port
+          for those).
+    """
     if url.port == None:
         if url.scheme == 'http':
+            assert url.hostname is not None, f"{url} must be absolute"
             url = url._replace(netloc=url.hostname + ':80')
         elif url.scheme == 'https':
+            assert url.hostname is not None, f"{url} must be absolute"
             url = url._replace(netloc=url.hostname + ':443')
         else:
             raise UnsupportedSchemeError("URL scheme must be http or https")
-    return url
+    return AbsoluteURL(url)
 
 
-def urljoin(url: URL, link_text: str):
+def urljoin(url: AbsoluteURL, link_text: str) -> AbsoluteURL:
     """Add a string to the URL, adding a default port for http/https"""
     url_text = urllib.parse.urlunsplit(url)
-    result_text = urllib.parse.urljoin(url_text, decode_input_path(link_text))
+    result_text = urllib.parse.urljoin(url_text, uri_to_iri(link_text))
     result = urllib.parse.urlsplit(result_text)
     try:
-        result = add_port(result)
+        return _add_port(result)
     except UnsupportedSchemeError:
         # If this has a scheme other than http and https,
         # it's an external url; we don't need the port in it.
-        pass
-    return result
+        return AbsoluteURL(result)
 
 
 def import_variable_from_module(
