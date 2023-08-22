@@ -3,7 +3,7 @@ import concurrent.futures
 import urllib.parse
 import typing
 
-from werkzeug.urls import iri_to_uri, uri_to_iri
+from werkzeug.urls import uri_to_iri
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 from freezeyt.encoding import decode_input_path
