@@ -1,44 +1,28 @@
 URL paths:
     Internally in freezeyt:
-        str, surrogate escapes
+        IRI (str)
         Example:
-            /čau/☺フ
+            https://čau☺フ.даль.рф/čau/☺フ
             '/☺フ/\udc8dau'
 
     Input - From HTML:
-        handle with urllib.parse.unquote
+        handle with werkzeug.urls.uri_to_iri
         Example:
-            /čau/☺フ
-            /%E2%98%BA%E3%83%95/%C4%8Dau
+            https://čau☺フ.даль.рф/čau/☺フ
+            https://xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai/%E2%98%BA%E3%83%95/%C4%8Dau
             /%E2%98%BA%E3%83%95/%8Dau
 
     Input - prefix:
-        handle with urllib.parse.unquote
+        handle with werkzeug.urls.uri_to_iri
         Same as from HTML
 
-    To WSGI environ (PATH_INFO):
-        encode('utf-8').decode('latin-1')
-        Example:
-            /Ä\x8dau/â\x98ºã\x83\x95
-            /â\x98ºã\x83\x95/\x8dau
+    Path to WSGI environ (PATH_INFO):
+        ASCII chars, e.g. '/%E2%98%BA%E3%83%95/%C4%8Dau'
+        result of werkzeug.urls.iri_to_uri
+
+    Hostname to WSGI environ (SERVER_NAME):
+        ASCII chars, e.g. 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai'
+        result of werkzeug.urls.iri_to_uri
 
     On disk:
         use internal format
-
-
-Hostname domain:
-    Input - From HTML:
-        ASCII chars or Unicode text, e.g. 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai' or 'čau☺フ.даль.рф'
-
-    Input - prefix:
-        ASCII chars or Unicode text, e.g. 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai' or 'čau☺フ.даль.рф'
-
-    To WSGI environ (SERVER_NAME):
-        ASCII chars, e.g. 'xn--au-dma4819a4cl.xn--80ahw2e.xn--p1ai'
-        result of `ascii_host` of werkzeug.urls.URL
-         
-    Internally, use werkzeug.urls.URL (result of from werkzeug.urls.url_parse).
-
-
-    On disk:
-        we don't need handle encoding of hostname for disk usage
