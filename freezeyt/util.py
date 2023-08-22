@@ -85,10 +85,8 @@ def is_external(parsed_url: AbsoluteURL, prefix: AbsoluteURL) -> bool:
         # If parsed_url has a different scheme, it must be external.
         return True
     for url in parsed_url, prefix:
-        if url.port is None:
-            raise ValueError(
-                f'URL for is_external must have port set; got {url}'
-            )
+        # AbsoluteURL must have port set (for http & https)
+        assert url.port is not None
     prefix_path = prefix.path
     if not prefix_path.endswith('/'):
         raise ValueError('prefix must end with /')
@@ -97,24 +95,14 @@ def is_external(parsed_url: AbsoluteURL, prefix: AbsoluteURL) -> bool:
 
     if (
         parsed_url.scheme != prefix.scheme
+        or parsed_url.hostname != prefix.hostname
         or parsed_url.port != prefix.port
         or not parsed_url.path.startswith(prefix_path)
     ):
-        # Differing scheme, port, or path prefix: URL is external
+        # Differing scheme, host, port, or path prefix: URL is external
         return True
-    if parsed_url.hostname == prefix.hostname:
-        # Same hostname -- URL is not external
-        return False
 
-    # Normalize the hostname before final comparison
-    a = parsed_iri_to_parsed_uri(parsed_url).hostname
-    b = parsed_iri_to_parsed_uri(prefix).hostname
-
-    # XXX: if AbsoluteURL is normalized enough, we don't need
-    # the parsed_iri_to_parsed_uri calls
-    assert a != b
-
-    return a != b
+    return False
 
 
 def parsed_iri_to_parsed_uri(url):
