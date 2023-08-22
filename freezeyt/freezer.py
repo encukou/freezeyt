@@ -42,11 +42,11 @@ MAX_RUNNING_TASKS = 100
 STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
-def freeze(app: WSGIApplication, config):
+def freeze(app: Optional[WSGIApplication], config):
     return asyncio_run(freeze_async(app, config))
 
 
-async def freeze_async(app: WSGIApplication, config):
+async def freeze_async(app: Optional[WSGIApplication], config):
     freezer = Freezer(app, config)
     try:
         await freezer.prepare()
@@ -205,7 +205,7 @@ class Freezer:
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
 
-    def __init__(self, app: WSGIApplication, config: dict):
+    def __init__(self, app: Optional[WSGIApplication], config: dict):
         self.config = config
         self.check_version(self.config.get('version'))
 

@@ -1,3 +1,5 @@
+from pathlib import PurePosixPath
+
 import pytest
 
 from freezeyt import MultiError
@@ -52,7 +54,10 @@ async def create_failing_task():
         await asyncio_task
     # Wrap it in a fake freezeyt Task
     return Task(
-        path='test', urls=[], freezer=None, asyncio_task=asyncio_task,
+        path=PurePosixPath('test'),
+        urls=set(),
+        freezer=None,  # type: ignore[arg-type]
+        asyncio_task=asyncio_task,
     )
 
 

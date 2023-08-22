@@ -1,12 +1,14 @@
-import pytest
 import json
+from typing import Dict, Tuple
+
+import pytest
 
 from testutil import context_for_test
 from freezeyt import freeze
 from freezeyt.mimetype_check import convert_mime_db, mime_db_mimetype
 
 
-CONVERSION_TESTCASES = {
+CONVERSION_TESTCASES: Dict[str, Tuple[Dict, Dict]] = {
     "catch_jpeg": (
         {
             "application/3gpdash-qoe-report+xml": {

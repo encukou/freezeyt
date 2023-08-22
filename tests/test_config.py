@@ -2,7 +2,7 @@ import pathlib
 
 import pytest
 
-from freezeyt import freeze, ExternalURLError
+from freezeyt import freeze, ExternalURLError, Config
 
 from test_click_cli import run_freezeyt_cli
 from fixtures.app_with_extra_files.app import app, freeze_config
@@ -50,7 +50,7 @@ def test_func_to_dict(tmp_path):
 
 
 def test_func_empty_config(tmp_path):
-    config = {}
+    config: Config = {}
 
     with pytest.raises(KeyError):
         freeze(app, config)

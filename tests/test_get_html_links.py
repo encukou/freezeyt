@@ -1,4 +1,5 @@
 from io import BytesIO
+from typing import Dict, Tuple, List
 
 import pytest
 
@@ -6,7 +7,7 @@ from freezeyt.url_finders import get_html_links, get_html_links_async
 from freezeyt.compat import asyncio_run
 
 
-TEST_DATA = {
+TEST_DATA: Dict[str, Tuple[Tuple, List[str]]] = {
     'basic': (
         (
             b"""

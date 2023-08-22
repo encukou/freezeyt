@@ -1,8 +1,10 @@
+from typing import Dict, Tuple, Any
+
 import pytest
 
 from freezeyt.util import import_variable_from_module
 
-INPUT_DATA = {
+INPUT_DATA: Dict[str, Tuple[str, Dict[str, Any], str]] = {
     'basic': ("math:sin", {}, "sin"),
     'dotted_module': ("urllib.parse:urlparse", {}, "urlparse"),
     'dotted_variable': ("pathlib:Path.joinpath", {}, "joinpath"),
@@ -25,7 +27,7 @@ def test_valid_data(testname):
     assert imported.__name__ == expected
 
 
-INPUT_ERROR_DATA = {
+INPUT_ERROR_DATA: Dict[str, Tuple[str, Dict[str, Any], str]] = {
     'empty_name': ("", {}, "Missing variable name: ''"),
 
     'empty_name_with_default_variable':

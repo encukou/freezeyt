@@ -1,20 +1,16 @@
 import importlib
 import concurrent.futures
 import urllib.parse
-import typing
+from typing import Sequence
 
 from werkzeug.urls import uri_to_iri
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 from freezeyt.encoding import decode_input_path
+from freezeyt.types import AbsoluteURL
 
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
-
-
-# An URL as used internally by Freezeyt.
-# Absolute IRI, with an explicit port if it's `http` or `https`
-AbsoluteURL = typing.NewType('AbsoluteURL', urllib.parse.SplitResult)
 
 
 class InfiniteRedirection(Exception):
@@ -52,6 +48,8 @@ class WrongMimetypeError(ValueError):
 
 class MultiError(_MultiErrorBase):
     """Contains multiple errors"""
+    tasks: Sequence[TaskInfo]
+
     def __new__(cls, tasks):
         # Import TaskInfo here to avoid a circular import
         # (since hooks imports utils)
