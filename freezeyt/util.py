@@ -105,10 +105,6 @@ def is_external(parsed_url: AbsoluteURL, prefix: AbsoluteURL) -> bool:
     return False
 
 
-def parsed_iri_to_parsed_uri(url):
-    return urllib.parse.urlsplit(iri_to_uri(urllib.parse.urlunsplit(url)))
-
-
 def parse_absolute_url(url: str) -> AbsoluteURL:
     """Parse absolute URL
 
