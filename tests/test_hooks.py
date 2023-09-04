@@ -167,7 +167,7 @@ def test_page_frozen_hook_with_redirects(policy):
 
     assert recorded_tasks == output_paths
 
-    
+
 def test_taskinfo_has_freezeinfo():
     freezeinfos = []
 

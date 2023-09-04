@@ -1,4 +1,5 @@
 from typing import Iterable
+import urllib.parse
 
 from freezeyt.util import parse_absolute_url
 
@@ -10,7 +11,7 @@ class TaskInfo:
 
     def get_a_url(self):
         """Return a URL of this page"""
-        return self._task.get_a_url().to_url()
+        return urllib.parse.urlunsplit(self._task.get_a_url())
 
     @property
     def path(self):

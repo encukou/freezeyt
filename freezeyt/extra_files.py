@@ -4,6 +4,9 @@ import collections.abc
 from typing import Mapping, Iterator, Tuple, Union
 import sys
 
+from freezeyt.util import get_url_part
+
+
 if sys.version_info > (3, 8):
     from typing import Literal
     literal_content = Literal["content"]
@@ -31,11 +34,8 @@ def get_extra_files(
     """
     extra_files_config = config.get('extra_files')
     if extra_files_config is not None:
-        for url_part, content in extra_files_config.items():
-            backslash = "\\"
-            url_part = url_part.replace(backslash, "/")
-            while "//" in url_part:
-                url_part = url_part.replace("//", "/")
+        for text, content in extra_files_config.items():
+            url_part = get_url_part(text)
             if isinstance(content, str):
                 yield url_part, "content", content.encode()
             elif isinstance(content, bytes):
