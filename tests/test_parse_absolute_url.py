@@ -32,13 +32,11 @@ def test_no_port_https():
     parsed = parse_absolute_url("https://naucse.python.cz/")
     assert parsed.netloc == 'naucse.python.cz:443'
 
-def test_port():
-    parsed = parse_absolute_url("http://freezeyt.test:1234/foo/")
-    assert parsed.port == 1234
-
 def test_netloc():
     parsed = parse_absolute_url("http://freezeyt.test:1234/foo/")
-    assert parsed.netloc == parsed.hostname + ':1234'
+    assert parsed.hostname == 'freezeyt.test'
+    assert parsed.port == 1234
+    assert parsed.netloc == 'freezeyt.test:1234'
 
 def test_scheme():
     parsed = parse_absolute_url("https://freezeyt.test:1234/foo/")

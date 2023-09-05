@@ -148,7 +148,11 @@ class Middleware:
             environ['REQUEST_METHOD'] = 'GET'
             body_iterator = self.app(environ, server_start_response)
             try:
-                close = body_iterator.close
+                # self.app is typed as returning just an iterable of bytes,
+                # but the WSGI spec says that if that iterable has a `close`
+                # method, we need to call it.
+                # Hence a type ignore.
+                close = body_iterator.close  # type: ignore[attr-defined]
             except AttributeError:
                 pass
             else:

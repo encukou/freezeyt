@@ -52,13 +52,13 @@ def test_is_external_needs_port():
     # If we feed it a raw urlsplit result, it'll raise AssertionError.
     with pytest.raises(AssertionError):
         is_external(
-            urlsplit('http://localhost/a/'),
+            urlsplit('http://localhost/a/'), # type: ignore[arg-type]
             parse_absolute_url('http://localhost:80/a/'),
         )
     with pytest.raises(AssertionError):
         is_external(
             parse_absolute_url('http://localhost:80/a/'),
-            urlsplit('http://localhost/a/'),
+            urlsplit('http://localhost/a/'),  # type: ignore[arg-type]
         )
 
 
@@ -66,5 +66,5 @@ def test_is_external_relative():
     with pytest.raises(AssertionError):
         is_external(
             parse_absolute_url('http://localhost:80/a/'),
-            urlsplit('/a/'),
+            urlsplit('/a/'), # type: ignore[arg-type]
         )
