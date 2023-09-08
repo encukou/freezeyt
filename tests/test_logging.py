@@ -22,7 +22,7 @@ def test_warn_multi_slashes_prefix(capsys, prefix):
 
     expected_output = (
         "[WARNING] Freezeyt reduces multiple consecutive"
-        f" slashes in {config['prefix']!r} to one\n"
+        f" slashes in {prefix!r} to one\n"
     )
 
     assert expected_output == captured.out
