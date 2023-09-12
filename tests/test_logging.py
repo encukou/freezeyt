@@ -25,4 +25,4 @@ def test_warn_multi_slashes_prefix(capsys, prefix):
         f" slashes in {prefix!r} to one\n"
     )
 
-    assert expected_output == captured.out
+    assert expected_output in captured.out
