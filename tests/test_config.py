@@ -41,6 +41,7 @@ def test_func_to_dict(tmp_path):
     config = {**freeze_config, 'output': {'type': 'dict'}}
 
     result = freeze(app, config)
+    assert result is not None
 
     print(result)
     assert sorted(result) == [

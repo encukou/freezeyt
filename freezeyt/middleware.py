@@ -10,10 +10,11 @@ from werkzeug.utils import send_file
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
 from freezeyt.extra_files import get_extra_files
+from freezeyt.types import Config
 
 
 class Middleware:
-    def __init__(self, app: WSGIApplication, config):
+    def __init__(self, app: WSGIApplication, config: Config):
         self.app = app
         self.mimetype_checker = MimetypeChecker(config)
         self.url_map = Map()

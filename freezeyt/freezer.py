@@ -43,11 +43,13 @@ MAX_RUNNING_TASKS = 100
 STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
-def freeze(app: Optional[WSGIApplication], config):
+def freeze(app: Optional[WSGIApplication], config: Config) -> SaverResult:
     return asyncio_run(freeze_async(app, config))
 
 
-async def freeze_async(app: Optional[WSGIApplication], config):
+async def freeze_async(
+    app: Optional[WSGIApplication], config: Config
+) -> SaverResult:
     freezer = Freezer(app, config)
     try:
         await freezer.prepare()
@@ -99,7 +101,7 @@ def default_url_to_path(path: str) -> str:
 
 
 def get_path_from_url(
-    prefix: AbsoluteURL, url: AbsoluteURL, url_to_path,
+    prefix: AbsoluteURL, url: AbsoluteURL, url_to_path: Callable[[str], str],
 ) -> PurePosixPath:
     """Return the disk path to which `url` should be saved.
 
@@ -116,9 +118,9 @@ def get_path_from_url(
     if path.startswith(prefix.path):
         path = path[len(prefix.path):]
 
-    result = url_to_path(path)
+    result_str = url_to_path(path)
 
-    result = PurePosixPath(result)
+    result = PurePosixPath(result_str)
 
     if result.is_absolute():
         url_text = urllib.parse.urlunsplit(url)
@@ -201,7 +203,7 @@ class Freezer:
     failed_tasks: TaskCollection
     extra_pages: ExtraPagesConfig
     hooks: Dict[str, List[Callable]]
-    url_to_path: Union[str, Callable[[str], str]]
+    url_to_path: Callable[[str], str]
 
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
@@ -361,7 +363,7 @@ class Freezer:
             except asyncio.CancelledError:
                 pass
 
-    async def finish(self):
+    async def finish(self) -> SaverResult:
         success = not self.failed_tasks
         cleanup = self.config.get("cleanup", True)
         result = await self.saver.finish(success, cleanup)
@@ -506,7 +508,9 @@ class Freezer:
             raise UnexpectedStatus(url, status)
 
 
-    def _add_extra_pages(self, prefix, extras: ExtraPagesConfig):
+    def _add_extra_pages(
+        self, prefix: AbsoluteURL, extras: ExtraPagesConfig
+    ) -> None:
         """Add URLs of extra pages from config.
 
         Handles both literal URLs and generators.

@@ -67,7 +67,7 @@ class FileSaver(Saver):
 
         return open(absolute_filename, 'rb')
 
-    async def finish(self, success: bool, cleanup: bool):
+    async def finish(self, success: bool, cleanup: bool) -> None:
         """Delete incomplete directory after a failed freeze."""
         if not success and cleanup and self.base_path.exists():
             shutil.rmtree(self.base_path)

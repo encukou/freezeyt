@@ -43,7 +43,7 @@ def context_for_test(app_name, module_name='app'):
         sys.modules.update(original_modules)
 
 
-def assert_dirs_same(got: Path, expected: Path):
+def assert_dirs_same(got: Path, expected: Path) -> None:
     cmp = filecmp.dircmp(got, expected, ignore=[])
     cmp.report_full_closure()
     assert_cmp_same(cmp)
