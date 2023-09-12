@@ -3,7 +3,7 @@
 
 import sys
 import asyncio
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar, Coroutine, Any
 
 if sys.version_info >= (3, 8) or TYPE_CHECKING:
     from typing import Literal
@@ -21,12 +21,11 @@ else:
     WSGIApplication = typing.Any
 
 
-def asyncio_run(awaitable):
-    """asyncio.run for Python 3.6"""
-    try:
-        aio_run = asyncio.run
-    except AttributeError:
-        # Python 3.6
+if sys.version_info >= (3, 7):
+    asyncio_run = asyncio.run
+else:
+    def asyncio_run(awaitable):
+        """asyncio.run for Python 3.6"""
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(awaitable)
         # We should also call loop.close() here, but that would mean
@@ -35,8 +34,6 @@ def asyncio_run(awaitable):
         # * in our own tests.
         # So, we cheat a bit and don't call close().
         # (Python 3.6 support is ending soon, anyway.)
-    else:
-        return aio_run(awaitable)
 
 
 def asyncio_create_task(coroutine, name):
@@ -51,7 +48,7 @@ def asyncio_create_task(coroutine, name):
         return asyncio.create_task(coroutine, name=name)
 
 
-def get_running_loop():
+def get_running_loop() -> asyncio.AbstractEventLoop:
     try:
         get_loop = asyncio.get_running_loop
     except AttributeError:

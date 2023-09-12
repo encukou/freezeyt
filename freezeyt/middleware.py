@@ -136,7 +136,11 @@ class Middleware:
 
         return self.app(environ, mw_start_response)
 
-    def  handle_non_get(self, environ, server_start_response):
+    def  handle_non_get(
+        self,
+        environ: WSGIEnvironment,
+        server_start_response: StartResponse,
+    ) -> Iterable[bytes]:
         # Handle requests other than GET. These can't come from Freezeyt.
         if not self.static_mode:
             # Normally, pass all other requests to the app unchanged.
@@ -165,7 +169,7 @@ class Middleware:
             # MDN, some browsers misinterpret that, so '200' is safer.)
             server_start_response(
                 '200 No Content',
-                {'Allow': 'GET, HEAD, OPTIONS'},
+                [('Allow', 'GET, HEAD, OPTIONS')],
             )
             return []
         else:
