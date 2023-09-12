@@ -42,11 +42,11 @@ MAX_RUNNING_TASKS = 100
 STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
-def freeze(app: WSGIApplication, config):
+def freeze(app: Optional[WSGIApplication], config):
     return asyncio_run(freeze_async(app, config))
 
 
-async def freeze_async(app: WSGIApplication, config):
+async def freeze_async(app: Optional[WSGIApplication], config):
     freezer = Freezer(app, config)
     try:
         await freezer.prepare()
@@ -199,13 +199,13 @@ class Freezer:
     inprogress_tasks: TaskCollection
     failed_tasks: TaskCollection
     extra_pages: ExtraPagesConfig
-    hooks: Dict[str, Union[str, Callable]]
+    hooks: Dict[str, List[Callable]]
     url_to_path: Union[str, Callable[[str], str]]
 
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
 
-    def __init__(self, app: WSGIApplication, config: dict):
+    def __init__(self, app: Optional[WSGIApplication], config: dict):
         self.config = config
         self.check_version(self.config.get('version'))
 
@@ -349,6 +349,7 @@ class Freezer:
         cancelled_atasks = []
         while self.inprogress_tasks:
             path, task = self.inprogress_tasks.popitem()
+            assert task.asyncio_task is not None
             task.asyncio_task.cancel()
             cancelled_atasks.append(task.asyncio_task)
         for atask in cancelled_atasks:
@@ -473,19 +474,22 @@ class Freezer:
 
         status_action = task.response_headers.get('Freezeyt-Action')
         if not status_action:
-            if self.status_handlers.get(status[:3]):
-                # handle particular status from configuration
-                status_handler = self.status_handlers.get(status[:3])
-            elif self.status_handlers.get(status[0] + 'xx'):
-                # handle group statuses from configuration
+
+            # Get a handler for the particular status from configuration
+            status_handler = self.status_handlers.get(status[:3])
+
+            if status_handler is None:
+                # If a handler for the particular status isn't found,
+                # get handler for a group of statuses
                 status_handler = self.status_handlers.get(status[0] + 'xx')
-            elif status.startswith('200'):
-                # default behaviour for status 200
-                status_handler = freezeyt.actions.save
-            else:
-                # default behaviour for cases which are not handled by
-                # conditions above (e.g. groups 1xx, 2xx, ...)
-                raise UnexpectedStatus(url, status)
+            if status_handler is None:
+                # Still not found? Use the default handler
+                if status.startswith('200'):
+                    # default behaviour for status 200
+                    status_handler = freezeyt.actions.save
+                else:
+                    # default behaviour for everything but 200
+                    raise UnexpectedStatus(url, status)
 
             status_action = status_handler(hooks.TaskInfo(task))
 
@@ -538,6 +542,7 @@ class Freezer:
             # when we get the first item.
             for path, task in self.inprogress_tasks.items():
                 break
+            assert task.asyncio_task is not None
             try:
                 await task.asyncio_task
             except Exception as exc:
@@ -681,6 +686,7 @@ class Freezer:
         while self.redirecting_tasks:
             saved_something = False
             for key, task in list(self.redirecting_tasks.items()):
+                assert task.redirects_to is not None
                 if task.redirects_to.status == TaskStatus.FAILED:
                     # Don't process redirects to a failed pages
                     del self.redirecting_tasks[key]

@@ -3,6 +3,7 @@ from freezeyt.util import InfiniteRedirection, ExternalURLError, RelativeURLErro
 from freezeyt.filesaver import DirectoryExistsError
 from freezeyt.freezer import default_url_to_path as url_to_path
 from freezeyt.middleware import Middleware
+from freezeyt.types import Config
 
 
 __version__ = '1.0'
@@ -19,4 +20,5 @@ __all__ = [
     'UnexpectedStatus',
     'MultiError',
     'VersionMismatch',
+    'Config',
 ]

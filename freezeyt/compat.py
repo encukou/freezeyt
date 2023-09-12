@@ -2,8 +2,11 @@
 """
 
 import sys
-
 import asyncio
+from typing import TYPE_CHECKING
+
+if sys.version_info >= (3, 8) or TYPE_CHECKING:
+    from typing import Literal
 
 
 if sys.version_info >= (3, 11):
@@ -63,7 +66,7 @@ def get_running_loop():
 # In older versions, it derives from Exception instead.
 if sys.version_info >= (3, 11):
     _MultiErrorBase = ExceptionGroup
-    HAVE_EXCEPTION_GROUP = True
+    HAVE_EXCEPTION_GROUP: Literal[True] = True
 else:
     _MultiErrorBase = Exception
-    HAVE_EXCEPTION_GROUP = False
+    HAVE_EXCEPTION_GROUP: 'Literal[False]' = False

@@ -1,20 +1,20 @@
 import importlib
 import concurrent.futures
 import urllib.parse
-import typing
+from typing import Sequence, TYPE_CHECKING
 
 from werkzeug.urls import uri_to_iri
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 from freezeyt.encoding import decode_input_path
+from freezeyt.types import AbsoluteURL
+
+
+if TYPE_CHECKING:
+    from freezeyt.hooks import TaskInfo
 
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
-
-
-# An URL as used internally by Freezeyt.
-# Absolute IRI, with an explicit port if it's `http` or `https`
-AbsoluteURL = typing.NewType('AbsoluteURL', urllib.parse.SplitResult)
 
 
 class InfiniteRedirection(Exception):
@@ -52,6 +52,11 @@ class WrongMimetypeError(ValueError):
 
 class MultiError(_MultiErrorBase):
     """Contains multiple errors"""
+    tasks: 'Sequence[TaskInfo]'
+
+    if not HAVE_EXCEPTION_GROUP:
+        exceptions: Sequence[Exception]
+
     def __new__(cls, tasks):
         # Import TaskInfo here to avoid a circular import
         # (since hooks imports utils)
@@ -66,10 +71,11 @@ class MultiError(_MultiErrorBase):
         if HAVE_EXCEPTION_GROUP:
             self = super().__new__(cls, f"{len(tasks)} errors", exceptions)
         else:
-            self = super().__new__(cls, f"{len(tasks)} errors")
+            # mypy thinks Exception.__new__ takes only one argument;
+            # in reality it passes all its arguments to __init__
+            self = super().__new__(cls, f"{len(tasks)} errors") # type: ignore[call-arg]
             self.exceptions = exceptions
 
-        self._tasks = tasks
         self.tasks = [TaskInfo(t) for t in tasks]
         return self
 
