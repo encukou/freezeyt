@@ -2,6 +2,7 @@
 
 import sys
 import shutil
+from typing import Optional, Literal, TextIO, List
 
 import click
 import yaml
@@ -38,9 +39,18 @@ from freezeyt.util import import_variable_from_module
               default=None,
               help='Stop on the first error')
 def main(
-    app, dest_path, output, prefix,
-    extra_pages, config_file, config_var, progress, cleanup, gh_pages, fail_fast
-):
+    app: str,
+    dest_path: str,
+    output: Optional[str],
+    prefix: Optional[str],
+    extra_pages: Optional[List[str]],
+    config_file: Optional[TextIO],
+    config_var: Optional[str],
+    progress: Optional[Literal['none', 'bar', 'log']],
+    cleanup: Optional[bool],
+    gh_pages: Optional[str],
+    fail_fast: Optional[bool],
+) -> None:
     """
     APP
         Name of the Python web app module which will be frozen.
@@ -59,7 +69,7 @@ def main(
             "Can't pass configuration both in a file and in a variable."
         )
 
-    elif config_file != None:
+    elif config_file is not None:
         config = yaml.safe_load(config_file)
         if not isinstance(config, dict):
             raise SyntaxError(

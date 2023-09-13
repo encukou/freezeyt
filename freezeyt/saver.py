@@ -5,7 +5,7 @@ from typing import BinaryIO, Any, Iterable
 from freezeyt.types import SaverResult
 
 class Saver(abc.ABC):
-    async def prepare(self):
+    async def prepare(self) -> None:
         """Initialize the saver."""
 
     @abc.abstractmethod

@@ -5,7 +5,7 @@ import itertools
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, List, TypeVar
+from typing import Tuple, List, TypeVar, Any, Never, ParamSpec, Awaitable
 import enum
 import asyncio
 import inspect
@@ -68,6 +68,7 @@ DEFAULT_URL_FINDERS = {
         }
 
 
+T = TypeVar('T')
 K = TypeVar('K')
 Func = TypeVar('Func', bound=Callable)
 
@@ -176,10 +177,12 @@ class IgnorePage(BaseException):
 class VersionMismatch(ValueError):
     """Raised when major version in config is not correct"""
 
-def needs_semaphore(func):
+P = ParamSpec('P')
+
+def needs_semaphore(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
     """Decorator for a "task" method that holds self.semaphore when running"""
     @functools.wraps(func)
-    async def wrapper(self, *args, **kwargs):
+    async def wrapper(self: 'Freezer', *args: P.args, **kwargs: P.kwargs) -> T:
         async with self.semaphore:
             result = await func(self, *args, **kwargs)
         return result
@@ -335,7 +338,7 @@ class Freezer:
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
 
-    def check_version(self, config_version):
+    def check_version(self, config_version: Union[float, str, None]) -> None:
         if config_version is None:
             return
         if not isinstance(config_version, float):
@@ -347,10 +350,10 @@ class Freezer:
         if main_version != current_version:
             raise VersionMismatch("The specified version does not match the freezeyt main version.")
 
-    def add_hook(self, hook_name, func):
+    def add_hook(self, hook_name: str, func: Callable) -> None:
         self.hooks.setdefault(hook_name, []).append(func)
 
-    async def cancel_tasks(self):
+    async def cancel_tasks(self) -> None:
         cancelled_atasks = []
         while self.inprogress_tasks:
             path, task = self.inprogress_tasks.popitem()
@@ -420,7 +423,7 @@ class Freezer:
             task.reasons.add(reason)
         return task
 
-    async def prepare(self):
+    async def prepare(self) -> None:
         """Preparatory method for creating tasks and preparing the saver."""
         # prepare the tasks
         self.add_task(self.prefix, reason='site root (homepage)')
@@ -430,7 +433,7 @@ class Freezer:
                 assert self.prefix.path.endswith('/')
                 assert not url_part.startswith('/')
                 url_part = self.prefix.path + url_part
-                self.add_task(
+                self.add_task(\
                     urljoin(self.prefix, url_part),
                     reason="from extra_files",
                 )
@@ -449,11 +452,17 @@ class Freezer:
         self._add_extra_pages(self.prefix, self.extra_pages)
 
         # and at the end prepare the saver
-        await self.saver.prepare()
+        return await self.saver.prepare()
 
     def start_response(
-        self, task, url, wsgi_write, status, headers, exc_info=None,
-    ):
+        self,
+        task: Task,
+        url: AbsoluteURL,
+        wsgi_write: T,
+        status: str,
+        headers: List[Tuple[str, str]],
+        exc_info: Optional[Tuple[Never, Exception, Never]] = None,
+    ) -> T:
         """WSGI start_response hook
 
         The application we are freezing will call this method
@@ -470,9 +479,9 @@ class Freezer:
                 Will be raised if given.
         """
         if exc_info:
-            exc_type, value, traceback = exc_info
-            if value is not None:
-                raise value
+            exception = exc_info[1]
+            if exception is not None:
+                raise exception
 
         task.response_headers = Headers(headers)
         task.response_status = status
@@ -540,7 +549,7 @@ class Freezer:
                 generator = extra
                 self._add_extra_pages(prefix, generator(self.app))
 
-    async def handle_urls(self):
+    async def handle_urls(self) -> None:
         while self.inprogress_tasks:
             # Get an item from self.inprogress_tasks.
             # Since this is a dict, we can't do self.inprogress_tasks[0];
@@ -688,7 +697,7 @@ class Freezer:
         self.call_hook('page_frozen', hooks.TaskInfo(task))
 
     @needs_semaphore
-    async def handle_redirects(self):
+    async def handle_redirects(self) -> None:
         """Save copies of target pages for redirect_policy='follow'"""
         while self.redirecting_tasks:
             saved_something = False
@@ -714,6 +723,6 @@ class Freezer:
                 for task in self.redirecting_tasks.values():
                     raise InfiniteRedirection(task)
 
-    def call_hook(self, hook_name, *arguments):
+    def call_hook(self, hook_name: str, *arguments: Any) -> None:
         for hook in self.hooks.get(hook_name, ()):
             hook(*arguments)
