@@ -5,7 +5,7 @@ import itertools
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, List, TypeVar, Any, Never, ParamSpec, Awaitable
+from typing import Tuple, List, TypeVar, Any, ParamSpec, Awaitable
 from typing import Concatenate
 import enum
 import asyncio
@@ -35,6 +35,7 @@ from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
 from freezeyt.types import Config, SaverResult, AbsoluteURL
+from freezeyt.types import WSGIExceptionInfo, WSGIHeaderList
 
 
 MAX_RUNNING_TASKS = 100
@@ -155,7 +156,7 @@ class Task:
     reasons: set = dataclasses.field(default_factory=set)
     asyncio_task: "Optional[asyncio.Task]" = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Task for {self.path}, {self.status.name}>"
 
     def get_a_url(self) -> AbsoluteURL:
@@ -463,8 +464,8 @@ class Freezer:
         url: AbsoluteURL,
         wsgi_write: T,
         status: str,
-        headers: List[Tuple[str, str]],
-        exc_info: Optional[Tuple[Never, Exception, Never]] = None,
+        headers: WSGIHeaderList,
+        exc_info: WSGIExceptionInfo = None,
     ) -> T:
         """WSGI start_response hook
 

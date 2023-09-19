@@ -1,4 +1,6 @@
-from typing import Iterable
+from typing import Iterable, Tuple, List, Callable, Optional, Never, Union
+from typing import Type
+from types import TracebackType
 import io
 
 from werkzeug.wrappers import Response
@@ -10,7 +12,7 @@ from werkzeug.utils import send_file
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
 from freezeyt.extra_files import get_extra_files
-from freezeyt.types import Config
+from freezeyt.types import Config, WSGIExceptionInfo, WSGIHeaderList
 
 
 class Middleware:
@@ -129,7 +131,11 @@ class Middleware:
                 response = NotFound()
             return response(environ, server_start_response)
 
-        def mw_start_response(status, headers, exc_info=None):
+        def mw_start_response(
+            status: str,
+            headers: WSGIHeaderList,
+            exc_info: WSGIExceptionInfo = None,
+        ) -> Callable[[bytes], object]:
             result = server_start_response(status, headers, exc_info)
             self.mimetype_checker.check(path_info, headers)
             return result
