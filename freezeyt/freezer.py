@@ -6,6 +6,7 @@ import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
 from typing import Tuple, List, TypeVar, Any, Never, ParamSpec, Awaitable
+from typing import Concatenate
 import enum
 import asyncio
 import inspect
@@ -179,12 +180,14 @@ class VersionMismatch(ValueError):
 
 P = ParamSpec('P')
 
-def needs_semaphore(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
+def needs_semaphore(
+    func: Callable[Concatenate['Freezer', P], Awaitable[T]]
+) -> Callable[Concatenate['Freezer', P], Awaitable[T]]:
     """Decorator for a "task" method that holds self.semaphore when running"""
     @functools.wraps(func)
     async def wrapper(self: 'Freezer', *args: P.args, **kwargs: P.kwargs) -> T:
         async with self.semaphore:
-            result = await func(self, *args, **kwargs)
+            result: T = await func(self, *args, **kwargs)
         return result
     return wrapper
 
