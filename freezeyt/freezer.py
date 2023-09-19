@@ -214,6 +214,7 @@ class Freezer:
 
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
+    fail_fast: bool
 
     def __init__(self, app: Optional[WSGIApplication], config: Config):
         self.config = dict(config)
@@ -442,6 +443,7 @@ class Freezer:
                     reason="from extra_files",
                 )
             elif kind == 'path':
+                assert isinstance(content_or_path, Path)
                 for part in get_url_parts_from_directory(
                     url_part, content_or_path
                 ):
@@ -453,6 +455,8 @@ class Freezer:
                         urljoin(self.prefix, part),
                         reason="from extra_files",
                     )
+            else:
+                raise ValueError(kind)
         self._add_extra_pages(self.prefix, self.extra_pages)
 
         # and at the end prepare the saver

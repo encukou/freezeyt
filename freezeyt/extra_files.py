@@ -57,7 +57,7 @@ def get_extra_files(
                     + f' got a {type(content).__name__}'
                 )
 
-def get_url_parts_from_directory(url_part, path):
+def get_url_parts_from_directory(url_part: str, path: Path) -> Iterator[str]:
     """Yield the names of all files in `path`, prefixed by `url_part`.
 
     If `path` is a directory, yield all of its contents recursively.
