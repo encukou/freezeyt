@@ -314,6 +314,10 @@ class Freezer:
             TaskStatus.IN_PROGRESS: self.inprogress_tasks,
             TaskStatus.FAILED: self.failed_tasks,
         }
+        if "//" in prefix_parsed.path:
+            self.warnings.append(
+                f"Freezeyt reduces multiple consecutive slashes in {prefix!r} to one"
+            )
 
         self.hooks = {}
         for name, funcs in config.get('hooks', {}).items():
