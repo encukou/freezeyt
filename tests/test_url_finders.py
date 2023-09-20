@@ -1,4 +1,5 @@
 import asyncio
+from typing import Dict, Tuple, Callable
 
 import pytest
 from flask import Flask
@@ -11,7 +12,7 @@ from testutil import context_for_test
 from testutil import raises_multierror_with_one_exception
 
 
-TEST_DATA = {
+TEST_DATA: Dict[str, Tuple[str, Dict[str, str], Callable]] = {
     'html_links_fallback':
         (   'text/html',
             {'text/html': 'get_html_links'},
@@ -29,12 +30,13 @@ TEST_DATA = {
 def test_parse_url_finders(test_name):
     key, config, expected = TEST_DATA[test_name]
 
-    assert parse_url_finders(
-        config, default_module='freezeyt.url_finders')[key] == expected
+    result: Dict[str, Callable] = parse_url_finders(
+        config, default_module='freezeyt.url_finders')
+    assert result[key] == expected
 
 
 def test_get_no_url_finders():
-    url_finders = {}
+    url_finders: dict = {}
 
     assert parse_url_finders(
         url_finders, default_module='freezeyt.url_finders') == {}
