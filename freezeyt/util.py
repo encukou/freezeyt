@@ -1,7 +1,8 @@
 import importlib
 import concurrent.futures
 import urllib.parse
-from typing import Sequence, TYPE_CHECKING
+from typing import Sequence, TYPE_CHECKING, Optional, Any, Iterable, Protocol
+from typing import List, Collection
 
 from werkzeug.urls import uri_to_iri
 
@@ -12,6 +13,7 @@ from freezeyt.types import AbsoluteURL
 
 if TYPE_CHECKING:
     from freezeyt.hooks import TaskInfo
+    from freezeyt.freezer import Task
 
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
@@ -19,9 +21,11 @@ process_pool_executor = concurrent.futures.ProcessPoolExecutor()
 
 class InfiniteRedirection(Exception):
     """Infinite redirection was detected with redirect_policy='follow'"""
-    def __init__(self, task):
+    def __init__(self, task: 'Task'):
+        redirects_to = task.redirects_to
+        assert redirects_to is not None
         super().__init__(
-            f'{task.get_a_url()} redirects to {task.redirects_to.get_a_url()},'
+            f'{task.get_a_url()} redirects to {redirects_to.get_a_url()},'
             + ' which was not frozen (most likely because of infinite redirection)'
         )
 
@@ -36,7 +40,7 @@ class UnsupportedSchemeError(ValueError):
 
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
-    def __init__(self, url, status):
+    def __init__(self, url: AbsoluteURL, status: str):
         self.url = urllib.parse.urlunsplit(url)
         self.status = status
         message = str(status)
@@ -44,7 +48,7 @@ class UnexpectedStatus(ValueError):
 
 class WrongMimetypeError(ValueError):
     """MIME type does not match file extension"""
-    def __init__(self, expected, got, url_path):
+    def __init__(self, expected: list[str], got: str, url_path: str):
         super().__init__(
             f"Content-type {got!r} is different from allowed MIME types {expected}"
             + f" guessed from '{url_path}'"
@@ -57,19 +61,28 @@ class MultiError(_MultiErrorBase):
     if not HAVE_EXCEPTION_GROUP:
         exceptions: Sequence[Exception]
 
-    def __new__(cls, tasks):
+    def __new__(cls, tasks: Collection['Task']) -> 'MultiError':
         # Import TaskInfo here to avoid a circular import
         # (since hooks imports utils)
         from freezeyt.hooks import TaskInfo
 
-        exceptions = []
+        exceptions: list[Exception] = []
         for task in tasks:
+            assert task.asyncio_task is not None
             exc = task.asyncio_task.exception()
-            exc._freezeyt_exception_task = task
+            assert isinstance(exc, Exception)
+            exc._freezeyt_exception_task = task  # type: ignore[attr-defined]
             exceptions.append(exc)
 
         if HAVE_EXCEPTION_GROUP:
-            self = super().__new__(cls, f"{len(tasks)} errors", exceptions)
+            # Typing __new__ in a ExceptionGroup subclass is tricky,
+            # needs to be validated manually :)
+            self = super().__new__(
+                cls,  # type: ignore[type-var]
+                f"{len(tasks)} errors",
+                exceptions,  # type: ignore[arg-type]
+            )
+            assert isinstance(self, MultiError)
         else:
             # mypy thinks Exception.__new__ takes only one argument;
             # in reality it passes all its arguments to __init__
@@ -79,8 +92,15 @@ class MultiError(_MultiErrorBase):
         self.tasks = [TaskInfo(t) for t in tasks]
         return self
 
-    def derive(self, excs):
-        return MultiError([e._freezeyt_exception_task for e in excs])
+    # Typing derive() in a ExceptionGroup subclass is tricky to impossible,
+    # see https://github.com/python/typeshed/issues/9922
+    def derive(   # type: ignore[override]
+        self, excs: Sequence[Exception],
+    ) -> 'MultiError':
+        return MultiError([
+            e._freezeyt_exception_task  # type: ignore[attr-defined]
+            for e in excs
+        ])
 
 
 def is_external(parsed_url: AbsoluteURL, prefix: AbsoluteURL) -> bool:
@@ -168,7 +188,11 @@ def urljoin(url: AbsoluteURL, link_text: str) -> AbsoluteURL:
 
 
 def import_variable_from_module(
-    name, *, default_module_name=None, default_variable_name=None):
+    name: str,
+    *,
+    default_module_name: Optional[str] = None,
+    default_variable_name: Optional[str] = None,
+) -> Any:
     """Import a variable from a named module
 
     Given a name like "package.module:namespace.variable":

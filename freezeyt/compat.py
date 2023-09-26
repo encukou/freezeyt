@@ -3,11 +3,12 @@
 
 import sys
 import asyncio
-from typing import TYPE_CHECKING, TypeVar, Coroutine, Any
+from typing import TYPE_CHECKING, TypeVar, Coroutine, Any, Optional
 
 if sys.version_info >= (3, 8) or TYPE_CHECKING:
     from typing import Literal
 
+T = TypeVar('T')
 
 if sys.version_info >= (3, 11):
     import wsgiref.types
@@ -36,7 +37,10 @@ else:
         # (Python 3.6 support is ending soon, anyway.)
 
 
-def asyncio_create_task(coroutine, name):
+def asyncio_create_task(
+    coroutine: Coroutine[Any, Any, T],
+    name: Optional[str],
+) -> asyncio.Task[T]:
     """asyncio.create_task for Python 3.6 & 3.7"""
     if sys.version_info < (3, 7):
         # Python 3.6
@@ -62,7 +66,7 @@ def get_running_loop() -> asyncio.AbstractEventLoop:
 # and can be used with the `except*` statement.
 # In older versions, it derives from Exception instead.
 if sys.version_info >= (3, 11):
-    _MultiErrorBase = ExceptionGroup
+    _MultiErrorBase = ExceptionGroup[Exception]
     HAVE_EXCEPTION_GROUP: Literal[True] = True
 else:
     _MultiErrorBase = Exception

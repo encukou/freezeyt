@@ -6,7 +6,7 @@ import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
 from typing import Tuple, List, TypeVar, Any, ParamSpec, Awaitable
-from typing import Concatenate
+from typing import Concatenate, Coroutine
 import enum
 import asyncio
 import inspect
@@ -182,8 +182,8 @@ class VersionMismatch(ValueError):
 P = ParamSpec('P')
 
 def needs_semaphore(
-    func: Callable[Concatenate['Freezer', P], Awaitable[T]]
-) -> Callable[Concatenate['Freezer', P], Awaitable[T]]:
+    func: Callable[Concatenate['Freezer', P], Coroutine[None, None, T]]
+) -> Callable[Concatenate['Freezer', P], Coroutine[None, None, T]]:
     """Decorator for a "task" method that holds self.semaphore when running"""
     @functools.wraps(func)
     async def wrapper(self: 'Freezer', *args: P.args, **kwargs: P.kwargs) -> T:
@@ -396,7 +396,10 @@ class Freezer:
         task = self._add_task(url, external_ok=external_ok, reason=reason)
         if task and task.asyncio_task is None:
             coroutine = self.handle_one_task(task)
-            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
+            task.asyncio_task = asyncio_create_task(
+                coroutine,
+                name=str(task.path)
+            )
         return task
 
     def _add_task(
