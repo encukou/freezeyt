@@ -74,9 +74,7 @@ def test_warn_freezing_index_from_diff_routes(capsys):
     stdout = captured.out
 
     warnings_counter = 0
-    print(f"{stdout=}")
     for l in stdout.splitlines():
-        print(f"{l=}")
         if l.startswith("[WARNING]"):
             warnings_counter += 1
 
