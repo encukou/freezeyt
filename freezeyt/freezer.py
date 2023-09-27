@@ -368,6 +368,14 @@ class Freezer:
         result = await self.saver.finish(success, cleanup)
         if success:
             self.call_hook('success', self.freeze_info)
+
+            for task in self.done_tasks.values():
+                if len(task.urls) > 1:
+                    self.warnings.append(
+                        "One static file is requested from different paths"
+                        f" {sorted([url.path for url in task.urls])}"
+                    )
+
             for warning in self.warnings:
                 print(f"[WARNING] {warning}")
             return result
