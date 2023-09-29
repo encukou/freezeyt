@@ -80,8 +80,14 @@ def test_warn_freezing_index_from_diff_routes(capsys):
 
     assert warnings_counter == 2
 
-    index_warn = f"[WARNING] One static file is requested from different paths {index_routes}"
-    second_page_warn = f"[WARNING] One static file is requested from different paths {second_page_routes}"
+    index_warn = (
+        "[WARNING] Static file 'index.html' is requested"
+        f" from different URLs {index_routes}"
+    )
+    second_page_warn = (
+        "[WARNING] Static file 'second_page/index.html' is requested"
+        f" from different URLs {second_page_routes}"
+    )
 
     assert index_warn in stdout
     assert second_page_warn in stdout

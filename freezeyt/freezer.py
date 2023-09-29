@@ -372,8 +372,8 @@ class Freezer:
             for task in self.done_tasks.values():
                 if len(task.urls) > 1:
                     self.warnings.append(
-                        "One static file is requested from different paths"
-                        f" {sorted([url.path for url in task.urls])}"
+                        f"Static file '{task.path}' is requested from"
+                        f" different URLs {sorted([url.path for url in task.urls])}"
                     )
 
             for warning in self.warnings:
