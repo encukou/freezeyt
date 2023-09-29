@@ -29,9 +29,11 @@ def test_warn_multi_slashes_prefix(capsys, prefix):
     assert expected_output in captured.out
 
 
-def test_warn_freezing_index_from_diff_routes(capsys):
-    """Test if we get warning when app defines '/' and 'index.html'
-    as diferent routes, probably with different content.
+def test_warn_one_page_from_different_URLs(capsys):
+    """App can define different URLs with different content,
+    which are saved then as one static file by Freezeyt
+    (e.g. '/' and '/index.html'). One content will be always lost.
+    If this situation occurs, we should get a warning at least.
     """
 
     app = Flask(__name__)
