@@ -126,7 +126,7 @@ extra_files:
     static:
         copy_from: static/
     # Web host configuration
-    CNAME: https://mysite.example.com/
+    CNAME: mysite.example.com
     ".nojekyll": ''
     googlecc704f0f191eda8f.html:
         copy_from: google-verification.html
