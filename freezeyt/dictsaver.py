@@ -24,23 +24,12 @@ class DictSaver(Saver):
         content_iterable: Iterable[bytes],
     ) -> None:
         parts = filename.parts
-
-        target = self.contents
-        for part in parts[:-1]:
-            new_target = target.setdefault(part, {})
-            if not isinstance(new_target, dict):
-                raise NotADirectoryError(filename.parent)
-            target = new_target
+        target = find_directory(self.contents, parts[:-1])
         target[parts[-1]] = b''.join(content_iterable)
 
     async def open_filename(self, filename: PurePosixPath) -> BytesIO:
         parts = filename.parts
-        target = self.contents
-        for part in parts[:-1]:
-            new_target = target.setdefault(part, {})
-            if not isinstance(new_target, dict):
-                raise NotADirectoryError(filename.parent)
-            target = new_target
+        target = find_directory(self.contents, parts[:-1])
         file_content = target[parts[-1]]
         if isinstance(file_content, dict):
             raise IsADirectoryError(filename)
@@ -48,3 +37,15 @@ class DictSaver(Saver):
 
     async def finish(self, success: bool, cleanup: bool) -> Contents_T:
         return self.contents
+
+def find_directory(
+    root_contents: Contents_T,
+    dir_names: Iterable[str],
+) -> Contents_T:
+    current_contents = root_contents
+    for dir_name in dir_names:
+        new_contents = current_contents.setdefault(dir_name, {})
+        if not isinstance(new_contents, dict):
+            raise NotADirectoryError('/'.join(dir_names))
+        current_contents = new_contents
+    return current_contents
