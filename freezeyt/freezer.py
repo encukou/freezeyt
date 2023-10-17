@@ -182,8 +182,8 @@ class VersionMismatch(ValueError):
 P = ParamSpec('P')
 
 def needs_semaphore(
-    func: Callable[Concatenate['Freezer', P], Coroutine[None, None, T]]
-) -> Callable[Concatenate['Freezer', P], Coroutine[None, None, T]]:
+    func: Callable[Concatenate['Freezer', P], Coroutine[Any, Any, T]]
+) -> Callable[Concatenate['Freezer', P], Coroutine[Any, Any, T]]:
     """Decorator for a "task" method that holds self.semaphore when running"""
     @functools.wraps(func)
     async def wrapper(self: 'Freezer', *args: P.args, **kwargs: P.kwargs) -> T:
