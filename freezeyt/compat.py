@@ -43,9 +43,9 @@ else:
 
 
 def asyncio_create_task(
-    coroutine: Coroutine[Any, Any, T],
-    name: Optional[str],
-) -> asyncio.Task[T]:
+    coroutine: 'Coroutine[Any, Any, T]',
+    name: 'Optional[str]',
+) -> 'asyncio.Task[T]':
     """asyncio.create_task for Python 3.6 & 3.7"""
     if sys.version_info < (3, 7):
         # Python 3.6

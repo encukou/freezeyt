@@ -2,6 +2,7 @@ import traceback
 import sys
 from subprocess import check_output, CalledProcessError, STDOUT
 from textwrap import dedent
+from typing import List
 
 import enlighten
 import click
@@ -79,7 +80,7 @@ class GHPagesPlugin:
             (self.base_path / "CNAME").write_text(self.prefix_host)
             (self.base_path / ".nojekyll").write_text("")
             try:
-                def git_check_output(args: list[str]) -> None:
+                def git_check_output(args: List[str]) -> None:
                     check_output(
                         args,
                         stderr=STDOUT,

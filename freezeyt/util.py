@@ -1,7 +1,7 @@
 import importlib
 import concurrent.futures
 import urllib.parse
-from typing import Sequence, TYPE_CHECKING, Optional, Any,  Collection
+from typing import Sequence, TYPE_CHECKING, Optional, Any,  Collection, List
 
 from werkzeug.urls import uri_to_iri
 
@@ -47,7 +47,7 @@ class UnexpectedStatus(ValueError):
 
 class WrongMimetypeError(ValueError):
     """MIME type does not match file extension"""
-    def __init__(self, expected: list[str], got: str, url_path: str):
+    def __init__(self, expected: List[str], got: str, url_path: str):
         super().__init__(
             f"Content-type {got!r} is different from allowed MIME types {expected}"
             + f" guessed from '{url_path}'"

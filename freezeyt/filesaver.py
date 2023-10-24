@@ -9,7 +9,7 @@ from .saver import Saver
 from .types import AbsoluteURL, ExceptionInfo
 
 
-StrPath = Union[str, os.PathLike[str]]
+StrPath = Union[str, 'os.PathLike[str]']
 T = TypeVar('T')
 
 

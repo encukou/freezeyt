@@ -1,12 +1,12 @@
 from io import BytesIO
 from pathlib import PurePosixPath
-from typing import Iterable, Union
+from typing import Iterable, Union, Dict
 
 from .saver import Saver
 from .types import AbsoluteURL
 
 
-Contents_T = dict[str, Union[bytes, 'Contents_T']]
+Contents_T = Dict[str, Union[bytes, 'Contents_T']]
 
 class DictSaver(Saver):
     """Outputs frozen pages into a dict.
