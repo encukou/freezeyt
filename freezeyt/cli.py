@@ -2,13 +2,14 @@
 
 import sys
 import shutil
-from typing import Optional, Literal, TextIO, List
+from typing import Optional, TextIO, List
 
 import click
 import yaml
 
 from freezeyt import freeze, MultiError
 from freezeyt.util import import_variable_from_module
+from freezeyt.compat import Literal
 
 
 @click.command()

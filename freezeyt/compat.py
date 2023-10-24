@@ -5,9 +5,6 @@ import sys
 import asyncio
 from typing import TYPE_CHECKING, TypeVar, Coroutine, Any, Optional
 
-if sys.version_info >= (3, 8) or TYPE_CHECKING:
-    from typing import Literal
-
 T = TypeVar('T')
 
 if sys.version_info >= (3, 11):
@@ -25,6 +22,12 @@ if sys.version_info >= (3, 10):
     from typing import ParamSpec, Concatenate
 else:
     from typing_extensions import ParamSpec, Concatenate
+
+
+if sys.version_info >= (3, 8):
+    from typing import Literal
+else:
+    from typing_extensions import Literal
 
 
 if sys.version_info >= (3, 7):
