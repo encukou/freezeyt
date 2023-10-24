@@ -21,6 +21,11 @@ else:
     WSGIEnvironment = dict
     WSGIApplication = typing.Any
 
+if sys.version_info >= (3, 10):
+    from typing import ParamSpec, Concatenate
+else:
+    from typing_extensions import ParamSpec, Concatenate
+
 
 if sys.version_info >= (3, 7):
     asyncio_run = asyncio.run

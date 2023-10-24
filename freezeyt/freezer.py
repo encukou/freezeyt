@@ -5,8 +5,7 @@ import itertools
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, List, TypeVar, Any, ParamSpec
-from typing import Concatenate, Coroutine
+from typing import Tuple, List, TypeVar, Any, Coroutine
 import enum
 import asyncio
 import inspect
@@ -28,6 +27,7 @@ from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
+from freezeyt.compat import ParamSpec, Concatenate
 from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
