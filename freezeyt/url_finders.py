@@ -1,5 +1,5 @@
 import xml.etree.ElementTree
-from typing import Iterable, BinaryIO, List, Optional, Tuple, Callable
+from typing import Iterable, BinaryIO, Optional, Callable
 from typing import Coroutine, Union, Any, TYPE_CHECKING
 
 import html5lib

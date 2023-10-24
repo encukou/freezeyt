@@ -5,7 +5,7 @@ import itertools
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, List, TypeVar, Any, ParamSpec, Awaitable
+from typing import Tuple, List, TypeVar, Any, ParamSpec
 from typing import Concatenate, Coroutine
 import enum
 import asyncio

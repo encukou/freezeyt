@@ -2,8 +2,6 @@ import traceback
 import sys
 from subprocess import check_output, CalledProcessError, STDOUT
 from textwrap import dedent
-from typing import Mapping, TypedDict, NotRequired, Any
-from pathlib import Path
 
 import enlighten
 import click
