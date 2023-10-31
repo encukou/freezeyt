@@ -260,8 +260,8 @@ extra_pages:
     - /extra2.html
 ```
 
-Freezeyt will freeze these pages in addition to those it
-finds by following links.
+Freezeyt will handle these pages as if it found them by following links.
+(For example, by default it will follow links in extra pages.)
 
 Extra pages may also be given on the command line,
 e.g. `--extra-page /extra/ --extra-page /extra2.html`.
@@ -297,6 +297,9 @@ another_config = {
 
 Extra files to be included in the output can be specified,
 along with their content.
+
+These files are not considered part of the app; freezeyt will not try to find
+links in them.
 
 This is useful for configuration of your static server.
 (For pages that are part of your website, we recommend
