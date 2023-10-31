@@ -1,16 +1,6 @@
-import sys
 from pathlib import Path
 
-try:
-    from bottle import Bottle, static_file
-except ImportError:
-    if sys.version_info[:2] == (3, 11):
-        # Bottle doesn't work in Python 3.11:
-        # https://github.com/bottlepy/bottle/issues/1070
-        import pytest
-        pytest.skip("Bottle doesn't work in Python 3.11")
-    else:
-        raise
+from bottle import Bottle, static_file
 
 STATIC_PATH = Path(__file__).parent / 'static'
 
