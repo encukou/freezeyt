@@ -3,6 +3,7 @@
 
 import sys
 import asyncio
+import shutil
 from typing import TYPE_CHECKING
 
 if sys.version_info >= (3, 8) or TYPE_CHECKING:
@@ -60,6 +61,21 @@ def get_running_loop():
     else:
         return get_loop()
 
+
+if sys.version_info >= (3, 12):
+    rmtree = shutil.rmtree
+else:
+    def rmtree(path, ignore_errors=False, onexc=None):
+        if onexc is None:
+            onerror = None
+        else:
+            def onerror(function, path, exc_info):
+                return onexc(function, path, exc_info[1])
+        return shutil.rmtree(
+            path,
+            ignore_errors=ignore_errors,
+            onerror=onerror,
+        )
 
 # In Python 3.11, freezeyt's MultiError derives from ExceptionGroup
 # and can be used with the `except*` statement.
