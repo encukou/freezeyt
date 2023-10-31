@@ -327,6 +327,10 @@ class Freezer:
             TaskStatus.IN_PROGRESS: self.inprogress_tasks,
             TaskStatus.FAILED: self.failed_tasks,
         }
+        if "//" in prefix_parsed.path:
+            self.warnings.append(
+                f"Freezeyt reduces multiple consecutive slashes in {prefix!r} to one"
+            )
 
         self.hooks = {}
         for name, funcs in self.config.get('hooks', {}).items():
@@ -377,6 +381,14 @@ class Freezer:
         result = await self.saver.finish(success, cleanup)
         if success:
             self.call_hook('success', self.freeze_info)
+
+            for task in self.done_tasks.values():
+                if len(task.urls) > 1:
+                    self.warnings.append(
+                        f"Static file '{task.path}' is requested from"
+                        f" different URLs {sorted([url.path for url in task.urls])}"
+                    )
+
             for warning in self.warnings:
                 print(f"[WARNING] {warning}")
             return result

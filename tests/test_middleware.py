@@ -224,7 +224,13 @@ def test_static_mode_options(path):
 
     # Werkzeug's response headers were fixed in 2.2.0,
     # see https://github.com/pallets/werkzeug/issues/2450
-    if Version(werkzeug.__version__) >= Version('2.2.0'):
+    try:
+        import importlib.metadata
+    except ImportError:
+        werkzeug_version = werkzeug.__version__
+    else:
+        werkzeug_version = importlib.metadata.version("werkzeug")
+    if Version(werkzeug_version) >= Version('2.2.0'):
         assert response.headers == Headers({'Allow': 'GET, HEAD, OPTIONS'})
     else:
         assert response.headers['Allow'] == 'GET, HEAD, OPTIONS'

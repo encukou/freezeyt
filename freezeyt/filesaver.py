@@ -1,4 +1,3 @@
-import shutil
 import os
 import stat
 from typing import BinaryIO, Union, Iterable, Callable, TypeVar
@@ -28,7 +27,7 @@ class FileSaver(Saver):
     def add_write_flag(
         function: Callable[[str], T],
         path: str,
-        excinfo: ExceptionInfo,
+        exception: BaseException,
     ) -> T:
         """A function that adds a write attribute/flag for a path where such an attribute is missing. This function is not necessary on Linux, but on Windows, attempting to delete a file where such an attribute is missing will raise an exception.
 
@@ -41,7 +40,7 @@ class FileSaver(Saver):
             os.chmod(path, os.stat(path).st_mode | stat.S_IWRITE)
             return function(path)
         else:
-            raise excinfo[1]
+            raise exception
 
     def __init__(self, base_path: Path, prefix: AbsoluteURL):
         self.base_path = base_path.resolve()
@@ -59,7 +58,7 @@ class FileSaver(Saver):
                     + 'freezeyt.'
                 )
 
-            shutil.rmtree(self.base_path, onerror=self.add_write_flag)
+            compat.rmtree(self.base_path, onexc=self.add_write_flag)
 
     async def save_to_filename(
         self,
@@ -85,4 +84,4 @@ class FileSaver(Saver):
     async def finish(self, success: bool, cleanup: bool) -> None:
         """Delete incomplete directory after a failed freeze."""
         if not success and cleanup and self.base_path.exists():
-            shutil.rmtree(self.base_path)
+            compat.rmtree(self.base_path)
