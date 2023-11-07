@@ -6,8 +6,10 @@ import asyncio
 import shutil
 from typing import TYPE_CHECKING
 
-if sys.version_info >= (3, 8) or TYPE_CHECKING:
+if sys.version_info >= (3, 8):
     from typing import Literal
+else:
+    from typing_extensions import Literal
 
 
 if sys.version_info >= (3, 11):
