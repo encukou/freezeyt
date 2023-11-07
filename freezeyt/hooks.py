@@ -24,10 +24,7 @@ class TaskInfo:
 
     @property
     def exception(self):
-        if self._task.asyncio_task.done():
-            return self._task.asyncio_task.exception()
-        else:
-            return None
+        return self._task.exception
 
     @property
     def reasons(self) -> Iterable[str]:
