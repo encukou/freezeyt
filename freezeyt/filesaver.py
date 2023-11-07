@@ -5,7 +5,7 @@ from pathlib import Path
 
 from . import compat
 from .saver import Saver
-from .types import AbsoluteURL, ExceptionInfo
+from .types import AbsoluteURL
 
 
 StrPath = Union[str, 'os.PathLike[str]']
