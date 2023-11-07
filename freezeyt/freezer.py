@@ -395,7 +395,10 @@ class Freezer:
         task = self._add_task(url, external_ok=external_ok, reason=reason)
         if task and task.asyncio_task is None:
             coroutine = self.handle_one_task(task)
-            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
+            task.asyncio_task = asyncio_create_task(
+                coroutine,
+                name=str(task.path),
+            )
         return task
 
     def _add_task(

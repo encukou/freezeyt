@@ -4,7 +4,10 @@
 import sys
 import asyncio
 import shutil
-from typing import TYPE_CHECKING
+from typing import TypeVar, Coroutine, Any, Optional
+
+T = TypeVar('T')
+
 
 if sys.version_info >= (3, 8):
     from typing import Literal
@@ -42,7 +45,10 @@ def asyncio_run(awaitable):
         return aio_run(awaitable)
 
 
-def asyncio_create_task(coroutine, name):
+def asyncio_create_task(
+    coroutine: 'Coroutine[Any, Any, T]',
+    name: 'Optional[str]',
+) -> 'asyncio.Task[T]':
     """asyncio.create_task for Python 3.6 & 3.7"""
     if sys.version_info < (3, 7):
         # Python 3.6
@@ -54,7 +60,7 @@ def asyncio_create_task(coroutine, name):
         return asyncio.create_task(coroutine, name=name)
 
 
-def get_running_loop():
+def get_running_loop() -> asyncio.AbstractEventLoop:
     try:
         get_loop = asyncio.get_running_loop
     except AttributeError:
