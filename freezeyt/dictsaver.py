@@ -6,12 +6,8 @@ from .saver import Saver
 
 class DictSaver(Saver):
     """Outputs frozen pages into a dict.
-
-    prefix - Base URL to deploy web app in production
-        (eg. url_parse('http://example.com:8000/foo/')
     """
-    def __init__(self, prefix):
-        self.prefix = prefix
+    def __init__(self):
         self.contents = {}
 
     async def save_to_filename(self, filename, content_iterable):
