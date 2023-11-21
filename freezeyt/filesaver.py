@@ -1,8 +1,12 @@
 import os
 import stat
+from pathlib import Path, PurePosixPath
 
 from . import compat
 from .saver import Saver
+from .types import AbsoluteURL
+
+from typing import Callable, Iterable, BinaryIO
 
 
 class DirectoryExistsError(Exception):
@@ -17,7 +21,11 @@ class FileSaver(Saver):
         (eg. url_parse('http://example.com:8000/foo/')
     """
     @staticmethod
-    def add_write_flag(function, path, exception):
+    def add_write_flag(
+        function: Callable[[str], None],
+        path: str,
+        exception: BaseException,
+    ) -> None:
         """A function that adds a write attribute/flag for a path where such an attribute is missing. This function is not necessary on Linux, but on Windows, attempting to delete a file where such an attribute is missing will raise an exception.
         
         Function parameters are:
@@ -27,15 +35,15 @@ class FileSaver(Saver):
         """
         if not os.access(path, os.W_OK):
             os.chmod(path, os.stat(path).st_mode | stat.S_IWRITE)
-            function(path)
+            return function(path)
         else:
             raise exception
     
-    def __init__(self, base_path, prefix):
+    def __init__(self, base_path: Path, prefix: AbsoluteURL):
         self.base_path = base_path.resolve()
         self.prefix = prefix
 
-    async def prepare(self):
+    async def prepare(self) -> None:
         if self.base_path.exists():
             has_files = list(self.base_path.iterdir())
             has_index = self.base_path.joinpath('index.html').exists()
@@ -49,7 +57,11 @@ class FileSaver(Saver):
             
             compat.rmtree(self.base_path, onexc=self.add_write_flag)
 
-    async def save_to_filename(self, filename, content_iterable):
+    async def save_to_filename(
+        self,
+        filename: PurePosixPath,
+        content_iterable: Iterable[bytes],
+    ) -> None:
         absolute_filename = self.base_path / filename
         assert self.base_path in absolute_filename.parents
 
@@ -60,13 +72,13 @@ class FileSaver(Saver):
             for item in content_iterable:
                 await loop.run_in_executor(None, f.write, item)
 
-    async def open_filename(self, filename):
+    async def open_filename(self, filename: PurePosixPath) -> BinaryIO:
         absolute_filename = self.base_path / filename
         assert self.base_path in absolute_filename.parents
 
         return open(absolute_filename, 'rb')
 
-    async def finish(self, success: bool, cleanup: bool):
+    async def finish(self, success: bool, cleanup: bool) -> None:
         """Delete incomplete directory after a failed freeze."""
         if not success and cleanup and self.base_path.exists():
             compat.rmtree(self.base_path)
