@@ -445,6 +445,7 @@ class Freezer:
                     reason="from extra_files",
                 )
             elif kind == 'path':
+                assert isinstance(content_or_path, Path)
                 for part in get_url_parts_from_directory(
                     url_part, content_or_path
                 ):
