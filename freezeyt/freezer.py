@@ -290,7 +290,7 @@ class Freezer:
             output = {'type': 'dir', 'dir': output}
 
         if output['type'] == 'dict':
-            self.saver = DictSaver(self.prefix)
+            self.saver = DictSaver()
         elif output['type'] == 'dir':
             try:
                 output_dir = output['dir']
