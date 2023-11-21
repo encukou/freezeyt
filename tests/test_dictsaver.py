@@ -23,18 +23,14 @@ def test_save_file(success, cleanup):
     }
 
 
-@pytest.mark.parametrize('cleanup', (True, False))
-@pytest.mark.parametrize('success', (True, False))
-def test_open_root(success, cleanup):
+def test_open_root():
     saver = DictSaver()
 
     with pytest.raises(IsADirectoryError) as err_info:
         asyncio_run(saver.open_filename(PurePosixPath('')))
     assert str(err_info.value) == '.'
 
-@pytest.mark.parametrize('cleanup', (True, False))
-@pytest.mark.parametrize('success', (True, False))
-def test_absolute(success, cleanup):
+def test_absolute():
     saver = DictSaver()
     with pytest.raises(ValueError):
         asyncio_run(saver.open_filename(PurePosixPath('/')))
@@ -46,9 +42,7 @@ def test_absolute(success, cleanup):
         asyncio_run(saver.save_to_filename(PurePosixPath('/a/b/c'), []))
 
 
-@pytest.mark.parametrize('cleanup', (True, False))
-@pytest.mark.parametrize('success', (True, False))
-def test_open_file(success, cleanup):
+def test_open_file():
     saver = DictSaver()
     asyncio_run(saver.save_to_filename(PurePosixPath('test.txt'), [b'text']))
 
@@ -56,9 +50,7 @@ def test_open_file(success, cleanup):
     assert file.read() == b'text'
 
 
-@pytest.mark.parametrize('cleanup', (True, False))
-@pytest.mark.parametrize('success', (True, False))
-def test_open_dir(success, cleanup):
+def test_open_dir():
     saver = DictSaver()
     asyncio_run(saver.save_to_filename(PurePosixPath('d/test.txt'), [b'text']))
 
@@ -72,9 +64,7 @@ def test_open_dir(success, cleanup):
 
 
 
-@pytest.mark.parametrize('cleanup', (True, False))
-@pytest.mark.parametrize('success', (True, False))
-def test_open_file_in_file(success, cleanup):
+def test_open_file_in_file():
     saver = DictSaver()
     asyncio_run(saver.save_to_filename(PurePosixPath('d/test.txt'), [b'text']))
 
@@ -84,9 +74,7 @@ def test_open_file_in_file(success, cleanup):
 
 
 
-@pytest.mark.parametrize('cleanup', (True, False))
-@pytest.mark.parametrize('success', (True, False))
-def test_open_missing_file(success, cleanup):
+def test_open_missing_file():
     saver = DictSaver()
     asyncio_run(saver.save_to_filename(PurePosixPath('d/test.txt'), [b'text']))
 
@@ -164,9 +152,7 @@ def test_overwrite(success, cleanup):
     }
 
 
-@pytest.mark.parametrize('cleanup', (True, False))
-@pytest.mark.parametrize('success', (True, False))
-def test_save_dir_to_file(success, cleanup):
+def test_save_dir_to_file():
     saver = DictSaver()
     asyncio_run(saver.save_to_filename(PurePosixPath('t'), [b't']))
     with pytest.raises(NotADirectoryError) as err_info:
@@ -174,9 +160,7 @@ def test_save_dir_to_file(success, cleanup):
     assert str(err_info.value) == 't/x'
 
 
-@pytest.mark.parametrize('cleanup', (True, False))
-@pytest.mark.parametrize('success', (True, False))
-def test_save_file_to_dir(success, cleanup):
+def test_save_file_to_dir():
     saver = DictSaver()
     asyncio_run(saver.save_to_filename(PurePosixPath('t/f'), [b'f']))
     with pytest.raises(IsADirectoryError):
