@@ -33,6 +33,7 @@ from freezeyt.middleware import Middleware
 from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
+from freezeyt.types import Config, SaverResult
 
 
 MAX_RUNNING_TASKS = 100
@@ -42,11 +43,14 @@ MAX_RUNNING_TASKS = 100
 STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
-def freeze(app: Optional[WSGIApplication], config):
+def freeze(app: Optional[WSGIApplication], config: Config) -> SaverResult:
     return asyncio_run(freeze_async(app, config))
 
 
-async def freeze_async(app: Optional[WSGIApplication], config):
+async def freeze_async(
+    app: Optional[WSGIApplication],
+    config: Config,
+) -> SaverResult:
     freezer = Freezer(app, config)
     try:
         await freezer.prepare()
@@ -205,13 +209,15 @@ class Freezer:
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
 
-    def __init__(self, app: Optional[WSGIApplication], config: dict):
-        self.config = config
+    def __init__(self, app: Optional[WSGIApplication], config: Config):
+        self.config = dict(config)
+        del config  # we always want to use `self.config` from now on
+
         self.check_version(self.config.get('version'))
 
         self.freeze_info = hooks.FreezeInfo(self)
 
-        app_config = config.get('app')
+        app_config = self.config.get('app')
         if app is None:
             if app_config is None:
                 raise ValueError("Application is required")
@@ -229,16 +235,16 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
-        self.app = Middleware(app, config)
+        self.app = Middleware(app, self.config)
 
         self.fail_fast = self.config.get('fail_fast', False)
 
         if self.config.get("gh_pages", False):
-            plugins = config.setdefault('plugins', [])
+            plugins = self.config.setdefault('plugins', [])
             if 'freezeyt.plugins:GHPagesPlugin' not in plugins:
                 plugins.append('freezeyt.plugins:GHPagesPlugin')
         if self.config.get("gh_pages", False) is False:
-            plugins = config.setdefault('plugins', [])
+            plugins = self.config.setdefault('plugins', [])
             if 'freezeyt.plugins:GHPagesPlugin' in plugins:
                 plugins.remove('freezeyt.plugins:GHPagesPlugin')
 
@@ -247,23 +253,23 @@ class Freezer:
             ('url_to_path', default_url_to_path)
         )
         for attr_name, default in CONFIG_DATA:
-            setattr(self, attr_name, config.get(attr_name, default))
+            setattr(self, attr_name, self.config.get(attr_name, default))
 
         if isinstance(self.url_to_path, str):
             self.url_to_path = import_variable_from_module(self.url_to_path)
 
-        if config.get('use_default_url_finders', True):
+        if self.config.get('use_default_url_finders', True):
             _url_finders = dict(
-                DEFAULT_URL_FINDERS, **config.get('url_finders', {})
+                DEFAULT_URL_FINDERS, **self.config.get('url_finders', {})
             )
         else:
-            _url_finders = config.get('url_finders', {})
+            _url_finders = self.config.get('url_finders', {})
 
         self.url_finders = parse_handlers(
             _url_finders, default_module='freezeyt.url_finders'
         )
 
-        _status_handlers = config.get('status_handlers', {})
+        _status_handlers = self.config.get('status_handlers', {})
         for key in _status_handlers:
             if not STATUS_KEY_RE.fullmatch(key):
                 raise ValueError(
@@ -275,7 +281,7 @@ class Freezer:
             _status_handlers, default_module='freezeyt.actions'
         )
 
-        prefix = config.get('prefix', 'http://localhost:8000/')
+        prefix = self.config.get('prefix', 'http://localhost:8000/')
 
         # Decode path in the prefix URL.
         # Save the parsed version of prefix as self.prefix
@@ -285,7 +291,7 @@ class Freezer:
             raise ValueError('prefix must end with /')
         self.prefix = prefix_parsed._replace(path=decoded_path)
 
-        output = config['output']
+        output = self.config['output']
         if isinstance(output, str):
             output = {'type': 'dir', 'dir': output}
 
@@ -320,13 +326,13 @@ class Freezer:
             )
 
         self.hooks = {}
-        for name, funcs in config.get('hooks', {}).items():
+        for name, funcs in self.config.get('hooks', {}).items():
             for func in funcs:
                 if isinstance(func, str):
                     func = import_variable_from_module(func)
                 self.add_hook(name, func)
 
-        for plugin in config.get('plugins', {}):
+        for plugin in self.config.get('plugins', {}):
             if isinstance(plugin, str):
                 plugin = import_variable_from_module(plugin)
             plugin(self.freeze_info)

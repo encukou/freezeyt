@@ -42,6 +42,8 @@ def test_func_to_dict(tmp_path):
 
     result = freeze(app, config)
 
+    assert result is not None
+
     print(result)
     assert sorted(result) == [
         '.nojekyll', 'CNAME', 'bin_range.dat', 'config',
