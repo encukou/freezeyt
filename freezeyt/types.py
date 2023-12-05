@@ -1,4 +1,4 @@
-from typing import NewType, Mapping, Any, Union, Dict, TYPE_CHECKING, Tuple
+from typing import NewType, Mapping, Any, Union, TYPE_CHECKING, Tuple
 from typing import List
 from types import TracebackType
 import urllib.parse
