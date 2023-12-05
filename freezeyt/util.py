@@ -1,7 +1,7 @@
 import importlib
 import concurrent.futures
 import urllib.parse
-from typing import Sequence, TYPE_CHECKING
+from typing import Sequence, TYPE_CHECKING, List, Optional
 
 from werkzeug.urls import uri_to_iri
 
@@ -12,6 +12,7 @@ from freezeyt.types import AbsoluteURL
 
 if TYPE_CHECKING:
     from freezeyt.hooks import TaskInfo
+    from freezeyt.freezer import Task
 
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
@@ -19,9 +20,11 @@ process_pool_executor = concurrent.futures.ProcessPoolExecutor()
 
 class InfiniteRedirection(Exception):
     """Infinite redirection was detected with redirect_policy='follow'"""
-    def __init__(self, task):
+    def __init__(self, task: 'Task'):
+        redirects_to = task.redirects_to
+        assert redirects_to is not None
         super().__init__(
-            f'{task.get_a_url()} redirects to {task.redirects_to.get_a_url()},'
+            f'{task.get_a_url()} redirects to {redirects_to.get_a_url()},'
             + ' which was not frozen (most likely because of infinite redirection)'
         )
 
@@ -36,7 +39,7 @@ class UnsupportedSchemeError(ValueError):
 
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
-    def __init__(self, url, status):
+    def __init__(self, url: AbsoluteURL, status: str):
         self.url = urllib.parse.urlunsplit(url)
         self.status = status
         message = str(status)
@@ -44,7 +47,7 @@ class UnexpectedStatus(ValueError):
 
 class WrongMimetypeError(ValueError):
     """MIME type does not match file extension"""
-    def __init__(self, expected, got, url_path):
+    def __init__(self, expected: List[str], got: str, url_path: str):
         super().__init__(
             f"Content-type {got!r} is different from allowed MIME types {expected}"
             + f" guessed from '{url_path}'"
@@ -168,7 +171,11 @@ def urljoin(url: AbsoluteURL, link_text: str) -> AbsoluteURL:
 
 
 def import_variable_from_module(
-    name, *, default_module_name=None, default_variable_name=None):
+    name: str,
+    *,
+    default_module_name: Optional[str] = None,
+    default_variable_name: Optional[str] = None,
+):
     """Import a variable from a named module
 
     Given a name like "package.module:namespace.variable":

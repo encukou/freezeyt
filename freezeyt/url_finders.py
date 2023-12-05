@@ -10,9 +10,10 @@ from werkzeug.http import parse_options_header
 
 from . import compat
 from .util import process_pool_executor
+from .types import WSGIHeaderList
 
 
-_Headers = Optional[List[Tuple[str, str]]]
+_Headers = Optional[WSGIHeaderList]
 UrlFinder = Callable[
     [BinaryIO, str, _Headers],
     Union[Iterable[str], Coroutine[Any, Any, Iterable[str]]],
