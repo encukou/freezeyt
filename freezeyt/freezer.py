@@ -77,18 +77,23 @@ def parse_handlers(
     handlers: Mapping[K, Union[str, Func]],
     default_module: Optional[str]=None
 ) -> Dict[K, Func]:
+    """Map handler/action as callable
+    """
     result = {}
+
     for key, handler_or_name in handlers.items():
         if isinstance(handler_or_name, str):
             handler = import_variable_from_module(
-                handler_or_name, default_module_name=default_module
+                handler_or_name,
+                default_module_name=default_module
             )
         else:
             handler = handler_or_name
+
         if not callable(handler):
             raise TypeError(
-                "Handler for {key!r} in configuration must be a string or a callable,"
-                + f" not {type(handler)}!"
+                "Handler/Action for {key!r} in configuration must be"
+                + f"a string or a callable, not a {type(handler)}!"
             )
 
         result[key] = handler
