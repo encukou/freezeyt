@@ -461,10 +461,12 @@ class Freezer:
                         urljoin(self.prefix, part),
                         reason="from extra_files",
                     )
+            else:
+                raise ValueError(kind)
         self._add_extra_pages(self.prefix, self.extra_pages)
 
         # and at the end prepare the saver
-        await self.saver.prepare()
+        return await self.saver.prepare()
 
     def start_response(
         self, task, url, wsgi_write, status, headers, exc_info=None,
