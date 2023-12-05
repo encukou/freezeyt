@@ -102,7 +102,7 @@ def default_url_to_path(path: str) -> str:
 
 
 def get_path_from_url(
-    prefix: AbsoluteURL, url: AbsoluteURL, url_to_path,
+    prefix: AbsoluteURL, url: AbsoluteURL, url_to_path: Callable[[str], str],
 ) -> PurePosixPath:
     """Return the disk path to which `url` should be saved.
 
@@ -119,9 +119,7 @@ def get_path_from_url(
     if path.startswith(prefix.path):
         path = path[len(prefix.path):]
 
-    result = url_to_path(path)
-
-    result = PurePosixPath(result)
+    result = PurePosixPath(url_to_path(path))
 
     if result.is_absolute():
         url_text = urllib.parse.urlunsplit(url)
@@ -154,7 +152,7 @@ class Task:
     reasons: set = dataclasses.field(default_factory=set)
     asyncio_task: "Optional[asyncio.Task]" = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Task for {self.path}, {self.status.name}>"
 
     def get_a_url(self) -> AbsoluteURL:
@@ -204,7 +202,7 @@ class Freezer:
     failed_tasks: TaskCollection
     extra_pages: ExtraPagesConfig
     hooks: Dict[str, List[Callable]]
-    url_to_path: Union[str, Callable[[str], str]]
+    url_to_path: Callable[[str], str]
 
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
@@ -340,7 +338,7 @@ class Freezer:
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
 
-    def check_version(self, config_version):
+    def check_version(self, config_version: Union[str, float, None]) -> None:
         if config_version is None:
             return
         if not isinstance(config_version, float):
@@ -352,10 +350,10 @@ class Freezer:
         if main_version != current_version:
             raise VersionMismatch("The specified version does not match the freezeyt main version.")
 
-    def add_hook(self, hook_name, func):
+    def add_hook(self, hook_name: str, func: Callable) -> None:
         self.hooks.setdefault(hook_name, []).append(func)
 
-    async def cancel_tasks(self):
+    async def cancel_tasks(self) -> None:
         cancelled_atasks = []
         while self.inprogress_tasks:
             path, task = self.inprogress_tasks.popitem()
@@ -368,7 +366,7 @@ class Freezer:
             except asyncio.CancelledError:
                 pass
 
-    async def finish(self):
+    async def finish(self) -> SaverResult:
         success = not self.failed_tasks
         cleanup = self.config.get("cleanup", True)
         result = await self.saver.finish(success, cleanup)
@@ -436,7 +434,7 @@ class Freezer:
             task.reasons.add(reason)
         return task
 
-    async def prepare(self):
+    async def prepare(self) -> None:
         """Preparatory method for creating tasks and preparing the saver."""
         # prepare the tasks
         self.add_task(self.prefix, reason='site root (homepage)')
