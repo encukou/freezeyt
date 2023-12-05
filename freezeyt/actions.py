@@ -7,17 +7,26 @@ ActionFunction = Callable[[TaskInfo], str]
 
 
 def warn(task: TaskInfo) -> str:
+    url = task.get_a_url()
+    response_status = task._task.response_status
+    if response_status is None:
+        raise ValueError(
+            f'warn() called on {url} which is not being saved yet')
     task._freezer.warnings.append(
-        f"URL {task.get_a_url()},"
-        + f" status code: {task._task.response_status[:3]} was freezed"
+        f"URL {url},"
+        + f" status code: {response_status[:3]} was freezed"
     )
 
     return 'save'
 
 
 def follow(task: TaskInfo) -> str:
-    location = task._task.response_headers['Location']
-    location = urljoin(task._task.get_a_url(), location)
+    url = task._task.get_a_url()
+    response_headers = task._task.response_headers
+    if response_headers is None:
+        raise ValueError(
+            f'follow() called on {url} which is not being saved yet')
+    location = urljoin(url, response_headers['Location'])
 
     target_task = task._freezer.add_task(
         location,
