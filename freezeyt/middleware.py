@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Callable
 import io
 
 from werkzeug.wrappers import Response
@@ -10,10 +10,11 @@ from werkzeug.utils import send_file
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
 from freezeyt.extra_files import get_extra_files
+from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
 
 
 class Middleware:
-    def __init__(self, app: WSGIApplication, config):
+    def __init__(self, app: WSGIApplication, config: Config):
         self.app = app
         self.mimetype_checker = MimetypeChecker(config)
         self.url_map = Map()
@@ -128,14 +129,21 @@ class Middleware:
                 response = NotFound()
             return response(environ, server_start_response)
 
-        def mw_start_response(status, headers, exc_info=None):
+        def mw_start_response(
+            status: str,
+            headers: WSGIHeaderList,
+            exc_info: WSGIExceptionInfo = None,
+        ) -> Callable[[bytes], object]:
             result = server_start_response(status, headers, exc_info)
             self.mimetype_checker.check(path_info, headers)
             return result
 
         return self.app(environ, mw_start_response)
 
-    def  handle_non_get(self, environ, server_start_response):
+    def handle_non_get(
+        self, environ: WSGIEnvironment,
+        server_start_response: StartResponse,
+    ) -> Iterable[bytes]:
         # Handle requests other than GET. These can't come from Freezeyt.
         if not self.static_mode:
             # Normally, pass all other requests to the app unchanged.
@@ -164,7 +172,7 @@ class Middleware:
             # MDN, some browsers misinterpret that, so '200' is safer.)
             server_start_response(
                 '200 No Content',
-                {'Allow': 'GET, HEAD, OPTIONS'},
+                [('Allow', 'GET, HEAD, OPTIONS')],
             )
             return []
         else:
