@@ -5,7 +5,7 @@ import itertools
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, List, TypeVar
+from typing import Tuple, List, TypeVar, Any
 import enum
 import asyncio
 import inspect
@@ -33,6 +33,8 @@ from freezeyt.middleware import Middleware
 from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
+from freezeyt.types import Config, SaverResult, WSGIHeaderList
+from freezeyt.types import WSGIExceptionInfo
 
 
 MAX_RUNNING_TASKS = 100
@@ -42,11 +44,14 @@ MAX_RUNNING_TASKS = 100
 STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
-def freeze(app: Optional[WSGIApplication], config):
+def freeze(app: Optional[WSGIApplication], config: Config) -> SaverResult:
     return asyncio_run(freeze_async(app, config))
 
 
-async def freeze_async(app: Optional[WSGIApplication], config):
+async def freeze_async(
+    app: Optional[WSGIApplication],
+    config: Config,
+) -> SaverResult:
     freezer = Freezer(app, config)
     try:
         await freezer.prepare()
@@ -98,7 +103,7 @@ def default_url_to_path(path: str) -> str:
 
 
 def get_path_from_url(
-    prefix: AbsoluteURL, url: AbsoluteURL, url_to_path,
+    prefix: AbsoluteURL, url: AbsoluteURL, url_to_path: Callable[[str], str],
 ) -> PurePosixPath:
     """Return the disk path to which `url` should be saved.
 
@@ -115,9 +120,7 @@ def get_path_from_url(
     if path.startswith(prefix.path):
         path = path[len(prefix.path):]
 
-    result = url_to_path(path)
-
-    result = PurePosixPath(result)
+    result = PurePosixPath(url_to_path(path))
 
     if result.is_absolute():
         url_text = urllib.parse.urlunsplit(url)
@@ -150,7 +153,7 @@ class Task:
     reasons: set = dataclasses.field(default_factory=set)
     asyncio_task: "Optional[asyncio.Task]" = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Task for {self.path}, {self.status.name}>"
 
     def get_a_url(self) -> AbsoluteURL:
@@ -200,18 +203,21 @@ class Freezer:
     failed_tasks: TaskCollection
     extra_pages: ExtraPagesConfig
     hooks: Dict[str, List[Callable]]
-    url_to_path: Union[str, Callable[[str], str]]
+    url_to_path: Callable[[str], str]
+    fail_fast: bool
 
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
 
-    def __init__(self, app: Optional[WSGIApplication], config: dict):
-        self.config = config
+    def __init__(self, app: Optional[WSGIApplication], config: Config):
+        self.config = dict(config)
+        del config  # we always want to use `self.config` from now on
+
         self.check_version(self.config.get('version'))
 
         self.freeze_info = hooks.FreezeInfo(self)
 
-        app_config = config.get('app')
+        app_config = self.config.get('app')
         if app is None:
             if app_config is None:
                 raise ValueError("Application is required")
@@ -229,16 +235,16 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
-        self.app = Middleware(app, config)
+        self.app = Middleware(app, self.config)
 
         self.fail_fast = self.config.get('fail_fast', False)
 
         if self.config.get("gh_pages", False):
-            plugins = config.setdefault('plugins', [])
+            plugins = self.config.setdefault('plugins', [])
             if 'freezeyt.plugins:GHPagesPlugin' not in plugins:
                 plugins.append('freezeyt.plugins:GHPagesPlugin')
         if self.config.get("gh_pages", False) is False:
-            plugins = config.setdefault('plugins', [])
+            plugins = self.config.setdefault('plugins', [])
             if 'freezeyt.plugins:GHPagesPlugin' in plugins:
                 plugins.remove('freezeyt.plugins:GHPagesPlugin')
 
@@ -247,23 +253,23 @@ class Freezer:
             ('url_to_path', default_url_to_path)
         )
         for attr_name, default in CONFIG_DATA:
-            setattr(self, attr_name, config.get(attr_name, default))
+            setattr(self, attr_name, self.config.get(attr_name, default))
 
         if isinstance(self.url_to_path, str):
             self.url_to_path = import_variable_from_module(self.url_to_path)
 
-        if config.get('use_default_url_finders', True):
+        if self.config.get('use_default_url_finders', True):
             _url_finders = dict(
-                DEFAULT_URL_FINDERS, **config.get('url_finders', {})
+                DEFAULT_URL_FINDERS, **self.config.get('url_finders', {})
             )
         else:
-            _url_finders = config.get('url_finders', {})
+            _url_finders = self.config.get('url_finders', {})
 
         self.url_finders = parse_handlers(
             _url_finders, default_module='freezeyt.url_finders'
         )
 
-        _status_handlers = config.get('status_handlers', {})
+        _status_handlers = self.config.get('status_handlers', {})
         for key in _status_handlers:
             if not STATUS_KEY_RE.fullmatch(key):
                 raise ValueError(
@@ -275,7 +281,7 @@ class Freezer:
             _status_handlers, default_module='freezeyt.actions'
         )
 
-        prefix = config.get('prefix', 'http://localhost:8000/')
+        prefix = self.config.get('prefix', 'http://localhost:8000/')
 
         # Decode path in the prefix URL.
         # Save the parsed version of prefix as self.prefix
@@ -285,7 +291,7 @@ class Freezer:
             raise ValueError('prefix must end with /')
         self.prefix = prefix_parsed._replace(path=decoded_path)
 
-        output = config['output']
+        output = self.config['output']
         if isinstance(output, str):
             output = {'type': 'dir', 'dir': output}
 
@@ -320,13 +326,13 @@ class Freezer:
             )
 
         self.hooks = {}
-        for name, funcs in config.get('hooks', {}).items():
+        for name, funcs in self.config.get('hooks', {}).items():
             for func in funcs:
                 if isinstance(func, str):
                     func = import_variable_from_module(func)
                 self.add_hook(name, func)
 
-        for plugin in config.get('plugins', {}):
+        for plugin in self.config.get('plugins', {}):
             if isinstance(plugin, str):
                 plugin = import_variable_from_module(plugin)
             plugin(self.freeze_info)
@@ -334,7 +340,7 @@ class Freezer:
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
 
-    def check_version(self, config_version):
+    def check_version(self, config_version: Union[str, float, None]) -> None:
         if config_version is None:
             return
         if not isinstance(config_version, float):
@@ -346,10 +352,10 @@ class Freezer:
         if main_version != current_version:
             raise VersionMismatch("The specified version does not match the freezeyt main version.")
 
-    def add_hook(self, hook_name, func):
+    def add_hook(self, hook_name: str, func: Callable) -> None:
         self.hooks.setdefault(hook_name, []).append(func)
 
-    async def cancel_tasks(self):
+    async def cancel_tasks(self) -> None:
         cancelled_atasks = []
         while self.inprogress_tasks:
             path, task = self.inprogress_tasks.popitem()
@@ -362,7 +368,7 @@ class Freezer:
             except asyncio.CancelledError:
                 pass
 
-    async def finish(self):
+    async def finish(self) -> SaverResult:
         success = not self.failed_tasks
         cleanup = self.config.get("cleanup", True)
         result = await self.saver.finish(success, cleanup)
@@ -395,7 +401,10 @@ class Freezer:
         task = self._add_task(url, external_ok=external_ok, reason=reason)
         if task and task.asyncio_task is None:
             coroutine = self.handle_one_task(task)
-            task.asyncio_task = asyncio_create_task(coroutine, name=task.path)
+            task.asyncio_task = asyncio_create_task(
+                coroutine,
+                name=str(task.path),
+            )
         return task
 
     def _add_task(
@@ -427,7 +436,7 @@ class Freezer:
             task.reasons.add(reason)
         return task
 
-    async def prepare(self):
+    async def prepare(self) -> None:
         """Preparatory method for creating tasks and preparing the saver."""
         # prepare the tasks
         self.add_task(self.prefix, reason='site root (homepage)')
@@ -442,6 +451,7 @@ class Freezer:
                     reason="from extra_files",
                 )
             elif kind == 'path':
+                assert isinstance(content_or_path, Path)
                 for part in get_url_parts_from_directory(
                     url_part, content_or_path
                 ):
@@ -453,14 +463,22 @@ class Freezer:
                         urljoin(self.prefix, part),
                         reason="from extra_files",
                     )
+            else:
+                raise ValueError(kind)
         self._add_extra_pages(self.prefix, self.extra_pages)
 
         # and at the end prepare the saver
-        await self.saver.prepare()
+        return await self.saver.prepare()
 
     def start_response(
-        self, task, url, wsgi_write, status, headers, exc_info=None,
-    ):
+        self,
+        task: Task,
+        url: AbsoluteURL,
+        wsgi_write: Func,
+        status: str,
+        headers: WSGIHeaderList,
+        exc_info: WSGIExceptionInfo = None,
+    ) -> Func:
         """WSGI start_response hook
 
         The application we are freezing will call this method
@@ -515,7 +533,11 @@ class Freezer:
             raise UnexpectedStatus(url, status)
 
 
-    def _add_extra_pages(self, prefix, extras: ExtraPagesConfig):
+    def _add_extra_pages(
+        self,
+        prefix: AbsoluteURL,
+        extras: ExtraPagesConfig,
+    ) -> None:
         """Add URLs of extra pages from config.
 
         Handles both literal URLs and generators.
@@ -545,7 +567,7 @@ class Freezer:
                 generator = extra
                 self._add_extra_pages(prefix, generator(self.app))
 
-    async def handle_urls(self):
+    async def handle_urls(self) -> None:
         while self.inprogress_tasks:
             # Get an item from self.inprogress_tasks.
             # Since this is a dict, we can't do self.inprogress_tasks[0];
@@ -693,7 +715,7 @@ class Freezer:
         self.call_hook('page_frozen', hooks.TaskInfo(task))
 
     @needs_semaphore
-    async def handle_redirects(self):
+    async def handle_redirects(self) -> None:
         """Save copies of target pages for redirect_policy='follow'"""
         while self.redirecting_tasks:
             saved_something = False
@@ -719,6 +741,6 @@ class Freezer:
                 for task in self.redirecting_tasks.values():
                     raise InfiniteRedirection(task)
 
-    def call_hook(self, hook_name, *arguments):
+    def call_hook(self, hook_name: str, *arguments: Any) -> None:
         for hook in self.hooks.get(hook_name, ()):
             hook(*arguments)

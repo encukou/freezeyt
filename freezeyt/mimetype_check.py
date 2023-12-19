@@ -1,6 +1,6 @@
 from mimetypes import guess_type
 import json
-from typing import Optional, List, Mapping, Dict
+from typing import Optional, List, Mapping, Dict, Callable
 import functools
 from pathlib import PurePosixPath
 
@@ -9,10 +9,16 @@ from werkzeug.http import parse_options_header
 
 from freezeyt.util import WrongMimetypeError
 from freezeyt.util import import_variable_from_module
+from freezeyt.types import Config, WSGIHeaderList
 
+
+GetMimetypeFunction = Callable[[str], Optional[List[str]]]
 
 class MimetypeChecker:
-    def __init__(self, config):
+    default_mimetype: str
+    get_mimetype: Callable[[str], List[str]]
+
+    def __init__(self, config: Config):
         self.default_mimetype = config.get(
             'default_mimetype', 'application/octet-stream')
         get_mimetype = config.get('get_mimetype', default_mimetype)
@@ -30,7 +36,7 @@ class MimetypeChecker:
 
         self.get_mimetype = get_mimetype
 
-    def check(self, url, headers):
+    def check(self, url: str, headers: WSGIHeaderList) -> None:
         check_mimetype(
             url,
             headers,
@@ -38,7 +44,7 @@ class MimetypeChecker:
             get_mimetype=self.get_mimetype,
         )
 
-    def guess_mimetype(self, url):
+    def guess_mimetype(self, url: str) -> str:
         """Return a single best guess of the mimetype for url"""
         types = self.get_mimetype(url)
         if types is None:
@@ -58,9 +64,12 @@ def default_mimetype(url: str) -> Optional[List[str]]:
 
 
 def check_mimetype(
-    url_path, headers,
-    default='application/octet-stream', *, get_mimetype=default_mimetype,
-):
+    url_path: str,
+    headers: WSGIHeaderList,
+    default: str = 'application/octet-stream',
+    *,
+    get_mimetype: GetMimetypeFunction = default_mimetype,
+) -> None:
     """Ensure mimetype sent from headers with file mimetype guessed
     from its suffix.
     Raise WrongMimetypeError if they don't match.
@@ -72,9 +81,8 @@ def check_mimetype(
     if file_mimetypes is None:
         file_mimetypes = [default]
 
-    headers = Headers(headers)
     headers_mimetype, encoding = parse_options_header(
-        headers.get('Content-Type')
+        Headers(headers).get('Content-Type')
     )
 
     if isinstance(file_mimetypes, str):

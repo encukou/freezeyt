@@ -5,6 +5,8 @@ build-backend = "setuptools.build_meta"
 [tool.mypy]
 
 check_untyped_defs = true
+disallow_incomplete_defs = true
+warn_redundant_casts = true
 exclude = "tests/fixtures/"
 
 [[tool.mypy.overrides]]

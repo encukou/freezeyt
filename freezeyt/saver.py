@@ -1,9 +1,11 @@
 import abc
 from pathlib import PurePosixPath
-from typing import BinaryIO, Any, Iterable
+from typing import BinaryIO, Iterable
+
+from freezeyt.types import SaverResult
 
 class Saver(abc.ABC):
-    async def prepare(self):
+    async def prepare(self) -> None:
         """Initialize the saver."""
 
     @abc.abstractmethod
@@ -21,7 +23,7 @@ class Saver(abc.ABC):
     ) -> BinaryIO:
         """Open the given path for reading bytes"""
 
-    async def finish(self, success: bool, cleanup: bool) -> Any:
+    async def finish(self, success: bool, cleanup: bool) -> SaverResult:
         """Clean up after a freeze and return the result, if any.
 
         success: true if the freeze was successful
