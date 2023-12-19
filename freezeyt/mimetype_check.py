@@ -69,7 +69,7 @@ def check_mimetype(
     default: str = 'application/octet-stream',
     *,
     get_mimetype: GetMimetypeFunction = default_mimetype,
-):
+) -> None:
     """Ensure mimetype sent from headers with file mimetype guessed
     from its suffix.
     Raise WrongMimetypeError if they don't match.

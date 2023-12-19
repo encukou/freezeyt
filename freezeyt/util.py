@@ -1,7 +1,7 @@
 import importlib
 import concurrent.futures
 import urllib.parse
-from typing import Sequence, TYPE_CHECKING, List, Optional
+from typing import Sequence, TYPE_CHECKING, List, Optional, Any
 
 from werkzeug.urls import uri_to_iri
 
@@ -175,7 +175,7 @@ def import_variable_from_module(
     *,
     default_module_name: Optional[str] = None,
     default_variable_name: Optional[str] = None,
-):
+) -> Any:
     """Import a variable from a named module
 
     Given a name like "package.module:namespace.variable":

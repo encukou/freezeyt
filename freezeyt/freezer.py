@@ -5,7 +5,7 @@ import itertools
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, List, TypeVar
+from typing import Tuple, List, TypeVar, Any
 import enum
 import asyncio
 import inspect
@@ -741,6 +741,6 @@ class Freezer:
                 for task in self.redirecting_tasks.values():
                     raise InfiniteRedirection(task)
 
-    def call_hook(self, hook_name: str, *arguments) -> None:
+    def call_hook(self, hook_name: str, *arguments: Any) -> None:
         for hook in self.hooks.get(hook_name, ()):
             hook(*arguments)

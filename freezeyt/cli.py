@@ -51,7 +51,7 @@ def main(
     cleanup: Optional[bool],
     gh_pages: Optional[str],
     fail_fast: Optional[bool],
-):
+) -> None:
     """
     APP
         Name of the Python web app module which will be frozen.
