@@ -1,6 +1,6 @@
 import abc
 from pathlib import PurePosixPath
-from typing import BinaryIO, Any, Iterable
+from typing import BinaryIO, Iterable
 
 from freezeyt.types import SaverResult
 
