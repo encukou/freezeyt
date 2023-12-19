@@ -204,6 +204,7 @@ class Freezer:
     extra_pages: ExtraPagesConfig
     hooks: Dict[str, List[Callable]]
     url_to_path: Callable[[str], str]
+    fail_fast: bool
 
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]

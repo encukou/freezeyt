@@ -15,6 +15,9 @@ from freezeyt.types import Config, WSGIHeaderList
 GetMimetypeFunction = Callable[[str], Optional[List[str]]]
 
 class MimetypeChecker:
+    default_mimetype: str
+    get_mimetype: Callable[[str], List[str]]
+
     def __init__(self, config: Config):
         self.default_mimetype = config.get(
             'default_mimetype', 'application/octet-stream')

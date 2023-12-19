@@ -27,12 +27,9 @@ else:
     WSGIApplication = typing.Any
 
 
-def asyncio_run(awaitable):
-    """asyncio.run for Python 3.6"""
-    try:
-        aio_run = asyncio.run
-    except AttributeError:
-        # Python 3.6
+if sys.version_info < (3, 7):
+    def asyncio_run(awaitable):
+        """asyncio.run for Python 3.6"""
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(awaitable)
         # We should also call loop.close() here, but that would mean
@@ -41,8 +38,8 @@ def asyncio_run(awaitable):
         # * in our own tests.
         # So, we cheat a bit and don't call close().
         # (Python 3.6 support is ending soon, anyway.)
-    else:
-        return aio_run(awaitable)
+else:
+    asyncio_run = asyncio.run
 
 
 def asyncio_create_task(
