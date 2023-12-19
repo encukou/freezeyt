@@ -1,15 +1,12 @@
 import os
 import stat
-from typing import BinaryIO, Union, Iterable, Callable, TypeVar
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from . import compat
 from .saver import Saver
 from .types import AbsoluteURL
 
-
-StrPath = Union[str, 'os.PathLike[str]']
-T = TypeVar('T')
+from typing import Callable, Iterable, BinaryIO
 
 
 class DirectoryExistsError(Exception):
@@ -25,10 +22,10 @@ class FileSaver(Saver):
     """
     @staticmethod
     def add_write_flag(
-        function: Callable[[str], T],
+        function: Callable[[str], None],
         path: str,
         exception: BaseException,
-    ) -> T:
+    ) -> None:
         """A function that adds a write attribute/flag for a path where such an attribute is missing. This function is not necessary on Linux, but on Windows, attempting to delete a file where such an attribute is missing will raise an exception.
 
         Function parameters are:
@@ -62,7 +59,7 @@ class FileSaver(Saver):
 
     async def save_to_filename(
         self,
-        filename: StrPath,
+        filename: PurePosixPath,
         content_iterable: Iterable[bytes],
     ) -> None:
         absolute_filename = self.base_path / filename
@@ -75,7 +72,7 @@ class FileSaver(Saver):
             for item in content_iterable:
                 await loop.run_in_executor(None, f.write, item)
 
-    async def open_filename(self, filename: StrPath) -> BinaryIO:
+    async def open_filename(self, filename: PurePosixPath) -> BinaryIO:
         absolute_filename = self.base_path / filename
         assert self.base_path in absolute_filename.parents
 

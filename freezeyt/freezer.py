@@ -24,7 +24,7 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, urljoin
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
-from freezeyt.util import UnexpectedStatus, MultiError
+from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.compat import ParamSpec, Concatenate
@@ -34,8 +34,8 @@ from freezeyt.middleware import Middleware
 from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
-from freezeyt.types import Config, SaverResult, AbsoluteURL
-from freezeyt.types import WSGIExceptionInfo, WSGIHeaderList
+from freezeyt.types import Config, SaverResult, WSGIHeaderList
+from freezeyt.types import WSGIExceptionInfo
 
 
 MAX_RUNNING_TASKS = 100
@@ -50,7 +50,8 @@ def freeze(app: Optional[WSGIApplication], config: Config) -> SaverResult:
 
 
 async def freeze_async(
-    app: Optional[WSGIApplication], config: Config
+    app: Optional[WSGIApplication],
+    config: Config,
 ) -> SaverResult:
     freezer = Freezer(app, config)
     try:
@@ -121,9 +122,7 @@ def get_path_from_url(
     if path.startswith(prefix.path):
         path = path[len(prefix.path):]
 
-    result_str = url_to_path(path)
-
-    result = PurePosixPath(result_str)
+    result = PurePosixPath(url_to_path(path))
 
     if result.is_absolute():
         url_text = urllib.parse.urlunsplit(url)
@@ -211,10 +210,10 @@ class Freezer:
     extra_pages: ExtraPagesConfig
     hooks: Dict[str, List[Callable]]
     url_to_path: Callable[[str], str]
+    fail_fast: bool
 
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
-    fail_fast: bool
 
     def __init__(self, app: Optional[WSGIApplication], config: Config):
         self.config = dict(config)
@@ -303,7 +302,7 @@ class Freezer:
             output = {'type': 'dir', 'dir': output}
 
         if output['type'] == 'dict':
-            self.saver = DictSaver(self.prefix)
+            self.saver = DictSaver()
         elif output['type'] == 'dir':
             try:
                 output_dir = output['dir']
@@ -347,7 +346,7 @@ class Freezer:
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
 
-    def check_version(self, config_version: Union[float, str, None]) -> None:
+    def check_version(self, config_version: Union[str, float, None]) -> None:
         if config_version is None:
             return
         if not isinstance(config_version, float):
@@ -410,7 +409,7 @@ class Freezer:
             coroutine = self.handle_one_task(task)
             task.asyncio_task = asyncio_create_task(
                 coroutine,
-                name=str(task.path)
+                name=str(task.path),
             )
         return task
 
@@ -453,7 +452,7 @@ class Freezer:
                 assert self.prefix.path.endswith('/')
                 assert not url_part.startswith('/')
                 url_part = self.prefix.path + url_part
-                self.add_task(\
+                self.add_task(
                     urljoin(self.prefix, url_part),
                     reason="from extra_files",
                 )
@@ -481,11 +480,11 @@ class Freezer:
         self,
         task: Task,
         url: AbsoluteURL,
-        wsgi_write: T,
+        wsgi_write: Func,
         status: str,
         headers: WSGIHeaderList,
         exc_info: WSGIExceptionInfo = None,
-    ) -> T:
+    ) -> Func:
         """WSGI start_response hook
 
         The application we are freezing will call this method
@@ -541,7 +540,9 @@ class Freezer:
 
 
     def _add_extra_pages(
-        self, prefix: AbsoluteURL, extras: ExtraPagesConfig
+        self,
+        prefix: AbsoluteURL,
+        extras: ExtraPagesConfig,
     ) -> None:
         """Add URLs of extra pages from config.
 

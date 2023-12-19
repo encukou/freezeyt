@@ -4,7 +4,9 @@
 import sys
 import asyncio
 import shutil
+from pathlib import Path
 from typing import TypeVar, Coroutine, Any, Optional
+from typing import Callable, Tuple
 
 __all__ = [
     'StartResponse', 'WSGIEnvironment', 'WSGIApplication',
@@ -17,6 +19,13 @@ __all__ = [
 ]
 
 T = TypeVar('T')
+
+
+if sys.version_info >= (3, 8):
+    from typing import Literal
+else:
+    from typing_extensions import Literal
+
 
 if sys.version_info >= (3, 11):
     import wsgiref.types
@@ -35,15 +44,7 @@ else:
     from typing_extensions import ParamSpec, Concatenate
 
 
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    from typing_extensions import Literal
-
-
-if sys.version_info >= (3, 7):
-    asyncio_run = asyncio.run
-else:
+if sys.version_info < (3, 7):
     def asyncio_run(awaitable):
         """asyncio.run for Python 3.6"""
         loop = asyncio.get_event_loop()
@@ -54,6 +55,8 @@ else:
         # * in our own tests.
         # So, we cheat a bit and don't call close().
         # (Python 3.6 support is ending soon, anyway.)
+else:
+    asyncio_run = asyncio.run
 
 
 def asyncio_create_task(
@@ -84,13 +87,25 @@ def get_running_loop() -> asyncio.AbstractEventLoop:
 if sys.version_info >= (3, 12):
     rmtree = shutil.rmtree
 else:
-    def rmtree(path, ignore_errors=False, onexc=None):
+    def rmtree(
+        path: Path,
+        ignore_errors: bool = False,
+        onexc: Optional[
+            Callable[
+                [Callable[[str], None], str, BaseException],
+            None]
+        ] = None,
+    ) -> None:
         if onexc is None:
             onerror = None
         else:
-            def onerror(function, path, exc_info):
-                return onexc(function, path, exc_info[1])
-        return shutil.rmtree(
+            def onerror(
+                function: Callable[[str], None],
+                path: str,
+                exc_info: Tuple,
+            ) -> None:
+                onexc(function, path, exc_info[1])
+        shutil.rmtree(
             path,
             ignore_errors=ignore_errors,
             onerror=onerror,

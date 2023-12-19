@@ -1,4 +1,5 @@
 from pathlib import PurePosixPath
+from typing import NoReturn
 
 import pytest
 
@@ -42,9 +43,9 @@ def test_files_with_same_signature(tmp_path):
         assert_dirs_same(dir1, dir2)
 
 
-async def create_failing_task():
+async def create_failing_task() -> Task:
     """Create a fake freezeyt task that failed with an AssertionError"""
-    async def fail():
+    async def fail() -> NoReturn:
         """coroutine that fails"""
         raise AssertionError()
     # Create an asyncio task

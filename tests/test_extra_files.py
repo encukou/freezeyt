@@ -41,7 +41,8 @@ def test_slashes(test_case):
 
     with context_for_test('app_simple') as module:
         result = freeze(module.app, config)
-        assert result is not None
+
+    assert result is not None
 
     # pop to simplify syntax of expected dict
     # index.html is root page for app_simple, not useful for this test
@@ -84,7 +85,8 @@ def test_dots(test_case):
 
     with context_for_test('app_simple') as module:
         result = freeze(module.app, config)
-        assert result is not None
+
+    assert result is not None
 
     # pop to simplify syntax of expected dict
     # index.html is root page for app_simple, not useful for this test
@@ -109,7 +111,8 @@ def test_quoted_url_path(test_case):
 
     with context_for_test('app_simple') as module:
         result = freeze(module.app, config)
-        assert result is not None
+
+    assert result is not None
 
     # pop to simplify syntax of expected dict
     # index.html is root page for app_simple, not useful for this test

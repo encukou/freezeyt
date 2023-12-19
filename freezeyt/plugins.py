@@ -70,34 +70,32 @@ class GHPagesPlugin:
         if not isinstance(freeze_info._freezer.saver, FileSaver):
             raise ValueError("When using the Github Pages plugin, you must save to a directory.")
         self.base_path = freeze_info._freezer.saver.base_path
-        prefix_host = freeze_info._freezer.prefix.hostname
-        assert prefix_host is not None
-        self.prefix_host = prefix_host
+        hostname = freeze_info._freezer.prefix.hostname
+        assert hostname is not None
+        self.prefix_host = hostname
         freeze_info.add_hook('success', self.github_pages)
 
     def github_pages(self, freeze_info: FreezeInfo) -> None:
         if self.base_path.exists():
             (self.base_path / "CNAME").write_text(self.prefix_host)
             (self.base_path / ".nojekyll").write_text("")
-            try:
-                def git_check_output(args: List[str]) -> None:
-                    check_output(
-                        args,
-                        stderr=STDOUT,
-                        cwd=self.base_path,
-                        env={
-                            "GIT_CONFIG_NOSYSTEM": "1",
-                            "GIT_AUTHOR_NAME": "gh_pages",
-                            "GIT_AUTHOR_EMAIL": "gh@mail.invalid",
-                            "GIT_COMMITTER_NAME": "gh_pages",
-                            "GIT_COMMITTER_EMAIL": "gh@mail.invalid"
-                        },
-                    )
-                git_check_output(["git", "init", "-b", "gh-pages"])
-                git_check_output(["git", "add", "."])
-                git_check_output(
-                    ["git", "commit", "-m", "added all freezed files"],
+            def run_git(command: List[str]) -> None:
+                check_output(
+                    command,
+                    stderr=STDOUT,
+                    cwd=self.base_path,
+                    env={
+                        "GIT_CONFIG_NOSYSTEM": "1",
+                        "GIT_AUTHOR_NAME": "gh_pages",
+                        "GIT_AUTHOR_EMAIL": "gh@mail.invalid",
+                        "GIT_COMMITTER_NAME": "gh_pages",
+                        "GIT_COMMITTER_EMAIL": "gh@mail.invalid",
+                    },
                 )
+            try:
+                run_git(["git", "init", "-b", "gh-pages"])
+                run_git(["git", "add", "."])
+                run_git(["git", "commit", "-m", "added all freezed files"])
             except CalledProcessError as e:
                 raise GitCommandError(f"""
                       Freezing was successful, but a problem occurs during the execution of one of commands for creating git gh-pages branch:

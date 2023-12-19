@@ -1,7 +1,7 @@
 import importlib
 import concurrent.futures
 import urllib.parse
-from typing import Sequence, TYPE_CHECKING, Optional, Any,  Collection, List
+from typing import Sequence, TYPE_CHECKING, List, Optional, Any, Collection
 
 from werkzeug.urls import uri_to_iri
 

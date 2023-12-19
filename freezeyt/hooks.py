@@ -3,6 +3,7 @@ import urllib.parse
 
 from freezeyt.util import parse_absolute_url
 
+
 if TYPE_CHECKING:
     from freezeyt.freezer import Freezer, Task
 

@@ -1,10 +1,15 @@
-from typing import NewType, Mapping, Any, Union, Tuple, List
+from typing import NewType, Mapping, Any, Union, TYPE_CHECKING, Tuple
+from typing import List
 from types import TracebackType
 import urllib.parse
 
+if TYPE_CHECKING:
+    from .dictsaver import DictSaverContents
+
+
 Config = Mapping[str, Any]
 
-SaverResult = Union[None, dict]
+SaverResult = Union[None, 'DictSaverContents']
 
 # An URL as used internally by Freezeyt.
 # Absolute IRI, with an explicit port if it's `http` or `https`

@@ -9,15 +9,14 @@ from werkzeug.http import parse_options_header
 
 from freezeyt.util import WrongMimetypeError
 from freezeyt.util import import_variable_from_module
-from freezeyt.types import WSGIHeaderList, Config
+from freezeyt.types import Config, WSGIHeaderList
 
 
 GetMimetypeFunction = Callable[[str], Optional[List[str]]]
 
-
 class MimetypeChecker:
-    get_mimetype: GetMimetypeFunction
     default_mimetype: str
+    get_mimetype: GetMimetypeFunction
 
     def __init__(self, config: Config):
         self.default_mimetype = config.get(
@@ -82,9 +81,8 @@ def check_mimetype(
     if file_mimetypes is None:
         file_mimetypes = [default]
 
-    headers_obj = Headers(headers)
     headers_mimetype, encoding = parse_options_header(
-        headers_obj.get('Content-Type')
+        Headers(headers).get('Content-Type')
     )
 
     if isinstance(file_mimetypes, str):

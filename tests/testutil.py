@@ -49,7 +49,7 @@ def assert_dirs_same(got: Path, expected: Path) -> None:
     assert_cmp_same(cmp)
 
 
-def assert_cmp_same(cmp):
+def assert_cmp_same(cmp: filecmp.dircmp) -> None:
     print('assert_cmp_same', cmp.left, cmp.right)
 
     if cmp.left_only:

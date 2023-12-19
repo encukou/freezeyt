@@ -10,7 +10,7 @@ from werkzeug.utils import send_file
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
 from freezeyt.extra_files import get_extra_files
-from freezeyt.types import Config, WSGIExceptionInfo, WSGIHeaderList
+from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
 
 
 class Middleware:
