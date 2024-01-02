@@ -16,7 +16,7 @@ GetMimetypeFunction = Callable[[str], Optional[List[str]]]
 
 class MimetypeChecker:
     default_mimetype: str
-    get_mimetype: Callable[[str], List[str]]
+    get_mimetype: GetMimetypeFunction
 
     def __init__(self, config: Config):
         self.default_mimetype = config.get(
