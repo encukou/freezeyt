@@ -47,6 +47,7 @@ class TaskInfo:
 
 class FreezeInfo:
     """Public information about a freezer"""
+
     def __init__(self, freezer: 'Freezer'):
         self._freezer = freezer
 
