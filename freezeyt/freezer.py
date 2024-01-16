@@ -177,6 +177,9 @@ class Task:
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
 
+class RedirectToSamePath(BaseException):
+    """Raised when a page redirects to url with same freezing path on disk as the page"""
+
 class IgnorePage(BaseException):
     """Raised when freezing a page should be ignored"""
 
@@ -515,8 +518,20 @@ class Freezer:
         task.response_status = status
 
         status_action = task.response_headers.get('Freezeyt-Action')
-        if not status_action:
+        location = task.response_headers.get('Location')
 
+        # handle redirecting back to source of the redirect
+        if status.startswith('3') and location is not None:
+            redirect_url = urljoin(url, location)
+            if not is_external(redirect_url, self.prefix):
+                redirect_path = get_path_from_url(
+                    self.prefix, redirect_url, self.url_to_path
+                )
+                # compare if source path and final path of redirect are same
+                if redirect_path == task.path:
+                    raise RedirectToSamePath()
+
+        if not status_action:
             # Get a handler for the particular status from configuration
             status_handler = self.status_handlers.get(status[:3])
 
