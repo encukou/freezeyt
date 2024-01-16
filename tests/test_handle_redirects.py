@@ -34,3 +34,27 @@ def test_redirect_to_itself_by_different_URL():
     assert result == expected
 
 
+def test_infinite_redirect_to_itself_by_different_URL():
+    app = Flask(__name__)
+
+    @app.route('/')
+    def index():
+        return Response(
+            "Redirecting to /index.html",
+            status='301 Moved Permanently',
+            headers=[('Location', url_for('index_html'))],
+        )
+
+    @app.route('/index.html')
+    def index_html():
+        return Response(
+            "Redirecting to /",
+            status='301 Moved Permanently',
+            headers=[('Location', url_for('index'))],
+        )
+
+    config = {'output': {'type': 'dict'}}
+
+    freeze(app, config)
+
+
