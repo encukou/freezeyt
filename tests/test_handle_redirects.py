@@ -92,3 +92,37 @@ def test_redirect_to_itself_by_different_URL_with_double_slash_hop():
     assert result == expected
 
 
+def test_redirect_to_itself_by_different_URL_with_query_hop():
+    app = Flask(__name__)
+
+    @app.route('/')
+    def index():
+        return Response(
+            "Redirecting to /?query=cats",
+            status='301 Moved Permanently',
+            headers=[('Location', url_for('index_query'))],
+    )
+
+    @app.route('/?query=cats')
+    def index_query():
+        return Response(
+            "Redirecting to /index.html",
+            status='301 Moved Permanently',
+            headers=[('Location', url_for('index_html'))],
+        )
+
+    @app.route('/index.html')
+    def index_html():
+        return "Hello world!"
+
+    config = {
+        'output': {'type': 'dict'},
+    }
+
+    result=freeze(app, config)
+
+    expected = {'index.html': b"Hello world!"}
+
+    assert result == expected
+
+
