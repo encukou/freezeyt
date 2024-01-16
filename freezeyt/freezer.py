@@ -274,7 +274,7 @@ class Freezer:
             if not STATUS_KEY_RE.fullmatch(key):
                 raise ValueError(
                     "Status description must be string with three digits (e.g. 200)"
-                    + " or as status group, one digit with 'xx' (e.g. 2xx),"
+                    + " or a status group, one digit with 'xx' (e.g. 2xx),"
                     + f" got f{key!r}"
                 )
 
