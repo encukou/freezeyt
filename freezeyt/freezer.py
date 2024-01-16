@@ -273,8 +273,9 @@ class Freezer:
         for key in _status_handlers:
             if not STATUS_KEY_RE.fullmatch(key):
                 raise ValueError(
-                    'Status descriptions must be strings with 3 digits or one '
-                    + f'digit and "xx", got f{key!r}'
+                    "Status description must be string with three digits (e.g. 200)"
+                    + " or a status group, one digit with 'xx' (e.g. 2xx),"
+                    + f" got f{key!r}"
                 )
 
         self.status_handlers = parse_handlers(
