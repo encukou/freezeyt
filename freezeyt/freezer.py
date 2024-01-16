@@ -13,6 +13,7 @@ import urllib.parse
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header
+import a2wsgi
 
 import freezeyt
 import freezeyt.actions
@@ -236,7 +237,7 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
-        self.app = Middleware(app, self.config)
+        self.app = a2wsgi.WSGIMiddleware(Middleware(app, self.config))
 
         self.fail_fast = self.config.get('fail_fast', False)
 
@@ -622,48 +623,71 @@ class Freezer:
 
             'freezeyt.freezing': True,
         }
+        scope = {
+            'type': "http" ,
+            'asgi': {
+                'version': '3.0',
+                'spec_version': '2.3',
+            },
+            'http_version': '2',
+            'method': 'GET',
+            'scheme': self.prefix.scheme,
+            'path': url_parsed.path,
+            #'raw_path':
+            'query_string': b'',
+            'root_path': self.prefix.path,
+            'headers': [
+                (b'host', b'localhost'),
+                (b'user-agent', b'freezeyt demo/0.0'),
+            ],
+            #client
+            'server': (self.prefix.hostname, self.prefix.port),
+            #state (Lifespan Protocol)
+        }
+        sent_request = False
+        async def receive():
+            """The app call this to receive the next event.
 
-        # The WSGI application can output data in two ways:
-        # - by a "write" function, which, in our case, will append
-        #   any data to a list, `wsgi_write_data`
-        # - (preferably) by returning an iterable object.
+            Freezeyt simulates a browser that connects once, sends no body,
+            and never disconnects.
+            """
+            nonlocal sent_request
+            if not sent_request:
+                sent_request = True
+                return {'type': "http.request"}
+            else:
+                # Wait forever
+                await asyncio.Future()
 
-        # See: https://www.python.org/dev/peps/pep-3333/#the-write-callable
+        done = asyncio.Future()
+        status = headers = None
+        result_body = []
+        async def send(event):
+            if done.done():
+                # After a more_body=False, all events should be ignored
+                return
+            nonlocal status, headers
+            if event['type'] == "http.response.start":
+                if status is not None:
+                    raise ValueError('Duplicate ASGI event "http.response.start"')
+                status = event['status']
+                headers = Headers(event['headers'])
+            elif event['type'] == "http.response.body":
+                result_body.append(event['body'])
+                if not event['more_body']:
+                    done.set_result(True)
 
-        # Set up the wsgi_write_data, and make its `append` method
-        # available to `start_response` as first argument:
-        wsgi_write_data: List[bytes] = []
-        start_response: StartResponse = functools.partial(
-            self.start_response,
-            task,
-            url,
-            wsgi_write_data.append,
-        )
-
-        # Call the application. All calls to write (wsgi_write_data.append)
-        # must be done as part of this call.
+        # Call the application.
         try:
-            result_iterable = self.app(environ, start_response)
+            app_task = asyncio.Task(self.app(scope, receive, send))
+            await app_task
         except IsARedirect:
             return
         except IgnorePage:
             task.update_status(TaskStatus.IN_PROGRESS, TaskStatus.DONE)
             return
 
-        try:
-            # Combine the list of data from write() with the returned
-            # iterable object.
-            full_result = itertools.chain(
-                wsgi_write_data,
-                result_iterable,
-            )
-
-            await self.saver.save_to_filename(task.path, full_result)
-
-        finally:
-            close = getattr(result_iterable, 'close', None)
-            if close is not None:
-                close()
+        await self.saver.save_to_filename(task.path, result_body)
 
         assert task.response_headers is not None
         finder_name = task.response_headers.get('Freezeyt-URL-Finder')
