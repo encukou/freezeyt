@@ -1,4 +1,4 @@
-from flask import Flask, Response, url_for
+from flask import Flask, redirect, url_for
 
 from freezeyt import freeze
 
@@ -15,11 +15,8 @@ def test_redirect_to_itself_by_different_URL():
 
     @app.route('/')
     def index():
-        return Response(
-        "Redirecting to /index.html",
-        status='301 Moved Permanently',
-        headers=[('Location', url_for('index_html'))],
-    )
+        """Redirecting to /index.html"""
+        return redirect(url_for('index_html'))
 
     @app.route('/index.html')
     def index_html():
@@ -39,19 +36,13 @@ def test_infinite_redirect_to_itself_by_different_URL():
 
     @app.route('/')
     def index():
-        return Response(
-            "Redirecting to /index.html",
-            status='301 Moved Permanently',
-            headers=[('Location', url_for('index_html'))],
-        )
+        """Redirecting to /index.html"""
+        return redirect(url_for('index_html'))
 
     @app.route('/index.html')
     def index_html():
-        return Response(
-            "Redirecting to /",
-            status='301 Moved Permanently',
-            headers=[('Location', url_for('index'))],
-        )
+        """Redirecting to /"""
+        return redirect(url_for('index'))
 
     config = {'output': {'type': 'dict'}}
 
@@ -63,19 +54,13 @@ def test_redirect_to_itself_by_different_URL_with_double_slash_hop():
 
     @app.route('/')
     def index():
-        return Response(
-            "Redirecting to //",
-            status='301 Moved Permanently',
-            headers=[('Location', url_for('index_double_slash'))],
-    )
+        """Redirecting to //"""
+        return redirect(url_for('index_double_slash'))
 
     @app.route('//')
     def index_double_slash():
-        return Response(
-            "Redirecting to /index.html",
-            status='301 Moved Permanently',
-            headers=[('Location', url_for('index_html'))],
-        )
+        """Redirecting to /index.html"""
+        return redirect(url_for('index_html'))
 
     @app.route('/index.html')
     def index_html():
@@ -97,19 +82,13 @@ def test_redirect_to_itself_by_different_URL_with_query_hop():
 
     @app.route('/')
     def index():
-        return Response(
-            "Redirecting to /?query=cats",
-            status='301 Moved Permanently',
-            headers=[('Location', url_for('index_query'))],
-    )
+        """Redirecting to /?query=cats"""
+        return redirect(url_for('index_query'))
 
     @app.route('/?query=cats')
     def index_query():
-        return Response(
-            "Redirecting to /index.html",
-            status='301 Moved Permanently',
-            headers=[('Location', url_for('index_html'))],
-        )
+        """Redirecting to /index.html"""
+        return redirect(url_for('index_html'))
 
     @app.route('/index.html')
     def index_html():
@@ -131,19 +110,13 @@ def test_redirect_to_itself_by_different_URL_with_hop():
 
     @app.route('/')
     def index():
-        return Response(
-        "Redirecting to /second_page.html",
-        status='301 Moved Permanently',
-        headers=[('Location', url_for('second_page'))],
-    )
+        """Redirecting to /second_page.html"""
+        return redirect(url_for('second_page'))
 
     @app.route('/second_page.html')
     def second_page():
-        return Response(
-            "Redirecting to /index.html",
-            status='301 Moved Permanently',
-            headers=[('Location', url_for('index_html'))],
-        )
+        """Redirecting to /index.html"""
+        return redirect(url_for('index_html'))
 
     @app.route('/index.html')
     def index_html():
