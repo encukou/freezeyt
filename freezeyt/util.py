@@ -2,6 +2,7 @@ import importlib
 import concurrent.futures
 import urllib.parse
 from typing import Sequence, TYPE_CHECKING, List, Optional, Any
+import enum
 
 from werkzeug.urls import uri_to_iri
 
@@ -84,6 +85,13 @@ class MultiError(_MultiErrorBase):
 
     def derive(self, excs):
         return MultiError([e._freezeyt_exception_task for e in excs])
+
+
+class TaskStatus(enum.Enum):
+    IN_PROGRESS = "Currently being handled"
+    REDIRECTING = "Waiting for target of redirection"
+    DONE = "Saved"
+    FAILED = "Raised an exception"
 
 
 def is_external(parsed_url: AbsoluteURL, prefix: AbsoluteURL) -> bool:

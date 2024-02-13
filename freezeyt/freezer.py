@@ -24,7 +24,7 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, urljoin
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
-from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL
+from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL, TaskStatus
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
@@ -136,12 +136,6 @@ def get_path_from_url(
 
     return result
 
-class TaskStatus(enum.Enum):
-    IN_PROGRESS = "Currently being handled"
-    REDIRECTING = "Waiting for target of redirection"
-    DONE = "Saved"
-    FAILED = "Raised an exception"
-
 @dataclasses.dataclass
 class Task:
     path: PurePosixPath
@@ -166,6 +160,14 @@ class Task:
             if self.path in collection:
                 return status
         raise ValueError(f'Task not registered with freezer: {self}')
+
+    def update_status(self, old_status, new_status):
+        assert self.status == old_status
+        old_collection = self.freezer.task_collections[old_status]
+        del old_collection[self.path]
+        new_collection = self.freezer.task_collections[new_status]
+        assert self.path not in new_collection
+        new_collection[self.path] = self
 
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
@@ -581,8 +583,7 @@ class Freezer:
             try:
                 await task.asyncio_task
             except Exception as exc:
-                del self.inprogress_tasks[task.path]
-                self.failed_tasks[task.path] = task
+                task.update_status(TaskStatus.IN_PROGRESS, TaskStatus.FAILED)
                 self.call_hook('page_failed', hooks.TaskInfo(task))
                 if self.fail_fast:
                     raise exc
@@ -647,8 +648,7 @@ class Freezer:
         except IsARedirect:
             return
         except IgnorePage:
-            del self.inprogress_tasks[task.path]
-            self.done_tasks[task.path] = task
+            task.update_status(TaskStatus.IN_PROGRESS, TaskStatus.DONE)
             return
 
         try:
@@ -710,8 +710,7 @@ class Freezer:
                         reason=f'Link header from: {task.path}',
                     )
 
-        del self.inprogress_tasks[task.path]
-        self.done_tasks[task.path] = task
+        task.update_status(TaskStatus.IN_PROGRESS, TaskStatus.DONE)
 
         self.call_hook('page_frozen', hooks.TaskInfo(task))
 
@@ -724,8 +723,7 @@ class Freezer:
                 assert task.redirects_to is not None
                 if task.redirects_to.status == TaskStatus.FAILED:
                     # Don't process redirects to a failed pages
-                    del self.redirecting_tasks[key]
-                    self.done_tasks[task.path] = task
+                    task.update_status(TaskStatus.REDIRECTING, TaskStatus.DONE)
                     continue
                 if task.redirects_to.status != TaskStatus.DONE:
                     continue
@@ -733,8 +731,7 @@ class Freezer:
                 with await self.saver.open_filename(task.redirects_to.path) as f:
                     await self.saver.save_to_filename(task.path, f)
                 self.call_hook('page_frozen', hooks.TaskInfo(task))
-                del self.redirecting_tasks[key]
-                self.done_tasks[task.path] = task
+                task.update_status(TaskStatus.REDIRECTING, TaskStatus.DONE)
                 saved_something = True
             if not saved_something:
                 # Get some task (the first one we get by iteration) for the
