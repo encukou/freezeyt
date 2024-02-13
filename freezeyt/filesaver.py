@@ -27,7 +27,7 @@ class FileSaver(Saver):
         exception: BaseException,
     ) -> None:
         """A function that adds a write attribute/flag for a path where such an attribute is missing. This function is not necessary on Linux, but on Windows, attempting to delete a file where such an attribute is missing will raise an exception.
-        
+
         Function parameters are:
         function: function which raised the exception,
         path: path name passed to function,
@@ -38,7 +38,7 @@ class FileSaver(Saver):
             return function(path)
         else:
             raise exception
-    
+
     def __init__(self, base_path: Path, prefix: AbsoluteURL):
         self.base_path = base_path.resolve()
         self.prefix = prefix
@@ -54,7 +54,7 @@ class FileSaver(Saver):
                     + 'If you are sure, remove the directory before running '
                     + 'freezeyt.'
                 )
-            
+
             compat.rmtree(self.base_path, onexc=self.add_write_flag)
 
     async def save_to_filename(
