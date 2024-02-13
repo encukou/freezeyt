@@ -6,7 +6,6 @@ import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
 from typing import Tuple, List, TypeVar, Any
-import enum
 import asyncio
 import inspect
 import re
