@@ -39,7 +39,7 @@ def test_exc_info_none():
         # regular application code here
         status = "200 OK"
         response_headers = [("content-type", "text/html")]
-        start_response(status, response_headers, (None, None, None))
+        start_response(status, response_headers, None)
         return [b"normal body goes here"]
 
     config = {'output': {'type': 'dict'}}
