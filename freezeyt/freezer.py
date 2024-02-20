@@ -473,67 +473,31 @@ class Freezer:
         # and at the end prepare the saver
         return await self.saver.prepare()
 
-    def start_response(
-        self,
-        task: Task,
-        url: AbsoluteURL,
-        wsgi_write: Func,
-        status: str,
-        headers: WSGIHeaderList,
-        exc_info: WSGIExceptionInfo = None,
-    ) -> Func:
-        """WSGI start_response hook
-
-        The application we are freezing will call this method
-        and supply the status, headers, exc_info arguments.
-        (self and wsgi_write are provided by freezeyt.)
-
-        See: https://www.python.org/dev/peps/pep-3333/#the-start-response-callable
-
-        Arguments:
-            wsgi_write: function that the application can call to output data
-            status: HTTP status line, like '200 OK'
-            headers: HTTP headers (list of tuples)
-            exc_info: Information about a server error, if any.
-                Will be raised if given.
-        """
-        if exc_info:
-            exc_type, value, traceback = exc_info
-            if value is not None:
-                raise value
-
-        task.response_headers = Headers(headers)
-        task.response_status = status
-
+    def get_status_action(self, task: Task, url: AbsoluteURL) -> str:
         status_action = task.response_headers.get('Freezeyt-Action')
-        if not status_action:
+        if status_action:
+            return status_action
 
-            # Get a handler for the particular status from configuration
-            status_handler = self.status_handlers.get(status[:3])
+        status = f'{task.response_status:03}'
 
-            if status_handler is None:
-                # If a handler for the particular status isn't found,
-                # get handler for a group of statuses
-                status_handler = self.status_handlers.get(status[0] + 'xx')
-            if status_handler is None:
-                # Still not found? Use the default handler
-                if status.startswith('200'):
-                    # default behaviour for status 200
-                    status_handler = freezeyt.actions.save
-                else:
-                    # default behaviour for everything but 200
-                    raise UnexpectedStatus(url, status)
+        # Get a handler for the particular status from configuration
+        status_handler = self.status_handlers.get(status[:3])
 
-            status_action = status_handler(hooks.TaskInfo(task))
+        if status_handler is None:
+            # If a handler for the particular status isn't found,
+            # get handler for a group of statuses
+            status_handler = self.status_handlers.get(status[0] + 'xx')
 
-        if status_action == 'save':
-            return wsgi_write
-        elif status_action == 'ignore':
-            raise IgnorePage()
-        elif status_action == 'follow':
-            raise IsARedirect()
-        else:
-            raise UnexpectedStatus(url, status)
+        if status_handler is None:
+            # Still not found? Use the default handler
+            if status.startswith('200'):
+                # default behaviour for status 200
+                status_handler = freezeyt.actions.save
+            else:
+                # default behaviour for everything but 200
+                raise UnexpectedStatus(url, status)
+
+        return status_handler(hooks.TaskInfo(task))
 
 
     def _add_extra_pages(
@@ -674,6 +638,17 @@ class Freezer:
                     raise ValueError('Duplicate ASGI event "http.response.start"')
                 task.response_status = event['status']
                 task.response_headers = Headers(event['headers'])
+
+                status_action = self.get_status_action(task, url)
+                if status_action == 'save':
+                    pass
+                elif status_action == 'ignore':
+                    raise IgnorePage()
+                elif status_action == 'follow':
+                    raise IsARedirect()
+                else:
+                    raise UnexpectedStatus(url, status)
+
             elif event['type'] == "http.response.body":
                 result_body.append(event.get('body', b''))
                 if not event.get('more_body', False):
@@ -683,6 +658,7 @@ class Freezer:
         try:
             app_task = asyncio.Task(self.app(scope, receive, send))
             await app_task
+            await done
         except IsARedirect:
             return
         except IgnorePage:
