@@ -673,8 +673,8 @@ class Freezer:
                 status = event['status']
                 headers = Headers(event['headers'])
             elif event['type'] == "http.response.body":
-                result_body.append(event['body'])
-                if not event['more_body']:
+                result_body.append(event.get('body', b''))
+                if not event.get('more_body', False):
                     done.set_result(True)
 
         # Call the application.
