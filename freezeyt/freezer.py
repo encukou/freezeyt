@@ -664,18 +664,16 @@ class Freezer:
                 await asyncio.Future()
 
         done = asyncio.Future()
-        status = headers = None
         result_body = []
         async def send(event):
             if done.done():
                 # After a more_body=False, all events should be ignored
                 return
-            nonlocal status, headers
             if event['type'] == "http.response.start":
-                if status is not None:
+                if task.response_status is not None:
                     raise ValueError('Duplicate ASGI event "http.response.start"')
-                status = event['status']
-                headers = Headers(event['headers'])
+                task.response_status = event['status']
+                task.response_headers = Headers(event['headers'])
             elif event['type'] == "http.response.body":
                 result_body.append(event.get('body', b''))
                 if not event.get('more_body', False):
