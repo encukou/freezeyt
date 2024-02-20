@@ -635,15 +635,19 @@ class Freezer:
             'path': url_parsed.path,
             #'raw_path':
             'query_string': b'',
-            'root_path': self.prefix.path,
+
             'headers': [
-                (b'host', b'localhost'),
-                (b'user-agent', b'freezeyt demo/0.0'),
+                (b'host', self.prefix.netloc.encode()),
+                (b'user-agent', f'freezeyt/{freezeyt.__version__}'.encode()),
+                (b'freezeyt-freezing', b'True'),
             ],
             #client
             'server': (self.prefix.hostname, self.prefix.port),
             #state (Lifespan Protocol)
         }
+        if self.prefix.path not in ('', '/'):
+            scope['root_path'] = self.prefix.path
+
         sent_request = False
         async def receive():
             """The app call this to receive the next event.
