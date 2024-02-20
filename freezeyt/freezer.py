@@ -636,8 +636,12 @@ class Freezer:
             if event['type'] == "http.response.start":
                 if task.response_status is not None:
                     raise ValueError('Duplicate ASGI event "http.response.start"')
-                task.response_status = event['status']
-                task.response_headers = Headers(event['headers'])
+                task.response_status = str(event['status'])
+                task.response_headers = Headers(
+                    # Convert ASGI headers to Werkzeug WSGI headers
+                    (key.decode('latin-1'), value.decode('latin-1'))
+                    for key, value in event['headers']
+                )
 
                 status_action = self.get_status_action(task, url)
                 if status_action == 'save':
