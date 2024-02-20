@@ -1,7 +1,7 @@
 from typing import Callable, TYPE_CHECKING
 
 from freezeyt.hooks import TaskInfo
-from freezeyt.util import urljoin
+from freezeyt.util import urljoin, TaskStatus
 
 ActionFunction = Callable[[TaskInfo], str]
 
@@ -35,8 +35,7 @@ def follow(task: TaskInfo) -> str:
     )
 
     task._task.redirects_to = target_task
-    del task._freezer.inprogress_tasks[task._task.path]
-    task._freezer.redirecting_tasks[task._task.path] = task._task
+    task._task.update_status(TaskStatus.IN_PROGRESS, TaskStatus.REDIRECTING)
 
     return 'follow'
 
