@@ -478,7 +478,7 @@ class Freezer:
         if status_action:
             return status_action
 
-        status = f'{task.response_status:03}'
+        status = task.response_status
 
         # Get a handler for the particular status from configuration
         status_handler = self.status_handlers.get(status[:3])
@@ -651,7 +651,7 @@ class Freezer:
                 elif status_action == 'follow':
                     raise IsARedirect()
                 else:
-                    raise UnexpectedStatus(url, status)
+                    raise UnexpectedStatus(url, task.response_status)
 
             elif event['type'] == "http.response.body":
                 result_body.append(event.get('body', b''))
