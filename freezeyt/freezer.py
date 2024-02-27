@@ -10,6 +10,8 @@ import asyncio
 import inspect
 import re
 import urllib.parse
+import pickle
+import base64
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header
@@ -608,6 +610,7 @@ class Freezer:
             #client
             'server': (self.prefix.hostname, self.prefix.port),
             #state (Lifespan Protocol)
+            'freezeyt.freezing': True,
         }
         if self.prefix.path not in ('', '/'):
             scope['root_path'] = self.prefix.path
@@ -652,6 +655,14 @@ class Freezer:
                     raise IsARedirect()
                 else:
                     raise UnexpectedStatus(url, task.response_status)
+
+                # HACK: see middleware.py
+                # This is insecure (the freezer calls pickle on data from the
+                # application). Don't merge! Switch to ASGI middleware first,
+                # and remove the hack!
+                error = task.response_headers.get('Freezeyt-Error')
+                if error:
+                    raise pickle.loads(base64.b64decode(error))
 
             elif event['type'] == "http.response.body":
                 result_body.append(event.get('body', b''))

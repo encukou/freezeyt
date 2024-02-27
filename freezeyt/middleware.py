@@ -1,5 +1,7 @@
 from typing import Iterable, Callable
 import io
+import pickle
+import base64
 
 from werkzeug.wrappers import Response
 from werkzeug.exceptions import NotFound, Forbidden, MethodNotAllowed
@@ -11,6 +13,7 @@ from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
 from freezeyt.extra_files import get_extra_files
 from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
+from freezeyt.util import WrongMimetypeError
 
 
 class Middleware:
@@ -134,8 +137,37 @@ class Middleware:
             headers: WSGIHeaderList,
             exc_info: WSGIExceptionInfo = None,
         ) -> Callable[[bytes], object]:
+
+
+            # HACK: Before we switch the middleware to ASGI, we need to
+            # ensure the status handler error (like `UnexpectedStatus`
+            # or `IgnorePage`) is raised before any error from the mimetype
+            # check.
+            # For now, we encode the exception with pickle+base64 to fit it
+            # in a HTML header, and give it to the freezer to raise after
+            # handling the status.
+            # This is insecure (the freezer calls pickle on data from the
+            # application). Don't merge! Switch to ASGI middleware first,
+            # and remove the hack!
+            error = None
+            try:
+                self.mimetype_checker.check(path_info, headers)
+            except WrongMimetypeError as exc:
+                is_freezing = (
+                    'asgi.scope' in environ
+                    and 'freezeyt.freezing' in environ['asgi.scope']
+                )
+                if is_freezing:
+                    pickled_error = pickle.dumps(exc)
+                    encoded_error = base64.b64encode(pickled_error)
+                    headers = headers + [('Freezeyt-Error',
+                                          encoded_error.decode('ascii'))]
+                else:
+                    error = exc
             result = server_start_response(status, headers, exc_info)
-            self.mimetype_checker.check(path_info, headers)
+            if error:
+                raise error
+
             return result
 
         return self.app(environ, mw_start_response)
