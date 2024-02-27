@@ -74,20 +74,26 @@ Func = TypeVar('Func', bound=Callable)
 
 def parse_handlers(
     handlers: Mapping[K, Union[str, Func]],
-    default_module: Optional[str]=None
+    default_module: Optional[str]=None,
+    label: str="Handler",
 ) -> Dict[K, Func]:
+    """Map handler/action as callable
+    """
     result = {}
+
     for key, handler_or_name in handlers.items():
         if isinstance(handler_or_name, str):
             handler = import_variable_from_module(
-                handler_or_name, default_module_name=default_module
+                handler_or_name,
+                default_module_name=default_module
             )
         else:
             handler = handler_or_name
+
         if not callable(handler):
             raise TypeError(
-                "Handler for {key!r} in configuration must be a string or a callable,"
-                + f" not {type(handler)}!"
+                f"{label} for {key!r} in configuration must be "
+                + f"a string or a callable, not a {type(handler)}!"
             )
 
         result[key] = handler
@@ -267,7 +273,7 @@ class Freezer:
             _url_finders = self.config.get('url_finders', {})
 
         self.url_finders = parse_handlers(
-            _url_finders, default_module='freezeyt.url_finders'
+            _url_finders, default_module='freezeyt.url_finders', label="URL finder"
         )
 
         _status_handlers = self.config.get('status_handlers', {})
@@ -280,7 +286,7 @@ class Freezer:
                 )
 
         self.status_handlers = parse_handlers(
-            _status_handlers, default_module='freezeyt.actions'
+            _status_handlers, default_module='freezeyt.actions', label="Status handler"
         )
 
         prefix = self.config.get('prefix', 'http://localhost:8000/')
