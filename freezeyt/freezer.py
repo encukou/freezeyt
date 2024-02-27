@@ -76,7 +76,7 @@ Func = TypeVar('Func', bound=Callable)
 def parse_handlers(
     handlers: Mapping[K, Union[str, Func]],
     default_module: Optional[str]=None,
-    label: str="Handler"
+    label: str="Handler",
 ) -> Dict[K, Func]:
     """Map handler/action as callable
     """
