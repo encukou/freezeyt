@@ -92,7 +92,7 @@ def parse_handlers(
 
         if not callable(handler):
             raise TypeError(
-                f"{label} for {key!r} in configuration must be"
+                f"{label} for {key!r} in configuration must be "
                 + f"a string or a callable, not a {type(handler)}!"
             )
 
