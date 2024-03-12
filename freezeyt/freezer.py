@@ -589,6 +589,7 @@ class Freezer:
 
             'freezeyt.freezing': True,
         }
+        hostname_idna = self.prefix.hostname.encode('idna')
         scope = {
             'type': "http" ,
             'asgi': {
@@ -603,12 +604,12 @@ class Freezer:
             'query_string': b'',
 
             'headers': [
-                (b'host', self.prefix.netloc.encode()),
+                (b'host', hostname_idna + f':{self.prefix.port}'.encode()),
                 (b'user-agent', f'freezeyt/{freezeyt.__version__}'.encode()),
                 (b'freezeyt-freezing', b'True'),
             ],
             #client
-            'server': (self.prefix.hostname, self.prefix.port),
+            'server': (hostname_idna.decode('ascii'), self.prefix.port),
             #state (Lifespan Protocol)
             'freezeyt.freezing': True,
         }
