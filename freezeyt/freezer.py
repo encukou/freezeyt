@@ -613,7 +613,11 @@ class Freezer:
             'freezeyt.freezing': True,
         }
         if self.prefix.path not in ('', '/'):
-            scope['root_path'] = self.prefix.path
+            # WSGI SCRIPT_NAME (and thus ASGI root_path) doesn’t
+            # normally end in a slash, see:
+            # - https://docs.python.org/3/library/wsgiref.html#wsgiref.util.shift_path_info
+            # - https://asgi.readthedocs.io/en/latest/specs/www.html#http-connection-scope
+            scope['root_path'] = self.prefix.path.rstrip('/')
 
         sent_request = False
         async def receive():
