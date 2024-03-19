@@ -1,7 +1,4 @@
-import sys
 from pathlib import Path, PurePosixPath
-import io
-import itertools
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
@@ -19,24 +16,21 @@ import a2wsgi
 
 import freezeyt
 import freezeyt.actions
-from freezeyt.encoding import encode_wsgi_path, decode_input_path
-from freezeyt.encoding import encode_file_path
+from freezeyt.encoding import decode_input_path, encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
 from freezeyt.util import parse_absolute_url, is_external, urljoin
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL, TaskStatus
-from freezeyt.compat import asyncio_run, asyncio_create_task
-from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
+from freezeyt.compat import asyncio_run, asyncio_create_task, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.middleware import Middleware
 from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
-from freezeyt.types import Config, SaverResult, WSGIHeaderList
-from freezeyt.types import WSGIExceptionInfo, FreezeytHTTPScope
+from freezeyt.types import Config, SaverResult, FreezeytHTTPScope
 
 
 MAX_RUNNING_TASKS = 100
@@ -579,25 +573,6 @@ class Freezer:
         if path_info.startswith(self.prefix.path):
             path_info = "/" + path_info[len(self.prefix.path):]
 
-        environ: WSGIEnvironment = {
-            'SERVER_NAME': self.prefix.hostname,
-            'SERVER_PORT': str(self.prefix.port),
-            'REQUEST_METHOD': 'GET',
-            'PATH_INFO': encode_wsgi_path(path_info),
-            'SCRIPT_NAME': encode_wsgi_path(self.prefix.path),
-            'SERVER_PROTOCOL': 'HTTP/1.1',
-            'SERVER_SOFTWARE': f'freezeyt/{freezeyt.__version__}',
-
-            'wsgi.version': (1, 0),
-            'wsgi.url_scheme': self.prefix.scheme,
-            'wsgi.input': io.BytesIO(),
-            'wsgi.errors': sys.stderr,
-            'wsgi.multithread': False,
-            'wsgi.multiprocess': False,
-            'wsgi.run_once': False,
-
-            'freezeyt.freezing': True,
-        }
         assert self.prefix.hostname is not None
         hostname_idna = self.prefix.hostname.encode('idna')
         scope: FreezeytHTTPScope = {
