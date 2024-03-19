@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, request
 
 from freezeyt import freeze
 
@@ -83,15 +83,15 @@ def test_redirect_to_itself_by_different_URL_with_query_hop():
     @app.route('/')
     def index():
         """Redirecting to /?query=cats"""
-        return redirect(url_for('index_query'))
+        if 'query' in request.args:
+            return redirect(url_for('index_html'))
+        else:
+            return redirect(url_for('index', query="cats"))
 
-    @app.route('/?query=cats')
-    def index_query():
-        """Redirecting to /index.html"""
-        return redirect(url_for('index_html'))
 
     @app.route('/index.html')
     def index_html():
+        assert not request.args
         return "Hello world!"
 
     config = {
