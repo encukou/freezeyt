@@ -36,7 +36,7 @@ from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
 from freezeyt.types import Config, SaverResult, WSGIHeaderList
-from freezeyt.types import WSGIExceptionInfo
+from freezeyt.types import WSGIExceptionInfo, FreezeytHTTPScope
 
 
 MAX_RUNNING_TASKS = 100
@@ -239,7 +239,14 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
-        self.app = a2wsgi.WSGIMiddleware(Middleware(app, self.config))
+        self.app = a2wsgi.WSGIMiddleware(
+            # a2wsgi has its own Environ type which is a bit stricter than
+            # what we provide. We could switch to using
+            # a2wsgi.wsgi_typing.Environ, but it seems undocumented.
+            # We don't really care about WSGI internals here; so skip the type
+            # check.
+            Middleware(app, self.config) # type: ignore
+        )
 
         self.fail_fast = self.config.get('fail_fast', False)
 
@@ -476,11 +483,13 @@ class Freezer:
         return await self.saver.prepare()
 
     def get_status_action(self, task: Task, url: AbsoluteURL) -> str:
+        assert task.response_headers is not None
         status_action = task.response_headers.get('Freezeyt-Action')
         if status_action:
             return status_action
 
         status = task.response_status
+        assert status is not None
 
         # Get a handler for the particular status from configuration
         status_handler = self.status_handlers.get(status[:3])
@@ -589,8 +598,9 @@ class Freezer:
 
             'freezeyt.freezing': True,
         }
+        assert self.prefix.hostname is not None
         hostname_idna = self.prefix.hostname.encode('idna')
-        scope = {
+        scope: FreezeytHTTPScope = {
             'type': "http" ,
             'asgi': {
                 'version': '3.0',
@@ -608,17 +618,12 @@ class Freezer:
                 (b'user-agent', f'freezeyt/{freezeyt.__version__}'.encode()),
                 (b'freezeyt-freezing', b'True'),
             ],
+            'root_path': self.prefix.path.rstrip('/'),
             #client
             'server': (hostname_idna.decode('ascii'), self.prefix.port),
             #state (Lifespan Protocol)
             'freezeyt.freezing': True,
         }
-        if self.prefix.path not in ('', '/'):
-            # WSGI SCRIPT_NAME (and thus ASGI root_path) doesn’t
-            # normally end in a slash, see:
-            # - https://docs.python.org/3/library/wsgiref.html#wsgiref.util.shift_path_info
-            # - https://asgi.readthedocs.io/en/latest/specs/www.html#http-connection-scope
-            scope['root_path'] = self.prefix.path.rstrip('/')
 
         sent_request = False
         async def receive():
@@ -635,7 +640,7 @@ class Freezer:
                 # Wait forever
                 await asyncio.Future()
 
-        done = asyncio.Future()
+        done: asyncio.Future = asyncio.Future()
         result_body = []
         async def send(event):
             if done.done():
@@ -676,7 +681,9 @@ class Freezer:
 
         # Call the application.
         try:
-            app_task = asyncio.Task(self.app(scope, receive, send))
+            app_task = asyncio.Task(self.app(
+                scope, receive, send,
+            ))
             await app_task
             await done
         except IsARedirect:
