@@ -53,6 +53,14 @@ class WrongMimetypeError(ValueError):
             f"Content-type {got!r} is different from allowed MIME types {expected}"
             + f" guessed from '{url_path}'"
         )
+        self.expected = expected
+        self.got = got
+        self.url_path = url_path
+
+    def __reduce__(self):
+        # Make WrongMimetypeError objects pickle-able.
+        # Unpickling will call the class with the 3 arguments.
+        return type(self), (self.expected, self.got, self.url_path)
 
 class MultiError(_MultiErrorBase):
     """Contains multiple errors"""
