@@ -9,11 +9,21 @@ from werkzeug.routing import Map, Rule, RequestRedirect
 from werkzeug.security import safe_join
 from werkzeug.utils import send_file
 
+from a2wsgi.asgi_typing import ASGIApp, Scope, Receive, Send
+
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
 from freezeyt.extra_files import get_extra_files
 from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
 from freezeyt.util import WrongMimetypeError
+
+
+class ASGIMiddleware:
+    def __init__(self, app: ASGIApp, config: Config):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        await self.app(scope, receive, send)
 
 
 class Middleware:

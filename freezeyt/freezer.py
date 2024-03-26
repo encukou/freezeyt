@@ -13,6 +13,7 @@ import base64
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header
 import a2wsgi
+from a2wsgi.asgi_typing import ASGIApp
 
 import freezeyt
 import freezeyt.actions
@@ -26,7 +27,7 @@ from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL, TaskStatus
 from freezeyt.compat import asyncio_run, asyncio_create_task, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
-from freezeyt.middleware import Middleware
+from freezeyt.middleware import Middleware, ASGIMiddleware
 from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
@@ -233,14 +234,17 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
-        self.app = a2wsgi.WSGIMiddleware(
-            # a2wsgi has its own Environ type which is a bit stricter than
-            # what we provide. We could switch to using
-            # a2wsgi.wsgi_typing.Environ, but it seems undocumented.
-            # We don't really care about WSGI internals here; so skip the type
-            # check.
-            Middleware(app, self.config) # type: ignore
-        )
+        # Apply middlewares
+
+        # a2wsgi has its own Environ type which is a bit stricter than
+        # what we provide. We could switch to using
+        # a2wsgi.wsgi_typing.Environ, but it seems undocumented.
+        # We don't really care about WSGI internals here; so skip the type
+        # check.
+        app = Middleware(app, self.config) # type: ignore
+        app = a2wsgi.WSGIMiddleware(app)
+        app = ASGIMiddleware(app, self.config)
+        self.app = app
 
         self.fail_fast = self.config.get('fail_fast', False)
 
