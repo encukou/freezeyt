@@ -21,9 +21,73 @@ from freezeyt.util import WrongMimetypeError
 class ASGIMiddleware:
     def __init__(self, app: ASGIApp, config: Config):
         self.app = app
+        self.static_mode = config.get('static_mode', False)
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+    async def __call__(
+        self, scope: Scope, receive: Receive, send: Send
+    ) -> None:
+        assert scope['method'].isupper()
+        if scope['method'] != 'GET':
+            # The Freezer only sends GET requests.
+            # When we get another method, we know it came from another WSGI
+            # server. Handle it specially.
+            await self.handle_non_get(scope, receive, send)
+            return
         await self.app(scope, receive, send)
+
+    async def handle_non_get(
+        self, scope: Scope, receive: Receive, send: Send,
+    ) -> None:
+        # Handle requests other than GET. These can't come from Freezeyt.
+        if not self.static_mode:
+            # Normally, pass all other requests to the app unchanged.
+            await self.app(scope, receive, send)
+            return
+
+        # In static mode, disallow everything but GET, HEAD, OPTIONS.
+
+        if scope['method'] == 'HEAD':
+            # For HEAD, call the app but ignore the response body
+
+            # ASGI wants us to copy scope before modifying it, see
+            # https://asgi.readthedocs.io/en/latest/specs/main.html#middleware
+            scope = {**scope, 'method': 'GET'}
+
+            async def head_send(event):
+                if event['type'] == "http.response.body":
+                    pass
+                elif event['type'] == "http.response.start":
+                    await send(event)
+                    # indicate the end of the (empty) body
+                    await send({'type': "http.response.body"})
+                # We're in static mode; we don't support other events.
+
+            # TODO: Should we call the middleware instead of the app?
+            await self.app(scope, receive, head_send)
+            return
+
+        elif scope['method'] == 'OPTIONS':
+            # For OPTIONS, give our own response
+            # (The status should be '204 No Content', but according to
+            # MDN, some browsers misinterpret that, so '200' is safer.)
+            await send({
+                'type': "http.response.start",
+                'status': 200, # OK
+                'headers': [
+                    (b'Allow', b'GET, HEAD, OPTIONS'),
+                ],
+            })
+            await send({'type': "http.response.body"})
+            return
+        else:
+            # Disallow other methods
+            await send({
+                'type': "http.response.start",
+                'status': 405, # Method Not Allowed
+                'headers': [],
+            })
+            await send({'type': "http.response.body"})
+            return
 
 
 class Middleware:
@@ -61,12 +125,6 @@ class Middleware:
         environ: WSGIEnvironment,
         server_start_response: StartResponse,
     ) -> Iterable[bytes]:
-
-        if environ['REQUEST_METHOD'] != 'GET':
-            # The Freezer only sends GET requests.
-            # When we get another method, we know it came from another WSGI
-            # server. Handle it specially.
-            return self.handle_non_get(environ, server_start_response)
 
         if self.static_mode:
             # Construct a new environment, only keeping the info that a server
@@ -181,43 +239,3 @@ class Middleware:
             return result
 
         return self.app(environ, mw_start_response)
-
-    def handle_non_get(
-        self, environ: WSGIEnvironment,
-        server_start_response: StartResponse,
-    ) -> Iterable[bytes]:
-        # Handle requests other than GET. These can't come from Freezeyt.
-        if not self.static_mode:
-            # Normally, pass all other requests to the app unchanged.
-            return self.app(environ, server_start_response)
-
-        # In static mode, disallow everything but GET, HEAD, OPTIONS.
-
-        if environ['REQUEST_METHOD'] == 'HEAD':
-            # For HEAD, call the app but ignore the response body
-            environ['REQUEST_METHOD'] = 'GET'
-            body_iterator = self.app(environ, server_start_response)
-            try:
-                # self.app is typed as returning just an iterable of bytes,
-                # but the WSGI spec says that if that iterable has a `close`
-                # method, we need to call it.
-                # Hence a type ignore.
-                close = body_iterator.close  # type: ignore[attr-defined]
-            except AttributeError:
-                pass
-            else:
-                close()
-            return []
-        elif environ['REQUEST_METHOD'] == 'OPTIONS':
-            # For OPTIONS, give our own response
-            # (The status should be '204 No Content', but according to
-            # MDN, some browsers misinterpret that, so '200' is safer.)
-            server_start_response(
-                '200 No Content',
-                [('Allow', 'GET, HEAD, OPTIONS')],
-            )
-            return []
-        else:
-            # Disallow other methods
-            response = MethodNotAllowed()
-            return response(environ, server_start_response)
