@@ -4,13 +4,30 @@ from werkzeug.datastructures import Headers
 import freezegun
 from flask import Flask, request
 from packaging.version import Version
+import re
 
 import pytest
 
-from freezeyt.middleware import Middleware
+# Use less confusing names for a2wsgi's adapters
+from a2wsgi import ASGIMiddleware as asgi_to_wsgi
+from a2wsgi import WSGIMiddleware as wsgi_to_asgi
+
+from freezeyt.middleware import Middleware as wsgi_middleware
+from freezeyt.middleware import ASGIMiddleware
 from freezeyt.util import WrongMimetypeError
 
 from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
+
+# While we move functionality from WSGI to ASGI middleware,
+# we keep existing tests, and test that both middlewares combined,
+# together with converting from WSGI to ASGI and back,
+# have the same functionality as the old WSGI Middleware.
+def Middleware(app, config):
+    return asgi_to_wsgi(ASGIMiddleware(
+        wsgi_to_asgi(wsgi_middleware(app, config)),
+        config,
+    ))
+
 
 def urls_from_expected_dict(expected_dict, prefix=''):
     """Generate URLs from an `expected_dict` found in tests
@@ -26,6 +43,15 @@ def urls_from_expected_dict(expected_dict, prefix=''):
         else:
             new_prefix = prefix + '/' + name
             yield from urls_from_expected_dict(value, prefix=new_prefix)
+
+def assert_same_status(s1, s2):
+    # ASGI discards the note after the HTTP status code.
+    # To compare WSGI statuses, we compare the number only.
+    # First, assert that the status lines start with 3-digit numbers
+    assert re.match('^\d\d\d .*', s1)
+    assert re.match('^\d\d\d .*', s2)
+    # Then check these numbers
+    assert s1[:3] == s2[:3]
 
 def test_urls_from_expected_dict():
     """Test the test helper, urls_from_expected_dict"""
@@ -127,7 +153,7 @@ def check_responses_are_same(
         # expected extra page
         return
 
-    assert app_response.status == mw_response.status
+    assert_same_status(app_response.status, mw_response.status)
     assert app_response.headers == mw_response.headers
     assert app_response.get_data() == mw_response.get_data()
 
@@ -259,7 +285,7 @@ def test_static_mode_head(app_name):
                 app_response = app_client.get(url)
                 mw_response = mw_client.head(url)
 
-                assert mw_response.status == app_response.status
+                assert_same_status(mw_response.status, app_response.status)
                 assert mw_response.headers == app_response.headers
                 assert mw_response.get_data() == b''
 
