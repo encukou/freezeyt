@@ -22,7 +22,7 @@ class ASGIMiddleware:
     def __init__(self, app: ASGIApp, config: Config):
         self.app = app
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         await self.app(scope, receive, send)
 
 

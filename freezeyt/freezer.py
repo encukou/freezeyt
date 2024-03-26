@@ -235,16 +235,17 @@ class Freezer:
             app = app
 
         # Apply middlewares
-
-        # a2wsgi has its own Environ type which is a bit stricter than
-        # what we provide. We could switch to using
-        # a2wsgi.wsgi_typing.Environ, but it seems undocumented.
-        # We don't really care about WSGI internals here; so skip the type
-        # check.
-        app = Middleware(app, self.config) # type: ignore
-        app = a2wsgi.WSGIMiddleware(app)
-        app = ASGIMiddleware(app, self.config)
-        self.app = app
+        self.app = ASGIMiddleware(
+            a2wsgi.WSGIMiddleware(
+                # a2wsgi has its own Environ type which is a bit stricter than
+                # what we provide. We could switch to using
+                # a2wsgi.wsgi_typing.Environ, but it seems undocumented.
+                # We don't really care about WSGI internals here; so skip the type
+                # check.
+                Middleware(app, self.config),  # type: ignore
+            ),
+            self.config,
+        )
 
         self.fail_fast = self.config.get('fail_fast', False)
 
