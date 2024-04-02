@@ -76,6 +76,16 @@ class ASGIMiddleware:
         self, scope: Scope, receive: Receive, send: Send,
     ) -> None:
         # Handle requests other than GET. These can't come from Freezeyt.
+
+        # TODO: remove this header when WSGI middleware is gone
+        scope = {
+            **scope,
+            'headers': [
+                *scope['headers'],
+                (b'freezeyt_skip_middleware', b'true'),
+            ]
+        }
+
         if not self.static_mode:
             # Normally, pass all other requests to the app unchanged.
             await self.app(scope, receive, send)
@@ -160,6 +170,10 @@ class Middleware:
         environ: WSGIEnvironment,
         server_start_response: StartResponse,
     ) -> Iterable[bytes]:
+
+        # If the ASGI middleware tells us to skip processing, do so
+        if 'HTTP_FREEZEYT_SKIP_MIDDLEWARE' in environ:
+            return self.app(environ, server_start_response)
 
         path_info = environ.get('PATH_INFO', '')
 
