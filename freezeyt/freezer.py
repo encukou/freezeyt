@@ -13,7 +13,6 @@ import base64
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header
 import a2wsgi
-from a2wsgi.asgi_typing import ASGIApp
 
 import freezeyt
 import freezeyt.actions

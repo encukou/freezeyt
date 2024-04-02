@@ -48,8 +48,8 @@ def assert_same_status(s1, s2):
     # ASGI discards the note after the HTTP status code.
     # To compare WSGI statuses, we compare the number only.
     # First, assert that the status lines start with 3-digit numbers
-    assert re.match('^\d\d\d .*', s1)
-    assert re.match('^\d\d\d .*', s2)
+    assert re.match(r'^\d\d\d .*', s1)
+    assert re.match(r'^\d\d\d .*', s2)
     # Then check these numbers
     assert s1[:3] == s2[:3]
 

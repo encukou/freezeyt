@@ -1,13 +1,11 @@
 from typing import Iterable, Callable
-import io
 import pickle
 import base64
+from pathlib import PurePosixPath
 
-from werkzeug.wrappers import Response
-from werkzeug.exceptions import NotFound, Forbidden, MethodNotAllowed
+from werkzeug.exceptions import NotFound
 from werkzeug.routing import Map, Rule, RequestRedirect
 from werkzeug.security import safe_join
-from werkzeug.utils import send_file
 
 from a2wsgi.asgi_typing import ASGIApp, Scope, Receive, Send
 
@@ -19,10 +17,47 @@ from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
 from freezeyt.util import WrongMimetypeError
 
 
+def get_path_info(root_path: str, request_path: str) -> str:
+    """Given ASGI root_path and path, get the WSGI "script name"
+
+    That is, strip root_path from the beginning of request_path
+    """
+    root = PurePosixPath('/') / root_path
+    req = PurePosixPath('/') / request_path
+    path_info = str(req.relative_to(root))
+    if request_path.endswith('/'):
+        path_info += '/'
+    return path_info
+
+
 class ASGIMiddleware:
     def __init__(self, app: ASGIApp, config: Config):
         self.app = app
         self.static_mode = config.get('static_mode', False)
+        self.mimetype_checker = MimetypeChecker(config)
+        self.url_map = Map()
+        for url_part, kind, content_or_path in get_extra_files(config):
+            if '<' in url_part:
+                raise NotImplementedError("the extra file URL cannot include '<'")
+            if kind == 'content':
+                self.url_map.add(Rule(
+                    f'/{url_part}',
+                    endpoint='content',
+                    defaults={'content': content_or_path},
+                ))
+            elif kind == 'path':
+                self.url_map.add(Rule(
+                    f'/{url_part}',
+                    endpoint='path',
+                    defaults={'path': content_or_path, 'subpath': None},
+                ))
+                self.url_map.add(Rule(
+                    f'/{url_part}/<path:subpath>',
+                    endpoint='path',
+                    defaults={'path': content_or_path},
+                ))
+            else:
+                raise ValueError(kind)
 
     async def __call__(
         self, scope: Scope, receive: Receive, send: Send
@@ -69,6 +104,92 @@ class ASGIMiddleware:
                 ],
             }
             scope = new_scope
+
+        path_info = get_path_info(scope['root_path'], scope['path'])
+        headers = dict(scope['headers'])
+        map_adapter = self.url_map.bind(
+            server_name=headers[b'host'].decode('ascii'),
+            script_name=scope['root_path'],
+            url_scheme=scope['scheme'],
+            default_method=scope['method'],
+            path_info=path_info,
+        )
+        try:
+            endpoint, args = map_adapter.match()
+        except NotFound:
+            endpoint = 'app'
+            args = {}
+        except RequestRedirect as redirect:
+            await self.send_response(
+                send,
+                status=308,  # Permanent Redirect
+                headers=[
+                    (b'location', redirect.new_url.encode('ascii')),
+                ],
+                # TODO: a nice body
+            )
+            return
+
+        if endpoint == 'content':
+            mimetype = self.mimetype_checker.guess_mimetype(path_info)
+            # TODO: does this need a charset?
+            await self.send_response(
+                send,
+                headers=[
+                    (b'content-type', mimetype.encode('ascii')),
+                ],
+                body=args['content'],
+            )
+            return
+        if endpoint == 'path':
+            base_path = args['path']
+            extra_path = args['subpath']
+            if extra_path:
+                file_path = safe_join(str(base_path), str(extra_path))
+                if file_path is None:
+                    await self.send_response(
+                        send,
+                        status=403,  # Forbidden
+                        headers=[],
+                        # TODO: a nice body
+                    )
+                    return
+            else:
+                file_path = base_path
+            try:
+                assert file_path is not None
+                # TODO: use a faster way to send the file
+                with open(file_path, 'rb') as f:
+                    content = f.read()
+                mimetype=self.mimetype_checker.guess_mimetype(path_info)
+                await self.send_response(
+                    send,
+                    status=200,  # OK
+                    headers=[
+                        (b'content-type', mimetype.encode('ascii')),
+                    ],
+                    body=content,
+                )
+                return
+            except FileNotFoundError:
+                await self.send_response(
+                    send,
+                    status=404,  # Not Found
+                    headers=[],
+                    # TODO: a nice body
+                )
+                return
+            except OSError:
+                # This could have several different behaviors,
+                # see https://github.com/encukou/freezeyt/issues/331
+                # For now, return a 404
+                await self.send_response(
+                    send,
+                    status=404,  # Not Found
+                    headers=[],
+                    # TODO: a nice body
+                )
+                return
 
         await self.app(scope, receive, send)
 
@@ -117,53 +238,36 @@ class ASGIMiddleware:
             # For OPTIONS, give our own response
             # (The status should be '204 No Content', but according to
             # MDN, some browsers misinterpret that, so '200' is safer.)
-            await send({
-                'type': "http.response.start",
-                'status': 200, # OK
-                'headers': [
+            await self.send_response(
+                send,
+                status=200, # OK
+                headers=[
                     (b'Allow', b'GET, HEAD, OPTIONS'),
                 ],
-            })
-            await send({'type': "http.response.body"})
+            )
             return
         else:
             # Disallow other methods
-            await send({
-                'type': "http.response.start",
-                'status': 405, # Method Not Allowed
-                'headers': [],
-            })
-            await send({'type': "http.response.body"})
+            await self.send_response(
+                send,
+                status=405, # Method Not Allowed
+                headers=[],
+            )
             return
+
+    async def send_response(self, send, *, status=200, headers, body=b''):
+        await send({
+            'type': "http.response.start",
+            'status': status,
+            'headers': headers,
+        })
+        await send({'type': "http.response.body", 'body': body})
 
 
 class Middleware:
     def __init__(self, app: WSGIApplication, config: Config):
         self.app = app
         self.mimetype_checker = MimetypeChecker(config)
-        self.url_map = Map()
-        for url_part, kind, content_or_path in get_extra_files(config):
-            if '<' in url_part:
-                raise NotImplementedError("the extra file URL cannot include '<'")
-            if kind == 'content':
-                self.url_map.add(Rule(
-                    f'/{url_part}',
-                    endpoint='content',
-                    defaults={'content': content_or_path},
-                ))
-            elif kind == 'path':
-                self.url_map.add(Rule(
-                    f'/{url_part}',
-                    endpoint='path',
-                    defaults={'path': content_or_path, 'subpath': None},
-                ))
-                self.url_map.add(Rule(
-                    f'/{url_part}/<path:subpath>',
-                    endpoint='path',
-                    defaults={'path': content_or_path},
-                ))
-            else:
-                raise ValueError(kind)
 
     def __call__(
         self,
@@ -176,48 +280,6 @@ class Middleware:
             return self.app(environ, server_start_response)
 
         path_info = environ.get('PATH_INFO', '')
-
-        map_adapter = self.url_map.bind_to_environ(environ)
-        try:
-            endpoint, args = map_adapter.match()
-        except NotFound:
-            endpoint = 'app'
-            args = {}
-        except RequestRedirect as redirect:
-            return redirect(environ, server_start_response)
-
-        response: WSGIApplication
-        if endpoint == 'content':
-            response = Response(
-                args['content'],
-                mimetype=self.mimetype_checker.guess_mimetype(path_info),
-            )
-            return response(environ, server_start_response)
-        if endpoint == 'path':
-            base_path = args['path']
-            extra_path = args['subpath']
-            if extra_path:
-                file_path = safe_join(str(base_path), str(extra_path))
-                if file_path is None:
-                    response = Forbidden()
-                    return response(environ, server_start_response)
-            else:
-                file_path = base_path
-            try:
-                assert file_path is not None
-                response = send_file(
-                    file_path,
-                    environ,
-                    mimetype=self.mimetype_checker.guess_mimetype(path_info),
-                )
-            except FileNotFoundError:
-                response = NotFound()
-            except OSError:
-                # This could have several different behaviors,
-                # see https://github.com/encukou/freezeyt/issues/331
-                # For now, return a 404
-                response = NotFound()
-            return response(environ, server_start_response)
 
         def mw_start_response(
             status: str,
