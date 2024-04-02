@@ -16,6 +16,8 @@ from freezeyt.extra_files import get_extra_files
 from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
 from freezeyt.util import WrongMimetypeError
 
+# TODO: ASGI  Header names should be lowercased, but it is not required
+
 
 def get_path_info(root_path: str, request_path: str) -> str:
     """Given ASGI root_path and path, get the WSGI "script name"
@@ -191,21 +193,21 @@ class ASGIMiddleware:
                 )
                 return
 
-        await self.app(scope, receive, send)
+        async def middleware_send(event):
+            await send(event)
+            if event['type'] == "http.response.start":
+                headers = dict(event['headers'])
+                wsgi_headers = [
+                    ('Content-Type', headers[b'content-type'].decode('ascii')),
+                ]
+                self.mimetype_checker.check(path_info, wsgi_headers)
+
+        await self.app(scope, receive, middleware_send)
 
     async def handle_non_get(
         self, scope: Scope, receive: Receive, send: Send,
     ) -> None:
         # Handle requests other than GET. These can't come from Freezeyt.
-
-        # TODO: remove this header when WSGI middleware is gone
-        scope = {
-            **scope,
-            'headers': [
-                *scope['headers'],
-                (b'freezeyt_skip_middleware', b'true'),
-            ]
-        }
 
         if not self.static_mode:
             # Normally, pass all other requests to the app unchanged.
@@ -267,7 +269,6 @@ class ASGIMiddleware:
 class Middleware:
     def __init__(self, app: WSGIApplication, config: Config):
         self.app = app
-        self.mimetype_checker = MimetypeChecker(config)
 
     def __call__(
         self,
@@ -275,48 +276,4 @@ class Middleware:
         server_start_response: StartResponse,
     ) -> Iterable[bytes]:
 
-        # If the ASGI middleware tells us to skip processing, do so
-        if 'HTTP_FREEZEYT_SKIP_MIDDLEWARE' in environ:
-            return self.app(environ, server_start_response)
-
-        path_info = environ.get('PATH_INFO', '')
-
-        def mw_start_response(
-            status: str,
-            headers: WSGIHeaderList,
-            exc_info: WSGIExceptionInfo = None,
-        ) -> Callable[[bytes], object]:
-
-
-            # HACK: Before we switch the middleware to ASGI, we need to
-            # ensure the status handler error (like `UnexpectedStatus`
-            # or `IgnorePage`) is raised before any error from the mimetype
-            # check.
-            # For now, we encode the exception with pickle+base64 to fit it
-            # in a HTML header, and give it to the freezer to raise after
-            # handling the status.
-            # This is insecure (the freezer calls pickle on data from the
-            # application). Don't merge! Switch to ASGI middleware first,
-            # and remove the hack!
-            error = None
-            try:
-                self.mimetype_checker.check(path_info, headers)
-            except WrongMimetypeError as exc:
-                is_freezing = (
-                    'asgi.scope' in environ
-                    and 'freezeyt.freezing' in environ['asgi.scope']
-                )
-                if is_freezing:
-                    pickled_error = pickle.dumps(exc)
-                    encoded_error = base64.b64encode(pickled_error)
-                    headers = headers + [('Freezeyt-Error',
-                                          encoded_error.decode('ascii'))]
-                else:
-                    error = exc
-            result = server_start_response(status, headers, exc_info)
-            if error:
-                raise error
-
-            return result
-
-        return self.app(environ, mw_start_response)
+        return self.app(environ, server_start_response)
