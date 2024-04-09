@@ -26,7 +26,7 @@ from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL, TaskStatus
 from freezeyt.compat import asyncio_run, asyncio_create_task, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
-from freezeyt.middleware import Middleware, ASGIMiddleware
+from freezeyt.middleware import ASGIMiddleware
 from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
@@ -241,7 +241,7 @@ class Freezer:
                 # a2wsgi.wsgi_typing.Environ, but it seems undocumented.
                 # We don't really care about WSGI internals here; so skip the type
                 # check.
-                Middleware(app, self.config),  # type: ignore
+                app  # type: ignore
             ),
             self.config,
         )

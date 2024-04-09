@@ -2,10 +2,14 @@ from typing import Iterable, Callable
 import pickle
 import base64
 from pathlib import PurePosixPath
+import warnings
 
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import Map, Rule, RequestRedirect
 from werkzeug.security import safe_join
+
+from a2wsgi import ASGIMiddleware as asgi_to_wsgi
+from a2wsgi import WSGIMiddleware as wsgi_to_asgi
 
 from a2wsgi.asgi_typing import ASGIApp, Scope, Receive, Send
 
@@ -266,14 +270,19 @@ class ASGIMiddleware:
         await send({'type': "http.response.body", 'body': body})
 
 
-class Middleware:
-    def __init__(self, app: WSGIApplication, config: Config):
-        self.app = app
+def Middleware(wsgi_app, config):
+    warnings.warn(
+        "freezeyt.Middleware is deprecated. Use ASGIMiddleware if you have an "
+        "ASGI app; or WSGIMiddleware as a direct replacement.",
+        DeprecationWarning,
+    )
+    return WSGIMiddleware(wsgi_app, config)
 
-    def __call__(
-        self,
-        environ: WSGIEnvironment,
-        server_start_response: StartResponse,
-    ) -> Iterable[bytes]:
+def WSGIMiddleware(wsgi_app, config):
+    # Since our ASGI middleware handles everything, this turns WSGI to ASGI,
+    # applies our middleware, and turns ASGI back to WSGI.
+    # That's a lot of overhead. Use ASGI if you can.
 
-        return self.app(environ, server_start_response)
+    asgi_app = wsgi_to_asgi(wsgi_app)
+    middlewared_asgi_app = ASGIMiddleware(asgi_app, config)
+    return asgi_to_wsgi(middlewared_asgi_app)

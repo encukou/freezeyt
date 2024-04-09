@@ -5,28 +5,14 @@ import freezegun
 from flask import Flask, request
 from packaging.version import Version
 import re
+import time
 
 import pytest
 
-# Use less confusing names for a2wsgi's adapters
-from a2wsgi import ASGIMiddleware as asgi_to_wsgi
-from a2wsgi import WSGIMiddleware as wsgi_to_asgi
-
-from freezeyt.middleware import Middleware as wsgi_middleware
-from freezeyt.middleware import ASGIMiddleware
+from freezeyt.middleware import Middleware
 from freezeyt.util import WrongMimetypeError
 
 from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
-
-# While we move functionality from WSGI to ASGI middleware,
-# we keep existing tests, and test that both middlewares combined,
-# together with converting from WSGI to ASGI and back,
-# have the same functionality as the old WSGI Middleware.
-def Middleware(app, config):
-    return asgi_to_wsgi(ASGIMiddleware(
-        wsgi_to_asgi(wsgi_middleware(app, config)),
-        config,
-    ))
 
 
 def urls_from_expected_dict(expected_dict, prefix=''):
@@ -154,8 +140,23 @@ def check_responses_are_same(
         return
 
     assert_same_status(app_response.status, mw_response.status)
-    assert app_response.headers == mw_response.headers
+    check_headers_are_same(mw_response.headers, app_response.headers)
     assert app_response.get_data() == mw_response.get_data()
+
+def check_headers_are_same(mw_headers, app_headers):
+    # Check the headers, case-insensitively
+    for (mw_name, mw_value), (app_name, app_value) in zip(
+        mw_headers, app_headers, strict=True,
+    ):
+        assert mw_name.lower() == app_name.lower()
+        if mw_name.lower() == 'expires':
+            # Django runs Werkzeug's shared_data middleware in a thread,
+            # to which `freezegun.freeze_time` doesn't apply.
+            # So the generated Expires header depends on the real time,
+            # which might not match between two calls to the app.
+            # Ignore this header.
+            continue
+        assert mw_value == app_value
 
 
 def test_middleware_rejects_wrong_mimetype():
@@ -286,7 +287,7 @@ def test_static_mode_head(app_name):
                 mw_response = mw_client.head(url)
 
                 assert_same_status(mw_response.status, app_response.status)
-                assert mw_response.headers == app_response.headers
+                check_headers_are_same(mw_response.headers, app_response.headers)
                 assert mw_response.get_data() == b''
 
 def test_parameter_removal():
