@@ -5,7 +5,6 @@ import freezegun
 from flask import Flask, request
 from packaging.version import Version
 import re
-import time
 
 import pytest
 

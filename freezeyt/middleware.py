@@ -1,9 +1,6 @@
-from typing import Iterable, Callable
-import pickle
-import base64
+from typing import Optional
 from pathlib import PurePosixPath
 import warnings
-from typing import Optional
 
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import Map, Rule, RequestRedirect
@@ -15,12 +12,9 @@ from a2wsgi import WSGIMiddleware as wsgi_to_asgi
 from a2wsgi.asgi_typing import ASGIApp, Scope, HTTPScope, Receive, Send
 
 import freezeyt
-from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
 from freezeyt.extra_files import get_extra_files
-from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
-from freezeyt.types import ASGIHeaders
-from freezeyt.util import WrongMimetypeError
+from freezeyt.types import Config, ASGIHeaders
 
 
 def get_path_info(root_path: str, request_path: str) -> str:
