@@ -132,19 +132,24 @@ class ASGIMiddleware:
             endpoint = 'app'
             args = {}
         except RequestRedirect as redirect:
+            # It might not be possible to get a RequestRedirect from the
+            # werkzeug URL Map, the way we have it set up.
+            # (If there is a way, it would be nice to send a nice body
+            # in the redirecting response.)
             await self.send_response(
                 send,
                 status=308,  # Permanent Redirect
                 headers=[
                     (b'location', redirect.new_url.encode('ascii')),
                 ],
-                # TODO: a nice body
             )
             return
 
         if endpoint == 'content':
             mimetype = self.mimetype_checker.guess_mimetype(path_info)
-            # TODO: does this need a charset?
+            if mimetype.startswith('text/'):
+                # Use a modern default for text files.
+                mimetype += '; charset=utf-8'
             await self.send_response(
                 send,
                 headers=[
@@ -162,8 +167,10 @@ class ASGIMiddleware:
                     await self.send_response(
                         send,
                         status=403,  # Forbidden
-                        headers=[],
-                        # TODO: a nice body
+                        headers=[
+                            (b'content-type', b'text/plain; charset=ascii'),
+                        ],
+                        body=b'Forbidden.',
                     )
                     return
             else:
@@ -187,8 +194,10 @@ class ASGIMiddleware:
                 await self.send_response(
                     send,
                     status=404,  # Not Found
-                    headers=[],
-                    # TODO: a nice body
+                    headers=[
+                        (b'content-type', b'text/plain; charset=ascii'),
+                    ],
+                    body=b'Not found.',
                 )
                 return
             except OSError:
@@ -198,8 +207,10 @@ class ASGIMiddleware:
                 await self.send_response(
                     send,
                     status=404,  # Not Found
-                    headers=[],
-                    # TODO: a nice body
+                    headers=[
+                        (b'content-type', b'text/plain; charset=ascii'),
+                    ],
+                    body=b'Not found.',
                 )
                 return
 

@@ -182,7 +182,9 @@ def test_middleware_tricky_extra_files():
 
         # This file doesn't exist in static_dir; we shouldn't request it
         # from the app
-        assert mw_client.get('/static/missing.html').status.startswith('404')
+        missing_response = mw_client.get('/static/missing.html')
+        assert missing_response.status.startswith('404')
+        assert b'Not found' in missing_response.data
 
         # This page should be requested from the app (where it exists)
         assert mw_client.get('/static-not.html').status.startswith('200')
@@ -201,7 +203,9 @@ def test_middleware_tricky_extra_files():
         assert mw_client.get('/static/').status.startswith('404')
 
         # Looking outside the static directory is forbidden
-        assert mw_client.get('/static/../app.py').status.startswith('403')
+        forbidden_response = mw_client.get('/static/../app.py')
+        assert forbidden_response.status.startswith('403')
+        assert b'Forbidden' in forbidden_response.data
 
         # Same as above, but in this case werkzeug.routing.Map returns a
         # redirect to '/static/etc/passwd' before Middleware gets a chance
