@@ -1,4 +1,4 @@
-from typing import NewType, Mapping, Any, Union, TYPE_CHECKING, Tuple
+from typing import NewType, Mapping, Any, Union, TYPE_CHECKING, Tuple, Iterable
 from typing import List, TypedDict
 from types import TracebackType
 import urllib.parse
@@ -26,6 +26,7 @@ WSGIExceptionInfo = Union[
 ]
 
 WSGIHeaderList = List[Tuple[str, str]]
+ASGIHeaders = Iterable[Tuple[bytes, bytes]]
 
 
 # Freezeyt's HTTPScope has one extra key compared to ASGI HTTP scope:

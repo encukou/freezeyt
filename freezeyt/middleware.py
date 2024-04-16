@@ -12,13 +12,14 @@ from werkzeug.security import safe_join
 from a2wsgi import ASGIMiddleware as asgi_to_wsgi
 from a2wsgi import WSGIMiddleware as wsgi_to_asgi
 
-from a2wsgi.asgi_typing import ASGIApp, Scope, Receive, Send
+from a2wsgi.asgi_typing import ASGIApp, Scope, HTTPScope, Receive, Send
 
 import freezeyt
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt.mimetype_check import MimetypeChecker
 from freezeyt.extra_files import get_extra_files
 from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
+from freezeyt.types import ASGIHeaders
 from freezeyt.util import WrongMimetypeError
 
 
@@ -35,7 +36,9 @@ def get_path_info(root_path: str, request_path: str) -> str:
     return path_info
 
 
-def get_header_value(headers, header_name: bytes) -> Optional[bytes]:
+def get_header_value(
+    headers: ASGIHeaders, header_name: bytes,
+) -> Optional[bytes]:
     """Get the value of the first header with the given name"""
     assert header_name.islower()
     for name, value in headers:
@@ -76,6 +79,10 @@ class ASGIMiddleware:
     async def __call__(
         self, scope: Scope, receive: Receive, send: Send
     ) -> None:
+        if scope['type'] != 'http':
+            await self.app(scope, receive, send)
+            return
+
         assert scope['method'].isupper()
         if scope['method'] != 'GET':
             # The Freezer only sends GET requests.
@@ -101,9 +108,11 @@ class ASGIMiddleware:
                 'server',
                 'freezeyt.freezing',
             }
-            new_scope = {
+            new_scope: HTTPScope = {
                 **{
-                    key: scope[key] for key
+                    # these keys are known strings that exist in the original
+                    # `scope`, but mypy doesn't know that.
+                    key: scope[key] for key  # type: ignore
                     in COPIED_KEYS.intersection(scope)
                 },
                 'query_string': b'',  # URL parameters are missing
@@ -214,7 +223,7 @@ class ASGIMiddleware:
         await self.app(scope, receive, middleware_send)
 
     async def handle_non_get(
-        self, scope: Scope, receive: Receive, send: Send,
+        self, scope: HTTPScope, receive: Receive, send: Send,
     ) -> None:
         # Handle requests other than GET. These can't come from Freezeyt.
 
