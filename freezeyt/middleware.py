@@ -3,6 +3,7 @@ import pickle
 import base64
 from pathlib import PurePosixPath
 import warnings
+from typing import Optional
 
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import Map, Rule, RequestRedirect
@@ -20,8 +21,6 @@ from freezeyt.extra_files import get_extra_files
 from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
 from freezeyt.util import WrongMimetypeError
 
-# TODO: ASGI  Header names should be lowercased, but it is not required
-
 
 def get_path_info(root_path: str, request_path: str) -> str:
     """Given ASGI root_path and path, get the WSGI "script name"
@@ -34,6 +33,15 @@ def get_path_info(root_path: str, request_path: str) -> str:
     if request_path.endswith('/'):
         path_info += '/'
     return path_info
+
+
+def get_header_value(headers, header_name: bytes) -> Optional[bytes]:
+    """Get the value of the first header with the given name"""
+    assert header_name.islower()
+    for name, value in headers:
+        if name.lower() == header_name:
+            return value
+    return None
 
 
 class ASGIMiddleware:
@@ -76,14 +84,10 @@ class ASGIMiddleware:
             await self.handle_non_get(scope, receive, send)
             return
 
-        if self.static_mode:
-            # Get the value of the 'host' header
-            host = ''
-            for name, value in scope['headers']:
-                if name == b'host':
-                    host = value
-                    break
+        # Get the value of the 'host' header
+        host = get_header_value(scope['headers'], b'host') or b''
 
+        if self.static_mode:
             # Construct a new scope, only keeping the info that a server
             # of static pages would use
             COPIED_KEYS = {
@@ -112,9 +116,8 @@ class ASGIMiddleware:
             scope = new_scope
 
         path_info = get_path_info(scope['root_path'], scope['path'])
-        headers = dict(scope['headers'])
         map_adapter = self.url_map.bind(
-            server_name=headers[b'host'].decode('ascii'),
+            server_name=host.decode('ascii'),
             script_name=scope['root_path'],
             url_scheme=scope['scheme'],
             default_method=scope['method'],
@@ -200,9 +203,11 @@ class ASGIMiddleware:
         async def middleware_send(event):
             await send(event)
             if event['type'] == "http.response.start":
-                headers = dict(event['headers'])
+                content_type = get_header_value(
+                    event['headers'], b'content-type',
+                )
                 wsgi_headers = [
-                    ('Content-Type', headers[b'content-type'].decode('ascii')),
+                    ('Content-Type', (content_type or b'').decode('ascii')),
                 ]
                 self.mimetype_checker.check(path_info, wsgi_headers)
 
