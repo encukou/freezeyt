@@ -66,6 +66,16 @@ def get_running_loop() -> asyncio.AbstractEventLoop:
     else:
         return get_loop()
 
+if sys.version_info >= (3, 10):
+    compat_zip = zip
+else:
+    def compat_zip(*sequences, strict=False):
+        if strict:
+            first_seq = sequences[0]
+            if any(len(first_seq) != len(s) for s in sequences[1:]):
+                raise ValueError("lengths don't match")
+        return zip(*sequences)
+
 
 if sys.version_info >= (3, 12):
     rmtree = shutil.rmtree

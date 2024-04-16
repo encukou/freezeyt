@@ -8,6 +8,7 @@ import re
 
 import pytest
 
+from freezeyt.compat import compat_zip
 from freezeyt.middleware import Middleware
 from freezeyt.util import WrongMimetypeError
 
@@ -144,7 +145,7 @@ def check_responses_are_same(
 
 def check_headers_are_same(mw_headers, app_headers):
     # Check the headers, case-insensitively
-    for (mw_name, mw_value), (app_name, app_value) in zip(
+    for (mw_name, mw_value), (app_name, app_value) in compat_zip(
         mw_headers, app_headers, strict=True,
     ):
         assert mw_name.lower() == app_name.lower()
