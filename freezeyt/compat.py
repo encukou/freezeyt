@@ -8,6 +8,8 @@ from typing import TypeVar, Coroutine, Any, Optional
 
 T = TypeVar('T')
 
+# TODO: Remove outdated stuff
+
 
 if sys.version_info >= (3, 8):
     from typing import Literal
