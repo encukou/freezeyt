@@ -1,6 +1,8 @@
 from typing import Optional
 from pathlib import PurePosixPath
 import warnings
+import os.path
+import io
 
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import Map, Rule, RequestRedirect
@@ -175,22 +177,9 @@ class ASGIMiddleware:
                     return
             else:
                 file_path = base_path
-            try:
-                assert file_path is not None
-                # TODO: use a faster way to send the file
-                with open(file_path, 'rb') as f:
-                    content = f.read()
-                mimetype=self.mimetype_checker.guess_mimetype(path_info)
-                await self.send_response(
-                    send,
-                    status=200,  # OK
-                    headers=[
-                        (b'content-type', mimetype.encode('ascii')),
-                    ],
-                    body=content,
-                )
-                return
-            except FileNotFoundError:
+            assert file_path is not None
+            mimetype = self.mimetype_checker.guess_mimetype(path_info)
+            if not os.path.isfile(file_path):
                 await self.send_response(
                     send,
                     status=404,  # Not Found
@@ -200,19 +189,33 @@ class ASGIMiddleware:
                     body=b'Not found.',
                 )
                 return
-            except OSError:
-                # This could have several different behaviors,
-                # see https://github.com/encukou/freezeyt/issues/331
-                # For now, return a 404
-                await self.send_response(
-                    send,
-                    status=404,  # Not Found
-                    headers=[
-                        (b'content-type', b'text/plain; charset=ascii'),
-                    ],
-                    body=b'Not found.',
-                )
+            await send({
+                'type': "http.response.start",
+                'status': 200,  # OK
+                'headers': [
+                    (b'content-type', mimetype.encode('ascii')),
+                ],
+            })
+            if "http.response.pathsend" in scope.get('extensions', {}):
+                await send({
+                    'type': "http.response.pathsend",
+                    'path': file_path,
+                })
                 return
+            with open(file_path, 'rb') as f:
+                while True:
+                    chunk = f.read(io.DEFAULT_BUFFER_SIZE)
+                    if chunk:
+                        await send({
+                            'type': "http.response.body",
+                            'body': chunk,
+                            'more_body': True,
+                        })
+                    else:
+                        await send({
+                            'type': "http.response.body",
+                        })
+                        return
 
         async def middleware_send(event):
             await send(event)

@@ -658,6 +658,9 @@ class Freezer:
                 if not event.get('more_body', False):
                     done.set_result(True)
 
+            else:
+                raise ValueError(f'unknown ASGI event type {event["type"]}')
+
         # Call the application.
         try:
             app_task = asyncio.Task(self.app(
