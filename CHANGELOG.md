@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.1.1] - 2024-04-30
+
+### Fixes
+
+* The application supplied by the user is now passed to `extra_pages`
+  generators. (https://github.com/encukou/freezeyt/issues/392)
+
 ## [1.1.0] - 2023-11-07
 
 ### Compatibility
