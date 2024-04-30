@@ -125,13 +125,25 @@ def test_external_extra_files(tmp_path):
             freeze(module.app, freeze_config)
 
 
-def test_external_extra_files_generator(tmp_path):
-    def gen(app):
-        yield 'http://external.example/foo.html'
+def generate_extra_page(app):
+    assert app.is_the_fixture_app_2pages
+    yield 'http://external.example/foo.html'
+
+def test_external_extra_files_generator_as_function(tmp_path):
     with context_for_test('app_2pages') as module:
         freeze_config = {
             'output': {'type': 'dict'},
-            'extra_pages': [gen],
+            'extra_pages': [generate_extra_page],
+        }
+
+        with pytest.raises(ExternalURLError):
+            freeze(module.app, freeze_config)
+
+def test_external_extra_files_generator_from_string(tmp_path):
+    with context_for_test('app_2pages') as module:
+        freeze_config = {
+            'output': {'type': 'dict'},
+            'extra_pages': [{'generator': f'{__name__}:generate_extra_page'}],
         }
 
         with pytest.raises(ExternalURLError):

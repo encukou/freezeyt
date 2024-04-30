@@ -242,6 +242,10 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
+        # The original app, to be passed back to the user when needed
+        self.user_app = app
+
+        # The app we call, wrapped in Middleware
         self.app = Middleware(app, self.config)
 
         self.fail_fast = self.config.get('fail_fast', False)
@@ -561,7 +565,7 @@ class Freezer:
                     )
                 if isinstance(generator, str):
                     generator = import_variable_from_module(generator)
-                self._add_extra_pages(prefix, generator(self.app))
+                self._add_extra_pages(prefix, generator(self.user_app))
             elif isinstance(extra, str):
                 url = urljoin(prefix, decode_input_path(extra))
                 try:
@@ -573,7 +577,7 @@ class Freezer:
                     raise ExternalURLError(f'External URL specified in extra_pages: {url}')
             else:
                 generator = extra
-                self._add_extra_pages(prefix, generator(self.app))
+                self._add_extra_pages(prefix, generator(self.user_app))
 
     async def handle_urls(self) -> None:
         while self.inprogress_tasks:
