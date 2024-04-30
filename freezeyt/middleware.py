@@ -197,7 +197,8 @@ class ASGIMiddleware:
                 ],
             })
             if "http.response.pathsend" in scope.get('extensions', {}):
-                await send({
+                # a2wsgi's event types don't include pathsend
+                await send({  # type: ignore[arg-type]
                     'type': "http.response.pathsend",
                     'path': file_path,
                 })
