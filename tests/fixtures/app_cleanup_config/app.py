@@ -17,10 +17,13 @@ class Resource(object):
         </body>
     </html>\n"""
 
+    on_head = on_get
+
     def on_get_error(self, req, resp):
         """Handles GET requests on index (/not_found.html)"""
         raise falcon.HTTPNotFound()
 
+    on_head_error = on_get_error
 
 # create Falcon App for testing purposes
 app = falcon.App(media_type=falcon.MEDIA_HTML)    

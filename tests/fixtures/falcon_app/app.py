@@ -18,6 +18,8 @@ class Resource(object):
             </div>
         </body>
     </html>\n"""
+
+    on_head = on_get
     
     def on_get_second(self, req, resp):
         """Handles GET requests on index (/second_page/)"""
@@ -32,6 +34,8 @@ class Resource(object):
         </body>
     </html>\n"""
     
+    on_head_second = on_get_second
+
     def on_get_image(self, req, resp):
         resp.text = """
     <html>
@@ -44,6 +48,8 @@ class Resource(object):
             <a href="/">LINK to homepage</a>
         </body>
     </html>\n"""
+
+    on_head_image = on_get_image
 
 app = falcon.App(media_type=falcon.MEDIA_HTML)
 app.add_static_route("/images", STATIC_IMAGE_PATH, downloadable=True, fallback_filename=None)

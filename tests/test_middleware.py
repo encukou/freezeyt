@@ -1,5 +1,5 @@
 import werkzeug
-from werkzeug.test import Client
+from werkzeug.test import Client as WerkzeugClient
 from werkzeug.datastructures import Headers
 import freezegun
 from flask import Flask, request
@@ -13,6 +13,20 @@ from freezeyt.middleware import Middleware
 from freezeyt.util import WrongMimetypeError
 
 from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
+
+
+class Client(WerkzeugClient):
+    """Test client with an additional check
+
+    Works like Werkzeug's test client, but automatically does a HEAD request
+    for each GET request, and check that the result is equivalent.
+    """
+    def get(self, *args, **kwargs):
+        head_response = self.head(*args, **kwargs)
+        get_response = super().get(*args, **kwargs)
+        assert_same_status(head_response.status, get_response.status)
+        check_headers_are_same(head_response.headers, get_response.headers)
+        return get_response
 
 
 def urls_from_expected_dict(expected_dict, prefix=''):

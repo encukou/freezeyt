@@ -235,12 +235,8 @@ class ASGIMiddleware:
     ) -> None:
         # Handle requests other than GET. These can't come from Freezeyt.
 
-        if not self.static_mode:
-            # Normally, pass all other requests to the app unchanged.
-            await self.app(scope, receive, send)
-            return
-
-        # In static mode, disallow everything but GET, HEAD, OPTIONS.
+        # HEAD should match GET: we should route it through the middleware
+        # in order to handle static files.
 
         if scope['method'] == 'HEAD':
             # For HEAD, call the app but ignore the response body
@@ -258,9 +254,16 @@ class ASGIMiddleware:
                     await send({'type': "http.response.body"})
                 # We're in static mode; we don't support other events.
 
-            # TODO: Should we call the middleware instead of the app?
-            await self.app(scope, receive, head_send)
+            await self(scope, receive, head_send)
             return
+
+        # Normally, pass all other requests to the app unchanged.
+
+        if not self.static_mode:
+            await self.app(scope, receive, send)
+            return
+
+        # In static mode, disallow everything but GET, HEAD, OPTIONS.
 
         elif scope['method'] == 'OPTIONS':
             # For OPTIONS, give our own response
