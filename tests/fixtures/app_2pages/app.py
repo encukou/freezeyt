@@ -2,6 +2,9 @@ from flask import Flask
 
 app = Flask(__name__)
 
+# For verification that this is the unchanged Flask app
+app.is_the_fixture_app_2pages = True
+
 
 @app.route('/')
 def index():
