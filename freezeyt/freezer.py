@@ -71,20 +71,26 @@ Func = TypeVar('Func', bound=Callable)
 
 def parse_handlers(
     handlers: Mapping[K, Union[str, Func]],
-    default_module: Optional[str]=None
+    default_module: Optional[str]=None,
+    label: str="Handler",
 ) -> Dict[K, Func]:
+    """Map handler/action as callable
+    """
     result = {}
+
     for key, handler_or_name in handlers.items():
         if isinstance(handler_or_name, str):
             handler = import_variable_from_module(
-                handler_or_name, default_module_name=default_module
+                handler_or_name,
+                default_module_name=default_module
             )
         else:
             handler = handler_or_name
+
         if not callable(handler):
             raise TypeError(
-                "Handler for {key!r} in configuration must be a string or a callable,"
-                + f" not {type(handler)}!"
+                f"{label} for {key!r} in configuration must be "
+                + f"a string or a callable, not a {type(handler)}!"
             )
 
         result[key] = handler
@@ -233,6 +239,9 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
+        # The original app, to be passed back to the user when needed
+        self.user_app = app
+
         # Apply middlewares
         self.app = ASGIMiddleware(
             a2wsgi.WSGIMiddleware(
@@ -275,7 +284,7 @@ class Freezer:
             _url_finders = self.config.get('url_finders', {})
 
         self.url_finders = parse_handlers(
-            _url_finders, default_module='freezeyt.url_finders'
+            _url_finders, default_module='freezeyt.url_finders', label="URL finder"
         )
 
         _status_handlers = self.config.get('status_handlers', {})
@@ -288,7 +297,7 @@ class Freezer:
                 )
 
         self.status_handlers = parse_handlers(
-            _status_handlers, default_module='freezeyt.actions'
+            _status_handlers, default_module='freezeyt.actions', label="Status handler"
         )
 
         prefix = self.config.get('prefix', 'http://localhost:8000/')
@@ -529,7 +538,7 @@ class Freezer:
                     )
                 if isinstance(generator, str):
                     generator = import_variable_from_module(generator)
-                self._add_extra_pages(prefix, generator(self.app))
+                self._add_extra_pages(prefix, generator(self.user_app))
             elif isinstance(extra, str):
                 url = urljoin(prefix, decode_input_path(extra))
                 try:
@@ -541,7 +550,7 @@ class Freezer:
                     raise ExternalURLError(f'External URL specified in extra_pages: {url}')
             else:
                 generator = extra
-                self._add_extra_pages(prefix, generator(self.app))
+                self._add_extra_pages(prefix, generator(self.user_app))
 
     async def handle_urls(self) -> None:
         while self.inprogress_tasks:
