@@ -1,6 +1,7 @@
 import xml.etree.ElementTree
 from typing import Iterable, BinaryIO, Optional, Callable
 from typing import Coroutine, Union, Any, TYPE_CHECKING
+import asyncio
 
 import html5lib
 import cssutils
@@ -8,7 +9,6 @@ import cssutils
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
-from . import compat
 from .util import process_pool_executor
 from .types import WSGIHeaderList
 
@@ -77,7 +77,7 @@ def get_css_links(
 async def get_css_links_async(
     css_file: BinaryIO, base_url: str, headers: _Headers=None,
 )  -> Iterable[str]:
-    loop = compat.get_running_loop()
+    loop = asyncio.get_running_loop()
     content = css_file.read()
     return await loop.run_in_executor(
         process_pool_executor, _get_css_links, content, base_url, headers,
@@ -87,7 +87,7 @@ async def get_css_links_async(
 async def get_html_links_async(
     html_file: BinaryIO, base_url: str, headers: _Headers=None,
 )  -> Iterable[str]:
-    loop = compat.get_running_loop()
+    loop = asyncio.get_running_loop()
     content = html_file.read()
     return await loop.run_in_executor(
         process_pool_executor, _get_html_links, content, base_url, headers,

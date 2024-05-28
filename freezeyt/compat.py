@@ -2,9 +2,8 @@
 """
 
 import sys
-import asyncio
 import shutil
-from typing import TypeVar, Coroutine, Any, Optional
+from typing import TypeVar
 
 T = TypeVar('T')
 
@@ -27,44 +26,15 @@ else:
     WSGIApplication = typing.Any
 
 
-if sys.version_info < (3, 7):
-    def asyncio_run(awaitable):
-        """asyncio.run for Python 3.6"""
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(awaitable)
-        # We should also call loop.close() here, but that would mean
-        # the event loop can't be used in other code:
-        # * when using freezeyt as a library, and
-        # * in our own tests.
-        # So, we cheat a bit and don't call close().
-        # (Python 3.6 support is ending soon, anyway.)
+if sys.version_info >= (3, 10):
+    compat_zip = zip
 else:
-    asyncio_run = asyncio.run
-
-
-def asyncio_create_task(
-    coroutine: 'Coroutine[Any, Any, T]',
-    name: 'Optional[str]',
-) -> 'asyncio.Task[T]':
-    """asyncio.create_task for Python 3.6 & 3.7"""
-    if sys.version_info < (3, 7):
-        # Python 3.6
-        return asyncio.ensure_future(coroutine)
-    elif sys.version_info < (3, 8):
-        # Python 3.7
-        return asyncio.create_task(coroutine)
-    else:
-        return asyncio.create_task(coroutine, name=name)
-
-
-def get_running_loop() -> asyncio.AbstractEventLoop:
-    try:
-        get_loop = asyncio.get_running_loop
-    except AttributeError:
-        # Python 3.6
-        return asyncio.get_event_loop()
-    else:
-        return get_loop()
+    def compat_zip(*sequences, strict=False):
+        if strict:
+            first_seq = sequences[0]
+            if any(len(first_seq) != len(s) for s in sequences[1:]):
+                raise ValueError("lengths don't match")
+        return zip(*sequences)
 
 
 if sys.version_info >= (3, 12):

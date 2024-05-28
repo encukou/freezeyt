@@ -1,16 +1,33 @@
 import werkzeug
-from werkzeug.test import Client
+from werkzeug.test import Client as WerkzeugClient
 from werkzeug.datastructures import Headers
 import freezegun
 from flask import Flask, request
 from packaging.version import Version
+import re
 
 import pytest
 
+from freezeyt.compat import compat_zip
 from freezeyt.middleware import Middleware
 from freezeyt.util import WrongMimetypeError
 
 from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
+
+
+class Client(WerkzeugClient):
+    """Test client with an additional check
+
+    Works like Werkzeug's test client, but automatically does a HEAD request
+    for each GET request, and check that the result is equivalent.
+    """
+    def get(self, *args, **kwargs):
+        head_response = self.head(*args, **kwargs)
+        get_response = super().get(*args, **kwargs)
+        assert_same_status(head_response.status, get_response.status)
+        check_headers_are_same(head_response.headers, get_response.headers)
+        return get_response
+
 
 def urls_from_expected_dict(expected_dict, prefix=''):
     """Generate URLs from an `expected_dict` found in tests
@@ -26,6 +43,15 @@ def urls_from_expected_dict(expected_dict, prefix=''):
         else:
             new_prefix = prefix + '/' + name
             yield from urls_from_expected_dict(value, prefix=new_prefix)
+
+def assert_same_status(s1, s2):
+    # ASGI discards the note after the HTTP status code.
+    # To compare WSGI statuses, we compare the number only.
+    # First, assert that the status lines start with 3-digit numbers
+    assert re.match(r'^\d\d\d .*', s1)
+    assert re.match(r'^\d\d\d .*', s2)
+    # Then check these numbers
+    assert s1[:3] == s2[:3]
 
 def test_urls_from_expected_dict():
     """Test the test helper, urls_from_expected_dict"""
@@ -127,9 +153,24 @@ def check_responses_are_same(
         # expected extra page
         return
 
-    assert app_response.status == mw_response.status
-    assert app_response.headers == mw_response.headers
+    assert_same_status(app_response.status, mw_response.status)
+    check_headers_are_same(mw_response.headers, app_response.headers)
     assert app_response.get_data() == mw_response.get_data()
+
+def check_headers_are_same(mw_headers, app_headers):
+    # Check the headers, case-insensitively
+    for (mw_name, mw_value), (app_name, app_value) in compat_zip(
+        mw_headers, app_headers, strict=True,
+    ):
+        assert mw_name.lower() == app_name.lower()
+        if mw_name.lower() == 'expires':
+            # Django runs Werkzeug's shared_data middleware in a thread,
+            # to which `freezegun.freeze_time` doesn't apply.
+            # So the generated Expires header depends on the real time,
+            # which might not match between two calls to the app.
+            # Ignore this header.
+            continue
+        assert mw_value == app_value
 
 
 def test_middleware_rejects_wrong_mimetype():
@@ -155,7 +196,9 @@ def test_middleware_tricky_extra_files():
 
         # This file doesn't exist in static_dir; we shouldn't request it
         # from the app
-        assert mw_client.get('/static/missing.html').status.startswith('404')
+        missing_response = mw_client.get('/static/missing.html')
+        assert missing_response.status.startswith('404')
+        assert b'Not found' in missing_response.data
 
         # This page should be requested from the app (where it exists)
         assert mw_client.get('/static-not.html').status.startswith('200')
@@ -174,7 +217,9 @@ def test_middleware_tricky_extra_files():
         assert mw_client.get('/static/').status.startswith('404')
 
         # Looking outside the static directory is forbidden
-        assert mw_client.get('/static/../app.py').status.startswith('403')
+        forbidden_response = mw_client.get('/static/../app.py')
+        assert forbidden_response.status.startswith('403')
+        assert b'Forbidden' in forbidden_response.data
 
         # Same as above, but in this case werkzeug.routing.Map returns a
         # redirect to '/static/etc/passwd' before Middleware gets a chance
@@ -259,8 +304,8 @@ def test_static_mode_head(app_name):
                 app_response = app_client.get(url)
                 mw_response = mw_client.head(url)
 
-                assert mw_response.status == app_response.status
-                assert mw_response.headers == app_response.headers
+                assert_same_status(mw_response.status, app_response.status)
+                check_headers_are_same(mw_response.headers, app_response.headers)
                 assert mw_response.get_data() == b''
 
 def test_parameter_removal():

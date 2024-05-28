@@ -6,7 +6,7 @@ import pytest
 from freezeyt import MultiError
 from freezeyt.freezer import Task
 from freezeyt.hooks import TaskInfo
-from freezeyt.compat import asyncio_run, asyncio_create_task
+import asyncio
 
 from testutil import assert_dirs_same, FIXTURES_PATH
 from testutil import raises_multierror_with_one_exception
@@ -49,7 +49,7 @@ async def create_failing_task() -> Task:
         """coroutine that fails"""
         raise AssertionError()
     # Create an asyncio task
-    asyncio_task = asyncio_create_task(fail(), name='test')
+    asyncio_task = asyncio.create_task(fail(), name='test')
     # Wait for it to be done (catching the AssertionError)
     with pytest.raises(AssertionError):
         await asyncio_task
@@ -65,7 +65,7 @@ async def create_failing_task() -> Task:
 def test_raises_multierror():
     """raises_multierror_with_one_exception exposes correct exception info
     """
-    dummy_task = asyncio_run(create_failing_task())
+    dummy_task = asyncio.run(create_failing_task())
 
     with raises_multierror_with_one_exception(AssertionError) as e:
         raise MultiError([dummy_task])
@@ -85,7 +85,7 @@ def test_raises_multierror_no_exception():
 def test_raises_multierror_different_exception():
     """raises_multierror_with_one_exception fails if MultiError has bad error
     """
-    dummy_task = asyncio_run(create_failing_task())
+    dummy_task = asyncio.run(create_failing_task())
 
     with pytest.raises(BaseException):
         with raises_multierror_with_one_exception(TypeError):
@@ -114,8 +114,8 @@ def test_raises_multierror_2_errors():
     """
     raises_multierror_with_one_exception fails if MultiError has too many excs
     """
-    dummy_task1 = asyncio_run(create_failing_task())
-    dummy_task2 = asyncio_run(create_failing_task())
+    dummy_task1 = asyncio.run(create_failing_task())
+    dummy_task2 = asyncio.run(create_failing_task())
 
     with pytest.raises(BaseException):
         with raises_multierror_with_one_exception(AssertionError):
