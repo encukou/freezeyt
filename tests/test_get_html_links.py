@@ -1,10 +1,10 @@
 from io import BytesIO
 from typing import Dict, Tuple, List
+import asyncio
 
 import pytest
 
 from freezeyt.url_finders import get_html_links, get_html_links_async
-from freezeyt.compat import asyncio_run
 
 
 TEST_DATA: Dict[str, Tuple[Tuple, List[str]]] = {
@@ -111,5 +111,5 @@ def test_links_css(test_name):
 def test_links_css_async(test_name):
     (content, *args), expected = TEST_DATA[test_name]
     f = BytesIO(content)
-    links = asyncio_run(get_html_links_async(f, *args))
+    links = asyncio.run(get_html_links_async(f, *args))
     assert sorted(links) == expected
