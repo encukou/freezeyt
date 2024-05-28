@@ -151,13 +151,16 @@ class Task:
     redirects_to: "Optional[Task]" = None
     reasons: set = dataclasses.field(default_factory=set)
     asyncio_task: "Optional[asyncio.Task]" = None
+    urls_redirecting_self: set = dataclasses.field(default_factory=set)
 
     def __repr__(self) -> str:
         return f"<Task for {self.path}, {self.status.name}>"
 
     def get_a_url(self) -> AbsoluteURL:
         """Get an arbitrary one of the task's URLs."""
-        return next(iter(self.urls))
+        # we need to ensure that get_a_url() will get the right one
+        # when there are urls redirection to itself
+        return next(iter(self.urls - self.urls_redirecting_self))
 
     @property
     def status(self) -> TaskStatus:
@@ -176,6 +179,9 @@ class Task:
 
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
+
+class RedirectToSamePath(BaseException):
+    """Raised when a page redirects to url with same freezing path on disk as the page"""
 
 class IgnorePage(BaseException):
     """Raised when freezing a page should be ignored"""
@@ -515,8 +521,22 @@ class Freezer:
         task.response_status = status
 
         status_action = task.response_headers.get('Freezeyt-Action')
-        if not status_action:
+        location = task.response_headers.get('Location')
 
+        # handle redirecting to same filepath like source URL
+        if status.startswith('3') and location is not None:
+            redirect_url = urljoin(url, location)
+            if not is_external(redirect_url, self.prefix):
+                redirect_path = get_path_from_url(
+                    self.prefix, redirect_url, self.url_to_path
+                )
+                # compare if source path and final path of redirect are same
+                if redirect_path == task.path:
+                    task.urls.add(redirect_url)
+                    task.urls_redirecting_self.add(url)
+                    raise RedirectToSamePath()
+
+        if not status_action:
             # Get a handler for the particular status from configuration
             status_handler = self.status_handlers.get(status[:3])
 
@@ -588,7 +608,9 @@ class Freezer:
             # when we get the first item.
             for path, task in self.inprogress_tasks.items():
                 break
+            size_before = len(task.urls_redirecting_self)
             assert task.asyncio_task is not None
+
             try:
                 await task.asyncio_task
             except Exception as exc:
@@ -597,7 +619,10 @@ class Freezer:
                 if self.fail_fast:
                     raise exc
             if path in self.inprogress_tasks:
-                raise ValueError(f'{task} is in_progress after it was handled')
+                if size_before >= len(task.urls_redirecting_self):
+                    raise ValueError(
+                        f'{task} is in_progress after it was handled'
+                    )
 
     @needs_semaphore
     async def handle_one_task(self, task: Task) -> None:
@@ -659,6 +684,8 @@ class Freezer:
         except IgnorePage:
             task.update_status(TaskStatus.IN_PROGRESS, TaskStatus.DONE)
             return
+        except RedirectToSamePath:
+            return await self.handle_one_task(task)
 
         try:
             # Combine the list of data from write() with the returned
