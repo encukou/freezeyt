@@ -1,0 +1,11 @@
+@import "pygments-friendly.css"; /* light theme */
+@import "pygments-nord.css";  /* dark theme */
+
+[data-bs-theme="light"] {
+    --string-color: #4070a0;
+}
+[data-bs-theme="dark"] {
+    --string-color: #a3be8c;
+}
+
+.codehilite .s { color: var(--string-color) } /* Literal.String */

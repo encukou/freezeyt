@@ -1,4 +1,8 @@
-# freezeyt
+---
+title: freezeyt
+...
+
+# freezeyt...
 
 Static web page generator created by the Czech Python community.
 
