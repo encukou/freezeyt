@@ -1,0 +1,4 @@
+site_name: Freezeyt
+nav:
+  - Freezeyt: index.md
+theme: readthedocs
