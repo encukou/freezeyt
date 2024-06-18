@@ -4,7 +4,8 @@ repo_url: https://github.com/encukou/freezeyt
 edit_uri: edit/main/docs/
 # site_description:
 nav:
-  - 'index.md'
+  - 'Home': 'index.md'
+  - 'Configuration': 'config.md'
 theme:
   name: mkdocs
   color_mode: auto
@@ -13,6 +14,8 @@ theme:
 markdown_extensions:
   - toc:
       permalink: true
+      toc_depth: 3
   - codehilite
+  - tables
 extra_css:
   - css/pygments.css
