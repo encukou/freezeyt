@@ -4,7 +4,7 @@ title: freezeyt
 
 # freezeyt
 
-Static web page generator created by the Czech Python community.
+Freezeyt turns Python web applications into static websites.
 
 
 ## What this does
@@ -18,7 +18,7 @@ Python's [http.server].
 [http.server]: https://docs.python.org/3/library/http.server.html
 
 Freezeyt is compatible with all Python web frameworks that use the common
-[Web Server Gateway Interface] (WSGI)
+[Web Server Gateway Interface] (WSGI).
 
 [Web Server Gateway Interface]: https://www.python.org/dev/peps/pep-3333/
 
@@ -36,7 +36,7 @@ of virtual environment.
 
 The tool can be installed using:
 
-```
+```console
 $ python -m pip install .
 ```
 
@@ -54,28 +54,55 @@ in your environment.
 Run freezeyt with the name of your application and the
 output directory. For example:
 
-```shell
+```console
 $ python -m freezeyt my_app _build
 ```
 
-Freezeyt may overwrite the build directory (here, `_build`),
-removing all existing files from it.
+The output directory (here, `_build`), should either not exist yet
+or contain output from a previous run of Freezeyt.
+Any existing files in it will be removed.
 
-For more options, see Configuration below.
+
+## More examples of CLI usage
+
+You can tell Freezeyt where the application will be hosted,
+so it can generate correct URLs:
+
+```console
+$ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/
+```
+
+You can save options like the *prefix* in a file (see [Configuration]),
+and then use the `--config` (`-c`) option to use the file:
+
+```console
+$ python -m freezeyt my_app _build/ --config config.yaml
+```
+
+If you use both a configuration file and  CLI options like `--prefix`,
+the options override settings from the file:
+
+```console
+$ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/ --config path/to/config.yaml
+```
 
 
 ### Python API
 
-Freezeyt also has a Python API, the `freeze` function
-that takes an application to freeze and a configuration dict:
+Freezeyt also has a Python API: the `freeze` function
+that takes an application to freeze and a configuration dict.
+For example:
 
 ```python
 from freezeyt import freeze
+
+config = {'prefix': 'https://pyladies.cz/'}
+
 freeze(app, config)
 ```
 
 The `config` should be a dict as if read from a YAML configuration
-file (see Configuration below).
+file (see [Configuration]).
 
 From asynchronous code running in an `asyncio` event loop,
 you can call `freeze_async` instead of `freeze`.
@@ -89,35 +116,13 @@ To use it, wrap your application in `freezeyt.Middeleware`. For example:
 ```python
 from freezeyt import Middleware
 
-config = {}  # use a configuration dict as for `freeze(app, config)`
+config = {'prefix': 'https://pyladies.cz/'}
 
 app = Middleware(app, config)
 ```
 
 
-## Examples of CLI usage
-
-```shell
-$ python -m freezeyt my_app _build/
-```
-
-```shell
-$ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/
-```
-
-```shell
-$ python -m freezeyt my_app _build/ -c config.yaml
-```
-
-```shell
-$ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/
-```
-
-```shell
-$ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/ --config path/to/config.yaml
-```
-
-
+[Configuration]: config.md
 
 ## History
 
