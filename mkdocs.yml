@@ -6,6 +6,7 @@ edit_uri: edit/main/docs/
 nav:
   - 'Home': 'index.md'
   - 'Configuration': 'config.md'
+  - 'Contributing': 'contrib.md'
 theme:
   name: mkdocs
   color_mode: auto

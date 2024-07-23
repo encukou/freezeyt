@@ -9,3 +9,7 @@
 }
 
 .codehilite .s { color: var(--string-color) } /* Literal.String */
+
+.codehilite .gp {
+    user-select: none; /* prompts are non-selectable */
+}
