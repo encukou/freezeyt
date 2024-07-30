@@ -29,38 +29,75 @@ Freezeyt requires Python 3.6 or above.
 
 It is highly recommended to create and activate a separate virtual
 environment for this project.
-You can use [`venv`], `virtualenv`, Conda, containers or any other kind
+You can use [`venv`][venv], `virtualenv`, Conda, containers or any other kind
 of virtual environment.
 
-[`venv`]: https://docs.python.org/3/library/venv.html?highlight=venv#module-venv
+[venv]: https://docs.python.org/3/library/venv.html?highlight=venv#module-venv
 
 The tool can be installed using:
 
 ```console
-$ python -m pip install .
+$ python -m pip install freezeyt
 ```
+
+To install a development version of freezeyt,
+see [Contributing documentation].
+
+[Contributing documentation]: ./contrib.md
+
+
+## Quick usage
+
+For a Flask app in `hello.py`, run:
+
+```console
+$ python -m freezeyt hello _build
+```
+
+For detailed instructions, read on.
 
 
 ## Usage
 
 To use freezeyt, you need a Python web application.
-You can use the [example Flask app].
+You can use the [example Flask app] to start.
 
-[example Flask app]: https://flask.palletsprojects.com/en/1.1.x/quickstart/
+[example Flask app]: https://flask.palletsprojects.com/en/2.3.x/quickstart/
 
-Both the application and Freezeyt must be importable (installed)
-in your environment.
+Specifically, Freezeyt needs a WSGI application,
+ideally one named `app` which is the default in [Flask] and [Falcon].
+For other frameworks, search the documentation on how to export a WSGI
+application.
 
-Run freezeyt with the name of your application and the
-output directory. For example:
+Both the application and freezeyt need to be importable (installed) in your
+envuronment.
+
+Run freezeyt with two arguments: the Python module with your `app`,
+and an output directory.
+Note that freezeyt wants a *module* name (as used in an `import` statement).
+Don't use a *file* name with a `.py` suffix.
+
+For example, if your `app` is defined in the file `my_app.py`, run:
 
 ```console
 $ python -m freezeyt my_app _build
 ```
 
+If your application is not named `app`, give its name after a colon.
+For example, a [Django WSGI application] is usually in
+the `wsgi` submodule and named `application`, so you should run:
+
+```console
+$ python -m freezeyt my_project.wsgi:application _build
+```
+
 The output directory (here, `_build`), should either not exist yet
 or contain output from a previous run of Freezeyt.
 Any existing files in it will be removed.
+(Freezeyt tries to avoid deleting data it didn't create itself,
+but do not rely on this.)
+
+[WSGI application]: https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 
 
 ## More examples of CLI usage
@@ -104,8 +141,10 @@ freeze(app, config)
 The `config` should be a dict as if read from a YAML configuration
 file (see [Configuration]).
 
-From asynchronous code running in an `asyncio` event loop,
+From asynchronous code running in an [`asyncio`][asyncio] event loop,
 you can call `freeze_async` instead of `freeze`.
+
+[asyncio]: https://docs.python.org/3/library/asyncio.html
 
 
 ### Middleware
@@ -124,9 +163,9 @@ app = Middleware(app, config)
 
 [Configuration]: config.md
 
-## History
+## Project info
 
-### Why did the project start?
+### History
 
 The Czech Python community uses a lot of static web pages that
 are generated from a web application for community purposes.
@@ -135,24 +174,24 @@ or meetups.
 
 The community has been so far relying on [Frozen Flask] and [elsa]
 in order to generate the static web content.
-The new [freezer] ought to be used with any arbitrary Python Web
-application framework ([Flask], [Django], [Tornado], etc.).
-So the community won't be limited by one web app technology for
-generating static pages anymore.
+The new freezer ought to be used with any arbitrary Python Web
+application framework ([Flask], [Django], [Falcon], [Tornado], etc.).
+So the community won't be limited by one technology anymore.
 
-[Frozen Flask]: https://pythonhosted.org/Frozen-Flask/
+[Frozen Flask]: https://frozen-flask.readthedocs.io/en/latest/
 [elsa]: https://github.com/pyvec/elsa/
 [freezer]: https://github.com/encukou/freezeyt
-[Flask]: https://flask.palletsprojects.com/en/1.1.x/
 [Django]: https://www.djangoproject.com/
 [Tornado]: https://www.tornadoweb.org/en/stable/
+[Flask]: https://flask.palletsprojects.com/en/3.0.x/
+[Falcon]: https://falconframework.org/
 
 
-## Authors
+### Authors
 See GitHub history for all [contributors](https://github.com/encukou/freezeyt/graphs/contributors).
 
 
-## License
+### License
 
-This project is licensed under the [MIT License](LICENCE.MIT).
+This project is licensed under an [MIT License](licence.md).
 May it serve you well.

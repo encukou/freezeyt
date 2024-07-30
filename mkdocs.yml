@@ -7,6 +7,8 @@ nav:
   - 'Home': 'index.md'
   - 'Configuration': 'config.md'
   - 'Contributing': 'contrib.md'
+not_in_nav:
+  licence.md
 theme:
   name: mkdocs
   color_mode: auto
@@ -18,5 +20,7 @@ markdown_extensions:
       toc_depth: 3
   - codehilite
   - tables
+  - markdown_include.include:
+      base_path: docs
 extra_css:
   - css/pygments.css
