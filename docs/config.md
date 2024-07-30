@@ -1,6 +1,28 @@
 
 # Configuration
 
+## CLI
+
+The most common options for freezeyt can be given on the command line.
+These are usually shortcuts for the more powerful [YAML-based configuration](#yaml-config),
+or ways to load that configuration.
+
+| CLI option | YAML key |  Meaning |
+|----------|------------|----------|
+| `--help` | --- | Show help and exit |
+| APP (positional) | `app` | [Application to freeze](#conf-app) |
+| `-o`, `--output`, positional | `output` | [Output directory](#conf-output) |
+| `-c`, `--config` | --- | [Configuration file](#conf-cli-config) |
+| `-C`, `--import-config` | --- | [Configuration variable](#conf-cli-import-config) |
+| `--prefix` | `prefix` | [URL prefix](#conf-prefix) |
+| `--extra-page` | `extra_pages`  | [Extra pages](#conf-extra_pages) |
+| `--progress` | (plugins) | [Progress bar and logging](#conf-cli-progress) |
+| `--gh-pages` | `gh_pages` | [Github Pages Plugin](#conf-gh_pages) |
+| `--no-cleanup` | `cleanup` | Don't [clean up](#conf-cleanup) |
+| `-x`, `--fail-fast` | `fail_fast` | [Fail fast](#conf-fail_fast) |
+
+## YAML
+
 While common options can be given on the command line,
 you can have full control over the freezing process with a YAML
 configuration file or a variable with the configuration.
@@ -45,12 +67,35 @@ status_handlers:
 
 The following options are configurable:
 
-| Option | Meaning                                                       |
-|--------|---------------------------------------------------------------|
-| `app`  | [Application to freeze](#Selecting the application to freeze) |
+| YAML key | CLI option |  Meaning | Example |
+|----------|------------|----------|---------|
+| `app` | (positional) | [Application to freeze](#conf-app) | `'module:wsgi_app'` |
+| `output` | `-o`, `--output`, positional | [Output directory](#conf-output) | `'./_build/'` |
+| --- | `-c`, `--config` | [Configuration file](#conf-cli-config) | `'./freezeyt.yaml/'` |
+| --- | `-C`, `--inport-config` | [Configuration variable](#conf-cli-import-config) | `'module:conf'` |
+| --- | `--help` | [Show help](#conf-cli-help) | --- |
+| `prefix` | `--prefix` | [URL prefix](#conf-prefix) | `'https://mysite.example.com/subpage/'` |
+| `extra_pages` | `--extra-page` | [Extra pages](#conf-extra_pages) | (list) |
+| `extra_files` | --- | [Extra files](#conf-extra_files) | (dict) |
+| `cleanup` | `--no-cleanup` | [Clean up](#conf-cleanup) | `False` |
+| `fail_fast` | `-x` | [Fail fast](#conf-fail_fast) | `True` |
+| `gh_pages` | `--gh-pages` | [Github Pages Plugin](#conf-gh_pages) | `True` |
+| `default_mimetype` | --- | [Default MIME type](#conf-default_mimetype) | `text/plain` |
+| `get_mimetype` | --- | [MIME type getter](#conf-default_mimetype) | `module:your_function` |
+| `mime_db_file` | --- | [MIME type database](#conf-mime_db_file) | `path/to/mime-db.json` |
+| (plugins) | `--progress` | [Progress bar and logging](#conf-cli-progress) | `log` |
+| `version` | --- | [Configuration version](#conf-version) | `1` |
+| `plugins` | --- | [Plugins](#conf-plugins) | (dict) |
+| `hooks` | --- | [Hooks](#conf-hooks) | (dict) |
+| `status_handlers` | --- | [HTTP Status handling](#conf-status_handlers) | (dict) |
+| `url_finders` | --- | [URL finders](#conf-url_finders) | (dict) |
+| `use_default_url_finders` | --- | [Use default URL finders](#conf-use_default_url_finders) | `False` |
+| `urls_from_link_headers` | --- | [Find URLs in Link headers](#conf-urls_from_link_headers) | `False` |
+| `url_to_path` | --- | [Path generation](#conf-url_to_path) | `my_module:url_to_path` |
+| `static_mode` | --- | [Middleware static mode](#conf-static_mode) | `True` |
 
 
-## Selecting the application to freeze
+## Application to freeze  {: #conf-app }
 
 The module that contains the application must be given on the command line as first argument or in the configuration file. Freezeyt looks for the variable *app* by default. A different variable can be specified using `:`.
 When the module is specified both by the command line and the config file
@@ -81,7 +126,7 @@ app: app_module:namespace.wsgi_application
 
 When configuration is given as a Python dict, `app` can be given as the WSGI application object, rather than a string.
 
-## Specifying the output
+## Output  {: #conf-output }
 
 To outupt the frozen website to a directory, specify
 the directory name:
@@ -110,7 +155,7 @@ frozen website) or raise an error.
 Best practice is to remove the output directory before freezing.
 
 
-### Output to dict
+### Output to dictionary
 
 For testing, `freezeyt` can output to a dictionary rather than save
 files to the disk.
@@ -141,7 +186,7 @@ will be represented as:
 This is not useful in the CLI, as the return value is lost.
 
 
-## URL prefix
+## URL prefix  {: #conf-prefix }
 
 The URL where the application will be deployed can be
 specified with:
@@ -162,7 +207,7 @@ The prefix can also be specified on thecommand line with e.g.:
 The CLI argument has priority over the config file.
 
 
-## Extra pages not reachable by links
+## Extra pages  {: #conf-extra_pages }
 
 URLs of pages that are not reachable by following links from the homepage
 can specified as “extra” pages in the configuration:
@@ -206,7 +251,7 @@ another_config = {
 ```
 
 
-## Extra files not served by the application
+## Extra files  {: #config-extra_files }
 
 Extra files to be included in the output can be specified,
 along with their content.
@@ -255,7 +300,7 @@ extra_files:
 Extra files cannot be specified on the CLI.
 
 
-## Clean up
+## Clean up  {: #conf-cleanup }
 
 If an error occurs during the "freeze" process, Freezeyt will delete the incomplete output directory.
 This prevents, for example, uploading incomplete results to a web hosting by mistake.
@@ -272,7 +317,7 @@ The command line switch has priority over the configuration.
 Use `--no-cleanup` to override `cleanup: False` from the config.
 
 
-## Fail fast
+## Fail fast  {: #conf-fail_fast }
 
 Fail fast mode stops the freezing of the app when the first error occurs.
 
@@ -294,7 +339,7 @@ $ freezeyt app -o output -x
 ```
 
 
-## Github Pages Plugin
+## Github Pages Plugin  {: #conf-gh_pages }
 
 To make it easier to upload frozen pages to ([Github Pages service](https://pages.github.com/)), you can also use the `--gh-pages` switch or the `gh_pages` key  in the configuration file, which creates a gh-pages git branch in the output directory.
 
@@ -322,7 +367,7 @@ wouldn't be able to serve the page correctly.
 
 This funtionality is provided by `freezeyt.Middleware`.
 
-### Default MIME type
+### Default MIME type  {: #conf-default_mimetype }
 
 It is possible to specify the MIME type used for files without an extension.
 For example, if your server of static pages defaults to plain text files,
@@ -337,7 +382,7 @@ then the `freezeyt` uses value `application/octet-stream`.
 
 The default mimetype cannot be specified on the CLI.
 
-### Recognizing file types from extensions
+### MIME type getter  {: #conf-get_mimetype }
 
 There is possibility to modify the way how to determine file type
 from file extension.
@@ -371,7 +416,7 @@ If `get_mimetype` returns `None`, `freezeyt` will use the configured `default_mi
 The get_mimetype function cannot be specified on the CLI.
 
 
-### Using a mime-db database
+### Using a mime-db database  {: #conf-mime_db_file }
 
 There is an option to use [the MIME type database from the `jshttp` project](https://github.com/jshttp/mime-db/blob/master/db.json),
 or a database with the same structure.
@@ -388,7 +433,7 @@ extensions to filetypes according to the database.
 The mime_db file cannot be specified on the CLI.
 
 
-## Progress bar and logging
+## Progress bar and logging  {: #conf-cli-progress }
 
 The CLI option `--progress` controls what `freezeyt` outputs as it
 handles pages:
@@ -404,7 +449,7 @@ It is possible to configure this in the config file using the plugins
 `freezeyt.progressbar:ProgressBarPlugin` and `freezeyt.progressbar:LogPlugin`.
 See below on how to enable plugins.
 
-## Configuration version
+## Configuration version  {: #conf-version }
 
 To ensure that your configuration will work unchanged in newer versions of freezeyt,
 you should add the current version number, `1`, to your configuration like this:
@@ -418,7 +463,7 @@ not work in future versions of freezeyt.
 
 The version parameter is not accepted on the command line.
 
-## Plugins
+## Plugins  {: #conf-plugins }
 
 It is possible to extend `freezeyt` with *plugins*, either ones that
 ship with `freezeyt` or external ones.
@@ -441,7 +486,7 @@ Usually, the plugin will call `freeze_info.add_hook` to register additional
 functions.
 
 
-## Hooks
+## Hooks  {: #conf-hooks }
 
 It is possible to register *hooks*, functions that are called when
 specific events happen in the freezing process.
@@ -530,7 +575,7 @@ set the `Freezeyt-Action` HTTP header to one of these values:
   an exception.
 
 
-### Status handling
+### HTTP Status handling  {: #conf-status_handlers }
 
 If the `Freezeyt-Action` header is not set, `freezeyt` will determine what to
 do based on the status.
@@ -578,7 +623,7 @@ Freezeyt's default actions, like `follow`, can be imported from `freezeyt.action
 A custom action should call one of these default actions and return the return value from it.
 
 
-## URL finding
+## URL finding  {: #conf-url_finders }
 
 `freezeyt` discovers new links in the application by URL finders. URL finders
 are functions whose goal is to find url of specific MIME type.
@@ -651,7 +696,7 @@ may be improved in the future.
 The default URL finder for CSS uses the [`cssutils`](https://pypi.org/project/cssutils/) library to find all
 links in a stylesheet.
 
-### Disabling default URL finders
+### Disabling default URL finders  {: #conf-use_default_url_finders }
 
 If a finder is not explictly specified in the configuration file, `freezeyt` will use the
 default for certain MIME type. For example, if you specify
@@ -665,7 +710,7 @@ use_default_url_finders: false
 ```
 
 
-### Finding URLs in Link headers
+### Finding URLs in Link headers  {: #conf-urls_from_link_headers }
 
 By default, `freezeyt` will follow URLs in `Link` HTTP headers.
 To disable this, specify:
@@ -700,7 +745,7 @@ if the URL path ends with `/`.
 `url_to_path` cannot be specified in the CLI.
 
 
-## Middleware static mode
+## Middleware static mode  {: #static_mode }
 
 When using the `freezeyt` middleware, you can enable *static mode*,
 which simulates behaviour after the app is saved to static pages:

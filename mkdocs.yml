@@ -20,6 +20,7 @@ markdown_extensions:
       toc_depth: 3
   - codehilite
   - tables
+  - attr_list
   - markdown_include.include:
       base_path: docs
 extra_css:
