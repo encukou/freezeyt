@@ -1,15 +1,36 @@
-
 # Configuration
+
+Freezeyt is primarily configured using a dictionary of options,
+usually loaded from a YAML (or JSON) file given on the command line (CLI)
+using the `-c/--config` argument, for example:
+
+```console
+$ python -m freezeyt my_app _build -c freezeyt.yaml
+```
+
+See [below](#example) for an example of what goes in the file.
+
+Instead of a file, you can also put the configuration in a Python
+dictionary and tell *freezeyt* to import it using the `-C/--import-config`
+argument.
+Like the application to freeze, the argument takes the name of an importable
+module and the name of a variable in that module, separated by a colon.
+For example:
+
+```console
+$ python -m freezeyt my_app _build -C my_app:freezeyt_config
+```
 
 ## CLI
 
-The most common options for freezeyt can be given on the command line.
-These are usually shortcuts for the more powerful [YAML-based configuration](#yaml-config),
-or ways to load that configuration.
+Most command-line arguments correspond directly to an configuration option.
+Unless documented otherwise, CLI arguments will override values
+from a file or dictionary.
 
-| CLI option | YAML key |  Meaning |
+Here is a full list of CLI arguments:
+
+| CLI argument | Option name |  Meaning |
 |----------|------------|----------|
-| `--help` | --- | Show help and exit |
 | APP (positional) | `app` | [Application to freeze](#conf-app) |
 | `-o`, `--output`, positional | `output` | [Output directory](#conf-output) |
 | `-c`, `--config` | --- | [Configuration file](#conf-cli-config) |
@@ -20,38 +41,12 @@ or ways to load that configuration.
 | `--gh-pages` | `gh_pages` | [Github Pages Plugin](#conf-gh_pages) |
 | `--no-cleanup` | `cleanup` | Don't [clean up](#conf-cleanup) |
 | `-x`, `--fail-fast` | `fail_fast` | [Fail fast](#conf-fail_fast) |
+| `--help` | --- | Show help and exit |
 
+## Example {: #example }
 
-### Configuration file (`-c`)  {: #conf-cli-config }
-
-You can specify a config file in YAML (or JSON) format using the `-c/--config`
-option, for example:
-
-```shell
-$ python -m freezeyt my_app _build -c freezeyt.yaml
-```
-
-### Configuration variable (`-C`)  {: #conf-cli-import-config }
-
-Instead of a YAML file, you can also put the configuration in a Python
-dictionary and tell *freezeyt* to import it using the `-C/--import-config`
-option.
-Like the application to freeze, the option takes the name of an importable
-module and the name of a variable in that module, separated by a colon.
-For example:
-
-```shell
-$ python -m freezeyt my_app _build -C my_app:freezeyt_config
-```
-
-
-## Overview
-
-While common options can be given on the command line,
-you can have full control over the freezing process with a YAML
-configuration file or a variable with the configuration.
-
-Here is an example configuration file:
+Here's an example YAML configuration file.
+See below for descriptions of the individual options.
 
 ```yaml
 output: ./_build/   # The website will be saved to this directory
@@ -75,15 +70,14 @@ status_handlers:
     "3xx": warn
 ```
 
+## Overview of the options
+
 The following options are configurable:
 
-| YAML key | Meaning | Example |
+| Option name | Meaning | Example |
 |----------|---------|---------|
 | `app` | [Application to freeze](#conf-app) | `'module:wsgi_app'` |
 | `output` | [Output directory](#conf-output) | `'./_build/'` |
-| --- | [Configuration file](#conf-cli-config) | `'./freezeyt.yaml/'` |
-| --- | [Configuration variable](#conf-cli-import-config) | `'module:conf'` |
-| --- | [Show help](#conf-cli-help) | --- |
 | `prefix` | [URL prefix](#conf-prefix) | `'https://mysite.example.com/subpage/'` |
 | `extra_pages` | [Extra pages](#conf-extra_pages) | (list) |
 | `extra_files` | [Extra files](#conf-extra_files) | (dict) |
@@ -93,7 +87,6 @@ The following options are configurable:
 | `default_mimetype` | [Default MIME type](#conf-default_mimetype) | `text/plain` |
 | `get_mimetype` | [MIME type getter](#conf-default_mimetype) | `module:your_function` |
 | `mime_db_file` | [MIME type database](#conf-mime_db_file) | `path/to/mime-db.json` |
-| (plugins) | [Progress bar and logging](#conf-cli-progress) | `log` |
 | `version` | [Configuration version](#conf-version) | `1` |
 | `plugins` | [Plugins](#conf-plugins) | (dict) |
 | `hooks` | [Hooks](#conf-hooks) | (dict) |
@@ -120,24 +113,33 @@ version: 1
 This is not mandatory. If the version is not given, the configuration may
 not work in future versions of freezeyt.
 
-The version parameter is not accepted on the command line.
 
 ### Application to freeze  {: #conf-app }
 
-The module that contains the application must be given on the command line as first argument or in the configuration file. Freezeyt looks for the variable *app* by default. A different variable can be specified using `:`.
-When the module is specified both by the command line and the config file
+The name of importable Python module that contains the application must be
+given in the configuration, or on the command line as first argument.
+
+Inside the module, *freezeyt* looks for the variable *app* by default.
+A different variable can be specified after the module name, separated by
+a colon (`:`).
+When the module is specified both on the command line and in the config file,
 an error is raised.
 
-Examples:
+When the configuration is a Python dict, `app` can be given directly as
+the WSGI application object, rather than a string.
+
+#### Examples
 
 Freezeyt looks for the variable `app` inside the module by default.
+In YAML, it looks like this:
+
 ```yaml
 app: app_module
 ```
 
 If `app` is in a submodule, separate package names with a dot:
 ```yaml
-app: folder1.folder2.app_module
+app: app_package.wsgi
 ```
 
 A different variable name can be specified by using `:`.
@@ -145,34 +147,30 @@ A different variable name can be specified by using `:`.
 app: app_module:wsgi_application
 ```
 
-If the variable is an attribute of some namespace, use dots in the variable name:
+In Python, the app can be given directly:
 
-```yaml
-app: app_module:namespace.wsgi_application
+```python
+my_app = Flask(__name__)
+...
+
+freezeyt_config = {'app': my_app}
 ```
-
-When configuration is given as a Python dict, `app` can be given as the WSGI application object, rather than a string.
 
 ### Output  {: #conf-output }
 
-To outupt the frozen website to a directory, specify
-the directory name:
+To output the frozen website to a directory, specify
+the directory name as a string:
 
 ```yaml
 output: ./_build/
 ```
 
-Or use the full form – using the `dir` *saver*:
+If output is not specified in the configuration,
+you must specify it on the command line, either by the `--output` (`-o`)
+option or as a second positional argument.
 
-```yaml
-output:
-    type: dir
-    dir: ./_build/
-```
-
-If output is not specified in the configuration file,
-you must specify the output directory on the command line.
-There are two ways to specify the output on the command line: either by the `--output` (`-o`) option or as a second positional argument.
+---
+<!-- continue from here -->
 
 The output must be specified just by one way otherwise is an error.
 
@@ -181,6 +179,15 @@ freezeyt will either remove it (if the content looks like a previously
 frozen website) or raise an error.
 Best practice is to remove the output directory before freezing.
 
+#### The full form
+
+Or use the full form – using the `dir` *saver*:
+
+```yaml
+output:
+    type: dir
+    dir: ./_build/
+```
 
 #### Output to dictionary
 
