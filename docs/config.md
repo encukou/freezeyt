@@ -158,42 +158,32 @@ freezeyt_config = {'app': my_app}
 
 ### Output  {: #conf-output }
 
-To output the frozen website to a directory, specify
-the directory name as a string:
+The `output` option conifgures the output directory, where the
+result is saved:
 
 ```yaml
 output: ./_build/
 ```
 
-If output is not specified in the configuration,
-you must specify it on the command line, either by the `--output` (`-o`)
-option or as a second positional argument.
+Alternatively, the output directory can be specified on the command line,
+either by the `--output` (`-o`) argument or as a second positional argument.
 
----
-<!-- continue from here -->
-
-The output must be specified just by one way otherwise is an error.
+The output must be specified in only one way; providing both the config
+option and CLI argument is an error.
 
 If there is any existing content in the output directory,
 freezeyt will either remove it (if the content looks like a previously
 frozen website) or raise an error.
 Best practice is to remove the output directory before freezing.
 
-#### The full form
-
-Or use the full form – using the `dir` *saver*:
-
-```yaml
-output:
-    type: dir
-    dir: ./_build/
-```
-
 #### Output to dictionary
 
-For testing, `freezeyt` can output to a dictionary rather than save
-files to the disk.
-This can be configured with:
+*Freezeyt* can return the result in a dictionary,
+rather than save it to disk.
+Note that this stores the entire frozen website in memory,
+so it is mostly useful for testing.
+This can be configured by setting `output` to the dictionary
+`{'type': 'dict'}`, rather than to a string:
 
 ```yaml
 output:
@@ -217,13 +207,27 @@ will be represented as:
 }
 ```
 
-This is not useful in the CLI, as the return value is lost.
+#### Explicitly output to disk
+
+It is possible to explicitly request *freezeyt* to output to a directory
+using a dict like this:
+
+```yaml
+output:
+    type: dir
+    dir: ./_build/
+```
+
+This is equivalent to the string `./_build/`, or passing `./_build/` as the
+CLI argument.
+
+There are currently no output types other that `dir` and `dict`.
 
 
 ### URL prefix  {: #conf-prefix }
 
 The URL where the application will be deployed can be
-specified with:
+specified with `prefix`, for example:
 
 ```yaml
 prefix: http://localhost:8000/
@@ -233,8 +237,22 @@ or
 prefix: https://mysite.example.com/subpage/
 ```
 
-Freezeyt will freeze all pages starting with `prefix` that
-it finds.
+The *prefix* URL must end with a slash.
+
+The page at the *prefix* URL is considered the application's “home page”,
+and will always be frozen.
+
+*freezeyt* considers all pages under the prefix to be part of
+the application.
+For example, with the second prefix above:
+
+- `https://mysite.example.com/subpage/blog.html` would be followed,
+  and the page would be frozen at `<output_directory>/blog.html`;
+- `https://mysite.example.com/about.html` would be considered an external link,
+  and ignored.
+
+The prefix is also passed to the application as the server and script name,
+which should be used whenever the app generates absolute URLs.
 
 The prefix can also be specified on thecommand line with e.g.:
 `--prefix=http://localhost:8000/`.
@@ -242,6 +260,19 @@ The CLI argument has priority over the config file.
 
 
 ## Extra content
+
+Usually, *freezeyt* saves pages that are reachable by links from the app's
+home page.
+There are two cases when this is not enough, and you need to specify
+extra content manually:
+
+- Extra *pages* are part of the application, but not reachable by following
+  links. For example, a an old URL that redirects to a new location should
+  be configured as an extra page.
+
+- Extra *files* are not part of the application.
+  Typically, these are used to configure the static page server, like
+  a `CNAME` file GitHub's or `.htaccess` for Apache.
 
 
 ### Extra pages  {: #conf-extra_pages }
@@ -251,18 +282,22 @@ can specified as “extra” pages in the configuration:
 
 ```yaml
 extra_pages:
-    - /extra/
-    - /extra2.html
+    - extra/
+    - extra2.html
 ```
 
-Freezeyt will handle these pages as if it found them by following links.
-(For example, by default it will follow links in extra pages.)
+The URLs should be relative (to the [prefix](#conf-prefix)).
+Absolute URLs are allowed, but they must start with the prefix.
 
-Extra pages may also be given on the command line,
-e.g. `--extra-page /extra/ --extra-page /extra2.html`.
+Freezeyt will handle these pages as if it found them as links.
+For example, by default it will follow links in extra pages.
+
+Extra pages may also be given with the `--extra-page` command line argument,
+which can be repeated (for example,
+`--extra-page extra/ --extra-page extra2.html`).
 The lists from CLI and the config file are merged together.
 
-You can also specify extra pages using a Python generator,
+You can also specify extra pages using a Python function,
 specified using a module name and function name as follows:
 
 ```yaml
@@ -270,20 +305,24 @@ extra_pages:
     - generator: my_app:generate_extra_pages
 ```
 
-The `generate_extra_pages` function should take the application
-as argument and return an iterable of URLs.
+This function should take the application as argument and return an iterable
+of URLs as strings.
 
-When using the Python API, a generator for extra pages can be specified
+When using the Python API, this function can be specified
 directly as a Python object, for example:
 
 ```python
+def generate_extra_pages(app):
+    yield 'extra/'
+    yield 'extra2.html'
+
 config = {
    ...
-   'extra_pages': [{'generator': my_generator_function}],
+   'extra_pages': [{'generator': generate_extra_pages}],
 }
 another_config = {
    ...
-   'extra_pages': [my_generator_function],
+   'extra_pages': [generate_extra_pages],
 }
 ```
 
@@ -292,28 +331,33 @@ another_config = {
 Extra files to be included in the output can be specified,
 along with their content.
 
-These files are not considered part of the app; freezeyt will not try to find
-links in them.
-
-This is useful for configuration of your static server.
-(For pages that are part of your website, we recommend
-adding them to your application rather than as extra files.)
-
-If you specify backslashes in `url part`, `freezeyt` convert them to forward slashes.
-
-For example, the following config will add 3 files to
-the output:
+For example, the following config will add 3 files to the output:
 
 ```yaml
 extra_files:
-      CNAME: mysite.example.com
+    CNAME: mysite.example.com
       ".nojekyll": ''
-      config/xyz: abc
+    config/xyz: abc
 ```
 
-You can also specify extra files using Base64 encoding or
-a file path, like so:
+The files will be:
 
+- `<output directory>/CNAME`, with the content `mysite.example.com`;
+- `<output directory>/.nojekyll`, empty;
+- `<output directory>/config/xyz`, with the content `abc`.
+
+These files are not considered part of the application.
+*Freezeyt* will not retrieve them from the app, and it will not try to find
+links in them.
+
+Extra files are mainly useful for configuration of your static server.
+For files that are part of the website,
+such as a [favicon](https://en.wikipedia.org/wiki/Favicon), we recommend
+adding them to your application, and either link to them or add them as
+[extra *pages*](#conf-extra_pages).
+
+You can also specify extra file content using the Base64 encoding (`base64`) or
+as a filesystem path to be copied (`copy_from`), like so:
 
 ```yaml
 extra_files:
@@ -323,160 +367,138 @@ extra_files:
         copy_from: included/config2.dat
 ```
 
-It's possible to recursively copy an entire directory using `copy_from`,
-as in:
+If the `copy_from` path names a directory, it will be copied recursively.
 
-
-```yaml
-extra_files:
-    static:
-        copy_from: static/
-```
+In the file name, *freezeyt* treats both backslashes and forward slashes
+as path separators.
 
 Extra files cannot be specified on the CLI.
 
 
 ## Debugging options
 
+The following options are useful when debugging your application,
+or its integration with *freezeyt*.
+
 
 ### Clean up  {: #conf-cleanup }
 
-If an error occurs during the "freeze" process, Freezeyt will delete the incomplete output directory.
-This prevents, for example, uploading incomplete results to a web hosting by mistake.
+By default, if an error occurs during freezing, *freezeyt* will delete
+the incomplete output directory.
+This is meant to prevent uploading incomplete results to web hosting by mistake.
 
 If you want to keep the incomplete directory (for example,
-to help debugging), you can use the `--no-cleanup` switch
-or the `cleanup` key in the configuration file:
+to help debugging), you can use the `--no-cleanup` command line switch
+or the `cleanup` configuration option:
+
+```shell
+$ freezeyt app -o ./build/ --no-cleanup
+```
 
 ```yaml
 cleanup: False
 ```
 
 The command line switch has priority over the configuration.
-Use `--no-cleanup` to override `cleanup: False` from the config.
+Use `--cleanup` to override `cleanup: False` from the config.
 
 
 ### Fail fast  {: #conf-fail_fast }
 
-Fail fast mode stops the freezing of the app when the first error occurs.
+By default, *freezeyt* collects errors it finds on individual pages,
+and presents them all when done.
+To stop the process early when the first error occurs, use the
+the `--fail-fast` (`-x`) command line switch or the `fail_fast` configuration option:
 
-As with most settings, fail fast can be set both in the configuration file and in the command line using switches (the command line always overrides the configuration file).
-The fail fast is defined as `boolean` option.
-
-If you want to specified fail fast in configuration file, use key `fail_fast` with
- `boolean` values `True` or `False`:
+```shell
+$ freezeyt app -o ./build/ --fail-fast
+```
 
 ```yaml
 fail_fast: True
 ```
 
-If you want to specified fail fast from command line, use switches
- `--fail-fast` (short `-x`) resp. `--no-fail-fast` to disable it:
-
-```shell
-$ freezeyt app -o output -x
-```
+The command line switch has priority over the configuration.
+Use `--no-fail-fast` to override `fail_fast: True` from the config.
 
 
-## Built-in plugins
+## Customizing the process
+
+Here are ways to configure details of how *freezeyt* saves pages.
 
 
-### Github Pages Plugin  {: #conf-gh_pages }
+### MIME type checking
 
-To make it easier to upload frozen pages to ([Github Pages service](https://pages.github.com/)), you can also use the `--gh-pages` switch or the `gh_pages` key  in the configuration file, which creates a gh-pages git branch in the output directory.
+When web pages are saved to files on disk, some information is lost.
+The most prominent piece of lost info is the
+[`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type)
+HTTP header, that is, the document's MIME type.
 
-By default, the Github Pages Plugin is not active, however, if you have activated this plugin in your configuration, you can always override the current configuration with `--no-gh-pages` switch in the CLI.
+Static page servers typically look at a file's extension to determine
+the `Content-Type` -- for example, `index.html` is served as a HTML document
+(`text/html`) and `smile.png` is served as a PNG image (`image/png`).
 
-Configuration example:
-```yaml
-gh_pages: True
-```
-
-To deploy a site to Github, you can then work with the git repository directly in the output directory or pull the files into another repository/directory.
-You can then pull/fetch files from the newly created gh-pages git branch in many ways, e.g:
-```shell
-git fetch output_dir gh-pages
-git branch --force gh-pages FETCH_HEAD
-```
-Note: This will overwrite the current contents of the `gh-pages` branch, because of the `--force` switch.
-
-
-### Progress bar and logging  {: #conf-cli-progress }
-
-The CLI option `--progress` controls what `freezeyt` outputs as it
-handles pages:
-
-* `--progress=log`: Output a message about each frozen page to stdout.
-* `--progress=bar`: Draw a status bar in the terminal. Messages about
-  each frozen page are *also* printed to stdout.
-* `--progress=none`: Don't do any of this.
-
-The default is `bar` if stdout is a terminal, and `log` otherwise.
-
-It is possible to configure this in the config file using the plugins
-`freezeyt.progressbar:ProgressBarPlugin` and `freezeyt.progressbar:LogPlugin`.
-See below on how to enable plugins.
-
-
-## Freezing
-
-
-### Comparison of MIME type and file type
-
-Freezeyt checks whether the file extensions in its output
+To ensure that the application will work as intended when frozen and served
+with such a server, *freezeyt* verifies that the extensions of saved files
 correspond to the MIME types served by the app.
-If there's a mismatch, freezeyt fails, because this means a server
-wouldn't be able to serve the page correctly.
 
-This funtionality is provided by `freezeyt.Middleware`.
+This funtionality is provided by [`freezeyt.Middleware`](/#middleware).
+
+The exact mapping between extensions and `Content-Type` values varies
+between servers.
+*Freezeyt* uses Python's `mimetypes` module by default, but provides
+several ways to customize it.
 
 #### Default MIME type  {: #conf-default_mimetype }
 
-It is possible to specify the MIME type used for files without an extension.
-For example, if your server of static pages defaults to plain text files,
+Files without an extension are, by default, served as `application/octet-stream`
+(arbitrary binary data).
+This can be configured using the `default_mimetype` option.
+For example, if your static page server defaults to plain text files,
 use:
 
 ```yaml
 default_mimetype=text/plain
 ```
 
-If the default MIME type isn't explicitly configured in YAML configuration,
-then the `freezeyt` uses value `application/octet-stream`.
-
-The default mimetype cannot be specified on the CLI.
+----
+<!-- continue from here -->
 
 #### MIME type getter  {: #conf-get_mimetype }
 
-There is possibility to modify the way how to determine file type
-from file extension.
-You can setup your own `get_mimetype` function.
-
-Freezeyt will register your own function, if you specify it in configuration
-YAML file as:
+The most flexible way to map file extensions to MIME types is with
+a custom function, which you can specify using the `get_mimetype` option.
+For example:
 
 ```yaml
 get_mimetype=module:your_function
 ```
 
-If the `get_mimetype` is not defined in configuration file,
-then `freezeyt` calls the python function `mimetypes.guess_type`
-and uses the mimetype (the first element) it returns.
+`get_mimetype` can be defined as a string in the form `"module:function"`,
+which names the function to call, or as a Python function
+(if configuring `freezeyt` using a Python dict).
 
-`get_mimetype` can be defined as:
-* strings in the form `"module:function"`, which name the function to call,
-* Python functions (if configuring `freezeyt` from Python, e.g. as a `dict`,
-  rather than YAML).
+The function will be called with one argument, the file path as a string, and
+it should returns a list of corresponding MIME types
+(for example, `["text/html"]` or `["audio/wav", "audio/wave"]`).
 
-The `get_mimetype`:
-* gets one argument - the `filepath` as `str`
+If `get_mimetype` instead returns `None`, `freezeyt` will use the
+[default MIME type](#conf-default_mimetype).
 
-* returns file MIME types as a `list` of MIME types
-  (e.g. `["text/html"]` or `["audio/wav", "audio/wave"]`).
+By default, `freezeyt` calls the Python function
+[`mimetypes.guess_type`](https://docs.python.org/3/library/mimetypes.html#mimetypes.guess_type)
+and uses the `type` (the first element) of the result:
 
-If `get_mimetype` returns `None`, `freezeyt` will use the configured `default_mimetype`
-(see *Default MIME type* above).
-
-The get_mimetype function cannot be specified on the CLI.
+```python
+def default_mimetype(url: str) -> Optional[List[str]]:
+    file_mimetype, encoding = guess_type(url)
+    if file_mimetype is None:
+        # Freezeyt should use the default
+        return None
+    else:
+        # A one-element list
+        return [file_mimetype]
+```
 
 
 #### Using a mime-db database  {: #conf-mime_db_file }
@@ -551,7 +573,7 @@ The `freezeyt.url_finders` module includes:
 
 URL finders cannot be specified in the CLI.
 
-#### URL finder header
+#### URL finder header {: #conf-header-Freezeyt-URL-Finder }
 
 You can specify a finder in the `Freezeyt-URL-Finder` HTTP header.
 If given, it overrides the `url_finders` configuration.
@@ -698,7 +720,47 @@ plugins:
 ```
 
 
-### Middleware static mode  {: #static_mode }
+## Built-in plugins
+
+
+### Github Pages Plugin  {: #conf-gh_pages }
+
+To make it easier to upload frozen pages to ([Github Pages service](https://pages.github.com/)), you can also use the `--gh-pages` switch or the `gh_pages` key  in the configuration file, which creates a gh-pages git branch in the output directory.
+
+By default, the Github Pages Plugin is not active, however, if you have activated this plugin in your configuration, you can always override the current configuration with `--no-gh-pages` switch in the CLI.
+
+Configuration example:
+```yaml
+gh_pages: True
+```
+
+To deploy a site to Github, you can then work with the git repository directly in the output directory or pull the files into another repository/directory.
+You can then pull/fetch files from the newly created gh-pages git branch in many ways, e.g:
+```shell
+git fetch output_dir gh-pages
+git branch --force gh-pages FETCH_HEAD
+```
+Note: This will overwrite the current contents of the `gh-pages` branch, because of the `--force` switch.
+
+
+### Progress bar and logging  {: #conf-cli-progress }
+
+The CLI option `--progress` controls what `freezeyt` outputs as it
+handles pages:
+
+* `--progress=log`: Output a message about each frozen page to stdout.
+* `--progress=bar`: Draw a status bar in the terminal. Messages about
+  each frozen page are *also* printed to stdout.
+* `--progress=none`: Don't do any of this.
+
+The default is `bar` if stdout is a terminal, and `log` otherwise.
+
+It is possible to configure this in the config file using the plugins
+`freezeyt.progressbar:ProgressBarPlugin` and `freezeyt.progressbar:LogPlugin`.
+See below on how to enable plugins.
+
+
+## Middleware static mode  {: #static_mode }
 
 When using the `freezeyt` middleware, you can enable *static mode*,
 which simulates behaviour after the app is saved to static pages:
