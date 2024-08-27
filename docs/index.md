@@ -147,7 +147,7 @@ you can call `freeze_async` instead of `freeze`.
 [asyncio]: https://docs.python.org/3/library/asyncio.html
 
 
-### Middleware
+### Middleware  {: #middleware }
 
 Some of Freezeyt's functionality is available as a WSGI middleware.
 To use it, wrap your application in `freezeyt.Middeleware`. For example:

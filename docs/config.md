@@ -461,8 +461,6 @@ use:
 default_mimetype=text/plain
 ```
 
-----
-<!-- continue from here -->
 
 #### MIME type getter  {: #conf-get_mimetype }
 
@@ -503,79 +501,84 @@ def default_mimetype(url: str) -> Optional[List[str]]:
 
 #### Using a mime-db database  {: #conf-mime_db_file }
 
-There is an option to use [the MIME type database from the `jshttp` project](https://github.com/jshttp/mime-db/blob/master/db.json),
-or a database with the same structure.
-(This is the database used by GitHub Pages).
-The database will be used to get file MIME type from file suffix.
+There is an option to use [the MIME type database from the `jshttp` project](https://github.com/jshttp/mime-db/blob/master/db.json)
+(the database used by GitHub Pages),
+or a database with the same structure, for mapping file names to MIME types.
 
-To use this database, add the path to the JSON file to `freezeyt` configuration:
+To use it, add the path to the JSON file to `freezeyt` configuration:
 ```yaml
 mime_db_file=path/to/mime-db.json
 ```
 This is equivalent to setting `get_mimetype` to a function that maps
 extensions to filetypes according to the database.
 
-The mime_db file cannot be specified on the CLI.
 
 ### URL finding  {: #conf-url_finders }
 
-`freezeyt` discovers new links in the application by URL finders. URL finders
-are functions whose goal is to find url of specific MIME type.
-`freezeyt` offers different configuration options to use URL finders:
+`freezeyt` discovers new pages in the application by searching for URLs
+in pages it processes. The search is done by *URL finders*,
+functions that find URLs in a specific page type.
 
-* use predefined URL finders for `text/html` or `text/css` (default),
-* define your own URL finder as your function,
-* turn off some of finders (section below)
-
-Example of configuration:
+You can configure which finder is used for which MIME type using
+the `url_finders` configuration key.
+In the default configuration, freezeyt finds links in HTML and CSS files.
+The default could be configured like this:
 
 ```yaml
 url_finders:
-    text/html: get_html_links
-    text/css: get_css_links
+    text/html: freezeyt.url_finders:get_html_links
+    text/css: freezeyt.url_finders:get_css_links
 ```
 
-Keys in the `url_finders` dict are MIME types;
+Keys in the `url_finders` dict are MIME types.
+Values are functions, which can be defined as:
 
-Values are URL finders, which can be defined as:
-* strings in the form `"module:function"`, which name the finder
-  function to call,
-* strings like `get_html_links`, which name a function from the
-  `freezeyt.url_finders` module, or
-* Python functions (if configuring `freezeyt` from Python rather than
-  YAML).
+* Strings in the form `"module:function"`, which name the finder
+  function to call.
+* Python functions (if configuring `freezeyt` from Python).
+* Strings without a colon (`:`), which name a function from the
+  `freezeyt.url_finders` module. Using this shortcut, the default configuration
+  could also be written as:
+
+        url_finders:
+            text/html: get_html_links
+            text/css: get_css_links
 
 
-An URL finder gets these arguments:
-* page content `BinaryIO`,
-* the absolute URL of the page, as a `string`,
-* the HTTP headers, as a list of tuples (WSGI).
+    The `freezeyt.url_finders` module includes these finders:
+
+    - `get_html_links`, the default finder for HTML
+    - `get_css_links`, the default finder for CSS
+    - `get_html_links_async` and `get_css_links_async`, asynchronous variants
+      of the above
+    - `none`, a finder that doesn't find any links.
+
+An URL finder function gets these arguments:
+
+* The page content, as a binary file open for reading (for example,
+  `io.BinaryIO`),
+* the absolute URL of the page, as a `str`, and
+* the HTTP headers, as a list of 2-tuples (as in WSGI).
 
 The function should return an iterator of all URLs (as strings) found
 in the page's contents, as they would appear in `href` or `src` attributes.
 Specifically:
 
 - The URLs can be relative.
-- External URLs (i.e. those not beginning with `prefix`) should be included.
+- External URLs (i.e. those not beginning with the [`prefix`](#conf-prefix))
+  should be included.
 
-Finder functions may be asynchronous:
-- The function can be defined with `async def` (i.e. return a
-  coroutine). If it is, freezeyt will use the result after `await`.
-- The function may be an asynchronous generator (defined with `async def`
-  and use `yield`). If so, freezeyt will use async iteration to handle it.
+Finder functions may be asynchronous.
+If the function returns a coroutine (for example, if it's defined with
+`async def`, freezeyt will use `await` on the result.
+If the function returns an asynchronous generator (for example, if it's
+defined with `async def` and uses `yield`), freezeyt will use async iteration
+to handle it.
 
-The `freezeyt.url_finders` module includes:
-- `get_html_links`, the default finder for HTML
-- `get_css_links`, the default finder for CSS
-- `get_html_links_async` and `get_css_links_async`, asynchronous variants
-  of the above
-- `none`, a finder that doesn't find any links.
-
-URL finders cannot be specified in the CLI.
 
 #### URL finder header {: #conf-header-Freezeyt-URL-Finder }
 
-You can specify a finder in the `Freezeyt-URL-Finder` HTTP header.
+You can specify a finder as a string in the `Freezeyt-URL-Finder` HTTP header.
 If given, it overrides the `url_finders` configuration.
 
 #### Default `get_html_links`
@@ -587,17 +590,18 @@ may be improved in the future.
 
 #### Default `get_css_links`
 
-The default URL finder for CSS uses the [`cssutils`](https://pypi.org/project/cssutils/) library to find all
-links in a stylesheet.
+The default URL finder for CSS uses the [`cssutils`](https://pypi.org/project/cssutils/)
+library to find all links in a stylesheet.
+This may be changed in the future.
 
 #### Disabling default URL finders  {: #conf-use_default_url_finders }
 
-If a finder is not explictly specified in the configuration file, `freezeyt` will use the
-default for certain MIME type. For example, if you specify
+If a finder is not explictly specified in the configuration file,
+`freezeyt` will use the default. For example, if you specify
 `text/html: my_custom_finder` only, `freezeyt` will use the default finder
 for `text/css`.
 
-You can disable this behaviour:
+You can disable this behavior:
 
 ```yaml
 use_default_url_finders: false
@@ -616,19 +620,21 @@ urls_from_link_headers: false
 
 ### Freeze actions
 
-By default, `freezeyt` will save the pages it finds.
-You can instruct it to instead ignore certain pages, or treat them as errors.
-This is most useful as a response to certain HTTP statuses (e.g. treat all
-`404 NOT FOUND` pages as errors), but can be used independently.
+For each page it finds, `freezeyt` will take an *action*: save the page,
+ignore it, or treat it as an error.
 
-To tell `freezeyt` what to do from within the application (or middleware),
-set the `Freezeyt-Action` HTTP header to one of these values:
+By default, `freezeyt` will save the pages with a `200 OK` HTTP status code,
+and raise an error for any other status code.
+
+You can configure the for an individual page from within the application
+(or middleware), by setting the `Freezeyt-Action` HTTP header to one of
+these strings:
 
 * `'save'`: `freezeyt` will save the body of the page.
 * `'ignore'`: `freezeyt` will not save any content for the page
 * `'warn'`: will save the content and send warn message to stdout
-* `'follow'`: `freezeyt` will save content from the redirected location
-  (this requires a `Location` header, which is usually added for redirects).
+* `'follow'`: `freezeyt` will save content from the redirected location.
+  This requires a `Location` header, which is usually added for redirects.
   Redirects to external pages are not supported.
 * `'error'`: fail; the page will not be saved and `freeze()` will raise
   an exception.
@@ -637,18 +643,17 @@ set the `Freezeyt-Action` HTTP header to one of these values:
 #### HTTP Status handling  {: #conf-status_handlers }
 
 If the `Freezeyt-Action` header is not set, `freezeyt` will determine what to
-do based on the status.
-By default, `200 OK` pages are saved and any others cause errors.
-The behavior can be customized using the `status_handlers` setting.
-For example, to ignore pages with the `404 NOT FOUND` status, set the
-`404` handler to `'ignore'`:
+do based on the HTTP status. The behavior can be customized using the
+`status_handlers` setting.
+For example, to ignore pages with the `404 NOT FOUND` status, rather than
+treat them as errors, set the `404` handler to `'ignore'`:
 
 ```yaml
 status_handlers:
     '404': ignore
 ```
 
-For example, `status_handlers` would be specified as:
+More varied `status_handlers` could be specified as:
 
 ```yaml
 status_handlers:
@@ -660,31 +665,32 @@ status_handlers:
     '5xx': error
 ```
 
-Note that the status code must be a string, so it needs to be quoted in the YAML file.
+Note that the status code must be a string.
+In a YAML file, it needs to be quoted.
 
-A range of statuses can be specified as a number (`1-5`) followed by lowercase `xx`.
+A range of statuses can be specified as one number (`1` to `5`) followed by
+lowercase `xx`.
 (Other "wildcards" like `50x` are not supported.)
 
-Status handlers cannot be specified in the CLI.
 
 #### Custom actions
 
 You can also define a custom action in `status_handlers` as:
-* a string in the form `'my_module:custom_action'`, which names a handler
-  function to call,
-* a Python function (if configuring `freezeyt` from Python rather than from
-  YAML).
 
-The action function takes one argument, `task` (TaskInfo): information about the freezing task.
-See the `TaskInfo` hook for a description.
-Freezeyt's default actions, like `follow`, can be imported from `freezeyt.actions`
-(e.g. `freezeyt.actions.follow`).
+* a string in the form `'my_module:custom_action'`, which names a handler
+  function to call, or
+* a Python function (if configuring `freezeyt` from Python).
+
+The action function takes one argument a [`TaskInfo`](pyapi.md#TaskInfo)
+with information about the page being frozen.
+Freezeyt's predefined actions, like `follow`, can be imported from
+`freezeyt.actions`.
 A custom action should call one of these default actions and return the return value from it.
 
 
 ### Path generation
 
-It is possible to customize the filenames that URLs are saved under
+It is possible to customize the filenames that pages are saved under
 using the `url_to_path` configuration key, for example:
 
 ```yaml
@@ -692,87 +698,104 @@ url_to_path: my_module:url_to_path
 ```
 
 The value can be:
-* a strings in the form `"module:function"`, which names the
-  function to call (the function can be omitted along with the colon,
-  and defaults to `url_to_path`), or
-* a Python function (if configuring `freezeyt` from Python rather than
-  YAML).
 
-The function receives the *path* of the URL to save, relative to the `prefix`,
-and should return a path to the saved file, relative to the build directory.
+* A string in the form `"module:function"`, which names the
+  function to call. The function can be omitted along with the colon,
+  and defaults to `url_to_path`.
+* A Python function, if configuring `freezeyt` from Python.
+
+The function receives one string: the *path* portion of the URL to save,
+relative to the `prefix`.
+It should return a path to the saved file, relative to the build directory,
+as a string.
 
 The default function, available as `freezeyt.url_to_path`, adds `index.html`
-if the URL path ends with `/`.
+if the URL ends with `/`.
 
-`url_to_path` cannot be specified in the CLI.
 
 ### Plugins  {: #conf-plugins }
 
-It is possible to extend `freezeyt` with *plugins*, either ones that
-ship with `freezeyt` or external ones.
+It is possible to extend `freezeyt` with *plugins*,
+either [“built-in” ones](#built-in-plugins) that ship with `freezeyt`
+or [external ones](#custom-plugins).
 
 Plugins are added using configuration like:
 
 ```yaml
 plugins:
-    - freezeyt.progressbar:ProgressBar
+    - freezeyt.plugins:ProgressBarPlugin
     - mymodule:my_plugin
 ```
 
 
-## Built-in plugins
+## Built-in plugins  {: #built-in-plugins }
 
 
 ### Github Pages Plugin  {: #conf-gh_pages }
 
-To make it easier to upload frozen pages to ([Github Pages service](https://pages.github.com/)), you can also use the `--gh-pages` switch or the `gh_pages` key  in the configuration file, which creates a gh-pages git branch in the output directory.
+To make it easier to upload frozen pages to the [Github Pages service](https://pages.github.com/),
+you can activate the GitHub Pages plugin using the `--gh-pages` CLI argument
+or the `gh_pages` key in the configuration.
+This creates a `gh-pages` git branch in the output directory.
 
-By default, the Github Pages Plugin is not active, however, if you have activated this plugin in your configuration, you can always override the current configuration with `--no-gh-pages` switch in the CLI.
+By default, the Github Pages Plugin is not active. However, if you have
+activated it in your configuration, you can override the choice in the CLI with
+`--no-gh-pages`.
 
 Configuration example:
 ```yaml
 gh_pages: True
 ```
 
-To deploy a site to Github, you can then work with the git repository directly in the output directory or pull the files into another repository/directory.
-You can then pull/fetch files from the newly created gh-pages git branch in many ways, e.g:
-```shell
-git fetch output_dir gh-pages
-git branch --force gh-pages FETCH_HEAD
+This is a shortcut for adding `freezeyt.plugins:GHPagesPlugin`
+to [`plugins`](#conf-plugins).
+
+To deploy a site to Github, you can then work with the git repository directly
+in the output directory or pull the files into another repository/directory.
+You can then pull/fetch files from the newly created `gh-pages` git branch in
+many ways, for example:
+```console
+$ git fetch output_dir gh-pages
+$ git branch --force gh-pages FETCH_HEAD
 ```
-Note: This will overwrite the current contents of the `gh-pages` branch, because of the `--force` switch.
+Note that this will overwrite the current contents of the `gh-pages` branch,
+because of the `--force` switch.
 
 
 ### Progress bar and logging  {: #conf-cli-progress }
 
-The CLI option `--progress` controls what `freezeyt` outputs as it
+The CLI argument `--progress` controls what `freezeyt` outputs as it
 handles pages:
 
 * `--progress=log`: Output a message about each frozen page to stdout.
 * `--progress=bar`: Draw a status bar in the terminal. Messages about
-  each frozen page are *also* printed to stdout.
+  each frozen page are *also* printed to stdout, as with `log`.
 * `--progress=none`: Don't do any of this.
 
 The default is `bar` if stdout is a terminal, and `log` otherwise.
 
-It is possible to configure this in the config file using the plugins
-`freezeyt.progressbar:ProgressBarPlugin` and `freezeyt.progressbar:LogPlugin`.
-See below on how to enable plugins.
+Alternately, it is possible to configure logging by adding one of the following
+[`plugins`](#conf-plugins):
+
+* `freezeyt.progressbar:ProgressBarPlugin`
+* `freezeyt.progressbar:LogPlugin`
 
 
 ## Middleware static mode  {: #static_mode }
 
-When using the `freezeyt` middleware, you can enable *static mode*,
+When using the [`freezeyt` middleware](./index.md#middleware), you can enable *static mode*,
 which simulates behaviour after the app is saved to static pages:
 
 ```yaml
 static_mode: true
 ```
 
-Currently in static mode:
+Currently, in static mode:
+
 - HTTP methods other than GET and HEAD are disallowed.
 - URL parameters are removed
-- The request body is discarded
+- Request bodies are discarded
+- Non-default WSGI environ keys are removed
 
 Other restrictions and features may be added in the future, without regard
 to backwards compatibility.
@@ -784,14 +807,14 @@ having to freeze all of it after each change.
 ## Extending *freezeyt*
 
 
-### Custom plugins
+### Custom plugins  {: #custom-plugins }
 
 A plugin is a function that `freezeyt` will call before starting to
 freeze pages.
 
-It is passed a `FreezeInfo` object as argument (see the `start` hook below).
-Usually, the plugin will call `freeze_info.add_hook` to register additional
-functions.
+It is passed a [`FreezeInfo`](pyapi.md#FreezeInfo) object as argument.
+Usually, the plugin will its [`add_hook`](pyapi.md#FreezeInfo.add_hook) method
+to register additional functions.
 
 
 ### Hooks  {: #conf-hooks }
@@ -810,54 +833,34 @@ hooks:
         - mymodule:page_frozen
 ```
 
-When using the Python API, a function can be used instead of a name
-like `mymodule:start`.
+When configuring Freezeyt from Python, a function can be used directly
+instead of a string.
+
+The available hooks are:
 
 #### `start`
 
-The function will be called when the freezing process starts,
-before any other hooks.
+Called when the freezing process starts, before any other hooks.
 
-It is passed a `FreezeInfo` object as argument.
-The object has the following attributes:
+Takes one argument: a [`FreezeInfo`](pyapi.md#FreezeInfo) object.
 
-* `add_url(url, reason=None)`: Add the URL to the set of pages to be frozen.
-  If that URL was frozen already, or is outside the `prefix`, does nothing.
-  If you add a `reason` string, it will be used in error messages as the reason
-  why the added URL is being handled.
-* `add_hook(hook_name, callable)`: Register an additional hook function.
-* `total_task_count`: The number of pages `freezeyt` currently “knows about” –
-  ones that are already frozen plus ones that are scheduled to be frozen.
-* `done_task_count`: The number of pages that are done (either successfully
-  frozen, or failed).
-* `failed_task_count`: The number of pages that failed to freeze.
 
 #### `page_frozen`
 
-The function will be called whenever a page is processed successfully.
-It is passed a `TaskInfo` object as argument.
-The object has the following attributes:
+Called whenever a page is processed successfully.
 
-* `get_a_url()`: returns a URL of the page, including `prefix`.
-  Note that a page may be reachable via several URLs; this function returns
-  an arbitrary one.
-* `path`: the relative path the content is saved to.
-* `freeze_info`: a `FreezeInfo` object. See the `start` hook for details.
-* `exception`: for failed tasks, the exception raised;
-  `None` otherwise.
-* `reasons`: A list of strings explaining why the given page was visited.
-  (Note that as the freezing progresses, new reasons may be added to
-  existing tasks.)
+Takes one argument: a [`TaskInfo`](pyapi.md#TaskInfo) object.
 
 
 #### `page_failed`
 
-The function will be called whenever a page is not saved due to an
-exception.
-It is passed a `TaskInfo` object as argument (see the `page_frozen` hook).
+Called whenever a page is not saved due to an exception.
+
+Takes one argument: a [`TaskInfo`](pyapi.md#TaskInfo) object.
 
 
 #### `success`
 
-The function will be called after the app is successfully frozen.
-It is passed a `FreezeInfo` object as argument (see the `start` hook).
+Called after the app is successfully frozen.
+
+Takes one argument: a [`FreezeInfo`](pyapi.md#FreezeInfo) object.
