@@ -11,7 +11,7 @@ $ python -m freezeyt my_app _build -c freezeyt.yaml
 See [below](#example) for an example of what goes in the file.
 
 Instead of a file, you can also put the configuration in a Python
-dictionary and tell *freezeyt* to import it using the `-C/--import-config`
+dictionary and tell Freezeyt to import it using the `-C/--import-config`
 argument.
 Like the application to freeze, the argument takes the name of an importable
 module and the name of a variable in that module, separated by a colon.
@@ -52,7 +52,7 @@ See below for descriptions of the individual options.
 output: ./_build/   # The website will be saved to this directory
 prefix: https://mysite.example.com/subpage/
 extra_pages:
-    # Let freezeyt know about URLs that are not linked from elsewhere
+    # Let Freezeyt know about URLs that are not linked from elsewhere
     /robots.txt
     /easter-egg.html
 extra_files:
@@ -103,7 +103,7 @@ The following options are configurable:
 
 ### Configuration version  {: #conf-version }
 
-To ensure that your configuration will work unchanged in newer versions of freezeyt,
+To ensure that your configuration will work unchanged in newer versions of Freezeyt,
 you should add the current version number, `1`, to your configuration like this:
 
 ```yaml
@@ -111,7 +111,7 @@ version: 1
 ```
 
 This is not mandatory. If the version is not given, the configuration may
-not work in future versions of freezeyt.
+not work in future versions of Freezeyt.
 
 
 ### Application to freeze  {: #conf-app }
@@ -119,7 +119,7 @@ not work in future versions of freezeyt.
 The name of importable Python module that contains the application must be
 given in the configuration, or on the command line as first argument.
 
-Inside the module, *freezeyt* looks for the variable *app* by default.
+Inside the module, Freezeyt looks for the variable *app* by default.
 A different variable can be specified after the module name, separated by
 a colon (`:`).
 When the module is specified both on the command line and in the config file,
@@ -172,7 +172,7 @@ The output must be specified in only one way; providing both the config
 option and CLI argument is an error.
 
 If there is any existing content in the output directory,
-freezeyt will either remove it (if the content looks like a previously
+Freezeyt will either remove it (if the content looks like a previously
 frozen website) or raise an error.
 Best practice is to remove the output directory before freezing.
 
@@ -209,7 +209,7 @@ will be represented as:
 
 #### Explicitly output to disk
 
-It is possible to explicitly request *freezeyt* to output to a directory
+It is possible to explicitly request Freezeyt to output to a directory
 using a dict like this:
 
 ```yaml
@@ -242,7 +242,7 @@ The *prefix* URL must end with a slash.
 The page at the *prefix* URL is considered the application's “home page”,
 and will always be frozen.
 
-*freezeyt* considers all pages under the prefix to be part of
+Freezeyt considers all pages under the prefix to be part of
 the application.
 For example, with the second prefix above:
 
@@ -261,7 +261,7 @@ The CLI argument has priority over the config file.
 
 ## Extra content
 
-Usually, *freezeyt* saves pages that are reachable by links from the app's
+Usually, Freezeyt saves pages that are reachable by links from the app's
 home page.
 There are two cases when this is not enough, and you need to specify
 extra content manually:
@@ -369,7 +369,7 @@ extra_files:
 
 If the `copy_from` path names a directory, it will be copied recursively.
 
-In the file name, *freezeyt* treats both backslashes and forward slashes
+In the file name, Freezeyt treats both backslashes and forward slashes
 as path separators.
 
 Extra files cannot be specified on the CLI.
@@ -378,12 +378,12 @@ Extra files cannot be specified on the CLI.
 ## Debugging options
 
 The following options are useful when debugging your application,
-or its integration with *freezeyt*.
+or its integration with Freezeyt.
 
 
 ### Clean up  {: #conf-cleanup }
 
-By default, if an error occurs during freezing, *freezeyt* will delete
+By default, if an error occurs during freezing, Freezeyt will delete
 the incomplete output directory.
 This is meant to prevent uploading incomplete results to web hosting by mistake.
 
@@ -405,7 +405,7 @@ Use `--cleanup` to override `cleanup: False` from the config.
 
 ### Fail fast  {: #conf-fail_fast }
 
-By default, *freezeyt* collects errors it finds on individual pages,
+By default, Freezeyt collects errors it finds on individual pages,
 and presents them all when done.
 To stop the process early when the first error occurs, use the
 the `--fail-fast` (`-x`) command line switch or the `fail_fast` configuration option:
@@ -424,7 +424,7 @@ Use `--no-fail-fast` to override `fail_fast: True` from the config.
 
 ## Customizing the process
 
-Here are ways to configure details of how *freezeyt* saves pages.
+Here are ways to configure details of how Freezeyt saves pages.
 
 
 ### MIME type checking
@@ -439,7 +439,7 @@ the `Content-Type` -- for example, `index.html` is served as a HTML document
 (`text/html`) and `smile.png` is served as a PNG image (`image/png`).
 
 To ensure that the application will work as intended when frozen and served
-with such a server, *freezeyt* verifies that the extensions of saved files
+with such a server, Freezeyt verifies that the extensions of saved files
 correspond to the MIME types served by the app.
 
 This funtionality is provided by [`freezeyt.Middleware`](/#middleware).
@@ -474,16 +474,16 @@ get_mimetype=module:your_function
 
 `get_mimetype` can be defined as a string in the form `"module:function"`,
 which names the function to call, or as a Python function
-(if configuring `freezeyt` using a Python dict).
+(if configuring Freezeyt using a Python dict).
 
 The function will be called with one argument, the file path as a string, and
 it should returns a list of corresponding MIME types
 (for example, `["text/html"]` or `["audio/wav", "audio/wave"]`).
 
-If `get_mimetype` instead returns `None`, `freezeyt` will use the
+If `get_mimetype` instead returns `None`, Freezeyt will use the
 [default MIME type](#conf-default_mimetype).
 
-By default, `freezeyt` calls the Python function
+By default, Freezeyt calls the Python function
 [`mimetypes.guess_type`](https://docs.python.org/3/library/mimetypes.html#mimetypes.guess_type)
 and uses the `type` (the first element) of the result:
 
@@ -505,7 +505,7 @@ There is an option to use [the MIME type database from the `jshttp` project](htt
 (the database used by GitHub Pages),
 or a database with the same structure, for mapping file names to MIME types.
 
-To use it, add the path to the JSON file to `freezeyt` configuration:
+To use it, add the path to the JSON file to Freezeyt configuration:
 ```yaml
 mime_db_file=path/to/mime-db.json
 ```
@@ -515,13 +515,13 @@ extensions to filetypes according to the database.
 
 ### URL finding  {: #conf-url_finders }
 
-`freezeyt` discovers new pages in the application by searching for URLs
+Freezeyt discovers new pages in the application by searching for URLs
 in pages it processes. The search is done by *URL finders*,
 functions that find URLs in a specific page type.
 
 You can configure which finder is used for which MIME type using
 the `url_finders` configuration key.
-In the default configuration, freezeyt finds links in HTML and CSS files.
+In the default configuration, Freezeyt finds links in HTML and CSS files.
 The default could be configured like this:
 
 ```yaml
@@ -535,7 +535,7 @@ Values are functions, which can be defined as:
 
 * Strings in the form `"module:function"`, which name the finder
   function to call.
-* Python functions (if configuring `freezeyt` from Python).
+* Python functions (if configuring Freezeyt from Python).
 * Strings without a colon (`:`), which name a function from the
   `freezeyt.url_finders` module. Using this shortcut, the default configuration
   could also be written as:
@@ -570,9 +570,9 @@ Specifically:
 
 Finder functions may be asynchronous.
 If the function returns a coroutine (for example, if it's defined with
-`async def`, freezeyt will use `await` on the result.
+`async def`, Freezeyt will use `await` on the result.
 If the function returns an asynchronous generator (for example, if it's
-defined with `async def` and uses `yield`), freezeyt will use async iteration
+defined with `async def` and uses `yield`), Freezeyt will use async iteration
 to handle it.
 
 
@@ -597,8 +597,8 @@ This may be changed in the future.
 #### Disabling default URL finders  {: #conf-use_default_url_finders }
 
 If a finder is not explictly specified in the configuration file,
-`freezeyt` will use the default. For example, if you specify
-`text/html: my_custom_finder` only, `freezeyt` will use the default finder
+Freezeyt will use the default. For example, if you specify
+`text/html: my_custom_finder` only, Freezeyt will use the default finder
 for `text/css`.
 
 You can disable this behavior:
@@ -610,7 +610,7 @@ use_default_url_finders: false
 
 #### Finding URLs in Link headers  {: #conf-urls_from_link_headers }
 
-By default, `freezeyt` will follow URLs in `Link` HTTP headers.
+By default, Freezeyt will follow URLs in `Link` HTTP headers.
 To disable this, specify:
 
 ```yaml
@@ -620,20 +620,20 @@ urls_from_link_headers: false
 
 ### Freeze actions
 
-For each page it finds, `freezeyt` will take an *action*: save the page,
+For each page it finds, Freezeyt will take an *action*: save the page,
 ignore it, or treat it as an error.
 
-By default, `freezeyt` will save the pages with a `200 OK` HTTP status code,
+By default, Freezeyt will save the pages with a `200 OK` HTTP status code,
 and raise an error for any other status code.
 
 You can configure the for an individual page from within the application
 (or middleware), by setting the `Freezeyt-Action` HTTP header to one of
 these strings:
 
-* `'save'`: `freezeyt` will save the body of the page.
-* `'ignore'`: `freezeyt` will not save any content for the page
+* `'save'`: Freezeyt will save the body of the page.
+* `'ignore'`: Freezeyt will not save any content for the page
 * `'warn'`: will save the content and send warn message to stdout
-* `'follow'`: `freezeyt` will save content from the redirected location.
+* `'follow'`: Freezeyt will save content from the redirected location.
   This requires a `Location` header, which is usually added for redirects.
   Redirects to external pages are not supported.
 * `'error'`: fail; the page will not be saved and `freeze()` will raise
@@ -642,7 +642,7 @@ these strings:
 
 #### HTTP Status handling  {: #conf-status_handlers }
 
-If the `Freezeyt-Action` header is not set, `freezeyt` will determine what to
+If the `Freezeyt-Action` header is not set, Freezeyt will determine what to
 do based on the HTTP status. The behavior can be customized using the
 `status_handlers` setting.
 For example, to ignore pages with the `404 NOT FOUND` status, rather than
@@ -679,7 +679,7 @@ You can also define a custom action in `status_handlers` as:
 
 * a string in the form `'my_module:custom_action'`, which names a handler
   function to call, or
-* a Python function (if configuring `freezeyt` from Python).
+* a Python function (if configuring Freezeyt from Python).
 
 The action function takes one argument a [`TaskInfo`](pyapi.md#TaskInfo)
 with information about the page being frozen.
@@ -702,7 +702,7 @@ The value can be:
 * A string in the form `"module:function"`, which names the
   function to call. The function can be omitted along with the colon,
   and defaults to `url_to_path`.
-* A Python function, if configuring `freezeyt` from Python.
+* A Python function, if configuring Freezeyt from Python.
 
 The function receives one string: the *path* portion of the URL to save,
 relative to the `prefix`.
@@ -715,8 +715,8 @@ if the URL ends with `/`.
 
 ### Plugins  {: #conf-plugins }
 
-It is possible to extend `freezeyt` with *plugins*,
-either [“built-in” ones](#built-in-plugins) that ship with `freezeyt`
+It is possible to extend Freezeyt with *plugins*,
+either [“built-in” ones](#built-in-plugins) that ship with Freezeyt
 or [external ones](#custom-plugins).
 
 Plugins are added using configuration like:
@@ -764,7 +764,7 @@ because of the `--force` switch.
 
 ### Progress bar and logging  {: #conf-cli-progress }
 
-The CLI argument `--progress` controls what `freezeyt` outputs as it
+The CLI argument `--progress` controls what Freezeyt outputs as it
 handles pages:
 
 * `--progress=log`: Output a message about each frozen page to stdout.
@@ -783,7 +783,7 @@ Alternately, it is possible to configure logging by adding one of the following
 
 ## Middleware static mode  {: #static_mode }
 
-When using the [`freezeyt` middleware](./index.md#middleware), you can enable *static mode*,
+When using the [Freezeyt middleware](./index.md#middleware), you can enable *static mode*,
 which simulates behaviour after the app is saved to static pages:
 
 ```yaml
@@ -804,12 +804,12 @@ having to freeze all of it after each change.
 
 
 
-## Extending *freezeyt*
+## Extending Freezeyt
 
 
 ### Custom plugins  {: #custom-plugins }
 
-A plugin is a function that `freezeyt` will call before starting to
+A plugin is a function that Freezeyt will call before starting to
 freeze pages.
 
 It is passed a [`FreezeInfo`](pyapi.md#FreezeInfo) object as argument.
@@ -823,7 +823,7 @@ It is possible to register *hooks*, functions that are called when
 specific events happen in the freezing process.
 
 For example, if `mymodule` defines functions `start` and `page_frozen`,
-you can make freezeyt call them using this configuration:
+you can make Freezeyt call them using this configuration:
 
 ```yaml
 hooks:

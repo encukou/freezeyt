@@ -66,7 +66,7 @@ $ python -m pip install -e ."[blog, dev, typecheck]"
 [mypy]: https://www.mypy-lang.org/
 
 
-## Using an in-development copy of freezeyt
+## Using an in-development copy of Freezeyt
 
 * Set `PYTHONPATH` to the directory with Freezeyt, for example:
     * Unix: `export PYTHONPATH="/home/name/freezeyt"`
@@ -76,7 +76,7 @@ $ python -m pip install -e ."[blog, dev, typecheck]"
     * install the application using `pip`, if possible, or
     * install the application's dependencies and `cd` to the app's directory.
 
-* Run freezeyt, for example:
+* Run Freezeyt, for example:
     * `python -m freezeyt demo_app_url_for _build --prefix http://freezeyt.test/foo/`
 
 
@@ -104,7 +104,7 @@ $ tox
 
 ### Environ variables for tests
 
-Some test scenarios compare freezeyt's results with expected output.
+Some test scenarios compare Freezeyt's results with expected output.
 When the files with expected output don't exist yet,
 they can be created by setting the environment variable
 `TEST_CREATE_EXPECTED_OUTPUT` to `1`:

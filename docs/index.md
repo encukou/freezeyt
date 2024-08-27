@@ -40,7 +40,7 @@ The tool can be installed using:
 $ python -m pip install freezeyt
 ```
 
-To install a development version of freezeyt,
+To install a development version of Freezeyt,
 see [Contributing documentation].
 
 [Contributing documentation]: ./contrib.md
@@ -59,7 +59,7 @@ For detailed instructions, read on.
 
 ## Usage
 
-To use freezeyt, you need a Python web application.
+To use Freezeyt, you need a Python web application.
 You can use the [example Flask app] to start.
 
 [example Flask app]: https://flask.palletsprojects.com/en/2.3.x/quickstart/
@@ -69,12 +69,12 @@ ideally one named `app` which is the default in [Flask] and [Falcon].
 For other frameworks, search the documentation on how to export a WSGI
 application.
 
-Both the application and freezeyt need to be importable (installed) in your
+Both the application and Freezeyt need to be importable (installed) in your
 envuronment.
 
-Run freezeyt with two arguments: the Python module with your `app`,
+Run Freezeyt with two arguments: the Python module with your `app`,
 and an output directory.
-Note that freezeyt wants a *module* name (as used in an `import` statement).
+Note that Freezeyt wants a *module* name (as used in an `import` statement).
 Don't use a *file* name with a `.py` suffix.
 
 For example, if your `app` is defined in the file `my_app.py`, run:
