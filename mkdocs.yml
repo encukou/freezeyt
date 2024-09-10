@@ -16,6 +16,23 @@ theme:
   user_color_mode_toggle: true
   navigation_depth: 3
   # highlightjs: false  # disables user_color_mode_toggle?!
+watch:
+  - "freezeyt/"
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            paths: ["./"]  # actually not needed, default
+            show_source: false
+            show_root_heading: true
+            docstring_section_style: "list"
+            modernize_annotations: true
+            heading_level: 3
+            members_order: source
+            group_by_category: false
+            show_bases: false
+  - autorefs
 markdown_extensions:
   - toc:
       permalink: true

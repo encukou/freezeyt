@@ -20,7 +20,7 @@ process_pool_executor = concurrent.futures.ProcessPoolExecutor()
 
 
 class InfiniteRedirection(Exception):
-    """Infinite redirection was detected with redirect_policy='follow'"""
+    """Infinite redirection was detected in the `'follow'` [action][freeze-actions]."""
     def __init__(self, task: 'Task'):
         redirects_to = task.redirects_to
         assert redirects_to is not None
@@ -30,16 +30,16 @@ class InfiniteRedirection(Exception):
         )
 
 class ExternalURLError(ValueError):
-    """Unexpected external URL specified"""
+    """Unexpected external URL specified."""
 
 class RelativeURLError(ValueError):
-    """Absolute URL was expected"""
+    """Unexpected relative URL was expected."""
 
 class UnsupportedSchemeError(ValueError):
-    """Raised for URLs with unsupported schemes"""
+    """Raised for URLs with unsupported schemes."""
 
 class UnexpectedStatus(ValueError):
-    """The application returned an unexpected status code for a page"""
+    """The application returned an unexpected status code for a page."""
     def __init__(self, url: AbsoluteURL, status: str):
         self.url = urllib.parse.urlunsplit(url)
         self.status = status
@@ -55,7 +55,11 @@ class WrongMimetypeError(ValueError):
         )
 
 class MultiError(_MultiErrorBase):
-    """Contains multiple errors"""
+    """Contains multiple errors.
+
+    On Python 3.11 and above, this is a subclass of the built-in
+    `ExceptionGroup`.
+    """
     tasks: 'Sequence[TaskInfo]'
 
     if not HAVE_EXCEPTION_GROUP:

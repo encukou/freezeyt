@@ -1,4 +1,4 @@
-# Configuration
+# Configuration {: #configuration }
 
 Freezeyt is primarily configured using a dictionary of options,
 usually loaded from a YAML (or JSON) file given on the command line (CLI)
@@ -33,8 +33,8 @@ Here is a full list of CLI arguments:
 |----------|------------|----------|
 | APP (positional) | `app` | [Application to freeze](#conf-app) |
 | `-o`, `--output`, positional | `output` | [Output directory](#conf-output) |
-| `-c`, `--config` | --- | [Configuration file](#conf-cli-config) |
-| `-C`, `--import-config` | --- | [Configuration variable](#conf-cli-import-config) |
+| `-c`, `--config` | --- | [Configuration file](#configuration) |
+| `-C`, `--import-config` | --- | [Configuration variable](#configuration) |
 | `--prefix` | `prefix` | [URL prefix](#conf-prefix) |
 | `--extra-page` | `extra_pages`  | [Extra pages](#conf-extra_pages) |
 | `--progress` | (plugins) | [Progress bar and logging](#conf-cli-progress) |
@@ -326,7 +326,7 @@ another_config = {
 }
 ```
 
-### Extra files  {: #config-extra_files }
+### Extra files  {: #conf-extra_files }
 
 Extra files to be included in the output can be specified,
 along with their content.
@@ -442,7 +442,7 @@ To ensure that the application will work as intended when frozen and served
 with such a server, Freezeyt verifies that the extensions of saved files
 correspond to the MIME types served by the app.
 
-This funtionality is provided by [`freezeyt.Middleware`](/#middleware).
+This funtionality is provided by [`freezeyt.Middleware`][Middleware].
 
 The exact mapping between extensions and `Content-Type` values varies
 between servers.
@@ -681,14 +681,14 @@ You can also define a custom action in `status_handlers` as:
   function to call, or
 * a Python function (if configuring Freezeyt from Python).
 
-The action function takes one argument a [`TaskInfo`](pyapi.md#TaskInfo)
+The action function takes one argument a [`TaskInfo`][TaskInfo]
 with information about the page being frozen.
 Freezeyt's predefined actions, like `follow`, can be imported from
 `freezeyt.actions`.
 A custom action should call one of these default actions and return the return value from it.
 
 
-### Path generation
+### Path generation  {: #conf-url_to_path }
 
 It is possible to customize the filenames that pages are saved under
 using the `url_to_path` configuration key, for example:
@@ -781,9 +781,9 @@ Alternately, it is possible to configure logging by adding one of the following
 * `freezeyt.progressbar:LogPlugin`
 
 
-## Middleware static mode  {: #static_mode }
+## Middleware static mode  {: #conf-static_mode }
 
-When using the [Freezeyt middleware](./index.md#middleware), you can enable *static mode*,
+When using the [Freezeyt middleware][middleware], you can enable *static mode*,
 which simulates behaviour after the app is saved to static pages:
 
 ```yaml
@@ -812,8 +812,8 @@ having to freeze all of it after each change.
 A plugin is a function that Freezeyt will call before starting to
 freeze pages.
 
-It is passed a [`FreezeInfo`](pyapi.md#FreezeInfo) object as argument.
-Usually, the plugin will its [`add_hook`](pyapi.md#FreezeInfo.add_hook) method
+It is passed a [`FreezeInfo`][FreezeInfo] object as argument.
+Usually, the plugin will its [`add_hook`][FreezeInfo-add_hook] method
 to register additional functions.
 
 
@@ -842,25 +842,25 @@ The available hooks are:
 
 Called when the freezing process starts, before any other hooks.
 
-Takes one argument: a [`FreezeInfo`](pyapi.md#FreezeInfo) object.
+Takes one argument: a [`FreezeInfo`][FreezeInfo] object.
 
 
 #### `page_frozen`
 
 Called whenever a page is processed successfully.
 
-Takes one argument: a [`TaskInfo`](pyapi.md#TaskInfo) object.
+Takes one argument: a [`TaskInfo`][TaskInfo] object.
 
 
 #### `page_failed`
 
 Called whenever a page is not saved due to an exception.
 
-Takes one argument: a [`TaskInfo`](pyapi.md#TaskInfo) object.
+Takes one argument: a [`TaskInfo`][TaskInfo] object.
 
 
 #### `success`
 
 Called after the app is successfully frozen.
 
-Takes one argument: a [`FreezeInfo`](pyapi.md#FreezeInfo) object.
+Takes one argument: a [`FreezeInfo`][FreezeInfo] object.

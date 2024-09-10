@@ -44,6 +44,15 @@ STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
 def freeze(app: Optional[WSGIApplication], config: Config) -> SaverResult:
+    """Freeze the given *app*.
+
+
+    Args:
+        app: The application to freeze. If `None`, the application
+             is taken from *config*.
+        config: The configuration dict. See [Configuration][configuration]
+             for what goes in.
+    """
     return asyncio_run(freeze_async(app, config))
 
 
@@ -51,6 +60,10 @@ async def freeze_async(
     app: Optional[WSGIApplication],
     config: Config,
 ) -> SaverResult:
+    """Asynchronous version of [freeze][freezeyt.freeze].
+
+    If an asyncio event loop is active, call (and `await`) this function
+    rather than [freeze][freezeyt.freeze]."""
     freezer = Freezer(app, config)
     try:
         await freezer.prepare()
@@ -175,13 +188,13 @@ class Task:
         new_collection[self.path] = self
 
 class IsARedirect(BaseException):
-    """Raised when a page redirects and freezing it should be postponed"""
+    """Raised when a page redirects and freezing it should be postponed."""
 
 class IgnorePage(BaseException):
-    """Raised when freezing a page should be ignored"""
+    """Raised when freezing a page should be ignored."""
 
 class VersionMismatch(ValueError):
-    """Raised when major version in config is not correct"""
+    """Raised when major version in config is not correct."""
 
 def needs_semaphore(func):
     """Decorator for a "task" method that holds self.semaphore when running"""
