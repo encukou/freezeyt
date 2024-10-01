@@ -100,7 +100,7 @@ but do not rely on this.)
 [WSGI application]: https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 
 
-## More examples of CLI usage
+### More examples of CLI usage
 
 You can tell Freezeyt where the application will be hosted,
 so it can generate correct URLs:
