@@ -115,6 +115,13 @@ def parse_handlers(
 
 
 def default_url_to_path(path: str) -> str:
+    """Return the filesystem path corresponding to the given URL path.
+
+    Note that the input should only contain the path part of an URL; not,
+    for example, a hostname.
+
+    This function adds `index.html` to paths ending with a slash.
+    """
     if path.endswith('/') or not path:
         path = path + 'index.html'
     return encode_file_path(path)

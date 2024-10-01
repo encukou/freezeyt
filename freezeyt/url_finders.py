@@ -63,6 +63,7 @@ def _get_html_links(
 def get_html_links(
     html_file: BinaryIO, base_url: str, headers: _Headers=None,
 ) -> Iterable[str]:
+    """Yield URLs linked from a HTML page."""
     content = html_file.read()
     return _get_html_links(content, base_url, headers)
 
@@ -70,6 +71,7 @@ def get_html_links(
 def get_css_links(
     css_file: BinaryIO, base_url: str, headers: _Headers=None,
 )  -> Iterable[str]:
+    """Yield URLs linked from a CSS file."""
     content = css_file.read()
     return _get_css_links(content, base_url, headers)
 
@@ -77,6 +79,7 @@ def get_css_links(
 async def get_css_links_async(
     css_file: BinaryIO, base_url: str, headers: _Headers=None,
 )  -> Iterable[str]:
+    """Yield URLs linked from a HTML page, asynchronously."""
     loop = compat.get_running_loop()
     content = css_file.read()
     return await loop.run_in_executor(
@@ -87,6 +90,7 @@ async def get_css_links_async(
 async def get_html_links_async(
     html_file: BinaryIO, base_url: str, headers: _Headers=None,
 )  -> Iterable[str]:
+    """Yield URLs linked from a CSS file, asynchronously."""
     loop = compat.get_running_loop()
     content = html_file.read()
     return await loop.run_in_executor(
@@ -96,6 +100,11 @@ async def get_html_links_async(
 def none(
     html_file: BinaryIO, base_url: str, headers: _Headers=None,
 )  -> Iterable[str]:
+    """Return an empty sequence.
+
+    Useful for text-based configuration, where you can specify "none" to
+    disable finding links.
+    """
     return []
 
 if TYPE_CHECKING:

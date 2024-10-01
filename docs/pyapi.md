@@ -37,32 +37,45 @@ Objects of these classes are passed to custom [hooks][conf-hooks] and
 
 ## Types
 
-### `freezeyt.Config`
+::: freezeyt.Config
+
+A dictionary that holds [configuration][configuration] for Freezeyt.
 
 ## Actions
 
-### `freezeyt.actions.warn`
-### `freezeyt.actions.ignore`
-### `freezeyt.actions.follow`
-### `freezeyt.actions.save`
-### `freezeyt.actions.error`
+Built-in [actions][freeze-actions] are available as functions in
+the ``freezeyt.actions`` module.
+[Custom actions][custom-actions] should call one of these
+functions and return its result.
+
+::: freezeyt.actions.warn
+::: freezeyt.actions.ignore
+::: freezeyt.actions.follow
+::: freezeyt.actions.save
+::: freezeyt.actions.error
 
 ## URL finders
 
-### `freezeyt.url_finders.get_html_links`
-### `freezeyt.url_finders.get_html_links_async`
+Built-in [URL finders][conf-url_finders] are available as
+functions in the ``freezeyt.url_finders`` module:
 
-### `freezeyt.url_finders.get_css_links`
-### `freezeyt.url_finders.get_css_links_async`
+::: freezeyt.url_finders.get_html_links
+::: freezeyt.url_finders.get_html_links_async
 
-### `freezeyt.url_finders.none`
+::: freezeyt.url_finders.get_css_links
+::: freezeyt.url_finders.get_css_links_async
+
+::: freezeyt.url_finders.none
 
 ## Plugins
 
-### `freezeyt.plugins.ProgressBarPlugin`
-### `freezeyt.plugins.LogPlugin`
-### `freezeyt.plugins.GHPagesPlugin`
+[Built-in plugins][built-in-plugins] are available in the
+``freezeyt.plugins`` module:
+
+::: freezeyt.plugins.ProgressBarPlugin
+::: freezeyt.plugins.LogPlugin
+::: freezeyt.plugins.GHPagesPlugin
 
 ## Utilities
 
-### `freezeyt.url_to_path`
+::: freezeyt.url_to_path

@@ -442,7 +442,7 @@ To ensure that the application will work as intended when frozen and served
 with such a server, Freezeyt verifies that the extensions of saved files
 correspond to the MIME types served by the app.
 
-This funtionality is provided by [`freezeyt.Middleware`][Middleware].
+This funtionality is provided by [`freezeyt.Middleware`][freezeyt.Middleware].
 
 The exact mapping between extensions and `Content-Type` values varies
 between servers.
@@ -618,7 +618,7 @@ urls_from_link_headers: false
 ```
 
 
-### Freeze actions
+### Freeze actions  {: #freeze-actions }
 
 For each page it finds, Freezeyt will take an *action*: save the page,
 ignore it, or treat it as an error.
@@ -673,7 +673,8 @@ lowercase `xx`.
 (Other "wildcards" like `50x` are not supported.)
 
 
-#### Custom actions
+[](){#custom-actions}
+#### Custom freeze actions
 
 You can also define a custom action in `status_handlers` as:
 
@@ -681,7 +682,7 @@ You can also define a custom action in `status_handlers` as:
   function to call, or
 * a Python function (if configuring Freezeyt from Python).
 
-The action function takes one argument a [`TaskInfo`][TaskInfo]
+The action function takes one argument a [`TaskInfo`][freezeyt.TaskInfo]
 with information about the page being frozen.
 Freezeyt's predefined actions, like `follow`, can be imported from
 `freezeyt.actions`.
@@ -709,8 +710,8 @@ relative to the `prefix`.
 It should return a path to the saved file, relative to the build directory,
 as a string.
 
-The default function, available as `freezeyt.url_to_path`, adds `index.html`
-if the URL ends with `/`.
+The default function, available as [`freezeyt.url_to_path`][freezeyt.url_to_path],
+adds `"index.html"` if the URL ends with `/`.
 
 
 ### Plugins  {: #conf-plugins }
@@ -812,8 +813,8 @@ having to freeze all of it after each change.
 A plugin is a function that Freezeyt will call before starting to
 freeze pages.
 
-It is passed a [`FreezeInfo`][FreezeInfo] object as argument.
-Usually, the plugin will its [`add_hook`][FreezeInfo-add_hook] method
+It is passed a [`FreezeInfo`][freezeyt.FreezeInfo] object as argument.
+Usually, the plugin will its [`add_hook`][freezeyt.FreezeInfo.add_hook] method
 to register additional functions.
 
 
@@ -842,25 +843,25 @@ The available hooks are:
 
 Called when the freezing process starts, before any other hooks.
 
-Takes one argument: a [`FreezeInfo`][FreezeInfo] object.
+Takes one argument: a [`FreezeInfo`][freezeyt.FreezeInfo] object.
 
 
 #### `page_frozen`
 
 Called whenever a page is processed successfully.
 
-Takes one argument: a [`TaskInfo`][TaskInfo] object.
+Takes one argument: a [`TaskInfo`][freezeyt.TaskInfo] object.
 
 
 #### `page_failed`
 
 Called whenever a page is not saved due to an exception.
 
-Takes one argument: a [`TaskInfo`][TaskInfo] object.
+Takes one argument: a [`TaskInfo`][freezeyt.TaskInfo] object.
 
 
 #### `success`
 
 Called after the app is successfully frozen.
 
-Takes one argument: a [`FreezeInfo`][FreezeInfo] object.
+Takes one argument: a [`FreezeInfo`][freezeyt.FreezeInfo] object.

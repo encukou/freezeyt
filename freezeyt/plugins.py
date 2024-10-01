@@ -14,6 +14,7 @@ class GitCommandError(ValueError):
     """An exception occurred while executing git commands."""
 
 class ProgressBarPlugin:
+    """Plugin to fill a CLI progress par as a site is being frozen."""
     bar_format = '{percentage:3.0f}%▕{bar}▏{elapsed}, {rate:.2f} pg/s'
     def __init__(self, freeze_info: FreezeInfo):
         self.manager = enlighten.get_manager()
@@ -34,6 +35,7 @@ class ProgressBarPlugin:
         self.counter.update(0)
 
 class LogPlugin:
+    """Plugin to log progress messages to stderr."""
     def __init__(self, freeze_info: FreezeInfo):
         freeze_info.add_hook('page_frozen', self.page_frozen)
         freeze_info.add_hook('page_failed', self.page_failed)
@@ -64,6 +66,11 @@ class LogPlugin:
             traceback.print_exception(type(exc), exc, exc.__traceback__)
 
 class GHPagesPlugin:
+    """Plugin for GitHub Pages integration.
+
+    Saves the output to a Git repository, and adds extra files necessary
+    for GitHub Pages (`CNAME` and `.nojekyll`).
+    """
     def __init__(self, freeze_info: FreezeInfo):
         if freeze_info._freezer.prefix.path != "/":
             raise ValueError("When using the Github Pages plugin, you can't specify a path in the prefix, so github can't handle it.")
