@@ -66,8 +66,9 @@ available, it degrades gracefully.
 Not every website can be converted (“frozen”) to a set of files that can be
 served statically.
 There are two main concepts to keep in mind when designing a static site:
+MIME type mapping, limited number of pages, and known URLs.
 
-### MIME type mapping
+### MIME type mapping  {: #mime-type-mapping }
 
 When a Web server sends a Web page, it sends *headers* in addition to
 the content.
@@ -96,9 +97,29 @@ Freezeyt is designed to help you keep Content-Type and file extensions in sync,
 whether your app is currently not static-only or not.
 
 
-### URL finding
+### Limited number of pages  {: #limited-num-pages }
+
+For example, a calendar app might have a page for *any* month of any year, past
+or future. That many pages wouldn't fit on any reasonable disk.
+The static version of such a page would need to be limited, perhaps to one
+decade or century.
+
+This needs to be done in the application itself.
+To hide a page from Freezeyt only, the app can set the
+[`Freezeyt-Action`][freeze-actions] HTTP header to `ignore`.
 
 
+### Known URLs  {: #known-urls }
 
+Most pages of a typical websites are reachable via hyperlinks from the home
+page.
+Freezeyt will follow such links (in HTML and CSS documents) to find pages
+it needs to save.
+However, some types of pages aren't linked this way. For example:
 
+- Pages redirecting from old, obsolete URLs to new locations.
+- Data or script files loaded with JavaScript.
+
+You will need to tell Freezeyt about such pages using the
+[`extra_pages`][conf-extra_pages] mechanism.
 

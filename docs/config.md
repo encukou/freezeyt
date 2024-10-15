@@ -268,7 +268,7 @@ extra content manually:
 
 - Extra *pages* are part of the application, but not reachable by following
   links. For example, a an old URL that redirects to a new location should
-  be configured as an extra page.
+  be configured as an extra page. See [Known URLs][known-urls] for details.
 
 - Extra *files* are not part of the application.
   Typically, these are used to configure the static page server, like
@@ -429,19 +429,13 @@ Here are ways to configure details of how Freezeyt saves pages.
 
 ### MIME type checking
 
-When web pages are saved to files on disk, some information is lost.
-The most prominent piece of lost info is the
-[`Content-Type`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type)
-HTTP header, that is, the document's MIME type.
-
-Static page servers typically look at a file's extension to determine
-the `Content-Type` -- for example, `index.html` is served as a HTML document
-(`text/html`) and `smile.png` is served as a PNG image (`image/png`).
+For static sites to be served correctly on most servers, the MIME
+`Content-Type` of a page must match the saved file's extension.
+See [MIME type mapping][mime-type-mapping] for details.
 
 To ensure that the application will work as intended when frozen and served
 with such a server, Freezeyt verifies that the extensions of saved files
 correspond to the MIME types served by the app.
-
 This funtionality is provided by [`freezeyt.Middleware`][freezeyt.Middleware].
 
 The exact mapping between extensions and `Content-Type` values varies

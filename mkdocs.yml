@@ -5,9 +5,10 @@ edit_uri: edit/main/docs/
 # site_description:
 nav:
   - 'Home': 'index.md'
+  - 'Why?': 'why.md'
   - 'Configuration': 'config.md'
-  - 'Contributing': 'contrib.md'
   - 'API': 'pyapi.md'
+  - 'Contributing': 'contrib.md'
 not_in_nav:
   licence.md
 theme:

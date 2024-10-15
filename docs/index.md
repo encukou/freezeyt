@@ -1,8 +1,8 @@
 ---
-title: freezeyt
+title: Freezeyt
 ...
 
-# freezeyt
+# Freezeyt
 
 Freezeyt turns Python web applications into static websites.
 
