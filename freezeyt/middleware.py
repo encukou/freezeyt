@@ -14,6 +14,24 @@ from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
 
 
 class Middleware:
+    """WSGI middleware.
+
+    By default, the middleware:
+
+    - serves [extra pages][conf-extra_pages] and [extra files][conf-extra_files]
+    - checks that [mime types correspond to extensions][mime-type-checking]
+
+    If [static mode][conf-static_mode] is enabled, the middleware gives a
+    preview of how the application would work when frozen. Specifically:
+
+    - HTTP requests other than `GET` (and `OPTIONS`) are blocked
+    - Non-essential HTTP headers are removed
+    - Query strings and request bodies are removed
+
+    Args:
+        app: The application to wrap
+        config: The configuration dict, as for [freeze][freezeyt.freeze]
+    """
     def __init__(self, app: WSGIApplication, config: Config):
         self.app = app
         self.mimetype_checker = MimetypeChecker(config)

@@ -7,6 +7,7 @@ ActionFunction = Callable[[TaskInfo], str]
 
 
 def warn(task: TaskInfo) -> str:
+    """Save the content, but send warn message to stdout."""
     url = task.get_a_url()
     response_status = task._task.response_status
     if response_status is None:
@@ -21,6 +22,11 @@ def warn(task: TaskInfo) -> str:
 
 
 def follow(task: TaskInfo) -> str:
+    """Save content from the redirected location.
+
+    This requires a Location header, which is usually added for redirects.
+    Redirects to external pages are not supported.
+    """
     url = task._task.get_a_url()
     response_headers = task._task.response_headers
     if response_headers is None:
@@ -41,14 +47,17 @@ def follow(task: TaskInfo) -> str:
 
 
 def ignore(task: TaskInfo) -> str:
+    """Do not save any content for the page."""
     return 'ignore'
 
 
 def save(task: TaskInfo) -> str:
+    """Save the body of the page."""
     return 'save'
 
 
 def error(task: TaskInfo) -> str:
+    """Raise an exception."""
     return 'error'
 
 
