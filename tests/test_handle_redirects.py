@@ -24,7 +24,7 @@ def test_redirect_to_itself_by_different_URL():
 
     config = {'output': {'type': 'dict'}}
 
-    result=freeze(app, config)
+    result = freeze(app, config)
 
     expected = {'index.html': b"Hello world!"}
 
@@ -70,7 +70,7 @@ def test_redirect_to_itself_by_different_URL_with_double_slash_hop():
         'output': {'type': 'dict'},
     }
 
-    result=freeze(app, config)
+    result = freeze(app, config)
 
     expected = {'index.html': b"Hello world!"}
 
@@ -98,7 +98,7 @@ def test_redirect_to_itself_by_different_URL_with_query_hop():
         'output': {'type': 'dict'},
     }
 
-    result=freeze(app, config)
+    result = freeze(app, config)
 
     expected = {'index.html': b"Hello world!"}
 
@@ -126,7 +126,7 @@ def test_redirect_to_itself_by_different_URL_with_hop():
         'output': {'type': 'dict'},
     }
 
-    result=freeze(app, config)
+    result = freeze(app, config)
 
     expected = {
         'index.html': b"Hello world!",
