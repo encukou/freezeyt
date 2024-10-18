@@ -1,11 +1,11 @@
 from flask import Flask, Response, url_for
 
-#Flask dynamic app can define for one static file
-#different URLs with different content (e.g. '/', '/index.html'),
-#It is complicated for Freezeyt as static server to disntict
-#two different URLs for one static file.
-#One content will be always lost.
-#    In case of redirection ..... ????????
+"""
+Two different URLs can be freezed sometimes as same static file,
+situation is difficult especially if there is redirection.
+Freezeyt has to recognized URLs which are sharing one static file
+as the output of freezing.
+"""
 
 app = Flask(__name__)
 freeze_config = {

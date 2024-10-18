@@ -2,13 +2,13 @@ from flask import Flask, redirect, url_for, request
 
 from freezeyt import freeze
 
-def test_redirect_to_itself_by_different_URL():
     """WSGI app can define for one static file
     different URLs with different content (e.g. '/', '/index.html'),
     It is complicated for Freezeyt as static server to disntict
     two different URLs for one static file.
     One content will be always lost.
     In case of redirection ..... ????????
+def test_redirect_to_same_static_file():
     """
 
     app = Flask(__name__)
@@ -31,7 +31,7 @@ def test_redirect_to_itself_by_different_URL():
     assert result == expected
 
 
-def test_infinite_redirect_to_itself_by_different_URL():
+def test_infinite_redirect_to_same_static_file():
     app = Flask(__name__)
 
     @app.route('/')
@@ -49,7 +49,7 @@ def test_infinite_redirect_to_itself_by_different_URL():
     freeze(app, config)
 
 
-def test_redirect_to_itself_by_different_URL_with_double_slash_hop():
+def test_redirect_to_same_static_file_with_double_slash_hop():
     app = Flask(__name__)
 
     @app.route('/')
@@ -77,7 +77,7 @@ def test_redirect_to_itself_by_different_URL_with_double_slash_hop():
     assert result == expected
 
 
-def test_redirect_to_itself_by_different_URL_with_query_hop():
+def test_redirect_to_same_static_file_with_query_hop():
     app = Flask(__name__)
 
     @app.route('/')
@@ -105,7 +105,7 @@ def test_redirect_to_itself_by_different_URL_with_query_hop():
     assert result == expected
 
 
-def test_redirect_to_itself_by_different_URL_with_hop():
+def test_redirect_to_same_static_file_with_hop():
     app = Flask(__name__)
 
     @app.route('/')
