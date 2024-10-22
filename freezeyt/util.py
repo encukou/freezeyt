@@ -18,6 +18,12 @@ if TYPE_CHECKING:
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
 
+def format_url(url):
+    if isinstance(url, urllib.parse.SplitResult):
+        return urllib.parse.urlunsplit(url)
+    else:
+        return str(url)
+
 
 class InfiniteRedirection(Exception):
     """Infinite redirection was detected with redirect_policy='follow'"""
@@ -25,7 +31,8 @@ class InfiniteRedirection(Exception):
         redirects_to = task.redirects_to
         assert redirects_to is not None
         super().__init__(
-            f'{task.get_a_url()} redirects to {redirects_to.get_a_url()},'
+            f'{format_url(task.get_a_url())} redirects to'
+            + f' {format_url(redirects_to.get_a_url())},'
             + ' which was not frozen (most likely because of infinite redirection)'
         )
 
