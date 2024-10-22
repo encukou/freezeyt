@@ -48,9 +48,17 @@ def test_infinite_redirect_to_same_static_file():
         """Redirecting to /"""
         return redirect(url_for('index'))
 
-    config = {'output': {'type': 'dict'}}
+    with raises_multierror_with_one_exception(UnexpectedStatus):
+        config = {'output': {'type': 'dict'}}
+        freeze(app, config)
 
-    freeze(app, config)
+    # TODO: This should raise a MultiError.
+    with pytest.raises(InfiniteRedirection):
+        config = {
+            'output': {'type': 'dict'},
+            'status_handlers': {'3xx': 'follow'},
+        }
+        freeze(app, config)
 
 
 def test_redirect_to_same_static_file_with_double_slash_hop():
