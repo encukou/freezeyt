@@ -1,6 +1,10 @@
 from flask import Flask, redirect, url_for, request
+import pytest
 
-from freezeyt import freeze
+from freezeyt import freeze, UnexpectedStatus, InfiniteRedirection
+
+from testutil import raises_multierror_with_one_exception
+
 
 def test_redirect_to_same_static_file():
     """One URL redirects to next URL which freeze
@@ -133,16 +137,31 @@ def test_redirect_to_same_static_file_with_hop():
     def index_html():
         return "Hello world!"
 
-    config = {
-        'output': {'type': 'dict'},
-    }
+    # By default, a redirect is considered an error.
+    # The `/` -> `/second_page.html` is a normal redirect.
+    with raises_multierror_with_one_exception(UnexpectedStatus):
+        config = {
+            'output': {'type': 'dict'},
+        }
+        freeze(app, config)
 
-    result = freeze(app, config)
+    # When following redirects, all of the pages have the same content.
+    # But, we don't have the machinery to detect this yet,
+    # so we raise an error.
 
-    expected = {
-        'index.html': b"Hello world!",
-        'second_page.html': b"Hello world!",
-    }
+    # TODO: This should raise a MultiError.
+    # TODO: This case should raise a better error.
+    with pytest.raises(InfiniteRedirection):
+        config = {
+            'output': {'type': 'dict'},
+            'status_handlers': {'3xx': 'follow'},
+        }
+        result = freeze(app, config)
 
-    assert result == expected
+        expected = {
+            'index.html': b"Hello world!",
+            'second_page.html': b"Hello world!",
+        }
+
+        assert result == expected
 
