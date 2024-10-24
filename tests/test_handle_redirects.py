@@ -6,7 +6,7 @@ from freezeyt import freeze, UnexpectedStatus, InfiniteRedirection
 from testutil import raises_multierror_with_one_exception
 
 
-def test_redirect_to_same_static_file():
+def test_redirect_to_same_frozen_file():
     """One URL redirects to next URL which freeze
     page to same filepath as would be freeyzed by first URL.
     """
@@ -31,7 +31,7 @@ def test_redirect_to_same_static_file():
     assert result == expected
 
 
-def test_infinite_redirect_to_same_static_file():
+def test_infinite_redirect_to_same_frozen_file():
     """Two different URLs redirect to same freezed file,
     then infinite loop is processing, so first URL redirect
     to latter and vice versa.
@@ -61,7 +61,7 @@ def test_infinite_redirect_to_same_static_file():
         freeze(app, config)
 
 
-def test_redirect_to_same_static_file_with_double_slash_hop():
+def test_redirect_to_same_frozen_file_with_double_slash_hop():
     """Add to redirecting tracerout a node with double slash URL.
     Finally, the double slash URL redirects to page where is some
     content.
@@ -93,7 +93,7 @@ def test_redirect_to_same_static_file_with_double_slash_hop():
     assert result == expected
 
 
-def test_redirect_to_same_static_file_with_query_hop():
+def test_redirect_to_same_frozen_file_with_query_hop():
     """Add a redirect whose URL contains query parameter.
     Redirect URL with query parameter is prepared by
     first request of index page to app.
@@ -125,7 +125,7 @@ def test_redirect_to_same_static_file_with_query_hop():
     assert result == expected
 
 
-def test_redirect_to_same_static_file_with_hop():
+def test_redirect_to_same_frozen_file_with_hop():
     """Add a new URL with no relation to index
     between URLs, which are freezed to same file.
     """
