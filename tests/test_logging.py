@@ -29,7 +29,7 @@ def test_warn_multi_slashes_prefix(capsys, prefix):
     assert expected_output in captured.out
 
 
-def test_warn_same_static_file_from_different_URLs(capsys):
+def test_warn_same_frozen_file_from_different_URLs(capsys):
     """App can define different URLs with different content,
     which are saved then as one static file by Freezeyt
     (e.g. '/' and '/index.html'). One content will be always lost.
