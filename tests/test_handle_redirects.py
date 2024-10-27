@@ -6,7 +6,14 @@ from freezeyt import freeze, UnexpectedStatus, InfiniteRedirection
 from testutil import raises_multierror_with_one_exception
 
 
-def test_redirect_to_same_frozen_file():
+FREEZEYT_CONFIGS = {
+    'empty-config': {},
+    'save': {'status_handlers': {'3xx': 'save'}},
+    'follow': {'status_handlers': {'3xx': 'follow'}},
+    'warn': {'status_handlers': {'3xx': 'warn'}},
+}
+@pytest.mark.parametrize("test_name", FREEZEYT_CONFIGS)
+def test_redirect_to_same_frozen_file(test_name):
     """One URL redirects to next URL which freeze
     page to same filepath as would be freeyzed by first URL.
     """
@@ -23,6 +30,7 @@ def test_redirect_to_same_frozen_file():
         return "Hello world!"
 
     config = {'output': {'type': 'dict'}}
+    config.update(FREEZEYT_CONFIGS[test_name])
 
     result = freeze(app, config)
 
