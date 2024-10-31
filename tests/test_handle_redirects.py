@@ -90,15 +90,18 @@ def test_redirect_to_same_frozen_file_with_double_slash_hop():
     def index_html():
         return "Hello world!"
 
-    config = {
-        'output': {'type': 'dict'},
-    }
 
-    result = freeze(app, config)
+    with raises_multierror_with_one_exception(UnexpectedStatus):
+        config = {'output': {'type': 'dict'}}
+        freeze(app, config)
 
-    expected = {'index.html': b"Hello world!"}
-
-    assert result == expected
+    # TODO: This should raise a MultiError.
+    with pytest.raises(InfiniteRedirection):
+        config = {
+            'output': {'type': 'dict'},
+            'status_handlers': {'3xx': 'follow'},
+        }
+        freeze(app, config)
 
 
 def test_redirect_to_same_frozen_file_with_query_hop():
@@ -122,15 +125,17 @@ def test_redirect_to_same_frozen_file_with_query_hop():
         assert not request.args
         return "Hello world!"
 
-    config = {
-        'output': {'type': 'dict'},
-    }
+    with raises_multierror_with_one_exception(UnexpectedStatus):
+        config = {'output': {'type': 'dict'}}
+        freeze(app, config)
 
-    result = freeze(app, config)
-
-    expected = {'index.html': b"Hello world!"}
-
-    assert result == expected
+    # TODO: This should raise a MultiError.
+    with pytest.raises(InfiniteRedirection):
+        config = {
+            'output': {'type': 'dict'},
+            'status_handlers': {'3xx': 'follow'},
+        }
+        freeze(app, config)
 
 
 def test_redirect_to_same_frozen_file_with_hop():
