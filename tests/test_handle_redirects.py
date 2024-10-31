@@ -161,9 +161,7 @@ def test_redirect_to_same_frozen_file_with_hop():
     # By default, a redirect is considered an error.
     # The `/` -> `/second_page.html` is a normal redirect.
     with raises_multierror_with_one_exception(UnexpectedStatus):
-        config = {
-            'output': {'type': 'dict'},
-        }
+        config = {'output': {'type': 'dict'}}
         freeze(app, config)
 
     # When following redirects, all of the pages have the same content.
