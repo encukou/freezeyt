@@ -533,7 +533,13 @@ class Freezer:
                 # compare if source path and final path of redirect are same
                 # If they are, apply special logic: consider the target of
                 # the redirection as the page we're supposed to save.
-                if redirect_path == task.path:
+                same_path = redirect_path == task.path
+                # compare if source url and final url of redirect are different.
+                # If they are not it means a infinite redirect and
+                # it should be handle as other tasks
+                not_same_urls = redirect_url.path != url.path
+
+                if same_path and not_same_urls:
                     # Only do this if we haven't seen this URL yet.
                     # If we are, skip this special case. (We're in a redirect
                     # loop and will probably fail later.)
