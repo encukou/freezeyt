@@ -47,19 +47,19 @@ async def create_failing_task() -> Task:
     """Create a fake freezeyt task that failed with an AssertionError"""
     async def fail() -> NoReturn:
         """coroutine that fails"""
-        raise AssertionError()
+        task.exception = AssertionError()
     # Create an asyncio task
     asyncio_task = asyncio_create_task(fail(), name='test')
     # Wait for it to be done (catching the AssertionError)
-    with pytest.raises(AssertionError):
-        await asyncio_task
     # Wrap it in a fake freezeyt Task
-    return Task(
+    task = Task(
         path=PurePosixPath('test'),
         urls=set(),
         freezer=None,  # type: ignore[arg-type]
         asyncio_task=asyncio_task,
     )
+    await asyncio_task
+    return task
 
 
 def test_raises_multierror():

@@ -68,7 +68,7 @@ class MultiError(_MultiErrorBase):
 
         exceptions = []
         for task in tasks:
-            exc = task.asyncio_task.exception()
+            exc = task.exception
             exc._freezeyt_exception_task = task
             exceptions.append(exc)
 
