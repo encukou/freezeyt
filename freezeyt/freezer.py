@@ -151,7 +151,7 @@ class Task:
     redirects_to: "Optional[Task]" = None
     reasons: set = dataclasses.field(default_factory=set)
     asyncio_task: "Optional[asyncio.Task]" = None
-    urls_redirecting_self: set = dataclasses.field(default_factory=set)
+    urls_redirecting_to_self: set = dataclasses.field(default_factory=set)
 
     def __repr__(self) -> str:
         return f"<Task for {self.path}, {self.status.name}>"
@@ -160,7 +160,7 @@ class Task:
         """Get an arbitrary one of the task's URLs."""
         # we need to ensure that get_a_url() will get the right one
         # when there are urls redirection to itself
-        return next(iter(self.urls - self.urls_redirecting_self))
+        return next(iter(self.urls - self.urls_redirecting_to_self))
 
     @property
     def status(self) -> TaskStatus:
@@ -543,9 +543,9 @@ class Freezer:
                     # Only do this if we haven't seen this URL yet.
                     # If we are, skip this special case. (We're in a redirect
                     # loop and will probably fail later.)
-                    if redirect_url not in task.urls_redirecting_self:
+                    if redirect_url not in task.urls_redirecting_to_self:
                         task.urls.add(redirect_url)
-                        task.urls_redirecting_self.add(url)
+                        task.urls_redirecting_to_self.add(url)
                         raise RedirectToSamePath()
 
         if not status_action:
@@ -620,7 +620,7 @@ class Freezer:
             # when we get the first item.
             for path, task in self.inprogress_tasks.items():
                 break
-            size_before = len(task.urls_redirecting_self)
+            size_before = len(task.urls_redirecting_to_self)
             assert task.asyncio_task is not None
 
             try:
@@ -631,7 +631,7 @@ class Freezer:
                 if self.fail_fast:
                     raise exc
             if path in self.inprogress_tasks:
-                if size_before >= len(task.urls_redirecting_self):
+                if size_before >= len(task.urls_redirecting_to_self):
                     raise ValueError(
                         f'{task} is in_progress after it was handled'
                     )
