@@ -29,14 +29,41 @@ def test_redirect_to_same_frozen_file(test_name):
     def index_html():
         return "Hello world!"
 
-    config = {'output': {'type': 'dict'}}
-    config.update(FREEZEYT_CONFIGS[test_name])
+    config = {
+        'output': {'type': 'dict'},
+        **FREEZEYT_CONFIGS[test_name],
+    }
 
     result = freeze(app, config)
 
     expected = {'index.html': b"Hello world!"}
 
     assert result == expected
+
+
+def test_redirect_to_self():
+    """Trivial redirect loop: the home page redirects to itself.
+
+    This should result in UnexpectedStatus or InfiniteRedirection.
+    """
+    app = Flask(__name__)
+
+    @app.route('/')
+    def index():
+        """Redirecting to /index.html"""
+        return redirect(url_for('index'))
+
+    with raises_multierror_with_one_exception(UnexpectedStatus):
+        config = {'output': {'type': 'dict'}}
+        freeze(app, config)
+
+    # TODO: This should raise a MultiError.
+    with pytest.raises(InfiniteRedirection):
+        config = {
+            'output': {'type': 'dict'},
+            'status_handlers': {'3xx': 'follow'},
+        }
+        freeze(app, config)
 
 
 def test_infinite_redirect_to_same_frozen_file():
@@ -69,20 +96,21 @@ def test_infinite_redirect_to_same_frozen_file():
         freeze(app, config)
 
 
-def test_redirect_to_same_frozen_file_with_double_slash_hop():
-    """Add to redirecting tracerout a node with double slash URL.
-    Finally, the double slash URL redirects to page where is some
-    content.
+@pytest.mark.parametrize("test_name", FREEZEYT_CONFIGS)
+def test_redirect_to_same_frozen_file_with_double_hop(test_name):
+    """Redirect via several pages that would all get saved to the same file.
+
+    The final, non-redirecting page is the one that's saved.
     """
     app = Flask(__name__)
 
     @app.route('/')
     def index():
         """Redirecting to //"""
-        return redirect(url_for('index_double_slash'))
+        return redirect(url_for('index2'))
 
-    @app.route('//')
-    def index_double_slash():
+    @app.route('/index2')
+    def index2():
         """Redirecting to /index.html"""
         return redirect(url_for('index_html'))
 
@@ -90,24 +118,29 @@ def test_redirect_to_same_frozen_file_with_double_slash_hop():
     def index_html():
         return "Hello world!"
 
+    def always_index_html(url):
+        return 'index.html'
 
-    with raises_multierror_with_one_exception(UnexpectedStatus):
-        config = {'output': {'type': 'dict'}}
-        freeze(app, config)
+    config = {
+        'output': {'type': 'dict'},
+        'url_to_path': always_index_html,
+        **FREEZEYT_CONFIGS[test_name],
+    }
 
-    # TODO: This should raise a MultiError.
-    with pytest.raises(InfiniteRedirection):
-        config = {
-            'output': {'type': 'dict'},
-            'status_handlers': {'3xx': 'follow'},
-        }
-        freeze(app, config)
+    result = freeze(app, config)
+
+    expected = {'index.html': b"Hello world!"}
+
+    assert result == expected
 
 
 def test_redirect_to_same_frozen_file_with_query_hop():
     """Add a redirect whose URL contains query parameter.
     Redirect URL with query parameter is prepared by
     first request of index page to app.
+
+    The error here is not ideal, see:
+    https://github.com/encukou/freezeyt/issues/401
     """
     app = Flask(__name__)
 
