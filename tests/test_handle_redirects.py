@@ -210,3 +210,36 @@ def test_redirect_to_same_frozen_file_with_hop():
         }
         freeze(app, config)
 
+
+def test_redirect_with_same_path_with_different_spelling():
+    """Check that the path of the file on disk is normalized when
+    determining if URLs are saved to the same file
+    """
+    app = Flask(__name__)
+
+    @app.route('/')
+    def index():
+        return redirect(url_for('index_html'))
+
+    @app.route('/index.html')
+    def index_html():
+        return "Hello world!"
+
+    def url_to_path(url):
+        if url == '':
+            return './index.html'
+        elif url == 'index.html':
+            return '././index.html'
+        else:
+            raise ValueError(f'unexpected URL path {url!r}')
+
+    config = {
+        'output': {'type': 'dict'},
+        'url_to_path': url_to_path,
+    }
+
+    result = freeze(app, config)
+
+    expected = {'index.html': b"Hello world!"}
+
+    assert result == expected
