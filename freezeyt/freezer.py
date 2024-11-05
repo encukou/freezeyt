@@ -789,8 +789,12 @@ class Freezer:
             if not saved_something:
                 # Get some task (the first one we get by iteration) for the
                 # error message.
+                failing_task = None
                 for task in self.redirecting_tasks.values():
-                    raise InfiniteRedirection(task)
+                    failing_task = task
+                    break
+                if failing_task:
+                    failing_task.fail(InfiniteRedirection(task))
 
     def call_hook(self, hook_name: str, *arguments: Any) -> None:
         for hook in self.hooks.get(hook_name, ()):
