@@ -1,12 +1,10 @@
 from pathlib import PurePosixPath
-from typing import NoReturn
 
 import pytest
 
 from freezeyt import MultiError
 from freezeyt.freezer import Task
 from freezeyt.hooks import TaskInfo
-from freezeyt.compat import asyncio_run, asyncio_create_task
 
 from testutil import assert_dirs_same, FIXTURES_PATH
 from testutil import raises_multierror_with_one_exception
