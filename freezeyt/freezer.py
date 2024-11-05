@@ -620,7 +620,6 @@ class Freezer:
             # when we get the first item.
             for path, task in self.inprogress_tasks.items():
                 break
-            size_before = len(task.urls_redirecting_to_self)
             assert task.asyncio_task is not None
 
             try:
@@ -631,10 +630,7 @@ class Freezer:
                 if self.fail_fast:
                     raise exc
             if path in self.inprogress_tasks:
-                if size_before >= len(task.urls_redirecting_to_self):
-                    raise ValueError(
-                        f'{task} is in_progress after it was handled'
-                    )
+                raise ValueError(f'{task} is in_progress after it was handled')
 
     @needs_semaphore
     async def handle_one_task(self, task: Task) -> None:
