@@ -25,7 +25,8 @@ class InfiniteRedirection(Exception):
         redirects_to = task.redirects_to
         assert redirects_to is not None
         super().__init__(
-            f'{task.get_a_url()} redirects to {redirects_to.get_a_url()},'
+            f'{urllib.parse.urlunsplit(task.get_a_url())} redirects to'
+            + f' {urllib.parse.urlunsplit(redirects_to.get_a_url())},'
             + ' which was not frozen (most likely because of infinite redirection)'
         )
 

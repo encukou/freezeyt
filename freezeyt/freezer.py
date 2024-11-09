@@ -118,7 +118,7 @@ def get_path_from_url(
     Both arguments should be results of parse_absolute_url.
     """
     if is_external(url, prefix):
-        raise ValueError(f'external url {url}')
+        raise ValueError(f'external url {urllib.parse.urlunsplit(url)}')
 
     path = url.path
 
@@ -435,7 +435,9 @@ class Freezer:
         if is_external(url, self.prefix):
             if external_ok:
                 return None
-            raise ExternalURLError(f'Unexpected external URL: {url}')
+            raise ExternalURLError(
+                f'Unexpected external URL: {urllib.parse.urlunsplit(url)}'
+            )
 
         path = get_path_from_url(self.prefix, url, self.url_to_path)
 
@@ -606,7 +608,9 @@ class Freezer:
                         reason='extra page',
                     )
                 except ExternalURLError:
-                    raise ExternalURLError(f'External URL specified in extra_pages: {url}')
+                    raise ExternalURLError(
+                        f'External URL specified in extra_pages: {urllib.parse.urlunsplit(url)}'
+                    )
             else:
                 generator = extra
                 self._add_extra_pages(prefix, generator(self.user_app))
