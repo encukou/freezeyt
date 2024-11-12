@@ -11,8 +11,12 @@ from freezeyt import freeze, MultiError
 from freezeyt.util import import_variable_from_module
 from freezeyt.compat import Literal
 
+# Use -h as an alias for --help
+# (see https://click.palletsprojects.com/en/stable/documentation/#help-parameter-customization)
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-@click.command()
+
+@click.command(context_settings=CONTEXT_SETTINGS)
 @click.argument('app', required=False)
 @click.argument('dest_path', required=False, type=click.Path(file_okay=False))
 @click.option('-o', '--output', type=click.Path(file_okay=False),
