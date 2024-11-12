@@ -349,3 +349,14 @@ def test_cli_fail_fast_option_priority_enable(tmp_path):
         with pytest.raises(ValueError):
             run_freezeyt_cli(cli_args, app_name)
 
+def test_help():
+    """Test that -h does the same as --help: show the help."""
+    runner = CliRunner(mix_stderr=False)
+    result_help = runner.invoke(main, ['--help'])
+    result_h = runner.invoke(main, ['-h'])
+
+    assert result_help.stdout == result_h.stdout
+    assert result_help.stderr == result_h.stderr == ''
+    assert result_help.exit_code == result_h.exit_code == 0
+
+    assert 'Usage:' in result_help.stdout
