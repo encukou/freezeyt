@@ -1,6 +1,7 @@
 import importlib
 import concurrent.futures
 import urllib.parse
+from urllib.parse import urlunsplit
 from typing import Sequence, TYPE_CHECKING, List, Optional, Any
 import enum
 
@@ -25,8 +26,8 @@ class InfiniteRedirection(Exception):
         redirects_to = task.redirects_to
         assert redirects_to is not None
         super().__init__(
-            f'{urllib.parse.urlunsplit(task.get_a_url())} redirects to'
-            + f' {urllib.parse.urlunsplit(redirects_to.get_a_url())},'
+            f'{urlunsplit(task.get_a_url())} redirects to'
+            + f' {urlunsplit(redirects_to.get_a_url())},'
             + ' which was not frozen (most likely because of infinite redirection)'
         )
 
@@ -42,7 +43,7 @@ class UnsupportedSchemeError(ValueError):
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
     def __init__(self, url: AbsoluteURL, status: str):
-        self.url = urllib.parse.urlunsplit(url)
+        self.url = urlunsplit(url)
         self.status = status
         message = str(status)
         super().__init__(message)
@@ -168,7 +169,7 @@ def _add_port(url: urllib.parse.SplitResult) -> AbsoluteURL:
 
 def urljoin(url: AbsoluteURL, link_text: str) -> AbsoluteURL:
     """Add a string to the URL, adding a default port for http/https"""
-    url_text = urllib.parse.urlunsplit(url)
+    url_text = urlunsplit(url)
     result_text = urllib.parse.urljoin(url_text, uri_to_iri(link_text))
     result = urllib.parse.urlsplit(result_text)
     try:
