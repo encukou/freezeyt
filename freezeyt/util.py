@@ -9,7 +9,6 @@ from werkzeug.urls import uri_to_iri
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 from freezeyt.encoding import decode_input_path
-from freezeyt.types import AbsoluteURL
 
 
 if TYPE_CHECKING:
@@ -26,8 +25,8 @@ class InfiniteRedirection(Exception):
         redirects_to = task.redirects_to
         assert redirects_to is not None
         super().__init__(
-            f'{urlunsplit(task.get_a_url())} redirects to'
-            + f' {urlunsplit(redirects_to.get_a_url())},'
+            f'{task.get_a_url()} redirects to'
+            + f' {redirects_to.get_a_url()},'
             + ' which was not frozen (most likely because of infinite redirection)'
         )
 
@@ -42,7 +41,7 @@ class UnsupportedSchemeError(ValueError):
 
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
-    def __init__(self, url: AbsoluteURL, status: str):
+    def __init__(self, url: 'AbsoluteURL', status: str):
         self.url = urlunsplit(url)
         self.status = status
         message = str(status)
@@ -94,6 +93,15 @@ class TaskStatus(enum.Enum):
     REDIRECTING = "Waiting for target of redirection"
     DONE = "Saved"
     FAILED = "Raised an exception"
+
+
+class AbsoluteURL(urllib.parse.SplitResult):
+    """An URL as used internally by Freezeyt.
+
+    Absolute IRI, with an explicit port if it's `http` or `https`
+    """
+    def __str__(self):
+        return urlunsplit(self)
 
 
 def is_external(parsed_url: AbsoluteURL, prefix: AbsoluteURL) -> bool:
@@ -164,7 +172,7 @@ def _add_port(url: urllib.parse.SplitResult) -> AbsoluteURL:
             url = url._replace(netloc=url.hostname + ':443')
         else:
             raise UnsupportedSchemeError("URL scheme must be http or https")
-    return AbsoluteURL(url)
+    return AbsoluteURL(*url)
 
 
 def urljoin(url: AbsoluteURL, link_text: str) -> AbsoluteURL:
@@ -177,7 +185,7 @@ def urljoin(url: AbsoluteURL, link_text: str) -> AbsoluteURL:
     except UnsupportedSchemeError:
         # If this has a scheme other than http and https,
         # it's an external url; we don't need the port in it.
-        return AbsoluteURL(result)
+        return AbsoluteURL(*result)
 
 
 def import_variable_from_module(
