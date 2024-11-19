@@ -1,7 +1,3 @@
-from urllib.parse import urlsplit
-
-import pytest
-
 from freezeyt.absolute_url import AbsoluteURL
 
 

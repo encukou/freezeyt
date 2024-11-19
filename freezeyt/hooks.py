@@ -1,5 +1,4 @@
 from typing import Iterable, Callable, Optional, TYPE_CHECKING
-import urllib.parse
 
 from freezeyt.absolute_url import AbsoluteURL
 

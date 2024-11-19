@@ -9,7 +9,6 @@ from typing import Tuple, List, TypeVar, Any
 import asyncio
 import inspect
 import re
-import urllib.parse
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header

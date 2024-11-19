@@ -1,7 +1,5 @@
 from urllib.parse import urlsplit, urlunsplit, urljoin
 
-import pytest
-
 from freezeyt.absolute_url import AbsoluteURL
 
 url_with_port = AbsoluteURL('http://localhost:80/')

@@ -1,10 +1,10 @@
 import urllib.parse
 import functools
+from typing import Union
 
 from werkzeug.urls import uri_to_iri
 
 from freezeyt.util import RelativeURLError, UnsupportedSchemeError
-from freezeyt.util import RelativeURLError
 
 
 @functools.total_ordering
@@ -21,7 +21,7 @@ class AbsoluteURL:
     """
     _split_url: urllib.parse.SplitResult
 
-    def __init__(self, split_url: str | urllib.parse.SplitResult):
+    def __init__(self, split_url: Union[str, urllib.parse.SplitResult]):
         if isinstance(split_url, str):
             _split_url = self._parse_string(split_url)
         else:
