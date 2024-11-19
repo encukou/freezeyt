@@ -11,8 +11,7 @@ def warn(task: TaskInfo) -> str:
     response_status = task._task.response_status
     if response_status is None:
         raise ValueError(
-            f'warn() called on {url} which is not being saved yet'
-        )
+            f'warn() called on {url} which is not being saved yet')
     task._freezer.warnings.append(
         f"URL {url},"
         + f" status code: {response_status[:3]} was freezed"
