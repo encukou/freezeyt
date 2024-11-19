@@ -2,7 +2,7 @@ from urllib.parse import urlsplit
 
 import pytest
 
-from freezeyt.util import AbsoluteURL
+from freezeyt.absolute_url import AbsoluteURL
 
 
 def is_external(url, prefix):

@@ -22,7 +22,8 @@ from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
-from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL, TaskStatus
+from freezeyt.util import UnexpectedStatus, MultiError, TaskStatus
+from freezeyt.absolute_url import AbsoluteURL
 from freezeyt.compat import asyncio_run, asyncio_create_task
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks

@@ -3,7 +3,7 @@ from pathlib import PurePosixPath
 import pytest
 
 from freezeyt.freezer import get_path_from_url
-from freezeyt.util import AbsoluteURL
+from freezeyt.absolute_url import AbsoluteURL
 import freezeyt
 
 

@@ -1,7 +1,7 @@
 from typing import Iterable, Callable, Optional, TYPE_CHECKING
 import urllib.parse
 
-from freezeyt.util import AbsoluteURL
+from freezeyt.absolute_url import AbsoluteURL
 
 
 if TYPE_CHECKING:
