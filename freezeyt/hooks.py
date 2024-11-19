@@ -1,7 +1,7 @@
 from typing import Iterable, Callable, Optional, TYPE_CHECKING
 import urllib.parse
 
-from freezeyt.util import parse_absolute_url
+from freezeyt.util import AbsoluteURL
 
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ class TaskInfo:
 
     def get_a_url(self) -> str:
         """Return a URL of this page"""
-        return urllib.parse.urlunsplit(self._task.get_a_url())
+        return str(self._task.get_a_url())
 
     @property
     def path(self) -> str:
@@ -52,7 +52,7 @@ class FreezeInfo:
         self._freezer = freezer
 
     def add_url(self, url: str, reason: Optional[str] = None) -> None:
-        self._freezer.add_task(parse_absolute_url(url), reason=reason)
+        self._freezer.add_task(AbsoluteURL(url), reason=reason)
 
     def add_hook(self, hook_name: str, func: Callable) -> None:
         self._freezer.add_hook(hook_name, func)

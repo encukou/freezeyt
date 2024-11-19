@@ -20,7 +20,6 @@ from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
-from freezeyt.util import parse_absolute_url, is_external, urljoin
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL, TaskStatus
@@ -117,7 +116,7 @@ def get_path_from_url(
 
     Both arguments should be results of parse_absolute_url.
     """
-    if is_external(url, prefix):
+    if url.is_external_to(prefix):
         raise ValueError(f'external url {url}')
 
     path = url.path
@@ -128,15 +127,13 @@ def get_path_from_url(
     result = PurePosixPath(url_to_path(path))
 
     if result.is_absolute():
-        url_text = urllib.parse.urlunsplit(url)
         raise ValueError(
-            f"Path may not be absolute: {result}(from {url_text})"
+            f"Path may not be absolute: {result}(from {url})"
         )
     assert '.' not in result.parts
     if '..' in result.parts:
-        url_text = urllib.parse.urlunsplit(url)
         raise ValueError(
-            f"Path may not contain /../ segment: {result}(from {url_text})"
+            f"Path may not contain /../ segment: {result}(from {url})"
         )
 
     return result
@@ -303,7 +300,7 @@ class Freezer:
 
         # Decode path in the prefix URL.
         # Save the parsed version of prefix as self.prefix
-        prefix_parsed = parse_absolute_url(prefix)
+        prefix_parsed = AbsoluteURL(prefix)
         decoded_path = decode_input_path(prefix_parsed.path)
         if not decoded_path.endswith('/'):
             raise ValueError('prefix must end with /')
@@ -432,7 +429,7 @@ class Freezer:
         external_ok: bool = False,
         reason: Optional[str] = None,
     ) -> Optional[Task]:
-        if is_external(url, self.prefix):
+        if url.is_external_to(self.prefix):
             if external_ok:
                 return None
             raise ExternalURLError(f'Unexpected external URL: {url}')
@@ -465,7 +462,7 @@ class Freezer:
                 assert not url_part.startswith('/')
                 url_part = self.prefix.path + url_part
                 self.add_task(
-                    urljoin(self.prefix, url_part),
+                    self.prefix.join(url_part),
                     reason="from extra_files",
                 )
             elif kind == 'path':
@@ -478,7 +475,7 @@ class Freezer:
                     assert not url_part.startswith('/')
                     part = self.prefix.path + part
                     self.add_task(
-                        urljoin(self.prefix, part),
+                        self.prefix.join(part),
                         reason="from extra_files",
                     )
             else:
@@ -525,8 +522,8 @@ class Freezer:
 
         # handle redirecting to same filepath like source URL
         if status.startswith('3') and location is not None:
-            redirect_url = urljoin(url, location)
-            if not is_external(redirect_url, self.prefix):
+            redirect_url = url.join(location)
+            if not redirect_url.is_external_to(self.prefix):
                 redirect_path = get_path_from_url(
                     self.prefix, redirect_url, self.url_to_path
                 )
@@ -599,7 +596,7 @@ class Freezer:
                     generator = import_variable_from_module(generator)
                 self._add_extra_pages(prefix, generator(self.user_app))
             elif isinstance(extra, str):
-                url = urljoin(prefix, decode_input_path(extra))
+                url = prefix.join(decode_input_path(extra))
                 try:
                     self.add_task(
                         url,
@@ -607,7 +604,7 @@ class Freezer:
                     )
                 except ExternalURLError:
                     raise ExternalURLError(
-                        f'External URL specified in extra_pages: {urllib.parse.urlunsplit(url)}'
+                        f'External URL specified in extra_pages: {url}'
                     )
             else:
                 generator = extra
@@ -637,13 +634,12 @@ class Freezer:
     @needs_semaphore
     async def handle_one_task(self, task: Task) -> None:
         # Get an URL from the task's set of URLs
-        url_parsed = task.get_a_url()
-        url = url_parsed
+        url = task.get_a_url()
 
         # url_string should not be needed (except for debug messages)
-        url_string = urllib.parse.urlunsplit(url_parsed)
+        url_string = str(url)
 
-        path_info = url_parsed.path
+        path_info = url.path
 
         if path_info.startswith(self.prefix.path):
             path_info = "/" + path_info[len(self.prefix.path):]
@@ -735,7 +731,7 @@ class Freezer:
                         new_links.append(link)
                     links = new_links
                 for link_text in links:
-                    new_url = urljoin(url, link_text)
+                    new_url = url.join(link_text)
                     self.add_task(
                         new_url, external_ok=True,
                         reason=f'linked from: {task.path}',
@@ -750,7 +746,7 @@ class Freezer:
                     link_text, sep, rest = link[1:].partition('>')
                     if not sep:
                         raise ValueError(f'Invalid Link header: {link!r}')
-                    new_url = urljoin(url, link_text)
+                    new_url = url.join(link_text)
                     self.add_task(
                         new_url, external_ok=True,
                         reason=f'Link header from: {task.path}',
