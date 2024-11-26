@@ -28,13 +28,7 @@ class TaskInfo:
 
     @property
     def exception(self) -> Optional[BaseException]:
-        aio_task = self._task.asyncio_task
-        if aio_task is None:
-            return None
-        if aio_task.done():
-            return aio_task.exception()
-        else:
-            return None
+        return self._task.exception
 
     @property
     def reasons(self) -> Iterable[str]:

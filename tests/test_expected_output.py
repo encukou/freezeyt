@@ -6,8 +6,7 @@ import pytest
 
 from freezeyt import freeze, InfiniteRedirection, MultiError, UnexpectedStatus
 from testutil import FIXTURES_PATH, APP_NAMES, context_for_test
-from testutil import assert_dirs_same
-
+from testutil import assert_dirs_same, raises_multierror_with_one_exception
 
 
 @pytest.mark.parametrize('app_name', APP_NAMES)
@@ -115,7 +114,7 @@ def test_circular_redirect(tmp_path, monkeypatch):
         freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
         freeze_config['status_handlers'] = {'3xx': 'follow'}
 
-        with pytest.raises(InfiniteRedirection):
+        with raises_multierror_with_one_exception(InfiniteRedirection):
             freeze(module.app, freeze_config)
 
 
