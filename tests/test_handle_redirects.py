@@ -58,12 +58,14 @@ def test_redirect_to_self():
         freeze(app, config)
 
     # TODO: This should raise a MultiError.
-    with pytest.raises(InfiniteRedirection):
+    with pytest.raises(InfiniteRedirection) as exc:
         config = {
             'output': {'type': 'dict'},
             'status_handlers': {'3xx': 'follow'},
         }
         freeze(app, config)
+
+    assert "http://localhost:8000/" in str(exc.value)
 
 
 def test_infinite_redirect_to_same_frozen_file():
@@ -88,12 +90,14 @@ def test_infinite_redirect_to_same_frozen_file():
         freeze(app, config)
 
     # TODO: This should raise a MultiError.
-    with pytest.raises(InfiniteRedirection):
+    with pytest.raises(InfiniteRedirection) as exc:
         config = {
             'output': {'type': 'dict'},
             'status_handlers': {'3xx': 'follow'},
         }
         freeze(app, config)
+
+    assert "http://localhost:8000/index.html" in str(exc.value)
 
 
 @pytest.mark.parametrize("test_name", FREEZEYT_CONFIGS)

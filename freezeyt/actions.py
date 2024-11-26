@@ -1,7 +1,7 @@
 from typing import Callable, TYPE_CHECKING
 
 from freezeyt.hooks import TaskInfo
-from freezeyt.util import urljoin, TaskStatus
+from freezeyt.util import TaskStatus
 
 ActionFunction = Callable[[TaskInfo], str]
 
@@ -26,7 +26,7 @@ def follow(task: TaskInfo) -> str:
     if response_headers is None:
         raise ValueError(
             f'follow() called on {url} which is not being saved yet')
-    location = urljoin(url, response_headers['Location'])
+    location = url.join(response_headers['Location'])
 
     target_task = task._freezer.add_task(
         location,
