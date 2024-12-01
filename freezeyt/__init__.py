@@ -4,6 +4,7 @@ from freezeyt.filesaver import DirectoryExistsError
 from freezeyt.freezer import default_url_to_path as url_to_path
 from freezeyt.middleware import Middleware
 from freezeyt.types import Config
+from freezeyt.hooks import FreezeInfo, TaskInfo
 
 
 __version__ = '1.1.1'
@@ -21,4 +22,6 @@ __all__ = [
     'MultiError',
     'VersionMismatch',
     'Config',
+    "FreezeInfo",
+    "TaskInfo",
 ]

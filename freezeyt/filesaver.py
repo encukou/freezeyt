@@ -10,7 +10,7 @@ from typing import Callable, Iterable, BinaryIO
 
 
 class DirectoryExistsError(Exception):
-    """Attempt to overwrite directory that doesn't contain freezeyt output"""
+    """Attempt to overwrite directory that doesn't contain freezeyt output."""
 
 
 class FileSaver(Saver):

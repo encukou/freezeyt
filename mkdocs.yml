@@ -1,0 +1,47 @@
+site_name: Freezeyt
+# site_url: ...
+repo_url: https://github.com/encukou/freezeyt
+edit_uri: edit/main/docs/
+# site_description:
+nav:
+  - 'Home': 'index.md'
+  - 'Why?': 'why.md'
+  - 'Configuration': 'config.md'
+  - 'API': 'pyapi.md'
+  - 'Contributing': 'contrib.md'
+not_in_nav:
+  licence.md
+theme:
+  name: mkdocs
+  color_mode: auto
+  user_color_mode_toggle: true
+  navigation_depth: 3
+  # highlightjs: false  # disables user_color_mode_toggle?!
+watch:
+  - "freezeyt/"
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            paths: ["./"]  # actually not needed, default
+            show_source: false
+            show_root_heading: true
+            docstring_section_style: "list"
+            modernize_annotations: true
+            heading_level: 3
+            members_order: source
+            group_by_category: false
+            show_bases: false
+  - autorefs
+markdown_extensions:
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - codehilite
+  - tables
+  - attr_list
+  - markdown_include.include:
+      base_path: docs
+extra_css:
+  - css/pygments.css
