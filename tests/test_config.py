@@ -125,6 +125,17 @@ def test_external_extra_page(tmp_path):
             freeze(module.app, freeze_config)
 
 
+def test_extra_page_with_slash(tmp_path):
+    with context_for_test('app_2pages') as module:
+        freeze_config = {
+            'output': {'type': 'dict'},
+            'extra_pages': ['/foo.html'],
+        }
+
+        with pytest.raises(ValueError):
+            freeze(module.app, freeze_config)
+
+
 def generate_extra_page(app):
     assert app.is_the_fixture_app_2pages
     yield 'http://external.example/foo.html'
