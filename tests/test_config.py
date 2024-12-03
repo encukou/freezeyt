@@ -114,7 +114,7 @@ def test_no_output_dir(tmp_path):
             freeze(module.app, freeze_config)
 
 
-def test_external_extra_files(tmp_path):
+def test_external_extra_page(tmp_path):
     with context_for_test('app_2pages') as module:
         freeze_config = {
             'output': {'type': 'dict'},
