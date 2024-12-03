@@ -10,6 +10,7 @@ import asyncio
 import inspect
 import re
 import urllib.parse
+import warnings
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header
@@ -599,6 +600,12 @@ class Freezer:
                     generator = import_variable_from_module(generator)
                 self._add_extra_pages(prefix, generator(self.user_app))
             elif isinstance(extra, str):
+                if extra.startswith('/'):
+                    warnings.warn(
+                        f'extra page URL must not start with slash: {extra!r}',
+                        DeprecationWarning,
+                        skip_file_prefixes=(__file__,),
+                    )
                 url = urljoin(prefix, decode_input_path(extra))
                 try:
                     self.add_task(

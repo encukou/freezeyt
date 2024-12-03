@@ -132,7 +132,7 @@ def test_extra_page_with_slash(tmp_path):
             'extra_pages': ['/foo.html'],
         }
 
-        with pytest.raises(ValueError):
+        with pytest.deprecated_call():
             freeze(module.app, freeze_config)
 
 
