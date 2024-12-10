@@ -140,8 +140,8 @@ The following options are configurable:
 ### App
 
 The module that contains the application must be given on the command line as first argument or in the configuration file. Freezeyt looks for the variable *app* by default. A different variable can be specified using `:`.
-When the module is specified both by the command line and the config file
-an error is raised.
+
+The CLI option has priority over the configuration file.
 
 Examples:
 
@@ -187,9 +187,10 @@ output:
 
 If output is not specified in the configuration file,
 you must specify the output directory on the command line.
-There are two ways to specify the output on the command line: either by the `--output` (`-o`) option or as a second positional argument.
+There are two ways to specify the output on the command line:
+either by the `--output` (`-o`) option or as a second positional argument.
 
-The output must be specified just by one way otherwise is an error.
+If both are given, the CLI option has priority.
 
 If there is any existing content in the output directory,
 freezeyt will either remove it (if the content looks like a previously

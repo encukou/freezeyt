@@ -87,33 +87,19 @@ def main(
     else:
         config = {}
 
-    if 'app' in config:
-        if app is not None:
-            raise click.UsageError(
-                'APP argument is not needed if is configured from file'
-            )
-    else:
-        if app is None:
-            raise click.UsageError('APP argument is required')
-
+    if app is not None:
         config['app'] = app
+    if config.get('app') is None:
+        raise click.UsageError('APP argument or "app" in config is required')
 
     if dest_path and output:
         raise click.UsageError('Specify only DEST_PATH argument or --output')
-
     if dest_path is None:
         dest_path = output
-
-    if 'output' in config:
-        if dest_path is not None:
-            raise click.UsageError(
-                'DEST_PATH/--output is not needed if output is configured from file'
-            )
-    else:
-        if dest_path is None:
-            raise click.UsageError('DEST_PATH or --output is required')
-
+    if dest_path is not None:
         config['output'] = dest_path
+    if config.get('output') is None:
+        raise click.UsageError('DEST_PATH, --output, or "output" in config is required')
 
     if prefix != None:
         config['prefix'] = prefix
