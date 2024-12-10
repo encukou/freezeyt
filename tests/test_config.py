@@ -126,14 +126,33 @@ def test_external_extra_page(tmp_path):
 
 
 def test_extra_page_with_slash(tmp_path):
-    with context_for_test('app_2pages') as module:
+    with context_for_test('app_simple') as module:
         freeze_config = {
             'output': {'type': 'dict'},
             'extra_pages': ['/foo.html'],
+            'status_handlers': {'404': 'save'},
         }
 
         with pytest.deprecated_call():
-            freeze(module.app, freeze_config)
+            result = freeze(module.app, freeze_config)
+        assert set(result) == {'foo.html', 'index.html'}
+
+
+def generate_extra_page_with_slash(app):
+    yield '/foo.html'
+
+
+def test_extra_page_generator_with_slash(tmp_path):
+    with context_for_test('app_simple') as module:
+        freeze_config = {
+            'output': {'type': 'dict'},
+            'extra_pages': [{'generator': f'{__name__}:generate_extra_page_with_slash'}],
+            'status_handlers': {'404': 'save'},
+        }
+
+        with pytest.deprecated_call():
+            result = freeze(module.app, freeze_config)
+        assert set(result) == {'foo.html', 'index.html'}
 
 
 def generate_extra_page(app):
