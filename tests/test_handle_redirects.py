@@ -57,12 +57,14 @@ def test_redirect_to_self():
         config = {'output': {'type': 'dict'}}
         freeze(app, config)
 
-    with raises_multierror_with_one_exception(InfiniteRedirection):
+    with raises_multierror_with_one_exception(InfiniteRedirection) as exc:
         config = {
             'output': {'type': 'dict'},
             'status_handlers': {'3xx': 'follow'},
         }
         freeze(app, config)
+
+    assert "http://localhost:8000/" in str(exc.value)
 
 
 def test_infinite_redirect_to_same_frozen_file():
@@ -86,12 +88,14 @@ def test_infinite_redirect_to_same_frozen_file():
         config = {'output': {'type': 'dict'}}
         freeze(app, config)
 
-    with raises_multierror_with_one_exception(InfiniteRedirection):
+    with raises_multierror_with_one_exception(InfiniteRedirection) as exc:
         config = {
             'output': {'type': 'dict'},
             'status_handlers': {'3xx': 'follow'},
         }
         freeze(app, config)
+
+    assert "http://localhost:8000/index.html" in str(exc.value)
 
 
 @pytest.mark.parametrize("test_name", FREEZEYT_CONFIGS)
