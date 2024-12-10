@@ -9,7 +9,6 @@ from typing import Tuple, List, TypeVar, Any
 import asyncio
 import inspect
 import re
-import urllib.parse
 import os
 
 from werkzeug.datastructures import Headers
@@ -21,10 +20,10 @@ from freezeyt.encoding import encode_wsgi_path, decode_input_path
 from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
-from freezeyt.util import parse_absolute_url, is_external, urljoin
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
-from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL, TaskStatus
+from freezeyt.util import UnexpectedStatus, MultiError, TaskStatus
+from freezeyt.absolute_url import AbsoluteURL
 from freezeyt.compat import asyncio_run, asyncio_create_task, warnings_warn
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
@@ -118,7 +117,7 @@ def get_path_from_url(
 
     Both arguments should be results of parse_absolute_url.
     """
-    if is_external(url, prefix):
+    if url.is_external_to(prefix):
         raise ValueError(f'external url {url}')
 
     path = url.path
@@ -129,15 +128,13 @@ def get_path_from_url(
     result = PurePosixPath(url_to_path(path))
 
     if result.is_absolute():
-        url_text = urllib.parse.urlunsplit(url)
         raise ValueError(
-            f"Path may not be absolute: {result}(from {url_text})"
+            f"Path may not be absolute: {result}(from {url})"
         )
     assert '.' not in result.parts
     if '..' in result.parts:
-        url_text = urllib.parse.urlunsplit(url)
         raise ValueError(
-            f"Path may not contain /../ segment: {result}(from {url_text})"
+            f"Path may not contain /../ segment: {result}(from {url})"
         )
 
     return result
@@ -153,6 +150,7 @@ class Task:
     reasons: set = dataclasses.field(default_factory=set)
     asyncio_task: "Optional[asyncio.Task]" = None
     urls_redirecting_to_self: set = dataclasses.field(default_factory=set)
+    exception: Optional[Exception] = None
 
     def __repr__(self) -> str:
         return f"<Task for {self.path}, {self.status.name}>"
@@ -177,6 +175,17 @@ class Task:
         new_collection = self.freezer.task_collections[new_status]
         assert self.path not in new_collection
         new_collection[self.path] = self
+
+    def fail(self, exception):
+        if self.freezer.fail_fast:
+            raise exception
+        if self.exception is not None:
+            # The task already failed; we shouldn't do any more operations
+            # on it. If we do and they fail, raise that error directly.
+            raise exception
+        self.exception = exception
+        self.update_status(self.status, TaskStatus.FAILED)
+        self.freezer.call_hook('page_failed', hooks.TaskInfo(self))
 
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
@@ -304,7 +313,7 @@ class Freezer:
 
         # Decode path in the prefix URL.
         # Save the parsed version of prefix as self.prefix
-        prefix_parsed = parse_absolute_url(prefix)
+        prefix_parsed = AbsoluteURL(prefix)
         decoded_path = decode_input_path(prefix_parsed.path)
         if not decoded_path.endswith('/'):
             raise ValueError('prefix must end with /')
@@ -433,7 +442,7 @@ class Freezer:
         external_ok: bool = False,
         reason: Optional[str] = None,
     ) -> Optional[Task]:
-        if is_external(url, self.prefix):
+        if url.is_external_to(self.prefix):
             if external_ok:
                 return None
             raise ExternalURLError(f'Unexpected external URL: {url}')
@@ -466,7 +475,7 @@ class Freezer:
                 assert not url_part.startswith('/')
                 url_part = self.prefix.path + url_part
                 self.add_task(
-                    urljoin(self.prefix, url_part),
+                    self.prefix.join(url_part),
                     reason="from extra_files",
                 )
             elif kind == 'path':
@@ -479,7 +488,7 @@ class Freezer:
                     assert not url_part.startswith('/')
                     part = self.prefix.path + part
                     self.add_task(
-                        urljoin(self.prefix, part),
+                        self.prefix.join(part),
                         reason="from extra_files",
                     )
             else:
@@ -526,8 +535,8 @@ class Freezer:
 
         # handle redirecting to same filepath like source URL
         if status.startswith('3') and location is not None:
-            redirect_url = urljoin(url, location)
-            if not is_external(redirect_url, self.prefix):
+            redirect_url = url.join(location)
+            if not redirect_url.is_external_to(self.prefix):
                 redirect_path = get_path_from_url(
                     self.prefix, redirect_url, self.url_to_path
                 )
@@ -606,14 +615,16 @@ class Freezer:
                         DeprecationWarning,
                         skip_file_prefixes=(os.path.dirname(__file__),),
                     )
-                url = urljoin(prefix, decode_input_path(extra))
+                url = prefix.join(decode_input_path(extra))
                 try:
                     self.add_task(
                         url,
                         reason='extra page',
                     )
                 except ExternalURLError:
-                    raise ExternalURLError(f'External URL specified in extra_pages: {url}')
+                    raise ExternalURLError(
+                        f'External URL specified in extra_pages: {url}'
+                    )
             else:
                 generator = extra
                 self._add_extra_pages(prefix, generator(self.user_app))
@@ -632,23 +643,19 @@ class Freezer:
             try:
                 await task.asyncio_task
             except Exception as exc:
-                task.update_status(TaskStatus.IN_PROGRESS, TaskStatus.FAILED)
-                self.call_hook('page_failed', hooks.TaskInfo(task))
-                if self.fail_fast:
-                    raise exc
+                task.fail(exc)
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
 
     @needs_semaphore
     async def handle_one_task(self, task: Task) -> None:
         # Get an URL from the task's set of URLs
-        url_parsed = task.get_a_url()
-        url = url_parsed
+        url = task.get_a_url()
 
         # url_string should not be needed (except for debug messages)
-        url_string = urllib.parse.urlunsplit(url_parsed)
+        url_string = str(url)
 
-        path_info = url_parsed.path
+        path_info = url.path
 
         if path_info.startswith(self.prefix.path):
             path_info = "/" + path_info[len(self.prefix.path):]
@@ -740,7 +747,7 @@ class Freezer:
                         new_links.append(link)
                     links = new_links
                 for link_text in links:
-                    new_url = urljoin(url, link_text)
+                    new_url = url.join(link_text)
                     self.add_task(
                         new_url, external_ok=True,
                         reason=f'linked from: {task.path}',
@@ -755,7 +762,7 @@ class Freezer:
                     link_text, sep, rest = link[1:].partition('>')
                     if not sep:
                         raise ValueError(f'Invalid Link header: {link!r}')
-                    new_url = urljoin(url, link_text)
+                    new_url = url.join(link_text)
                     self.add_task(
                         new_url, external_ok=True,
                         reason=f'Link header from: {task.path}',
@@ -787,8 +794,12 @@ class Freezer:
             if not saved_something:
                 # Get some task (the first one we get by iteration) for the
                 # error message.
+                failing_task = None
                 for task in self.redirecting_tasks.values():
-                    raise InfiniteRedirection(task)
+                    failing_task = task
+                    break
+                if failing_task:
+                    failing_task.fail(InfiniteRedirection(task))
 
     def call_hook(self, hook_name: str, *arguments: Any) -> None:
         for hook in self.hooks.get(hook_name, ()):
