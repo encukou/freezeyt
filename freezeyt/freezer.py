@@ -10,7 +10,7 @@ import asyncio
 import inspect
 import re
 import urllib.parse
-import warnings
+import os
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header
@@ -25,7 +25,7 @@ from freezeyt.util import parse_absolute_url, is_external, urljoin
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError, AbsoluteURL, TaskStatus
-from freezeyt.compat import asyncio_run, asyncio_create_task
+from freezeyt.compat import asyncio_run, asyncio_create_task, warnings_warn
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
@@ -601,10 +601,10 @@ class Freezer:
                 self._add_extra_pages(prefix, generator(self.user_app))
             elif isinstance(extra, str):
                 if extra.startswith('/'):
-                    warnings.warn(
+                    warnings_warn(
                         f'extra page URL must not start with slash: {extra!r}',
                         DeprecationWarning,
-                        skip_file_prefixes=(__file__,),
+                        skip_file_prefixes=(os.path.dirname(__file__),),
                     )
                 url = urljoin(prefix, decode_input_path(extra))
                 try:
