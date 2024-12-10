@@ -149,6 +149,7 @@ class Task:
     reasons: set = dataclasses.field(default_factory=set)
     asyncio_task: "Optional[asyncio.Task]" = None
     urls_redirecting_to_self: set = dataclasses.field(default_factory=set)
+    exception: Optional[Exception] = None
 
     def __repr__(self) -> str:
         return f"<Task for {self.path}, {self.status.name}>"
@@ -173,6 +174,17 @@ class Task:
         new_collection = self.freezer.task_collections[new_status]
         assert self.path not in new_collection
         new_collection[self.path] = self
+
+    def fail(self, exception):
+        if self.freezer.fail_fast:
+            raise exception
+        if self.exception is not None:
+            # The task already failed; we shouldn't do any more operations
+            # on it. If we do and they fail, raise that error directly.
+            raise exception
+        self.exception = exception
+        self.update_status(self.status, TaskStatus.FAILED)
+        self.freezer.call_hook('page_failed', hooks.TaskInfo(self))
 
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
@@ -624,10 +636,7 @@ class Freezer:
             try:
                 await task.asyncio_task
             except Exception as exc:
-                task.update_status(TaskStatus.IN_PROGRESS, TaskStatus.FAILED)
-                self.call_hook('page_failed', hooks.TaskInfo(task))
-                if self.fail_fast:
-                    raise exc
+                task.fail(exc)
             if path in self.inprogress_tasks:
                 raise ValueError(f'{task} is in_progress after it was handled')
 
@@ -778,8 +787,12 @@ class Freezer:
             if not saved_something:
                 # Get some task (the first one we get by iteration) for the
                 # error message.
+                failing_task = None
                 for task in self.redirecting_tasks.values():
-                    raise InfiniteRedirection(task)
+                    failing_task = task
+                    break
+                if failing_task:
+                    failing_task.fail(InfiniteRedirection(task))
 
     def call_hook(self, hook_name: str, *arguments: Any) -> None:
         for hook in self.hooks.get(hook_name, ()):

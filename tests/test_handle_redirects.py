@@ -57,8 +57,7 @@ def test_redirect_to_self():
         config = {'output': {'type': 'dict'}}
         freeze(app, config)
 
-    # TODO: This should raise a MultiError.
-    with pytest.raises(InfiniteRedirection) as exc:
+    with raises_multierror_with_one_exception(InfiniteRedirection) as exc:
         config = {
             'output': {'type': 'dict'},
             'status_handlers': {'3xx': 'follow'},
@@ -89,8 +88,7 @@ def test_infinite_redirect_to_same_frozen_file():
         config = {'output': {'type': 'dict'}}
         freeze(app, config)
 
-    # TODO: This should raise a MultiError.
-    with pytest.raises(InfiniteRedirection) as exc:
+    with raises_multierror_with_one_exception(InfiniteRedirection) as exc:
         config = {
             'output': {'type': 'dict'},
             'status_handlers': {'3xx': 'follow'},
@@ -166,8 +164,7 @@ def test_redirect_to_same_frozen_file_with_query_hop():
         config = {'output': {'type': 'dict'}}
         freeze(app, config)
 
-    # TODO: This should raise a MultiError.
-    with pytest.raises(InfiniteRedirection):
+    with raises_multierror_with_one_exception(InfiniteRedirection):
         config = {
             'output': {'type': 'dict'},
             'status_handlers': {'3xx': 'follow'},
@@ -205,9 +202,8 @@ def test_redirect_to_same_frozen_file_with_hop():
     # But, we don't have the machinery to detect this yet,
     # so we raise an error.
 
-    # TODO: This should raise a MultiError.
     # TODO: This case should raise a better error.
-    with pytest.raises(InfiniteRedirection):
+    with raises_multierror_with_one_exception(InfiniteRedirection):
         config = {
             'output': {'type': 'dict'},
             'status_handlers': {'3xx': 'follow'},
