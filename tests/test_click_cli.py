@@ -106,7 +106,7 @@ def test_cli_with_extra_page_option(tmp_path):
     run_and_check(cli_args, app_name, build_dir)
 
 
-def test_cli_prefix_overrides_cli(tmp_path):
+def test_cli_prefix_overrides_config(tmp_path):
     app_name = 'app_url_for_prefix'
     build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
