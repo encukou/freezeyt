@@ -9,6 +9,7 @@ from typing import Tuple, List, TypeVar, Any
 import asyncio
 import inspect
 import re
+import os
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header
@@ -23,7 +24,7 @@ from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError, TaskStatus
 from freezeyt.absolute_url import AbsoluteURL
-from freezeyt.compat import asyncio_run, asyncio_create_task
+from freezeyt.compat import asyncio_run, asyncio_create_task, warnings_warn
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
@@ -608,6 +609,12 @@ class Freezer:
                     generator = import_variable_from_module(generator)
                 self._add_extra_pages(prefix, generator(self.user_app))
             elif isinstance(extra, str):
+                if extra.startswith('/'):
+                    warnings_warn(
+                        f'extra page URL must not start with slash: {extra!r}',
+                        DeprecationWarning,
+                        skip_file_prefixes=(os.path.dirname(__file__),),
+                    )
                 url = prefix.join(decode_input_path(extra))
                 try:
                     self.add_task(
