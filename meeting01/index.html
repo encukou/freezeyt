@@ -49,13 +49,13 @@ jsme vytvořili jednoduchý program, který vezme jednu stránku a uloží ji na
 Proto, abychom nějakou aplikaci mohli uložit na disk, budeme (logicky)
 potřebovat aplikaci. Pro její vytvoření použijeme webový framework Flask.
 Základní konstrukce takové aplikace vypadá následovně:</p>
-<pre><code class="language-python"><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<pre><code class="language-python"><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">index</span><span class="p">():</span>
     <span class="k">return</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    &lt;html&gt;</span>
 <span class="s2">        &lt;head&gt;</span>
@@ -86,12 +86,12 @@ Funkce <code>freeze(app, tmp_path)</code> ještě není napsaná, ale test zajis
 že jakmile ji vytvoříme, bude se chovat tak, jak chceme</p>
 <p>Test momentálně neprochází kvůli <em>ModuleNotFoundError</em>, protože modul
 <code>freezeyt</code> ještě neexistuje. První test tedy vypadá nějak takto:</p>
-<pre><code class="language-python"><span class="kn">import</span> <span class="nn">pytest</span>
-<span class="kn">from</span> <span class="nn">demo_app</span> <span class="kn">import</span> <span class="n">app</span>
-<span class="kn">from</span> <span class="nn">freezeyt</span> <span class="kn">import</span> <span class="n">freeze</span>
+<pre><code class="language-python"><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">demo_app</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">freezeyt</span><span class="w"> </span><span class="kn">import</span> <span class="n">freeze</span>
 
 
-<span class="k">def</span> <span class="nf">test_one_page</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_one_page</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
     <span class="n">freeze</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">read_text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -136,8 +136,8 @@ Tím jsme si ukázali, že aplikace demo_app.py je kompatibilní s tímto webov�
 rozhraním. Soubor wsgi_demo.py ukazuje způsob, jak je možno takovou aplikaci
 spustit pomocí <code>wsgiref.simple_server</code> a ne pomocí Flask. A téměř celá aplikace
 je zkopírována z <a href="https://docs.python.org/3.8/library/wsgiref.html#module-wsgiref.simple_server">dokumentace</a>:</p>
-<pre><code class="language-python"><span class="kn">from</span> <span class="nn">wsgiref.simple_server</span> <span class="kn">import</span> <span class="n">make_server</span>
-<span class="kn">from</span> <span class="nn">demo_app</span> <span class="kn">import</span> <span class="n">app</span>
+<pre><code class="language-python"><span class="kn">from</span><span class="w"> </span><span class="nn">wsgiref.simple_server</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_server</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">demo_app</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
 
 <span class="c1"># Create a demo WSGI server from a Flask app.</span>
 <span class="k">with</span> <span class="n">make_server</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">app</span><span class="p">)</span> <span class="k">as</span> <span class="n">server</span><span class="p">:</span>

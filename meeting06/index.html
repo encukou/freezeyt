@@ -45,7 +45,7 @@
 <h3>Issue#27:</h3>
 <p><em>4th minute</em></p>
 <p><a href="https://github.com/encukou/freezeyt/commit/36bd13b4de3900cf356e4cd079ee7a06802be99b">Handle relative links correctly</a> - <a href="https://github.com/encukou/freezeyt/blob/master/test_demo.py">according to test_structured</a> which tests on <a href="https://github.com/encukou/freezeyt/blob/master/demo_app_structured.py">demo_app_structured.py</a>:</p>
-<pre><code class="language-python"><span class="k">def</span> <span class="nf">test_structured</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
+<pre><code class="language-python"><span class="k">def</span><span class="w"> </span><span class="nf">test_structured</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Test if an app with relative URLs works.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -80,8 +80,8 @@ The freeze() function takes two parameters, base and url:</p>
 </code></pre>
 <p>Next we needed to make sure we also get full_urls in the visited links as well. The <em>visited_links</em> list is populated with new links from the <code>get_all_links()</code> function which is why it was necesary for this function to also return absolute urls. This way we made sure that we prepend the full address to the <em>links</em> and <em>visited_links</em> lists. In this way we are always working with absolute URLs.
 The changes made to <code>get_all_links()</code> and <code>get_links_from_node()</code> (the addition of a base_url argument and the <code>urljoin</code> method) are visible bellow:</p>
-<pre><code class="language-python"><span class="o">-</span><span class="k">def</span> <span class="nf">get_all_links</span><span class="p">(</span><span class="n">page_content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="o">+</span><span class="k">def</span> <span class="nf">get_all_links</span><span class="p">(</span><span class="n">page_content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<pre><code class="language-python"><span class="o">-</span><span class="k">def</span><span class="w"> </span><span class="nf">get_all_links</span><span class="p">(</span><span class="n">page_content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="o">+</span><span class="k">def</span><span class="w"> </span><span class="nf">get_all_links</span><span class="p">(</span><span class="n">page_content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">     </span><span class="sd">&quot;&quot;&quot;Get all links from &quot;page_content&quot;.</span>
 
 <span class="sd">     Return an iterable of strings.</span>
@@ -92,8 +92,8 @@ The changes made to <code>get_all_links()</code> and <code>get_links_from_node()
 <span class="o">-</span>    <span class="k">return</span> <span class="n">get_links_from_node</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>
 <span class="o">+</span>    <span class="k">return</span> <span class="n">get_links_from_node</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span>
 
-<span class="o">-</span><span class="k">def</span> <span class="nf">get_links_from_node</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="o">+</span><span class="k">def</span> <span class="nf">get_links_from_node</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="o">-</span><span class="k">def</span><span class="w"> </span><span class="nf">get_links_from_node</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="o">+</span><span class="k">def</span><span class="w"> </span><span class="nf">get_links_from_node</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">     </span><span class="sd">&quot;&quot;&quot;Get all links from xml.dom.minidom Node.&quot;&quot;&quot;</span>
      <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
      <span class="k">if</span> <span class="s1">&#39;href&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
@@ -109,7 +109,7 @@ The changes made to <code>get_all_links()</code> and <code>get_links_from_node()
 <p>Consequently, we needed to add an argument (base_url) to the <a href="https://github.com/encukou/freezeyt/blob/master/test_get_links.py">test_get_links.py</a> since it calls the get_all_links() function where we added the base_url argument.
 Furthermore, to test the new 'relative links' feature of the <code>get_all_links()</code> function a relative link <code>&lt;a href='fourth_page/'&gt;LINK&lt;/a&gt;</code> was added to the test as well.
 In case <code>get_all_links()</code> was called with a path like <code>http://localhost:8000/path1/path2/</code> the relative link should also link to it, so a new <code>test_get_links_path()</code> was added.</p>
-<pre><code class="language-python"><span class="k">def</span> <span class="nf">test_get_links_path</span><span class="p">():</span>
+<pre><code class="language-python"><span class="k">def</span><span class="w"> </span><span class="nf">test_get_links_path</span><span class="p">():</span>
     <span class="n">links</span> <span class="o">=</span> <span class="n">get_all_links</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">        &lt;html&gt;</span>
 <span class="s2">            &lt;head&gt;</span>
@@ -140,7 +140,7 @@ In case <code>get_all_links()</code> was called with a path like <code>http://lo
 <pre><code class="language-python"><span class="s1">&#39;http://localhost:8000/path1/path2/fourth_page/&#39;</span><span class="p">,</span>
 </code></pre>
 <p>To get a clearer picture as to why and how this happens, here is how the <code>url_to_filename()</code> function looks like at the moment:</p>
-<pre><code class="language-python"><span class="k">def</span> <span class="nf">url_to_filename</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+<pre><code class="language-python"><span class="k">def</span><span class="w"> </span><span class="nf">url_to_filename</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the filename to which the page is frozen.</span>
 <span class="sd">    Parameters:</span>
 <span class="sd">    base - Filesystem base path (eg. /tmp/)</span>
@@ -196,7 +196,7 @@ In case <code>get_all_links()</code> was called with a path like <code>http://lo
 <li>Reorganized the tests and fixed some of the URLs used in the tests since we changed all relative URLs to absolute ones.</li>
 <li><code>test_relative()</code> was added to the <a href="https://github.com/encukou/freezeyt/blob/master/test_url_to_filename.py">test_url_to_filename</a>:</li>
 </ul>
-<pre><code class="language-python"><span class="k">def</span> <span class="nf">test_relative</span><span class="p">():</span>
+<pre><code class="language-python"><span class="k">def</span><span class="w"> </span><span class="nf">test_relative</span><span class="p">():</span>
     <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
         <span class="n">url_to_filename</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s2">&quot;/a/b/c&quot;</span><span class="p">)</span>
 </code></pre>
@@ -295,12 +295,12 @@ Due to the missing 'maito' scheme the browser takes the email address as a relat
 <p>Elsa did not notice this incorrect link because it only recognizes Flask<code>s functions (in this case url_for()) and does not recognize functions from any other frameworks. Freezeyt starts by recognizing HTML tags such as 'href' and 'src' in order to be more comprehensive and capture functions and addresses coming from a variety of frameworks and not only Flask</code>s <code>url_for()</code>.</p>
 <p><em><strong>What to do with broken links?</strong></em>
 Ideally, freezeyt should notify the user of non-existent links when trying to freeze <code>demo_app_broken_link.py</code>:</p>
-<pre><code class="language-python"><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">url_for</span>
+<pre><code class="language-python"><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">url_for</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">index</span><span class="p">():</span>
     <span class="k">return</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    &lt;html&gt;</span>
 <span class="s2">        &lt;head&gt;</span>
@@ -315,7 +315,7 @@ Ideally, freezeyt should notify the user of non-existent links when trying to fr
 </code></pre>
 <p>Our new adjustments to freezing.py need to pass a negative test. We want to test that
 calling freeze() with <em>app_broken</em> raises a ValueError:</p>
-<pre><code class="language-python"><span class="k">def</span> <span class="nf">test_broken_link</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
+<pre><code class="language-python"><span class="k">def</span><span class="w"> </span><span class="nf">test_broken_link</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Test if an app with an image works.&quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
         <span class="n">freeze</span><span class="p">(</span><span class="n">app_broken_link</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
@@ -330,7 +330,7 @@ $ meld . _build
 <p><strong>ex.</strong> https://pyladies.cz/brno_course/ redirects to pyladies.cz/brno/#meetups</p>
 <p>As seen on the <a href="https://github.com/PyladiesCZ/pyladies.cz/blob/master/pyladies_cz.py">pyladies.cz, Github page</a> a special Flask route redirects old/outdated links to pyladies.cz/brno_course:</p>
 <pre><code class="language-python"><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&lt;city&gt;_course/&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">course_redirect</span><span class="p">(</span><span class="n">city</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">course_redirect</span><span class="p">(</span><span class="n">city</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;city&#39;</span><span class="p">,</span> <span class="n">city_slug</span><span class="o">=</span><span class="n">city</span><span class="p">,</span> <span class="n">_anchor</span><span class="o">=</span><span class="s1">&#39;meetups&#39;</span><span class="p">))</span>
 </code></pre>
 <p>In short, at some point pyladies.cz pages layout looked different and the content from some outdated links is now redirected to the Brno meetups page - &quot;https://pyladies.cz/brno/#meetups&quot;. In order for the old/outdated links to continue working, they were redirected using this <code>@app.route('/&lt;city&gt;_course/)'</code>.
