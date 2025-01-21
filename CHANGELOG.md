@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Python version support
 
-* Drop support for Python 3.7.
+* `freezeyt` is now tested on Python 3.13.
+* `freezeyt` is no longer tested on Python 3.7.
   (https://github.com/encukou/freezeyt/pull/405)
 
 ### Deprecations
