@@ -6,7 +6,7 @@ from freezeyt.middleware import Middleware
 from freezeyt.types import Config
 
 
-__version__ = '1.1.1'
+__version__ = '1.2.0'
 
 __all__ = [
     'freeze',
