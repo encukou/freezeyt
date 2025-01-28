@@ -67,17 +67,18 @@ def test_cli_to_dict_without_path(tmp_path, monkeypatch):
     run_freezeyt_cli(['app', '-c', config_path], app_name)
 
 
-def test_cli_to_dict_with_config_and_path(tmp_path, monkeypatch):
+def test_cli_to_dict_with_config_and_path(tmp_path):
     builddir = tmp_path / 'build'
     config_path = tmp_path / 'freezeyt.conf'
     app_name = 'app_with_extra_files'
 
-    config_path.write_text('output: {type: dict}')
+    config_path.write_text('output: {type: dict}')  # ignored (overriden by CLI)
 
-    result = run_freezeyt_cli(
-        ['app', '-c', config_path, str(builddir)], app_name, check=False
+    run_freezeyt_cli(
+        ['app', '-c', config_path, str(builddir)], app_name,
     )
-    assert result.exit_code != 0
+    assert builddir.exists()
+    assert builddir.joinpath('index.html').exists()
 
 
 def test_cli_without_path_and_output(tmp_path, monkeypatch):
@@ -114,7 +115,7 @@ def test_no_output_dir(tmp_path):
             freeze(module.app, freeze_config)
 
 
-def test_external_extra_files(tmp_path):
+def test_external_extra_page(tmp_path):
     with context_for_test('app_2pages') as module:
         freeze_config = {
             'output': {'type': 'dict'},
@@ -123,6 +124,36 @@ def test_external_extra_files(tmp_path):
 
         with pytest.raises(ExternalURLError):
             freeze(module.app, freeze_config)
+
+
+def test_extra_page_with_slash(tmp_path):
+    with context_for_test('app_simple') as module:
+        freeze_config = {
+            'output': {'type': 'dict'},
+            'extra_pages': ['/foo.html'],
+            'status_handlers': {'404': 'save'},
+        }
+
+        with pytest.deprecated_call():
+            result = freeze(module.app, freeze_config)
+        assert set(result) == {'foo.html', 'index.html'}
+
+
+def generate_extra_page_with_slash(app):
+    yield '/foo.html'
+
+
+def test_extra_page_generator_with_slash(tmp_path):
+    with context_for_test('app_simple') as module:
+        freeze_config = {
+            'output': {'type': 'dict'},
+            'extra_pages': [{'generator': f'{__name__}:generate_extra_page_with_slash'}],
+            'status_handlers': {'404': 'save'},
+        }
+
+        with pytest.deprecated_call():
+            result = freeze(module.app, freeze_config)
+        assert set(result) == {'foo.html', 'index.html'}
 
 
 def generate_extra_page(app):

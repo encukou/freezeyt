@@ -2,8 +2,76 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.mypy]
+[project]
+name = "freezeyt"
+dynamic = ["version"]
+description = "Generate static web pages from WSGI apps"
+readme = "README.md"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "html5lib",
+    "click",
+    "cssutils",
+    "pyyaml",
+    "dataclasses; python_version<'3.7'",
+    "Werkzeug",
+    "enlighten",
+    "a2wsgi>=1.10.8",
+]
 
+# build 1.2.2 doesn't support PEP 639 license specification yet.
+license = {text = "MIT"}
+#license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Repository = "https://github.com/encukou/freezeyt"
+
+[project.scripts]
+freezeyt = "freezeyt.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest >= 6.2.0",
+    "flask",
+    "pyflakes",
+    "Django",
+    "bottle >= 0.12.23",
+    "falcon",
+    "freezegun",
+    "packaging",
+]
+blog = [
+    "flask",
+    "markdown-it-py",
+    "pygments",
+]
+typecheck = [
+    "mypy",
+    "types-click",
+    "types-PyYAML",
+
+    # New version neded for: https://github.com/python/typeshed/issues/11478
+    "types-html5lib >= 1.1.11.20240228",
+]
+
+[tool.setuptools]
+packages = ["freezeyt"]
+
+[tool.setuptools.dynamic]
+version = {attr = "freezeyt.__version__"}
+
+
+[tool.mypy]
 check_untyped_defs = true
 disallow_incomplete_defs = true
 warn_redundant_casts = true

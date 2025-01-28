@@ -106,7 +106,7 @@ def test_cli_with_extra_page_option(tmp_path):
     run_and_check(cli_args, app_name, build_dir)
 
 
-def test_cli_prefix_conflict(tmp_path):
+def test_cli_prefix_overrides_config(tmp_path):
     app_name = 'app_url_for_prefix'
     build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
@@ -186,30 +186,30 @@ def test_cli_gh_pages_command_line_has_higher_priority(tmp_path):
     assert not (output_dir / ".nojekyll").exists() # the .nojekyll has not to exist
 
 
-def test_cli_app_argument_and_config_conflict(tmp_path):
+def test_cli_app_argument_overrides_config(tmp_path):
     app_name = 'app_simple'
     build_dir = tmp_path / 'build'
     config_file = tmp_path / 'config.yaml'
-    config_content = {'app': 'app'}
+    config_content = {'app': 'app_nonexisting'}
     with open(config_file, mode='w') as file:
         safe_dump(config_content, stream=file)
     cli_args = ['app', str(build_dir), '--config', config_file]
 
-    with pytest.raises(SystemExit):
-        run_and_check(cli_args, app_name, build_dir)
+    run_and_check(cli_args, app_name, build_dir)
 
 
-def test_cli_dest_path_conflict(tmp_path):
+def test_cli_dest_path_overrides_config(tmp_path):
     app_name = 'app_simple'
-    build_dir = tmp_path / 'build'
+    build_dir_conf = tmp_path / 'build_conf'
+    build_dir_cli = tmp_path / 'build_cli'
     config_file = tmp_path / 'config.yaml'
-    config_content = {'output': {'type': 'dir', 'dir': str(build_dir)}}
+    config_content = {'output': {'type': 'dir', 'dir': str(build_dir_conf)}}
     with open(config_file, mode='w') as file:
         safe_dump(config_content, stream=file)
-    cli_args = ['app', str(build_dir), '--config', config_file]
+    cli_args = ['app', str(build_dir_cli), '--config', config_file]
 
-    with pytest.raises(SystemExit):
-        run_and_check(cli_args, app_name, build_dir)
+    run_and_check(cli_args, app_name, build_dir_cli)
+    assert not build_dir_conf.exists()
 
 
 def test_cli_app_as_argument_no_dest_path(tmp_path):
@@ -349,3 +349,14 @@ def test_cli_fail_fast_option_priority_enable(tmp_path):
         with pytest.raises(ValueError):
             run_freezeyt_cli(cli_args, app_name)
 
+def test_help():
+    """Test that -h does the same as --help: show the help."""
+    runner = CliRunner(mix_stderr=False)
+    result_help = runner.invoke(main, ['--help'])
+    result_h = runner.invoke(main, ['-h'])
+
+    assert result_help.stdout == result_h.stdout
+    assert result_help.stderr == result_h.stderr == ''
+    assert result_help.exit_code == result_h.exit_code == 0
+
+    assert 'Usage:' in result_help.stdout

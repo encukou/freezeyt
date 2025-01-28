@@ -3,6 +3,7 @@
 
 import sys
 import shutil
+import warnings
 from typing import TypeVar
 
 T = TypeVar('T')
@@ -61,3 +62,11 @@ if sys.version_info >= (3, 11):
 else:
     _MultiErrorBase = Exception
     HAVE_EXCEPTION_GROUP: 'Literal[False]' = False
+
+if sys.version_info >= (3, 12):
+    warnings_warn = warnings.warn
+else:
+    # The skip_file_prefixes argument is new in Python 3.12.
+    # Ignore it on earlier versions.
+    def warnings_warn(*args, skip_file_prefixes=None, **kwargs):
+        return warnings.warn(*args, **kwargs)

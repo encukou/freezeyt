@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.2.0] - 2025-01-28
+
+### Python version support
+
+* `freezeyt` is now tested on Python 3.13.
+* `freezeyt` is no longer tested on Python 3.7.
+  (https://github.com/encukou/freezeyt/pull/405)
+
+### Deprecations
+
+* Deprecate extra pages starting with a slash. Extra page URLs should be
+  relative to the prefix.
+  (https://github.com/encukou/freezeyt/pull/406)
+
+### Features
+
+* When a page redirects to a page that would be saved to the same file
+  (for example `/` to `/index.html`), save the target page regardless
+  of general redirection settings.
+  (https://github.com/encukou/freezeyt/issues/374)
+* CLI options `app` and `output` now override configuration settings.
+  (https://github.com/encukou/freezeyt/pull/407)
+* Add `-h` CLI option, as an alias to `--help`
+  (https://github.com/encukou/freezeyt/issues/394)
+* Errors from infinite redirection loops are reported along with other
+  page-specific errors. (https://github.com/encukou/freezeyt/pull/402)
+
+
 ## [1.1.1] - 2024-04-30
 
 ### Fixes
