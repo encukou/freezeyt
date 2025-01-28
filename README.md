@@ -31,12 +31,12 @@ of virtual environment.
 [`venv`]: https://docs.python.org/3/library/venv.html?highlight=venv#module-venv
 
 The most recent release can be installed using:
-```commandline
+```
 $ python -m pip install freezeyt
 ```
 
 The tool can also be installed from source using:
-```commandline
+```
 $ python -m pip install .
 ```
 
