@@ -49,6 +49,7 @@ dev = [
     "falcon",
     "freezegun",
     "packaging",
+    "uvicorn",
 ]
 blog = [
     "flask",
