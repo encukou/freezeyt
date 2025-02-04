@@ -647,7 +647,7 @@ class Freezer:
             'http_version': '2',
             'method': 'GET',
             'scheme': self.prefix.scheme,
-            'path': url_parsed.path,
+            'path': url.path,
             #'raw_path':
             'query_string': b'',
 
