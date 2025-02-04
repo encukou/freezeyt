@@ -138,12 +138,17 @@ def get_path_from_url(
     return result
 
 @dataclasses.dataclass
+class Response:
+    headers: Headers
+    status: str
+
+
+@dataclasses.dataclass
 class Task:
     path: PurePosixPath
     urls: "Set[AbsoluteURL]"
     freezer: "Freezer"
-    response_headers: Optional[Headers] = None
-    response_status: Optional[str] = None
+    response: Optional[Response] = None
     redirects_to: "Optional[Task]" = None
     reasons: set = dataclasses.field(default_factory=set)
     asyncio_task: "Optional[asyncio.Task]" = None
@@ -507,13 +512,13 @@ class Freezer:
         return await self.saver.prepare()
 
     def get_status_action(self, task: Task, url: AbsoluteURL) -> str:
-        assert task.response_headers is not None
-        status_action = task.response_headers.get('Freezeyt-Action')
+        assert task.response is not None
+        status_action = task.response.headers.get('Freezeyt-Action')
         if status_action:
             return status_action
-        status = task.response_status
+        status = task.response.status
         assert status is not None
-        location = task.response_headers.get('Location')
+        location = task.response.headers.get('Location')
         # handle redirecting to same filepath like source URL
         if status.startswith('3') and location is not None:
             redirect_url = url.join(location)
@@ -537,6 +542,7 @@ class Freezer:
                     if redirect_url not in task.urls_redirecting_to_self:
                         task.urls.add(redirect_url)
                         task.urls_redirecting_to_self.add(url)
+                        task.response = None  # Ignore this response
                         raise RedirectToSamePath()
 
         if not status_action:
@@ -685,13 +691,15 @@ class Freezer:
                 # After a more_body=False, all events should be ignored
                 return
             if event['type'] == "http.response.start":
-                if task.response_status is not None:
+                if task.response is not None:
                     raise ValueError('Duplicate ASGI event "http.response.start"')
-                task.response_status = str(event['status'])
-                task.response_headers = Headers(
-                    # Convert ASGI headers to Werkzeug WSGI headers
-                    (key.decode('latin-1'), value.decode('latin-1'))
-                    for key, value in event['headers']
+                task.response = Response(
+                    status=str(event['status']),
+                    headers = Headers(
+                        # Convert ASGI headers to Werkzeug WSGI headers
+                        (key.decode('latin-1'), value.decode('latin-1'))
+                        for key, value in event['headers']
+                    ),
                 )
 
                 status_action = self.get_status_action(task, url)
@@ -702,13 +710,13 @@ class Freezer:
                 elif status_action == 'follow':
                     raise IsARedirect()
                 else:
-                    raise UnexpectedStatus(url, task.response_status)
+                    raise UnexpectedStatus(url, task.response.status)
 
                 # HACK: see middleware.py
                 # This is insecure (the freezer calls pickle on data from the
                 # application). Don't merge! Switch to ASGI middleware first,
                 # and remove the hack!
-                error = task.response_headers.get('Freezeyt-Error')
+                error = task.response.headers.get('Freezeyt-Error')
                 if error:
                     raise pickle.loads(base64.b64decode(error))
 
@@ -737,18 +745,18 @@ class Freezer:
 
         await self.saver.save_to_filename(task.path, result_body)
 
-        assert task.response_headers is not None
-        finder_name = task.response_headers.get('Freezeyt-URL-Finder')
+        assert task.response is not None
+        finder_name = task.response.headers.get('Freezeyt-URL-Finder')
         if finder_name is not None:
             url_finder = import_variable_from_module(finder_name)
         else:
-            content_type = task.response_headers.get('Content-Type')
+            content_type = task.response.headers.get('Content-Type')
             mime_type, encoding = parse_options_header(content_type)
             url_finder = self.url_finders.get(mime_type)
         if url_finder is not None:
             with await self.saver.open_filename(task.path) as f:
                 finder_result = url_finder(
-                    f, url_string, task.response_headers.to_wsgi_list()
+                    f, url_string, task.response.headers.to_wsgi_list()
                 )
                 if inspect.iscoroutine(finder_result):
                     links = await finder_result
@@ -767,7 +775,7 @@ class Freezer:
                     )
 
         if self.config.get('urls_from_link_headers', True):
-            for link_header in task.response_headers.getlist('Link'):
+            for link_header in task.response.headers.getlist('Link'):
                 for link in parse_list_header(link_header):
                     link = link.strip()
                     if not link.startswith('<'):
