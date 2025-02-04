@@ -527,6 +527,8 @@ class Freezer:
             if value is not None:
                 raise value
 
+        if task.response_headers is not None:
+            raise AssertionError('WSGI app called start_response twice')
         task.response_headers = Headers(headers)
         task.response_status = status
 
