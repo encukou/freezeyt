@@ -433,6 +433,7 @@ class Freezer:
                 coroutine,
                 name=str(task.path),
             )
+            task.asyncio_task.freezeyt_task = task
         return task
 
     def _add_task(
@@ -631,21 +632,21 @@ class Freezer:
 
     async def handle_urls(self) -> None:
         while self.inprogress_tasks:
-            # Get an item from self.inprogress_tasks.
-            # Since this is a dict, we can't do self.inprogress_tasks[0];
-            # and since we don't want to change it we can't use pop().
-            # So, start iterating over it, and break the loop immediately
-            # when we get the first item.
-            for path, task in self.inprogress_tasks.items():
-                break
-            assert task.asyncio_task is not None
+            done, pending = await asyncio.wait(
+                {t.asyncio_task for t in self.inprogress_tasks.values()},
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            for done_asyncio_task in done:
+                task = done_asyncio_task.freezeyt_task
+                assert task.asyncio_task is done_asyncio_task
 
-            try:
-                await task.asyncio_task
-            except Exception as exc:
-                task.fail(exc)
-            if path in self.inprogress_tasks:
-                raise ValueError(f'{task} is in_progress after it was handled')
+                try:
+                    await task.asyncio_task
+                except Exception as exc:
+                    task.fail(exc)
+                if task.path in self.inprogress_tasks:
+                    raise ValueError(
+                        f'{task} is in_progress after it was handled')
 
     @needs_semaphore
     async def handle_one_task(self, task: Task) -> None:
