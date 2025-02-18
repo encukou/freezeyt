@@ -264,18 +264,22 @@ class Freezer:
         # The original app, to be passed back to the user when needed
         self.user_app = app
 
-        # Apply middlewares
-        self.app = ASGIMiddleware(
-            a2wsgi.WSGIMiddleware(
+        is_asgi = self.config.get('is_asgi', False)
+
+        if is_asgi:
+            asgi_app = app
+        else:
+            asgi_app = a2wsgi.WSGIMiddleware(
                 # a2wsgi has its own Environ type which is a bit stricter than
                 # what we provide. We could switch to using
                 # a2wsgi.wsgi_typing.Environ, but it seems undocumented.
                 # We don't really care about WSGI internals here; so skip the type
                 # check.
                 app  # type: ignore
-            ),
-            self.config,
-        )
+            )
+
+        # Apply middlewares
+        self.app = ASGIMiddleware(asgi_app, self.config)
 
         self.fail_fast = self.config.get('fail_fast', False)
 

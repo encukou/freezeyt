@@ -5,6 +5,7 @@ import freezegun
 from flask import Flask, request
 from packaging.version import Version
 import re
+from a2wsgi import ASGIMiddleware as asgi_to_wsgi
 
 import pytest
 
@@ -288,9 +289,15 @@ def test_static_mode_head(app_name):
     }
 
     with context_for_test(app_name) as module:
+        is_asgi = getattr(module, 'freeze_config', {}).get('is_asgi', False)
+
         app = module.app
-        app_client = Client(app)
-        mw_client = Client(Middleware(app, config))
+        if is_asgi:
+            app_client = Client(asgi_to_wsgi(app))
+            mw_client = Client(Middleware(app, {**config, 'is_asgi': True}))
+        else:
+            app_client = Client(app)
+            mw_client = Client(Middleware(app, config))
 
         try:
             expected_dict = module.expected_dict

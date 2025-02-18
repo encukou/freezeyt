@@ -304,11 +304,14 @@ def Middleware(wsgi_app, config):
     )
     return WSGIMiddleware(wsgi_app, config)
 
-def WSGIMiddleware(wsgi_app, config):
+def WSGIMiddleware(orig_app, config):
     # Since our ASGI middleware handles everything, this turns WSGI to ASGI,
     # applies our middleware, and turns ASGI back to WSGI.
     # That's a lot of overhead. Use ASGI if you can.
 
-    asgi_app = wsgi_to_asgi(wsgi_app)
+    if config.get('is_asgi', False):
+        asgi_app = orig_app
+    else:
+        asgi_app = wsgi_to_asgi(orig_app)
     middlewared_asgi_app = ASGIMiddleware(asgi_app, config)
     return asgi_to_wsgi(middlewared_asgi_app)

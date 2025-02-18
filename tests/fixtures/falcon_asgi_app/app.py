@@ -3,6 +3,8 @@ from pathlib import Path
 
 STATIC_IMAGE_PATH = Path(__file__).parent / 'static'
 
+freeze_config = {'is_asgi': True}
+
 class Resource(object):
     async def on_get(self, req, resp):
         """Handles GET requests on index (/)"""
