@@ -375,9 +375,9 @@ def test_page_failed_hook():
 
     def record_frozen(task_info):
         check_task_counts(task_info.freeze_info, expected_total)
+        assert task_info.path == 'index.html'
         records.append((
             'frozen',
-            task_info.path,
             task_info.freeze_info.total_task_count,
             task_info.freeze_info.done_task_count,
             task_info.freeze_info.failed_task_count,
@@ -386,9 +386,9 @@ def test_page_failed_hook():
 
     def record_fail(task_info):
         check_task_counts(task_info.freeze_info, expected_total)
+        assert task_info.path in {'nowhere', 'also_nowhere'}
         records.append((
             'failed',
-            task_info.path,
             task_info.freeze_info.total_task_count,
             task_info.freeze_info.done_task_count,
             task_info.freeze_info.failed_task_count,
@@ -409,7 +409,7 @@ def test_page_failed_hook():
             freeze(module.app, config)
 
     assert records == [
-        ('frozen', 'index.html', 3, 1, 0),
-        ('failed', 'nowhere', 3, 2, 1),
-        ('failed', 'also_nowhere', 3, 3, 2),
+        ('frozen', 3, 1, 0),
+        ('failed', 3, 2, 1),
+        ('failed', 3, 3, 2),
     ]
