@@ -168,6 +168,15 @@ app: app_module:namespace.wsgi_application
 
 When configuration is given as a Python dict, `app` can be given as the WSGI application object, rather than a string.
 
+
+### ASGI support
+
+By default, `app` should be a WSGI application, as defined in PEP 3333.
+
+If the config option `is_asgi` is true, `app` should instead be an ASGI
+application as specified in [asgi.readthedocs.io](https://asgi.readthedocs.io).
+
+
 ### Output
 
 To outupt the frozen website to a directory, specify
