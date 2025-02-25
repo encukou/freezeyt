@@ -111,9 +111,11 @@ else:
         """
         def __init__(self, n):
             self.remaining = n
-            self.event = asyncio.Event()
+            self.event = None
 
         async def wait(self):
+            if self.event is None:
+                self.event = asyncio.Event()
             self.remaining -= 1
             if self.remaining <= 0:
                 self.event.set()

@@ -43,7 +43,6 @@ def test_fail_fast_cancels_tasks(monkeypatch, tmp_path):
 
     num_cancelled_errors = 0
 
-    event = asyncio.Event()  # this event will never be set
     barrier = asyncio_Barrier(N_PAGES)
 
     async def fake_save_to_filename(self, filename, content_iterable):
@@ -55,7 +54,7 @@ def test_fail_fast_cancels_tasks(monkeypatch, tmp_path):
         else:
             try:
                 await barrier.wait() # wait for all tasks to reach this barrier
-                await event.wait()   # wait for cancellation
+                await asyncio.Event().wait()   # wait for cancellation
             except asyncio.CancelledError:
                 num_cancelled_errors += 1
                 raise
