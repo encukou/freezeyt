@@ -48,12 +48,11 @@ def test_fail_fast_cancels_tasks(monkeypatch, tmp_path):
     async def fake_save_to_filename(self, filename, content_iterable):
         """Fake func for replace the save_to_filename method from FileSaver"""
         nonlocal num_cancelled_errors
+        await barrier.wait() # wait for all tasks to reach this barrier
         if filename.name == 'error.html':
-            await barrier.wait() # wait for all tasks to reach this barrier
             raise ValueError()
         else:
             try:
-                await barrier.wait() # wait for all tasks to reach this barrier
                 await asyncio.Event().wait()   # wait for cancellation
             except asyncio.CancelledError:
                 num_cancelled_errors += 1
