@@ -4,6 +4,7 @@ import sys
 import pytest
 
 from freezeyt import freeze, UnexpectedStatus
+from freezeyt.compat import asyncio_Barrier
 from freezeyt.freezer import Freezer, FileSaver
 from fixtures.app_cleanup_config.app import app
 from testutil import raises_multierror_with_one_exception
@@ -42,8 +43,8 @@ def test_fail_fast_cancels_tasks(monkeypatch, tmp_path):
 
     num_cancelled_errors = 0
 
-    barrier = asyncio.Barrier(N_PAGES)
     event = asyncio.Event()  # this event will never be set
+    barrier = asyncio_Barrier(N_PAGES)
 
     async def fake_save_to_filename(self, filename, content_iterable):
         """Fake func for replace the save_to_filename method from FileSaver"""
