@@ -5,7 +5,7 @@ import itertools
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, List, TypeVar, Any
+from typing import Tuple, List, TypeVar, Any, cast
 import asyncio
 import inspect
 import re
@@ -148,7 +148,7 @@ class Task:
     response_status: Optional[str] = None
     redirects_to: "Optional[Task]" = None
     reasons: set = dataclasses.field(default_factory=set)
-    asyncio_task: "Optional[asyncio.Task]" = None
+    asyncio_task: "Optional[FreezeytAsyncioTask]" = None
     urls_redirecting_to_self: set = dataclasses.field(default_factory=set)
     exception: Optional[Exception] = None
 
@@ -186,6 +186,14 @@ class Task:
         self.exception = exception
         self.update_status(self.status, TaskStatus.FAILED)
         self.freezer.call_hook('page_failed', hooks.TaskInfo(self))
+
+class FreezeytAsyncioTask(asyncio.Task):
+    """
+    asyncio.Task with an extra attribute to store the underlying freezeyt Task.
+
+    For typing only.
+    """
+    freezeyt_task: Task
 
 class IsARedirect(BaseException):
     """Raised when a page redirects and freezing it should be postponed"""
@@ -429,10 +437,14 @@ class Freezer:
         task = self._add_task(url, external_ok=external_ok, reason=reason)
         if task and task.asyncio_task is None:
             coroutine = self.handle_one_task(task)
-            task.asyncio_task = asyncio_create_task(
-                coroutine,
-                name=str(task.path),
+            task.asyncio_task = cast(
+                FreezeytAsyncioTask,
+                asyncio_create_task(
+                    coroutine,
+                    name=str(task.path),
+                ),
             )
+            task.asyncio_task.freezeyt_task = task
         return task
 
     def _add_task(
@@ -631,21 +643,22 @@ class Freezer:
 
     async def handle_urls(self) -> None:
         while self.inprogress_tasks:
-            # Get an item from self.inprogress_tasks.
-            # Since this is a dict, we can't do self.inprogress_tasks[0];
-            # and since we don't want to change it we can't use pop().
-            # So, start iterating over it, and break the loop immediately
-            # when we get the first item.
-            for path, task in self.inprogress_tasks.items():
-                break
-            assert task.asyncio_task is not None
+            done, pending = await asyncio.wait(
+                {t.asyncio_task for t in self.inprogress_tasks.values()
+                 if t.asyncio_task},
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            for done_asyncio_task in done:
+                task = done_asyncio_task.freezeyt_task
+                assert task.asyncio_task is done_asyncio_task
 
-            try:
-                await task.asyncio_task
-            except Exception as exc:
-                task.fail(exc)
-            if path in self.inprogress_tasks:
-                raise ValueError(f'{task} is in_progress after it was handled')
+                try:
+                    await task.asyncio_task
+                except Exception as exc:
+                    task.fail(exc)
+                if task.path in self.inprogress_tasks:
+                    raise ValueError(
+                        f'{task} is in_progress after it was handled')
 
     @needs_semaphore
     async def handle_one_task(self, task: Task) -> None:

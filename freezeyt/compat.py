@@ -100,3 +100,24 @@ else:
     # Ignore it on earlier versions.
     def warnings_warn(*args, skip_file_prefixes=None, **kwargs):
         return warnings.warn(*args, **kwargs)
+
+if sys.version_info >= (3, 11):
+    asyncio_Barrier = asyncio.Barrier
+else:
+    class asyncio_Barrier:
+        """Simple version of Barrier.
+
+        Only handles one batch of parties.
+        """
+        def __init__(self, n):
+            self.remaining = n
+            self.event = None
+
+        async def wait(self):
+            if self.event is None:
+                self.event = asyncio.Event()
+            self.remaining -= 1
+            if self.remaining <= 0:
+                self.event.set()
+            else:
+                await self.event.wait()
