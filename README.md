@@ -169,12 +169,16 @@ app: app_module:namespace.wsgi_application
 When configuration is given as a Python dict, `app` can be given as the WSGI application object, rather than a string.
 
 
-### ASGI support
+### Application interface (WSGI or ASGI)
 
-By default, `app` should be a WSGI application, as defined in PEP 3333.
+The `app_interface` config option specifies the interface to be used when
+calling `app`:
 
-If the config option `is_asgi` is true, `app` should instead be an ASGI
-application as specified in [asgi.readthedocs.io](https://asgi.readthedocs.io).
+- `wsgi` (default): `app` should be a WSGI application, as defined in PEP 3333.
+- `asgi2`: `app` should be a ASGI double-callable application,
+  as specified in [asgi.readthedocs.io](https://asgi.readthedocs.io) (version 2).
+- `asgi3`: `app` should be a ASGI single-callable application,
+  as specified in [asgi.readthedocs.io](https://asgi.readthedocs.io) (version 3).
 
 
 ### Output

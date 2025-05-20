@@ -1,6 +1,7 @@
 from typing import Mapping, Any, Union, TYPE_CHECKING, Tuple, Iterable
 from typing import List, TypedDict
 from types import TracebackType
+import enum
 
 import a2wsgi.asgi_typing
 

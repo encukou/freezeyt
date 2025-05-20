@@ -3,7 +3,7 @@ from pathlib import Path
 
 STATIC_IMAGE_PATH = Path(__file__).parent / 'static'
 
-freeze_config = {'is_asgi': True}
+freeze_config = {'app_interface': 'asgi3'}
 
 class Resource(object):
     async def on_get(self, req, resp):

@@ -17,6 +17,7 @@ import freezeyt
 from freezeyt.mimetype_check import MimetypeChecker
 from freezeyt.extra_files import get_extra_files
 from freezeyt.types import Config, ASGIHeaders
+from freezeyt.util import AppInterface
 
 
 def get_path_info(root_path: str, request_path: str) -> str:
@@ -42,10 +43,40 @@ def get_header_value(
             return value
     return None
 
+def asgi2_to_asgi3(asgi2_app):
+    async def asgi3_app(scope, receive, send):
+        asgi_val = scope['asgi']
+        if asgi_val['version'] != '3.0':
+            raise ValueError('ASGIMiddleware needs ASGI version 3.0')
+        scope = {**scope, 'asgi': {**asgi_val, 'version': '2.0'}}
+        print(asgi2_app)
+        print(asgi2_app.__module__)
+        import sys
+        print(sys.modules[asgi2_app.__module__])
+        instance = asgi2_app(scope)
+        return await instance(receive, send)
+    return asgi3_app
+
 
 class ASGIMiddleware:
     def __init__(self, app: ASGIApp, config: Config):
-        self.app = app
+
+        app_interface = AppInterface.from_config(config)
+
+        if app_interface == AppInterface.WSGI:
+            self.app = wsgi_to_asgi(
+                # a2wsgi has its own Environ type which is a bit stricter than
+                # what we provide. We could switch to using
+                # a2wsgi.wsgi_typing.Environ, but it seems undocumented.
+                # We don't really care about WSGI internals here; so skip the
+                # type check.
+                app  # type: ignore
+            )
+        elif app_interface == AppInterface.ASGI2:
+            self.app = asgi2_to_asgi3(app)
+        else:
+            self.app = app
+
         self.static_mode = config.get('static_mode', False)
         self.mimetype_checker = MimetypeChecker(config)
         self.url_map = Map()
@@ -305,13 +336,8 @@ def Middleware(wsgi_app, config):
     return WSGIMiddleware(wsgi_app, config)
 
 def WSGIMiddleware(orig_app, config):
-    # Since our ASGI middleware handles everything, this turns WSGI to ASGI,
-    # applies our middleware, and turns ASGI back to WSGI.
+    # Our ASGI middleware turns WSGI to ASGI; this then turns ASGI back to WSGI.
     # That's a lot of overhead. Use ASGI if you can.
 
-    if config.get('is_asgi', False):
-        asgi_app = orig_app
-    else:
-        asgi_app = wsgi_to_asgi(orig_app)
-    middlewared_asgi_app = ASGIMiddleware(asgi_app, config)
+    middlewared_asgi_app = ASGIMiddleware(orig_app, config)
     return asgi_to_wsgi(middlewared_asgi_app)

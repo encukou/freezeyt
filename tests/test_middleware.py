@@ -5,13 +5,13 @@ import freezegun
 from flask import Flask, request
 from packaging.version import Version
 import re
-from a2wsgi import ASGIMiddleware as asgi_to_wsgi
+from a2wsgi import ASGIMiddleware as asgi3_to_wsgi
 
 import pytest
 
 from freezeyt.compat import compat_zip
 from freezeyt.middleware import Middleware
-from freezeyt.util import WrongMimetypeError
+from freezeyt.util import WrongMimetypeError, AppInterface
 
 from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
 
@@ -28,6 +28,25 @@ class Client(WerkzeugClient):
         assert_same_status(head_response.status, get_response.status)
         check_headers_are_same(head_response.headers, get_response.headers)
         return get_response
+
+
+def clients_from_module(module, config):
+    app = module.app
+    mod_config = getattr(module, 'freeze_config', {})
+    app_interface = AppInterface.from_config(mod_config)
+
+    if app_interface == AppInterface.WSGI:
+        app_client = Client(app)
+        mw_client = Client(Middleware(app, config))
+    elif app_interface == AppInterface.ASGI2:
+        app_client = Client(asgi3_to_wsgi(asgi2_to_asgi3(app)))
+        mw_client = Client(Middleware(app, {**config, 'app_interface': 'asgi2'}))
+    elif app_interface == AppInterface.ASGI3:
+        app_client = Client(asgi3_to_wsgi(app))
+        mw_client = Client(Middleware(app, {**config, 'app_interface': 'asgi3'}))
+    else:
+        raise ValueError(app_interface)
+    return app_client, mw_client
 
 
 def urls_from_expected_dict(expected_dict, prefix=''):
@@ -98,12 +117,10 @@ def test_middleware_doesnt_change_app(app_name):
     app_path = FIXTURES_PATH / app_name
     error_path = app_path / 'error.txt'
     with context_for_test(app_name) as module:
-        app = module.app
         config = getattr(module, 'freeze_config', {})
 
-        app_client = Client(app)
         try:
-            mw_client = Client(Middleware(app, config))
+            app_client, mw_client = clients_from_module(module, config)
         except ValueError:
             # If creating the Middleware fails, it should raise the same
             # exception as freezing the app.
@@ -289,15 +306,7 @@ def test_static_mode_head(app_name):
     }
 
     with context_for_test(app_name) as module:
-        is_asgi = getattr(module, 'freeze_config', {}).get('is_asgi', False)
-
-        app = module.app
-        if is_asgi:
-            app_client = Client(asgi_to_wsgi(app))
-            mw_client = Client(Middleware(app, {**config, 'is_asgi': True}))
-        else:
-            app_client = Client(app)
-            mw_client = Client(Middleware(app, config))
+        app_client, mw_client = clients_from_module(module, config)
 
         try:
             expected_dict = module.expected_dict

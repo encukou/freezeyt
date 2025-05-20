@@ -19,7 +19,7 @@ import freezeyt.actions
 from freezeyt.encoding import decode_input_path, encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
-from freezeyt.util import import_variable_from_module
+from freezeyt.util import import_variable_from_module, AppInterface
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError, TaskStatus
 from freezeyt.absolute_url import AbsoluteURL
@@ -264,22 +264,8 @@ class Freezer:
         # The original app, to be passed back to the user when needed
         self.user_app = app
 
-        is_asgi = self.config.get('is_asgi', False)
-
-        if is_asgi:
-            asgi_app = app
-        else:
-            asgi_app = a2wsgi.WSGIMiddleware(
-                # a2wsgi has its own Environ type which is a bit stricter than
-                # what we provide. We could switch to using
-                # a2wsgi.wsgi_typing.Environ, but it seems undocumented.
-                # We don't really care about WSGI internals here; so skip the type
-                # check.
-                app  # type: ignore
-            )
-
         # Apply middlewares
-        self.app = ASGIMiddleware(asgi_app, self.config)
+        self.app = ASGIMiddleware(app, self.config)
 
         self.fail_fast = self.config.get('fail_fast', False)
 

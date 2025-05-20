@@ -100,6 +100,23 @@ class TaskStatus(enum.Enum):
     FAILED = "Raised an exception"
 
 
+class AppInterface(enum.Enum):
+    WSGI = 'WSGI (PEP 3333)'
+    ASGI2 = 'ASGI 2 (https://asgi.readthedocs.io)'
+    ASGI3 = 'ASGI 3 (https://asgi.readthedocs.io)'
+
+    @classmethod
+    def from_config(cls, config):
+        name = config.get('app_interface', 'wsgi')
+        try:
+            return cls[name.upper()]
+        except ValueError:
+            choices = set(v.name for v in cls)
+            raise ValueError(
+                f"'app_interface' option should be one of {choices}, "
+                + f"not {name!r}")
+
+
 def import_variable_from_module(
     name: str,
     *,
