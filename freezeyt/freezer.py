@@ -413,15 +413,29 @@ class Freezer:
 
             for task in self.done_tasks.values():
                 if len(task.urls) > 1:
+                    display_urls = sorted(
+                        [self.get_short_url(url) for url in task.urls]
+                    )
+
                     self.warnings.append(
                         f"Static file '{task.path}' is requested from"
-                        f" different URLs {sorted([url.path for url in task.urls])}"
+                        f" different URLs {display_urls}"
                     )
 
             for warning in self.warnings:
                 print(f"[WARNING] {warning}")
             return result
         raise MultiError(self.failed_tasks.values())
+
+    def get_short_url(self, url):
+        """Return short version of an URL for a warning/error message"""
+        # Remove self.prefix if the URL starts with it.
+        # If it doesn't for any reason, it's OK to leave it in.
+        prefix_str = str(self.prefix)[:-1]
+        url_str = str(url)
+        if url_str.startswith(prefix_str):
+            return url_str[len(prefix_str):]
+        return url_str
 
     def add_task(
         self,
