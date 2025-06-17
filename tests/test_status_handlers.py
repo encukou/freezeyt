@@ -229,8 +229,7 @@ def test_warn_handler_from_header(capsys):
         )
 
     expected_output = (
-        f"[WARNING] URL http://localhost:8000/,"
-        f" status code: 200 was freezed\n"
+        "[WARNING] URL http://localhost:8000/, status code: 200 was freezed\n"
     )
 
     freeze(app, config)
