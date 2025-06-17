@@ -649,7 +649,10 @@ class Freezer:
                     warnings_warn(
                         f'extra page URL must not start with slash: {extra!r}',
                         DeprecationWarning,
-                        skip_file_prefixes=(os.path.dirname(__file__),),
+                        skip_file_prefixes=(
+                            os.path.dirname(__file__),
+                            os.path.dirname(asyncio.__file__),
+                        ),
                     )
                 url = prefix.join(decode_input_path(extra))
                 try:
