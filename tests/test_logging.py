@@ -38,13 +38,14 @@ def test_warn_same_frozen_file_from_different_URLs(capsys):
 
     app = Flask(__name__)
 
-    index_routes = ['/', '/index.html']
+    index_routes = ['/', '/index.html', '/index.html?a=b']
     second_page_routes = ['/second_page/', '/second_page/index.html']
 
     @app.route(index_routes[0])
     def index():
         return """
     <a href='/index.html'>INDEX FILE</a>
+    <a href='/index.html?a=b'>INDEX FILE</a>
     <a href='/second_page/index.html'>SECOND PAGE FILE</a>
 """
 
