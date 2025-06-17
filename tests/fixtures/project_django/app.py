@@ -8,7 +8,7 @@ app = SharedDataMiddleware(django_wsgi_app, {
     '/static': os.path.join(os.path.dirname(__file__), 'static')
 })
 
-freeze_config = {'extra_pages': ['/extra/']}
+freeze_config = {'extra_pages': ['extra/']}
 
 expected_dict = {
     'index.html':

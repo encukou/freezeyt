@@ -1,7 +1,7 @@
 from flask import Flask, url_for, Response
 
 app = Flask(__name__)
-freeze_config = {'extra_pages': ['/éxtrą/']}
+freeze_config = {'extra_pages': ['éxtrą/']}
 no_expected_directory = True
 
 
