@@ -112,24 +112,25 @@ def test_middleware_doesnt_change_app(app_name):
 def check_responses_are_same(
     app_client, mw_client, url, expected_error=(), expect_extra_files=False,
 ):
-    app_response = app_client.get(url)
-    print(app_response)
-    print(app_response.get_data())
-    try:
-        mw_response = mw_client.get(url)
-    except expected_error:
-        return
+    with app_client.get(url) as app_response:
+        print(app_response)
+        print(app_response.get_data())
+        try:
+            mw_response = mw_client.get(url)
+        except expected_error:
+            return
 
-    if (expect_extra_files
-        and app_response.status.startswith('404')
-        and mw_response.status.startswith('200')
-    ):
-        # expected extra page
-        return
+        with mw_response:
+            if (expect_extra_files
+                and app_response.status.startswith('404')
+                and mw_response.status.startswith('200')
+            ):
+                # expected extra page
+                return
 
-    assert app_response.status == mw_response.status
-    assert app_response.headers == mw_response.headers
-    assert app_response.get_data() == mw_response.get_data()
+            assert app_response.status == mw_response.status
+            assert app_response.headers == mw_response.headers
+            assert app_response.get_data() == mw_response.get_data()
 
 
 def test_middleware_rejects_wrong_mimetype():
@@ -151,18 +152,22 @@ def test_middleware_tricky_extra_files():
         mw_client = Client(Middleware(app, module.freeze_config))
 
         # This file is looked up in static_dir:
-        assert mw_client.get('/static/file.txt').status.startswith('200')
+        with mw_client.get('/static/file.txt') as response:
+            assert response.status.startswith('200')
 
         # This file doesn't exist in static_dir; we shouldn't request it
         # from the app
-        assert mw_client.get('/static/missing.html').status.startswith('404')
+        with mw_client.get('/static/missing.html') as response:
+            assert response.status.startswith('404')
 
         # This page should be requested from the app (where it exists)
-        assert mw_client.get('/static-not.html').status.startswith('200')
+        with mw_client.get('/static-not.html') as response:
+            assert response.status.startswith('200')
 
         # This page should also be requested from the app; but it doesn't
         # exist there.
-        assert mw_client.get('/static-not-missing.html').status.startswith('404')
+        with mw_client.get('/static-not-missing.html') as response:
+            assert response.status.startswith('404')
 
         # When getting a directory, there are several things Freezeyt could do:
         # - look for index.html, and serve it if found
@@ -170,17 +175,21 @@ def test_middleware_tricky_extra_files():
         # - fail with 404
         # It should do the same thing whether or not there's a trailing slash,
         # or one version could redirect to the other.
-        assert mw_client.get('/static').status.startswith('404')
-        assert mw_client.get('/static/').status.startswith('404')
+        with mw_client.get('/static') as response:
+            assert response.status.startswith('404')
+        with mw_client.get('/static/') as response:
+            assert response.status.startswith('404')
 
         # Looking outside the static directory is forbidden
-        assert mw_client.get('/static/../app.py').status.startswith('403')
+        with mw_client.get('/static/../app.py') as response:
+            assert response.status.startswith('403')
 
         # Same as above, but in this case werkzeug.routing.Map returns a
         # redirect to '/static/etc/passwd' before Middleware gets a chance
         # to return `403 Forbidden`. This is a detail that might change in
         # the future, so just assert that this isn't successful.
-        assert not mw_client.get('/static//etc/passwd').status.startswith('200')
+        with mw_client.get('/static//etc/passwd') as response:
+            assert not response.status.startswith('200')
 
 
 DYNAMIC_METHODS = 'POST', 'PUT', 'PATCH', 'DELETE'
@@ -256,12 +265,11 @@ def test_static_mode_head(app_name):
             pass
         else:
             for url in urls_from_expected_dict(expected_dict):
-                app_response = app_client.get(url)
-                mw_response = mw_client.head(url)
-
-                assert mw_response.status == app_response.status
-                assert mw_response.headers == app_response.headers
-                assert mw_response.get_data() == b''
+                with app_client.get(url) as app_response:
+                    with mw_client.head(url) as mw_response:
+                        assert mw_response.status == app_response.status
+                        assert mw_response.headers == app_response.headers
+                        assert mw_response.get_data() == b''
 
 def test_parameter_removal():
     config = {
