@@ -565,7 +565,8 @@ class Freezer:
             status=status,
         )
 
-        status_action = task.response.headers.get('Freezeyt-Action')
+        status_handler_name: Optional[str]
+        status_handler_name = task.response.headers.get('Freezeyt-Action')
         location = task.response.headers.get('Location')
 
         # handle redirecting to same filepath like source URL
@@ -594,24 +595,29 @@ class Freezer:
                         task.response = None  # Ignore this response
                         raise RedirectToSamePath()
 
-        if not status_action:
+        status_handler: Optional[ActionFunction] = None
+        if status_handler_name:
+            status_handler = freezeyt.actions._ACTIONS[status_handler_name]
+
+        if not status_handler:
             # Get a handler for the particular status from configuration
             status_handler = self.status_handlers.get(status[:3])
 
-            if status_handler is None:
-                # If a handler for the particular status isn't found,
-                # get handler for a group of statuses
-                status_handler = self.status_handlers.get(status[0] + 'xx')
-            if status_handler is None:
-                # Still not found? Use the default handler
-                if status.startswith('200'):
-                    # default behaviour for status 200
-                    status_handler = freezeyt.actions.save
-                else:
-                    # default behaviour for everything but 200
-                    raise UnexpectedStatus(url, status)
+        if not status_handler:
+            # If a handler for the particular status isn't found,
+            # get handler for a group of statuses
+            status_handler = self.status_handlers.get(status[0] + 'xx')
 
-            status_action = status_handler(hooks.TaskInfo(task))
+        if not status_handler:
+            # Still not found? Use the default handler
+            if status.startswith('200'):
+                # default behaviour for status 200
+                status_handler = freezeyt.actions.save
+            else:
+                # default behaviour for everything but 200
+                raise UnexpectedStatus(url, status)
+
+        status_action = status_handler(hooks.TaskInfo(task))
 
         if status_action == 'save':
             return wsgi_write
