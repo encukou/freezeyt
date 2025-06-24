@@ -419,7 +419,7 @@ class Freezer:
             for task in self.done_tasks.values():
                 if len(task.urls) > 1:
                     display_urls = sorted(
-                        [self.get_short_url(url) for url in task.urls]
+                        {self.get_short_url(url) for url in task.urls}
                     )
 
                     self.warnings.append(
@@ -439,7 +439,9 @@ class Freezer:
         prefix_str = str(self.prefix)[:-1]
         url_str = str(url)
         if url_str.startswith(prefix_str):
-            return url_str[len(prefix_str):]
+            url_str = url_str[len(prefix_str):]
+        if not url_str:
+            url_str = '/'
         return url_str
 
     def add_task(

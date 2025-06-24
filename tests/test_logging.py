@@ -43,9 +43,11 @@ def test_warn_same_frozen_file_from_different_URLs(capsys):
 
     @app.route(index_routes[0])
     def index():
-        return """
+        return f"""
     <a href='/index.html'>INDEX FILE</a>
     <a href='/index.html?a=b'>INDEX FILE</a>
+    <a href='http://example.test'>INDEX ABSOLUTE URL</a>
+    <a href='http://example.test/'>INDEX ABSOLUTE URL WITH SLASH</a>
     <a href='/second_page/index.html'>SECOND PAGE FILE</a>
     <a href='/second_page/index.html#frag'>SECOND PAGE WITH FRAGMENT</a>
 """
