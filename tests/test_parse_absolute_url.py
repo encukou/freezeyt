@@ -50,10 +50,6 @@ def test_query():
     parsed = AbsoluteURL("https://freezeyt.test:1234/foo/?a=123")
     assert parsed.query == 'a=123'
 
-def test_fragment_discarded():
-    parsed = AbsoluteURL("https://freezeyt.test:1234/foo/#heading")
-    assert parsed.fragment == ''
-
 def test_unicode_host():
     parsed = AbsoluteURL("https://čau☺フ.даль.рф:1234/foo/")
     assert parsed.hostname == 'čau☺フ.даль.рф'

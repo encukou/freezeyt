@@ -66,10 +66,6 @@ class AbsoluteURL:
     def query(self):
         return self._split_url.query
 
-    @property
-    def fragment(self):
-        return self._split_url.fragment
-
     def _replace(self, **kwargs):
         return AbsoluteURL(self._split_url._replace(**kwargs))
 
