@@ -11,7 +11,8 @@ from freezeyt.util import RelativeURLError, UnsupportedSchemeError
 class AbsoluteURL:
     """An URL as used internally by Freezeyt.
 
-    Absolute IRI, with an explicit port if it's `http` or `https`
+    Absolute IRI, with an explicit port if it's `http` or `https`, and with
+    no fragment.
 
     AbsoluteURL can be created (parsed) from a string, in which case only
     `http` or `https` URLs are accepted.
@@ -27,6 +28,7 @@ class AbsoluteURL:
         else:
             _split_url = split_url
         self._split_url = self._add_port(_split_url)
+        self._split_url = self._split_url._replace(fragment='')
 
     def __str__(self):
         return urllib.parse.urlunsplit(self._split_url)
