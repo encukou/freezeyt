@@ -4,7 +4,7 @@ from pathlib import Path, PurePosixPath
 
 from . import compat
 from .saver import Saver
-from .absolute_url import AbsoluteURL
+from .absolute_url import PrefixURL
 
 from typing import Callable, Iterable, BinaryIO
 
@@ -39,7 +39,7 @@ class FileSaver(Saver):
         else:
             raise exception
 
-    def __init__(self, base_path: Path, prefix: AbsoluteURL):
+    def __init__(self, base_path: Path, prefix: PrefixURL):
         self.base_path = base_path.resolve()
         self.prefix = prefix
 

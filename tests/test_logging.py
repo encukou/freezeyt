@@ -98,3 +98,27 @@ def test_warn_same_frozen_file_from_different_URLs(capsys):
     assert index_warn in stdout
     assert second_page_warn in stdout
 
+
+
+def test_no_warn_index_slash(capsys):
+    app = Flask(__name__)
+
+    index_routes = ['/', '/index.html', '/index.html?a=b']
+    second_page_routes = ['/second_page/', '/second_page/index.html']
+
+    @app.route('/')
+    def index():
+        return f"""
+            <a href='http://example.test'>INDEX ABSOLUTE URL</a>
+            <a href='http://example.test/'>INDEX ABSOLUTE URL WITH SLASH</a>
+        """
+
+    config = {
+        'prefix': 'http://example.test/',
+        'output': {'type': 'dict'},
+    }
+
+    freeze(app, config)
+
+    captured = capsys.readouterr()
+    assert 'WARNING' not in captured.out

@@ -1,6 +1,6 @@
 from typing import Iterable, Callable, Optional, TYPE_CHECKING
 
-from freezeyt.absolute_url import AbsoluteURL
+from freezeyt.absolute_url import AppURL
 
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ class FreezeInfo:
         self._freezer = freezer
 
     def add_url(self, url: str, reason: Optional[str] = None) -> None:
-        self._freezer.add_task(AbsoluteURL(url), reason=reason)
+        self._freezer.add_task(AppURL(url, self._freezer.prefix), reason=reason)
 
     def add_hook(self, hook_name: str, func: Callable) -> None:
         self._freezer.add_hook(hook_name, func)

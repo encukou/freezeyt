@@ -1,4 +1,4 @@
-from freezeyt.absolute_url import AbsoluteURL
+from freezeyt.absolute_url import PrefixURL, AppURL
 
 
 def is_external(url, prefix):

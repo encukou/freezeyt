@@ -23,7 +23,7 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError, TaskStatus
-from freezeyt.absolute_url import AbsoluteURL
+from freezeyt.absolute_url import AppURL, PrefixURL
 from freezeyt.compat import asyncio_run, asyncio_create_task, warnings_warn
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
@@ -108,24 +108,14 @@ def default_url_to_path(path: str) -> str:
 
 
 def get_path_from_url(
-    prefix: AbsoluteURL, url: AbsoluteURL, url_to_path: Callable[[str], str],
+    url: AppURL, url_to_path: Callable[[str], str],
 ) -> PurePosixPath:
     """Return the disk path to which `url` should be saved.
 
     `url_to_path` is the function given in the config. It takes a string
     and returns a string.
-
-    Both arguments should be results of parse_absolute_url.
     """
-    if url.is_external_to(prefix):
-        raise ValueError(f'external url {url}')
-
-    path = url.path
-
-    if path.startswith(prefix.path):
-        path = path[len(prefix.path):]
-
-    result = PurePosixPath(url_to_path(path))
+    result = PurePosixPath(url_to_path(url.relative_path))
 
     if result.is_absolute():
         raise ValueError(
@@ -148,7 +138,7 @@ class Response:
 @dataclasses.dataclass
 class Task:
     path: PurePosixPath
-    urls: "Set[AbsoluteURL]"
+    urls: "Set[AppURL]"
     freezer: "Freezer"
     response: Optional[Response] = None
     redirects_to: "Optional[Task]" = None
@@ -160,7 +150,10 @@ class Task:
     def __repr__(self) -> str:
         return f"<Task for {self.path}, {self.status.name}>"
 
-    def get_a_url(self) -> AbsoluteURL:
+    def add_url(self, url: AppURL):
+        self.urls.add(url)
+
+    def get_a_url(self) -> AppURL:
         """Get an arbitrary one of the task's URLs."""
         # we need to ensure that get_a_url() will get the right one
         # when there are urls redirection to itself
@@ -419,7 +412,7 @@ class Freezer:
             for task in self.done_tasks.values():
                 if len(task.urls) > 1:
                     display_urls = sorted(
-                        {self.get_short_url(url) for url in task.urls}
+                        [self.get_short_url(url) for url in task.urls]
                     )
 
                     self.warnings.append(
@@ -446,16 +439,15 @@ class Freezer:
 
     def add_task(
         self,
-        url: AbsoluteURL,
+        url: AppURL,
         *,
-        external_ok: bool = False,
         reason: Optional[str] = None,
     ) -> Optional[Task]:
         """Add a task to freeze the given URL
 
         If no task is added (e.g. for external URLs), return None.
         """
-        task = self._add_task(url, external_ok=external_ok, reason=reason)
+        task = self._add_task(url, reason=reason)
         if task and task.asyncio_task is None:
             coroutine = self.handle_one_task(task)
             task.asyncio_task = cast(
@@ -470,22 +462,16 @@ class Freezer:
 
     def _add_task(
         self,
-        url: AbsoluteURL,
+        url: AppURL,
         *,
-        external_ok: bool = False,
         reason: Optional[str] = None,
     ) -> Optional[Task]:
-        if url.is_external_to(self.prefix):
-            if external_ok:
-                return None
-            raise ExternalURLError(f'Unexpected external URL: {url}')
-
-        path = get_path_from_url(self.prefix, url, self.url_to_path)
+        path = get_path_from_url(url, self.url_to_path)
 
         for collection in self.task_collections.values():
             if path in collection:
                 task = collection[path]
-                task.urls.add(url)
+                task.add_url(url)
                 break
         else:
             # The `else` branch is entered if the loop ended normally
@@ -534,7 +520,7 @@ class Freezer:
     def start_response(
         self,
         task: Task,
-        url: AbsoluteURL,
+        url: AppURL,
         wsgi_write: Func,
         status: str,
         headers: WSGIHeaderList,
@@ -573,8 +559,11 @@ class Freezer:
 
         # handle redirecting to same filepath like source URL
         if status.startswith('3') and location is not None:
-            redirect_url = url.join(location)
-            if not redirect_url.is_external_to(self.prefix):
+            try:
+                redirect_url = url.join(location)
+            except ExternalURLError:
+                pass
+            else:
                 redirect_path = get_path_from_url(
                     self.prefix, redirect_url, self.url_to_path
                 )
@@ -592,7 +581,7 @@ class Freezer:
                     # If we are, skip this special case. (We're in a redirect
                     # loop and will probably fail later.)
                     if redirect_url not in task.urls_redirecting_to_self:
-                        task.urls.add(redirect_url)
+                        task.add_url(redirect_url)
                         task.urls_redirecting_to_self.add(url)
                         task.response = None  # Ignore this response
                         raise RedirectToSamePath()
@@ -633,7 +622,7 @@ class Freezer:
 
     def _add_extra_pages(
         self,
-        prefix: AbsoluteURL,
+        prefix: PrefixURL,
         extras: ExtraPagesConfig,
     ) -> None:
         """Add URLs of extra pages from config.

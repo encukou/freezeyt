@@ -1,12 +1,12 @@
 from urllib.parse import urlsplit, urlunsplit, urljoin
 
-from freezeyt.absolute_url import AbsoluteURL
+from freezeyt.absolute_url import PrefixURL
 
-url_with_port = AbsoluteURL('http://localhost:80/')
+url_with_port = PrefixURL('http://localhost:80/')
 
 # To construct URLs without ports, we use urllib.parse.urljoin.
 # (The parse_absolute_url function always adds a port.)
-def _join(url1: AbsoluteURL, url2_text: str):
+def _join(url1: PrefixURL, url2_text: str):
     url1_text = str(url1)
     joined_text = urljoin(url1_text, url2_text)
     return urlsplit(joined_text)

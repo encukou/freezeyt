@@ -1,7 +1,7 @@
 import pytest
 
 from freezeyt import RelativeURLError
-from freezeyt.absolute_url import AbsoluteURL
+from freezeyt.absolute_url import PrefixURL, AppURL
 
 def test_absolute():
     with pytest.raises(RelativeURLError):

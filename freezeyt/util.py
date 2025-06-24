@@ -36,6 +36,9 @@ class RelativeURLError(ValueError):
 class UnsupportedSchemeError(ValueError):
     """Raised for URLs with unsupported schemes"""
 
+class BadPrefixError(ValueError):
+    """Raised for URLs that can't be used as prefix"""
+
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
     def __init__(self, url: 'AbsoluteURL', status: str):

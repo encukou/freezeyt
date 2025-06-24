@@ -4,11 +4,114 @@ from typing import Union
 
 from werkzeug.urls import uri_to_iri
 
-from freezeyt.util import RelativeURLError, UnsupportedSchemeError
+from freezeyt.util import RelativeURLError, UnsupportedSchemeError, BadPrefixError
 
+
+def split_iri(url):
+    return urllib.parse.urlsplit(uri_to_iri(url))
+
+
+def get_port(port, scheme):
+    if port:
+        return port
+    elif scheme == 'http':
+        return 80
+    else:
+        return 443
+
+
+class PrefixURL:
+    """An URL as used internally by Freezeyt.
+
+    Absolute `http` or `https` IRI, with an explicit port, ending with a slash.
+    For example:
+        https://localhost:80/some-path/
+    """
+    def __init__(self, url: str):
+        split_url: urllib.parse.SplitResult = split_iri(url)
+        if not split_url.scheme:
+            raise RelativeURLError(f"Expected an absolute URL, not {url}")
+
+        if split_url.scheme not in ('http', 'https'):
+            raise UnsupportedSchemeError(f"URL scheme must be http or https: {url}")
+
+        if not split_url.netloc:
+            raise RelativeURLError(f"Expected an absolute URL, not {url}")
+
+        if split_url.query:
+            raise BadPrefixError("The prefix cannot have a query part")
+
+        if split_url.fragment:
+            raise BadPrefixError("The prefix cannot have a fragment part")
+
+        if not split_url.path.endswith('/'):
+            raise BadPrefixError("The prefix must end with a slash")
+
+        self._split_url = split_url
+
+    @property
+    def scheme(self):
+        return self._split_url.scheme
+
+    @property
+    def hostname(self):
+        return self._split_url.hostname
+
+    @property
+    def port(self):
+        return get_port(self._split_url.port, self._split_url.scheme)
+
+    @property
+    def path(self):
+        return self._split_url.path
+
+
+class AppURL:
+    """An URL as used internally by Freezeyt.
+
+    An IRI relative to a given prefix.
+    """
+    def __init__(self, url: str, prefix: PrefixURL):
+        split_url: urllib.parse.SplitResult = split_iri(url)
+        if split_url.scheme != prefix.scheme:
+            raise ExternalURLError(
+                f"External URL: {url!r} (scheme is not {prefix.scheme!r})")
+        if split_url.hostname != prefix.hostname:
+            raise ExternalURLError(
+                f"External URL: {url!r} (hostname is not {prefix.hostname!r})")
+        if get_port(split_url.port, split_url.scheme) != prefix.port:
+            raise ExternalURLError(
+                f"External URL: {url!r} (port is not {prefix.port!r})")
+        prefix_path = prefix.path
+        if prefix_path == '/':
+            prefix_path = ''
+        if not split_url.path.startswith(prefix_path):
+            raise ExternalURLError(
+                f"External URL: {url!r} (path does not start with {prefix_path!r})")
+        self._split_url = split_url
+
+
+
+def _add_port(url: urllib.parse.SplitResult) -> urllib.parse.SplitResult:
+    """Returns url with the port set, using the default for HTTP or HTTPS scheme
+
+    `url` must be
+        - an absolute IRI, that is, the result of
+        urllib.parse.urlsplit(werkzeug.urls.uri_to_iri(...)), or
+        - a non-http/https URL, such as `mailto:...` (we don't add the port
+        for those).
+    """
+    if url.port == None:
+        if url.scheme == 'http':
+            assert url.hostname is not None, f"{url} must be absolute"
+            url = url._replace(netloc=url.hostname + ':80')
+        elif url.scheme == 'https':
+            assert url.hostname is not None, f"{url} must be absolute"
+            url = url._replace(netloc=url.hostname + ':443')
+    return url
 
 @functools.total_ordering
-class AbsoluteURL:
+class xxx_AbsoluteURL:
     """An URL as used internally by Freezeyt.
 
     Absolute IRI, with an explicit port if it's `http` or `https`, and with
