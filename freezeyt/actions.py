@@ -6,6 +6,14 @@ from freezeyt.util import TaskStatus
 ActionFunction = Callable[[TaskInfo], str]
 
 
+_ACTIONS = {}
+
+def register(func):
+    _ACTIONS[func.__name__] = func
+    return func
+
+
+@register
 def warn(task: TaskInfo) -> str:
     url = task.get_a_url()
     response = task._task.response
@@ -20,6 +28,7 @@ def warn(task: TaskInfo) -> str:
     return 'save'
 
 
+@register
 def follow(task: TaskInfo) -> str:
     url = task._task.get_a_url()
     response = task._task.response
@@ -40,14 +49,17 @@ def follow(task: TaskInfo) -> str:
     return 'follow'
 
 
+@register
 def ignore(task: TaskInfo) -> str:
     return 'ignore'
 
 
+@register
 def save(task: TaskInfo) -> str:
     return 'save'
 
 
+@register
 def error(task: TaskInfo) -> str:
     return 'error'
 

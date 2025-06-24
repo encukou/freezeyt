@@ -177,11 +177,27 @@ def test_actions_from_header():
     app = Flask(__name__)
     @app.route('/')
     def index():
-        return '<a href="/ignore_me/">...</a>'
+        return (
+            '<a href="/ignore_me/">...</a><a href="/follow_me/">...</a>',
+            '404 Ignore This Status',
+            {'freezeyt-action': 'save'},
+        )
 
     @app.route('/ignore_me/')
     def ignored_page():
         return 'ignored', {'freezeyt-action': 'ignore'}
+
+    @app.route('/follow_me/')
+    def followed_page():
+        return Response(
+            response='followed',
+            status='404 Ignore This Status',
+            headers={'freezeyt-action': 'follow', 'location': '/destination/'},
+        )
+
+    @app.route('/destination/')
+    def destination_page():
+        return 'destination'
 
     config = {
         'output': {'type': 'dict'},
@@ -189,5 +205,51 @@ def test_actions_from_header():
 
     result = freeze(app, config)
     assert result == {
-        'index.html': b'<a href="/ignore_me/">...</a>',
+        'index.html': b'<a href="/ignore_me/">...</a><a href="/follow_me/">...</a>',
+        'follow_me': {
+            'index.html': b'destination',
+        },
+        'destination': {
+            'index.html': b'destination',
+        },
     }
+
+
+def test_warn_handler_from_header(capsys):
+    app = Flask(__name__)
+    config = {
+        'output': {'type': 'dict'},
+    }
+
+    @app.route('/')
+    def index():
+        return Response(
+            response='Hello world!',
+            headers={'freezeyt-action': 'warn'},
+        )
+
+    expected_output = (
+        "[WARNING] URL http://localhost:8000/, status code: 200 was freezed\n"
+    )
+
+    freeze(app, config)
+    captured = capsys.readouterr()
+
+    assert expected_output in captured.out
+
+
+def test_error_handler_from_header():
+    app = Flask(__name__)
+    config = {
+        'output': {'type': 'dict'},
+    }
+
+    @app.route('/')
+    def index():
+        return Response(
+            response='Hello world!',
+            headers={'freezeyt-action': 'error'},
+        )
+
+    with raises_multierror_with_one_exception(UnexpectedStatus):
+        freeze(app, config)
