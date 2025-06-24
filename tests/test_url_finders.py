@@ -103,7 +103,7 @@ def test_get_only_links_from_css(tmp_path):
             'use_default_url_finders': False,
         }
 
-        freeze_config['extra_pages'] += ["/static/style.css"]
+        freeze_config['extra_pages'] += ["static/style.css"]
         freeze(module.app, freeze_config)
 
     assert (builddir / 'index.html').exists()
