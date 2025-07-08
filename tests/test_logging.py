@@ -38,10 +38,10 @@ def test_warn_same_frozen_file_from_different_URLs(capsys):
 
     app = Flask(__name__)
 
-    index_routes = ['/', '/index.html', '/index.html?a=b']
-    second_page_routes = ['/second_page/', '/second_page/index.html']
+    index_routes = ['', 'index.html', 'index.html?a=b']
+    second_page_routes = ['second_page/', 'second_page/index.html']
 
-    @app.route(index_routes[0])
+    @app.route('/' + index_routes[0])
     def index():
         return """
     <a href='/index.html'>INDEX FILE</a>
@@ -52,15 +52,15 @@ def test_warn_same_frozen_file_from_different_URLs(capsys):
     <a href='/second_page/index.html#frag'>SECOND PAGE WITH FRAGMENT</a>
 """
 
-    @app.route(index_routes[1])
+    @app.route('/' + index_routes[1])
     def index_html():
         return "INDEX FILE"
 
-    @app.route(second_page_routes[0])
+    @app.route('/' + second_page_routes[0])
     def second_page():
         return "SECOND PAGE"
 
-    @app.route(second_page_routes[1])
+    @app.route('/' + second_page_routes[1])
     def second_page_html():
     # Link to index.html test if warning is
     # printing out only once

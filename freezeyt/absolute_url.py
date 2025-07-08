@@ -164,3 +164,9 @@ class AppURL:
     @property
     def port(self):
         return get_port(self._split_url.port, self._split_url.scheme)
+
+    @property
+    def relative_path_with_query(self):
+        if self.query:
+            return self.relative_path + '?' + self.query
+        return self.relative_path
