@@ -77,9 +77,11 @@ class BaseURL:
 class PrefixURL(BaseURL):
     """IRI used for a web app's prefix.
 
-    Absolute `http` or `https` IRI, with an explicit port, ending with a slash.
+    Absolute `http` or `https` IRI, ending with a slash.
+    A prefix cannot have a query, nor a fragment.
+
     For example:
-        https://localhost:80/some-path/
+        https://localhost/some-path/
     """
     def __init__(self, str_or_splitresult: Union[str, urllib.parse.SplitResult], /):
         super().__init__(str_or_splitresult)
@@ -118,6 +120,12 @@ class PrefixURL(BaseURL):
 @functools.total_ordering
 class AppURL(BaseURL):
     """A IRI that's "internal" to a given prefix.
+
+    AppURL is absolute, and it's guaranteed to be "internal" -- that is,
+    "within" the Web app named by its prefix.
+    It has the same netloc as the prefix, and its path is within the prefix
+    path.
+    Any fragment is discarded (it would not be sent to a server anyway).
     """
     def __init__(
         self,
