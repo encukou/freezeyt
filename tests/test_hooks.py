@@ -27,10 +27,10 @@ def test_page_frozen_hook():
 
     assert len(recorded_tasks) == 2
 
-    info = recorded_tasks['http://example.com:80/']
+    info = recorded_tasks['http://example.com/']
     assert info.path == 'index.html'
 
-    info = recorded_tasks['http://example.com:80/second_page.html']
+    info = recorded_tasks['http://example.com/second_page.html']
     assert info.path == 'second_page.html'
 
 
@@ -215,10 +215,10 @@ def test_add_hook():
 
     assert len(recorded_tasks) == 2
 
-    info = recorded_tasks['http://example.com:80/']
+    info = recorded_tasks['http://example.com/']
     assert info.path == 'index.html'
 
-    info = recorded_tasks['http://example.com:80/second_page.html']
+    info = recorded_tasks['http://example.com/second_page.html']
     assert info.path == 'second_page.html'
 
 
@@ -247,10 +247,10 @@ def test_multiple_hooks():
     assert len(recorded_tasks) == 2
     assert counter == 2
 
-    info = recorded_tasks['http://example.com:80/']
+    info = recorded_tasks['http://example.com/']
     assert info.path == 'index.html'
 
-    info = recorded_tasks['http://example.com:80/second_page.html']
+    info = recorded_tasks['http://example.com/second_page.html']
     assert info.path == 'second_page.html'
 
 

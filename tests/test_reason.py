@@ -15,7 +15,7 @@ def test_reason_homepage():
 
     with raises_multierror_with_one_exception(UnexpectedStatus) as e:
         freeze(app, config)
-    assert str(e.value.url) == 'http://localhost:80/'
+    assert str(e.value.url) == 'http://localhost/'
     assert e.value.status[:3] == '404'
     assert e.freezeyt_task.reasons == ['site root (homepage)']
 
@@ -36,7 +36,7 @@ def test_reason_redirect():
     with raises_multierror_with_one_exception(UnexpectedStatus) as e:
         freeze(app, config)
 
-    assert str(e.value.url) == 'http://localhost:80/404'
+    assert str(e.value.url) == 'http://localhost/404'
     assert e.value.status[:3] == '404'
     assert e.freezeyt_task.reasons == ['target of redirect from: index.html']
 
@@ -57,7 +57,7 @@ def test_reason_extra():
     with raises_multierror_with_one_exception(UnexpectedStatus) as e:
         freeze(app, config)
     print(e)
-    assert str(e.value.url) == 'http://localhost:80/404.html'
+    assert str(e.value.url) == 'http://localhost/404.html'
     assert e.value.status[:3] == '404'
     assert e.freezeyt_task.reasons == ['extra page']
 
@@ -77,6 +77,6 @@ def test_reason_link():
     with raises_multierror_with_one_exception(UnexpectedStatus) as e:
         freeze(app, config)
     print(e)
-    assert str(e.value.url) == 'http://localhost:80/404.html'
+    assert str(e.value.url) == 'http://localhost/404.html'
     assert e.value.status[:3] == '404'
     assert e.freezeyt_task.reasons == ['linked from: index.html']

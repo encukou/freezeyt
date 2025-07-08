@@ -150,7 +150,7 @@ class Task:
     def __repr__(self) -> str:
         return f"<Task for {self.path}, {self.status.name}>"
 
-    def add_url(self, url: AppURL):
+    def add_url(self, url: AppURL) -> None:
         self.urls.add(url)
 
     def get_a_url(self) -> AppURL:
@@ -319,11 +319,11 @@ class Freezer:
 
         # Decode path in the prefix URL.
         # Save the parsed version of prefix as self.prefix
-        prefix_parsed = AbsoluteURL(prefix)
+        prefix_parsed = PrefixURL(prefix)
         decoded_path = decode_input_path(prefix_parsed.path)
         if not decoded_path.endswith('/'):
             raise ValueError('prefix must end with /')
-        self.prefix = prefix_parsed._replace(path=decoded_path)
+        self.prefix = prefix_parsed._replace_path(path=decoded_path)
 
         output = self.config['output']
         if isinstance(output, str):
@@ -486,7 +486,7 @@ class Freezer:
     async def prepare(self) -> None:
         """Preparatory method for creating tasks and preparing the saver."""
         # prepare the tasks
-        self.add_task(self.prefix, reason='site root (homepage)')
+        self.add_task(self.prefix.as_app_url(), reason='site root (homepage)')
         for url_part, kind, content_or_path in get_extra_files(self.config):
             if kind == 'content':
                 # join part with path, otherwise filename 'http:' overwrite prefix
@@ -512,7 +512,7 @@ class Freezer:
                     )
             else:
                 raise ValueError(kind)
-        self._add_extra_pages(self.prefix, self.extra_pages)
+        self._add_extra_pages(self.prefix.as_app_url(), self.extra_pages)
 
         # and at the end prepare the saver
         return await self.saver.prepare()
@@ -565,7 +565,7 @@ class Freezer:
                 pass
             else:
                 redirect_path = get_path_from_url(
-                    self.prefix, redirect_url, self.url_to_path
+                    redirect_url, self.url_to_path,
                 )
                 # compare if source path and final path of redirect are same
                 # If they are, apply special logic: consider the target of
@@ -784,11 +784,15 @@ class Freezer:
                         new_links.append(link)
                     links = new_links
                 for link_text in links:
-                    new_url = url.join(link_text)
-                    self.add_task(
-                        new_url, external_ok=True,
-                        reason=f'linked from: {task.path}',
-                    )
+                    try:
+                        new_url = url.join(link_text)
+                    except ExternalURLError:
+                        pass
+                    else:
+                        self.add_task(
+                            new_url,
+                            reason=f'linked from: {task.path}',
+                        )
 
         if self.config.get('urls_from_link_headers', True):
             for link_header in task.response.headers.getlist('Link'):
@@ -799,11 +803,15 @@ class Freezer:
                     link_text, sep, rest = link[1:].partition('>')
                     if not sep:
                         raise ValueError(f'Invalid Link header: {link!r}')
-                    new_url = url.join(link_text)
-                    self.add_task(
-                        new_url, external_ok=True,
-                        reason=f'Link header from: {task.path}',
-                    )
+                    try:
+                        new_url = url.join(link_text)
+                    except ExternalURLError:
+                        pass
+                    else:
+                        self.add_task(
+                            new_url,
+                            reason=f'Link header from: {task.path}',
+                        )
 
         task.update_status(TaskStatus.IN_PROGRESS, TaskStatus.DONE)
 

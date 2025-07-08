@@ -43,7 +43,7 @@ def test_warn_same_frozen_file_from_different_URLs(capsys):
 
     @app.route(index_routes[0])
     def index():
-        return f"""
+        return """
     <a href='/index.html'>INDEX FILE</a>
     <a href='/index.html?a=b'>INDEX FILE</a>
     <a href='http://example.test'>INDEX ABSOLUTE URL</a>
@@ -103,12 +103,9 @@ def test_warn_same_frozen_file_from_different_URLs(capsys):
 def test_no_warn_index_slash(capsys):
     app = Flask(__name__)
 
-    index_routes = ['/', '/index.html', '/index.html?a=b']
-    second_page_routes = ['/second_page/', '/second_page/index.html']
-
     @app.route('/')
     def index():
-        return f"""
+        return """
             <a href='http://example.test'>INDEX ABSOLUTE URL</a>
             <a href='http://example.test/'>INDEX ABSOLUTE URL WITH SLASH</a>
         """
