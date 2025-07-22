@@ -1,6 +1,6 @@
 from typing import Iterable, Callable, Optional, TYPE_CHECKING
 
-from freezeyt.absolute_url import AppURL
+from freezeyt.urls import AppURL
 
 
 if TYPE_CHECKING:

@@ -1,6 +1,6 @@
 import pytest
 
-from freezeyt.absolute_url import PrefixURL, AppURL
+from freezeyt.urls import PrefixURL, AppURL
 from freezeyt.util import ExternalURLError
 
 def test_explicit_port():

@@ -1,7 +1,7 @@
 import pytest
 
 from freezeyt import RelativeURLError
-from freezeyt.absolute_url import PrefixURL
+from freezeyt.urls import PrefixURL
 from freezeyt.util import BadPrefixError
 
 def test_absolute():

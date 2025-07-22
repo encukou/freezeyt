@@ -10,7 +10,7 @@ from freezeyt.encoding import decode_input_path
 if TYPE_CHECKING:
     from freezeyt.hooks import TaskInfo
     from freezeyt.freezer import Task
-    from freezeyt.absolute_url import AppURL
+    from freezeyt.urls import AppURL
 
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()

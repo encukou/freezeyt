@@ -5,7 +5,7 @@ from pathlib import Path, PurePosixPath
 
 from . import compat
 from .saver import Saver
-from .absolute_url import PrefixURL
+from .urls import PrefixURL
 
 from typing import Callable, Iterable, BinaryIO
 

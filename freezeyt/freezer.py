@@ -23,7 +23,7 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError, TaskStatus
-from freezeyt.absolute_url import AppURL, PrefixURL
+from freezeyt.urls import AppURL, PrefixURL
 from freezeyt.compat import warnings_warn
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
