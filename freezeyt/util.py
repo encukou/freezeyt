@@ -10,7 +10,7 @@ from freezeyt.encoding import decode_input_path
 if TYPE_CHECKING:
     from freezeyt.hooks import TaskInfo
     from freezeyt.freezer import Task
-    from freezeyt.absolute_url import AbsoluteURL
+    from freezeyt.urls import AppURL
 
 
 process_pool_executor = concurrent.futures.ProcessPoolExecutor()
@@ -36,9 +36,12 @@ class RelativeURLError(ValueError):
 class UnsupportedSchemeError(ValueError):
     """Raised for URLs with unsupported schemes"""
 
+class BadPrefixError(ValueError):
+    """Raised for URLs that can't be used as prefix"""
+
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
-    def __init__(self, url: 'AbsoluteURL', status: str):
+    def __init__(self, url: 'AppURL', status: str):
         self.url = str(url)
         self.status = status
         message = str(status)

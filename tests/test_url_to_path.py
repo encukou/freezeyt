@@ -3,7 +3,7 @@ from pathlib import PurePosixPath
 import pytest
 
 from freezeyt.freezer import get_path_from_url
-from freezeyt.absolute_url import AbsoluteURL
+from freezeyt.urls import PrefixURL, AppURL
 import freezeyt
 
 
@@ -53,8 +53,8 @@ POSITIVE_TEST_CASES = {
 @pytest.mark.parametrize('case', POSITIVE_TEST_CASES)
 def test_positive(case):
     prefix_string, url_string, expected = POSITIVE_TEST_CASES[case]
-    prefix = AbsoluteURL(prefix_string)
-    result = get_path_from_url(prefix, AbsoluteURL(url_string), freezeyt.url_to_path)
+    prefix = PrefixURL(prefix_string)
+    result = get_path_from_url(AppURL(url_string, prefix), freezeyt.url_to_path)
     assert result == PurePosixPath(expected)
 
 
@@ -88,9 +88,9 @@ NEGATIVE_TEST_CASES = {
 @pytest.mark.parametrize('case', NEGATIVE_TEST_CASES)
 def test_negative(case):
     prefix_string, url_string = NEGATIVE_TEST_CASES[case]
-    prefix = AbsoluteURL(prefix_string)
+    prefix = PrefixURL(prefix_string)
     with pytest.raises(ValueError):
-        get_path_from_url(prefix, AbsoluteURL(url_string), freezeyt.url_to_path)
+        get_path_from_url(AppURL(url_string, prefix), freezeyt.url_to_path)
 
 
 @pytest.mark.parametrize('bad_input', ['..', 'a/../b', '/a', '//b'])
@@ -100,8 +100,7 @@ def test_bad_url_to_path(bad_input):
 
     with pytest.raises(ValueError):
         get_path_from_url(
-            AbsoluteURL('http://localhost:80/'),
-            AbsoluteURL('http://localhost:80/'),
+            PrefixURL('http://localhost:80/').as_app_url(),
             bad_path,
         )
 
@@ -114,8 +113,7 @@ def test_url_to_path_removes_dots(input, expected):
         return input
 
     path = get_path_from_url(
-        AbsoluteURL('http://localhost:80/'),
-        AbsoluteURL('http://localhost:80/'),
+        PrefixURL('http://localhost:80/').as_app_url(),
         bad_path,
     )
     assert str(path) == expected

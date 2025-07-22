@@ -1,7 +1,7 @@
 from typing import Callable, TYPE_CHECKING
 
 from freezeyt.hooks import TaskInfo
-from freezeyt.util import TaskStatus
+from freezeyt.util import TaskStatus, ExternalURLError
 
 ActionFunction = Callable[[TaskInfo], str]
 
@@ -35,11 +35,15 @@ def follow(task: TaskInfo) -> str:
     if response is None:
         raise ValueError(
             f'follow() called on {url} which is not being saved yet')
-    location = url.join(response.headers['Location'])
+    try:
+        location = url.join(response.headers['Location'])
+    except ExternalURLError:
+        raise NotImplementedError(
+            'Redirects to external pages are not supported',
+        )
 
     target_task = task._freezer.add_task(
         location,
-        external_ok=True,
         reason=f'target of redirect from: {task._task.path}',
     )
 
