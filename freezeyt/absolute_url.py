@@ -29,6 +29,7 @@ class BaseURL:
     def __init__(
         self,
         str_or_splitresult: Union[str, urllib.parse.SplitResult],
+        /,
     ):
         split_url: urllib.parse.SplitResult
         if isinstance(str_or_splitresult, str):
@@ -82,7 +83,7 @@ class PrefixURL(BaseURL):
     For example:
         https://localhost/some-path/
     """
-    def __init__(self, str_or_splitresult: Union[str, urllib.parse.SplitResult]):
+    def __init__(self, str_or_splitresult: Union[str, urllib.parse.SplitResult], /):
         super().__init__(str_or_splitresult)
         _url = str_or_splitresult
         split_url = self._split_url
@@ -129,6 +130,7 @@ class AppURL(BaseURL):
     def __init__(
         self,
         str_or_splitresult: Union[str, urllib.parse.SplitResult],
+        /,
         prefix: PrefixURL,
     ):
         _url = str_or_splitresult
