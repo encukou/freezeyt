@@ -1,3 +1,5 @@
+from textwrap import dedent
+
 import pytest
 from yaml import safe_dump
 from click.testing import CliRunner
@@ -359,3 +361,18 @@ def test_help():
     assert result_help.exit_code == result_h.exit_code == 0
 
     assert 'Usage:' in result_help.stdout
+
+
+def test_multierror_output_redirect(tmp_path):
+    app_name = 'circular_redirect'
+    build_dir = tmp_path / 'build'
+    with context_for_test(app_name):
+        result = run_freezeyt_cli(
+            ['app', str(build_dir)], app_name, check=False,
+        )
+    print(result.stdout)
+    assert result.stdout.strip().endswith(dedent("""
+    UnexpectedStatus: 302 FOUND
+      in index.html
+        site root (homepage)
+    """).strip())
