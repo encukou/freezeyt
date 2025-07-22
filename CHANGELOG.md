@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Python version support
 
 * `freezeyt` now requires Python 3.8 or higher.
+* `freezeyt` is now tested on Python 3.14.
 
 
 ## [1.2.0] - 2025-01-28
