@@ -500,7 +500,7 @@ class Freezer:
                     )
             else:
                 raise ValueError(kind)
-        self._add_extra_pages(self.prefix.as_app_url(), self.extra_pages)
+        self._add_extra_pages(self.extra_pages)
 
         # and at the end prepare the saver
         return await self.saver.prepare()
@@ -610,7 +610,6 @@ class Freezer:
 
     def _add_extra_pages(
         self,
-        prefix: PrefixURL,
         extras: ExtraPagesConfig,
     ) -> None:
         """Add URLs of extra pages from config.
@@ -628,7 +627,7 @@ class Freezer:
                     )
                 if isinstance(generator, str):
                     generator = import_variable_from_module(generator)
-                self._add_extra_pages(prefix, generator(self.user_app))
+                self._add_extra_pages(generator(self.user_app))
             elif isinstance(extra, str):
                 if extra.startswith('/'):
                     warnings_warn(
@@ -639,7 +638,7 @@ class Freezer:
                             os.path.dirname(asyncio.__file__),
                         ),
                     )
-                url = prefix.join(decode_input_path(extra))
+                url = self.prefix.join(decode_input_path(extra))
                 try:
                     self.add_task(
                         url,
@@ -651,7 +650,7 @@ class Freezer:
                     )
             else:
                 generator = extra
-                self._add_extra_pages(prefix, generator(self.user_app))
+                self._add_extra_pages(generator(self.user_app))
 
     async def handle_urls(self) -> None:
         while self.inprogress_tasks:
