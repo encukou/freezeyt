@@ -1,5 +1,6 @@
 import os
 import stat
+import asyncio
 from pathlib import Path, PurePosixPath
 
 from . import compat
@@ -65,7 +66,7 @@ class FileSaver(Saver):
         absolute_filename = self.base_path / filename
         assert self.base_path in absolute_filename.parents
 
-        loop = compat.get_running_loop()
+        loop = asyncio.get_running_loop()
 
         absolute_filename.parent.mkdir(parents=True, exist_ok=True)
         with open(absolute_filename, "wb") as f:

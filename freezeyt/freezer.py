@@ -24,7 +24,7 @@ from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError, TaskStatus
 from freezeyt.absolute_url import AppURL, PrefixURL
-from freezeyt.compat import asyncio_run, asyncio_create_task, warnings_warn
+from freezeyt.compat import warnings_warn
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
@@ -44,7 +44,7 @@ STATUS_KEY_RE = re.compile('^[0-9]([0-9]{2}|xx)$')
 
 
 def freeze(app: Optional[WSGIApplication], config: Config) -> SaverResult:
-    return asyncio_run(freeze_async(app, config))
+    return asyncio.run(freeze_async(app, config))
 
 
 async def freeze_async(
@@ -440,7 +440,7 @@ class Freezer:
             coroutine = self.handle_one_task(task)
             task.asyncio_task = cast(
                 FreezeytAsyncioTask,
-                asyncio_create_task(
+                asyncio.create_task(
                     coroutine,
                     name=str(task.path),
                 ),

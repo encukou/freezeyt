@@ -21,7 +21,7 @@ Freezeyt is compatible with all Python web frameworks that use the common
 
 ## Installation
 
-Freezeyt requires Python 3.6 or above.
+Freezeyt requires Python 3.8 or above.
 
 It is highly recommended to create and activate a separate virtual
 environment for this project.
