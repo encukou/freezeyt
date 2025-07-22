@@ -38,7 +38,9 @@ def follow(task: TaskInfo) -> str:
     try:
         location = url.join(response.headers['Location'])
     except ExternalURLError:
-        return 'follow'
+        raise NotImplementedError(
+            'Redirects to external pages are not supported',
+        )
 
     target_task = task._freezer.add_task(
         location,
