@@ -7,10 +7,10 @@ name = "freezeyt"
 dynamic = ["version"]
 description = "Generate static web pages from WSGI apps"
 readme = "README.md"
+requires-python = ">= 3.8"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -23,7 +23,6 @@ dependencies = [
     "click",
     "cssutils",
     "pyyaml",
-    "dataclasses; python_version<'3.7'",
     "Werkzeug",
     "enlighten",
 ]

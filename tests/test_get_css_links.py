@@ -1,9 +1,9 @@
+import asyncio
 from io import BytesIO
 
 import pytest
 
 from freezeyt.url_finders import get_css_links, get_css_links_async
-from freezeyt.compat import asyncio_run
 
 TEST_DATA = {
     "basic": (
@@ -99,5 +99,5 @@ def test_links_css(test_name):
 def test_links_css_async(test_name):
     input, expected = TEST_DATA[test_name]
     f = BytesIO(input)
-    links = asyncio_run(get_css_links_async(f, 'http://localhost:8000'))
+    links = asyncio.run(get_css_links_async(f, 'http://localhost:8000'))
     assert sorted(links) == expected
