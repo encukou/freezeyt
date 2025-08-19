@@ -543,10 +543,13 @@ class Freezer:
 
         status_handler_name: Optional[str]
         status_handler_name = task.response.headers.get('Freezeyt-Action')
-        location = task.response.headers.get('Location')
 
         # handle redirecting to same filepath like source URL
-        if status.startswith('3') and location is not None:
+        if status.startswith('3'):
+            location = task.response.headers.get('Location')
+        else:
+            location = None
+        if location is not None:
             try:
                 redirect_url = url.join(location)
             except ExternalURLError:
@@ -594,7 +597,7 @@ class Freezer:
                 status_handler = freezeyt.actions.save
             else:
                 # default behaviour for everything but 200
-                raise UnexpectedStatus(url, status)
+                raise UnexpectedStatus(url, status, location)
 
         status_action = status_handler(hooks.TaskInfo(task))
 
@@ -605,7 +608,7 @@ class Freezer:
         elif status_action == 'follow':
             raise IsARedirect()
         else:
-            raise UnexpectedStatus(url, status)
+            raise UnexpectedStatus(url, status, location)
 
 
     def _add_extra_pages(

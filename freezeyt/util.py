@@ -41,10 +41,19 @@ class BadPrefixError(ValueError):
 
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
-    def __init__(self, url: 'AppURL', status: str):
+    def __init__(
+        self,
+        url: 'AppURL',
+        status: str,
+        redirect_location: Optional[str] = None,
+    ):
         self.url = str(url)
         self.status = status
-        message = str(status)
+        self.redirect_location = redirect_location
+        if redirect_location is None:
+            message = str(status)
+        else:
+            message = f'{status} (-> {redirect_location})'
         super().__init__(message)
 
 class WrongMimetypeError(ValueError):
