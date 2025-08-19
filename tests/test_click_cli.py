@@ -364,15 +364,39 @@ def test_help():
 
 
 def test_multierror_output_redirect(tmp_path):
-    app_name = 'circular_redirect'
+    app_name = 'broken_redirects'
     build_dir = tmp_path / 'build'
     with context_for_test(app_name):
         result = run_freezeyt_cli(
             ['app', str(build_dir)], app_name, check=False,
         )
     print(result.stdout)
-    assert result.stdout.strip().endswith(dedent("""
-    UnexpectedStatus: 302 FOUND
-      in index.html
-        site root (homepage)
-    """).strip())
+    assert result.stdout.strip().endswith("linked from: index.html")
+    for message in (
+        """
+        UnexpectedStatus: 302 FOUND
+          in to-self/index.html
+            linked from: index.html
+        """,
+        """
+        UnexpectedStatus: 302 FOUND
+          in to-nonexistent/index.html
+            linked from: index.html
+        """,
+        """
+        UnexpectedStatus: 302 FOUND
+          in to-external/index.html
+            linked from: index.html
+        """,
+        """
+        UnexpectedStatus: 302 FOUND
+          in circular/index.html
+            linked from: index.html
+        """,
+        """
+        UnexpectedStatus: 301 MOVED PERMANENTLY
+          in without-location/index.html
+            linked from: index.html
+        """,
+    ):
+        assert dedent(message).strip() in result.stdout
