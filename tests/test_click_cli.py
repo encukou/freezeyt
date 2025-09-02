@@ -23,7 +23,7 @@ def run_freezeyt_cli(cli_args, app_name, check=True):
         monkeypatch.syspath_prepend(app_dir)
         result = runner.invoke(main, cli_args)
 
-    print(result.stdout)
+    print(result.output)
 
     if check:
         if result.exception is not None:
@@ -370,8 +370,7 @@ def test_multierror_output_redirect(tmp_path):
         result = run_freezeyt_cli(
             ['app', str(build_dir)], app_name, check=False,
         )
-    print(result.stdout)
-    assert result.stdout.strip().endswith("linked from: index.html")
+    assert result.output.strip().endswith("linked from: index.html")
     for message in (
         """
         UnexpectedStatus: 302 FOUND (-> /to-self/)
@@ -399,4 +398,4 @@ def test_multierror_output_redirect(tmp_path):
             linked from: index.html
         """,
     ):
-        assert dedent(message).strip() in result.stdout
+        assert dedent(message).strip() in result.output
