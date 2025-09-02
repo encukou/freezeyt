@@ -41,6 +41,9 @@ class BaseURL:
     def __str__(self):
         return urllib.parse.urlunsplit(self._split_url)
 
+    def __repr__(self):
+        return f'{type(self).__name__}({str(self)!r})'
+
     @property
     def scheme(self):
         return self._split_url.scheme
