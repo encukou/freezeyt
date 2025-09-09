@@ -148,7 +148,7 @@ Chceme-li dostat Flask aplikaci z defaultního Flask serveru,
 budeme ji muset nainstalovat.
 Poté si vytvoříme [virtuální prostředí](https://naucse.python.cz/course/mi-pyt/fast-track/install/).
 V příkazové řádce zadáme (na Windows místo `export` použijte `set`):
-```shell
+```console
 $ export FLASK_APP=app.py
 $ export FLASK_ENV=developement
 $ flask run
