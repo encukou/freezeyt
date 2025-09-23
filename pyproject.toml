@@ -22,10 +22,10 @@ classifiers = [
 dependencies = [
     "html5lib",
     "click",
-    "cssutils",
     "pyyaml",
     "Werkzeug",
     "enlighten",
+    "tinycss2",
 ]
 
 # build 1.2.2 doesn't support PEP 639 license specification yet.
