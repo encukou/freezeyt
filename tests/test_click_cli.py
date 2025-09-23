@@ -1,3 +1,5 @@
+from textwrap import dedent
+
 import pytest
 from yaml import safe_dump
 from click.testing import CliRunner
@@ -21,7 +23,7 @@ def run_freezeyt_cli(cli_args, app_name, check=True):
         monkeypatch.syspath_prepend(app_dir)
         result = runner.invoke(main, cli_args)
 
-    print(result.stdout)
+    print(result.output)
 
     if check:
         if result.exception is not None:
@@ -359,3 +361,41 @@ def test_help():
     assert result_help.exit_code == result_h.exit_code == 0
 
     assert 'Usage:' in result_help.stdout
+
+
+def test_multierror_output_redirect(tmp_path):
+    app_name = 'broken_redirects'
+    build_dir = tmp_path / 'build'
+    with context_for_test(app_name):
+        result = run_freezeyt_cli(
+            ['app', str(build_dir)], app_name, check=False,
+        )
+    assert result.output.strip().endswith("linked from: index.html")
+    for message in (
+        """
+        UnexpectedStatus: 302 FOUND (-> /to-self/)
+          in to-self/index.html
+            linked from: index.html
+        """,
+        """
+        UnexpectedStatus: 302 FOUND (-> nonexistent.wtf)
+          in to-nonexistent/index.html
+            linked from: index.html
+        """,
+        """
+        UnexpectedStatus: 302 FOUND (-> https://nowhere.invalid)
+          in to-external/index.html
+            linked from: index.html
+        """,
+        """
+        UnexpectedStatus: 302 FOUND (-> /circular2/)
+          in circular/index.html
+            linked from: index.html
+        """,
+        """
+        UnexpectedStatus: 301 MOVED PERMANENTLY
+          in without-location/index.html
+            linked from: index.html
+        """,
+    ):
+        assert dedent(message).strip() in result.output
