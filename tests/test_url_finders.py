@@ -264,6 +264,74 @@ def test_get_url_finder_by_name_from_header(name):
     }
 
 
+def test_builtin_url_finder_by_name():
+    """Test if we freezer honors the Freezeyt-URL-Finder header.
+    """
+
+    app = Flask(__name__)
+
+    @app.route('/')
+    def index():
+        return """
+            <a href="html_links.html">...</a>
+            <a href="css_links.html">...</a>
+            <a href="none.html">...</a>
+        """
+
+    @app.route('/html_links.html')
+    def html_links():
+        return (
+            '''
+                <a href="found_html.html">...</a>
+                * { background-image: url(notfound_css.html); }
+            ''',
+            {'Freezeyt-URL-Finder': 'get_html_links'},
+        )
+
+    @app.route('/css_links.html')
+    def css_links():
+        return (
+            '''
+                /* <a href="notfound_css.html">...</a> */
+                * { background-image: url(found_css.html); }
+            ''',
+            {'Freezeyt-URL-Finder': 'get_css_links'},
+        )
+
+    @app.route('/none.html')
+    def none_links():
+        return (
+            '''
+                /* <a href="notfound_none.html">...</a> */
+                * { background-image: url(notfound_none.html); }
+            ''',
+            {'Freezeyt-URL-Finder': 'none'},
+        )
+
+    @app.route('/found_html.html')
+    def found_html():
+        return 'OK'
+
+    @app.route('/found_css.html')
+    def found_css():
+        return 'OK'
+
+    freeze_config = {
+        'output': {'type': 'dict'},
+    }
+
+    result = freeze(app, freeze_config)
+
+    assert set(result) == {
+       'index.html',
+       'html_links.html',
+       'css_links.html',
+       'none.html',
+       'found_css.html',
+       'found_html.html',
+    }
+
+
 def test_get_url_from_link_header():
     app = Flask(__name__)
     @app.route('/')

@@ -751,7 +751,10 @@ class Freezer:
         assert task.response is not None
         finder_name = task.response.headers.get('Freezeyt-URL-Finder')
         if finder_name is not None:
-            url_finder = import_variable_from_module(finder_name)
+            url_finder = import_variable_from_module(
+                finder_name,
+                default_module_name='freezeyt.url_finders',
+            )
         else:
             content_type = task.response.headers.get('Content-Type')
             mime_type, encoding = parse_options_header(content_type)
