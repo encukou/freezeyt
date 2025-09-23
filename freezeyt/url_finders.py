@@ -4,7 +4,8 @@ from typing import Coroutine, Union, Any, TYPE_CHECKING
 import asyncio
 
 import html5lib
-import cssutils
+import tinycss2
+import tinycss2.ast
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -24,8 +25,81 @@ def _get_css_links(
     content: bytes, base_url: str, headers: _Headers,
 )  -> Iterable[str]:
     """Get all links from a CSS file."""
-    parsed = cssutils.parseString(content)
-    return list(cssutils.getUrls(parsed))
+    if headers == None:
+        cont_charset = None
+    else:
+        content_type_header = Headers(headers).get('Content-Type')
+        cont_type, cont_options = parse_options_header(content_type_header)
+        cont_charset = cont_options.get('charset')
+
+    parsed, encoding = tinycss2.parse_stylesheet_bytes(
+        content,
+        protocol_encoding=cont_charset,
+        skip_comments=True,
+        skip_whitespace=True,
+        # Ideally, we'd set `environment_encoding` to the encoding of the
+        # document that included this stylesheet.
+        # Freezeyt cannot currently do this easily.
+    )
+    return list(get_urls_from_tinycss2_nodes(parsed))
+
+def get_urls_from_tinycss2_nodes(
+    nodes: list[tinycss2.ast.Node] | None
+) -> Iterable[str]:
+    if nodes is None:
+        return
+    for node in nodes:
+        match node:
+            case tinycss2.ast.QualifiedRule():
+                yield from get_urls_from_tinycss2_nodes(node.prelude)
+                yield from get_urls_from_tinycss2_nodes(node.content)
+            case tinycss2.ast.AtRule():
+                yield from get_urls_from_tinycss2_nodes(node.prelude)
+                yield from get_urls_from_tinycss2_nodes(node.content)
+            case tinycss2.ast.Declaration():
+                yield from get_urls_from_tinycss2_nodes(node.value)
+            case tinycss2.ast.ParseError():
+                pass
+            case tinycss2.ast.Comment():
+                pass
+            case tinycss2.ast.WhitespaceToken():
+                pass
+            case tinycss2.ast.LiteralToken():
+                pass
+            case tinycss2.ast.IdentToken():
+                pass
+            case tinycss2.ast.AtKeywordToken():
+                pass
+            case tinycss2.ast.HashToken():
+                pass
+            case tinycss2.ast.StringToken():
+                pass
+            case tinycss2.ast.URLToken():
+                # TODO: unescape
+                yield node.value
+            case tinycss2.ast.UnicodeRangeToken():
+                pass
+            case tinycss2.ast.NumberToken():
+                pass
+            case tinycss2.ast.PercentageToken():
+                pass
+            case tinycss2.ast.DimensionToken():
+                pass
+            case tinycss2.ast.ParenthesesBlock():
+                yield from get_urls_from_tinycss2_nodes(node.content)
+            case tinycss2.ast.SquareBracketsBlock():
+                yield from get_urls_from_tinycss2_nodes(node.content)
+            case tinycss2.ast.CurlyBracketsBlock():
+                yield from get_urls_from_tinycss2_nodes(node.content)
+            case tinycss2.ast.FunctionBlock():
+                yield from get_urls_from_tinycss2_nodes(node.arguments)
+                if node.name == 'url':
+                    match node.arguments:
+                        case [tinycss2.ast.StringToken() as string]:
+                            # TODO: unescape
+                            yield string.value
+            case _:
+                raise TypeError(node)
 
 
 def _get_html_links(
