@@ -31,12 +31,12 @@ of virtual environment.
 [`venv`]: https://docs.python.org/3/library/venv.html?highlight=venv#module-venv
 
 The most recent release can be installed using:
-```
+```console
 $ python -m pip install freezeyt
 ```
 
 The tool can also be installed from source using:
-```
+```console
 $ python -m pip install .
 ```
 
@@ -54,7 +54,7 @@ in your environment.
 Run freezeyt with the name of your application and the
 output directory. For example:
 
-```shell
+```console
 $ python -m freezeyt my_app _build
 ```
 
@@ -103,7 +103,7 @@ configuration file or a variable with the configuration.
 You can specify a config file using the `-c/--config` option,
 for example:
 
-```shell
+```console
 $ python -m freezeyt my_app _build -c freezeyt.yaml
 ```
 
@@ -111,7 +111,7 @@ The configuration variable should be a dictionary.
 To pass the config variable, use the `-C/--import-config` option,
 for example:
 
-```shell
+```console
 $ python -m freezeyt my_app _build -C my_app:freezeyt_config
 ```
 
@@ -381,7 +381,7 @@ fail_fast: True
 If you want to specified fail fast from command line, use switches
  `--fail-fast` (short `-x`) resp. `--no-fail-fast` to disable it:
 
-```shell
+```console
 $ freezeyt app -o output -x
 ```
 
@@ -399,7 +399,7 @@ gh_pages: True
 
 To deploy a site to Github, you can then work with the git repository directly in the output directory or pull the files into another repository/directory.
 You can then pull/fetch files from the newly created gh-pages git branch in many ways, e.g:
-```shell
+```console
 git fetch output_dir gh-pages
 git branch --force gh-pages FETCH_HEAD
 ```
@@ -814,23 +814,23 @@ having to freeze all of it after each change.
 
 ## Examples of CLI usage
 
-```shell
+```console
 $ python -m freezeyt my_app _build/
 ```
 
-```shell
+```console
 $ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/
 ```
 
-```shell
+```console
 $ python -m freezeyt my_app _build/ -c config.yaml
 ```
 
-```shell
+```console
 $ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/
 ```
 
-```shell
+```console
 $ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/ --config path/to/config.yaml
 ```
 
@@ -863,33 +863,33 @@ contribute.
 
 1. Clone this repository to your local computer:
 
-```shell
+```console
 $ git clone https://github.com/encukou/freezeyt
 ```
 
 2. Then fork this repo to your GitHub account
 3. Add your forked repo as a new remote to your local computer:
 
-```shell
+```console
 $ git remote add <remote_label> https://github.com/<username>/freezeyt
 ```
 
 4. Create a new branch at your local computer
 
-```shell
+```console
 $ git branch <branch_name>
 ```
 
 5. Switch to your new branch
 
-```shell
+```console
 $ git switch <branch_name>
 ```
 
 6. Update the code
 7. Push the changes to your forked repo on GitHub
 
-```shell
+```console
 $ git push <remote_label> <branch_name>
 ```
 
@@ -900,7 +900,7 @@ $ git push <remote_label> <branch_name>
 
 `freezeyt` can be installed from the current directory:
 
-```shell
+```console
 $ python -m pip install -e .
 ```
 
@@ -911,12 +911,12 @@ It also has several groups of extra dependecies:
 
 Each group can be installed separately:
 
-```shell
+```console
 $ python -m pip install -e ."[typecheck]"
 ```
 
 or you can install more groups at once:
-```shell
+```console
 $ python -m pip install -e ."[blog, dev, typecheck]"
 ```
 
@@ -940,20 +940,20 @@ $ python -m pip install -e ."[blog, dev, typecheck]"
 
 For testing the project it's necessary to install additional requirements:
 
-```
+```console
 $ python -m pip install .[dev]
 ```
 
 To run tests in your current environment, use pytest:
 
-```
+```console
 $ python -m pytest
 ```
 
 To run tests with multiple Python versions (if you have them installed),
 install `tox` using `python -m pip install tox` and run it:
 
-```
+```console
 $ tox
 ```
 
@@ -966,13 +966,13 @@ they can be created by setting the environment variable
 
 **Unix**
 
-```shell
+```console
 $ export TEST_CREATE_EXPECTED_OUTPUT=1
 ```
 
 **Windows**
 
-```shell
+```console
 > set TEST_CREATE_EXPECTED_OUTPUT=1
 ```
 
@@ -1024,7 +1024,7 @@ Then, run the Flask server.
 
 1. On Microsoft Windows:
 
-```shell
+```console
 > python -m pip install .[blog]
 > set FLASK_APP=freezeyt_blog/app.py
 > set FLASK_ENV=development
@@ -1033,7 +1033,7 @@ Then, run the Flask server.
 
 2. On UNIX:
 
-```shell
+```console
 $ python -m pip install .[blog]
 $ export FLASK_APP=freezeyt_blog/app.py
 $ export FLASK_ENV=development
@@ -1044,7 +1044,7 @@ The URL where your blog is running will be printed on the terminal.
 
 Once you're satisfied with how the blog looks, you can freeze it with:
 
-```shell
+```console
 $ python -m freezeyt freezeyt_blog.app freezeyt_blog/build
 ```
 
