@@ -122,8 +122,8 @@ output: ./_build/   # The website will be saved to this directory
 prefix: https://mysite.example.com/subpage/
 extra_pages:
     # Let freezeyt know about URLs that are not linked from elsewhere
-    /robots.txt
-    /easter-egg.html
+    - /robots.txt
+    - /easter-egg.html
 extra_files:
     # Include additional files in the output:
     # Static files
