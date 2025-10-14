@@ -45,7 +45,8 @@ def get_extra_files(
                     content = base64.b64decode(content['base64'])
                     yield url_part, "content", content
                 elif 'copy_from' in content:
-                    yield url_part, "path", Path(content['copy_from'])
+                    path = Path(content['copy_from']).resolve()
+                    yield url_part, "path", path
                 else:
                     raise ValueError(
                         'a mapping in extra_files must contain '
