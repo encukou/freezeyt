@@ -122,8 +122,8 @@ output: ./_build/   # The website will be saved to this directory
 prefix: https://mysite.example.com/subpage/
 extra_pages:
     # Let freezeyt know about URLs that are not linked from elsewhere
-    /robots.txt
-    /easter-egg.html
+    - /robots.txt
+    - /easter-egg.html
 extra_files:
     # Include additional files in the output:
     # Static files
@@ -421,7 +421,7 @@ For example, if your server of static pages defaults to plain text files,
 use:
 
 ```yaml
-default_mimetype=text/plain
+default_mimetype: text/plain
 ```
 
 If the default MIME type isn't explicitly configured in YAML configuration,
@@ -439,7 +439,7 @@ Freezeyt will register your own function, if you specify it in configuration
 YAML file as:
 
 ```yaml
-get_mimetype=module:your_function
+get_mimetype: module:your_function
 ```
 
 If the `get_mimetype` is not defined in configuration file,
@@ -472,7 +472,7 @@ The database will be used to get file MIME type from file suffix.
 
 To use this database, add the path to the JSON file to `freezeyt` configuration:
 ```yaml
-mime_db_file=path/to/mime-db.json
+mime_db_file: path/to/mime-db.json
 ```
 This is equivalent to setting `get_mimetype` to a function that maps
 extensions to filetypes according to the database.
