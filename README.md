@@ -74,7 +74,7 @@ from freezeyt import freeze
 freeze(app, config)
 ```
 
-The `config` should be a dict as if read from a YAML configuration
+The `config` should be a dict as if read from a TOML or YAML configuration
 file (see Configuration below).
 
 From asynchronous code running in an `asyncio` event loop,
@@ -98,13 +98,13 @@ app = Middleware(app, config)
 ## Configuration
 
 While common options can be given on the command line,
-you can have full control over the freezing process with a YAML
+you can have full control over the freezing process with a TOML or YAML
 configuration file or a variable with the configuration.
-You can specify a config file using the `-c/--config` option,
-for example:
+You can specify a config file using the `-t/--toml-config` or
+`-y/--yaml-config` option, for example:
 
 ```console
-$ python -m freezeyt my_app _build -c freezeyt.yaml
+$ python -m freezeyt my_app _build -t freezeyt.toml
 ```
 
 The configuration variable should be a dictionary.
@@ -115,28 +115,28 @@ for example:
 $ python -m freezeyt my_app _build -C my_app:freezeyt_config
 ```
 
-Here is an example configuration file:
+Here is an example TOML configuration file:
 
-```yaml
-output: ./_build/   # The website will be saved to this directory
-prefix: https://mysite.example.com/subpage/
-extra_pages:
+```toml
+output = "./_build/"   # The website will be saved to this directory
+prefix = "https://mysite.example.com/subpage/"
+extra_pages = [
     # Let freezeyt know about URLs that are not linked from elsewhere
-    - /robots.txt
-    - /easter-egg.html
-extra_files:
-    # Include additional files in the output:
-    # Static files
-    static:
-        copy_from: static/
-    # Web host configuration
-    CNAME: mysite.example.com
-    ".nojekyll": ''
-    googlecc704f0f191eda8f.html:
-        copy_from: google-verification.html
-status_handlers:
-    # If a redirect page (HTTP status 3xx) is found, warn but don't fail
-    "3xx": warn
+    "/robots.txt",
+    "/easter-egg.html",
+]
+
+[extra_files]  # Include additional files in the output
+# Static files:
+static = {copy_from = "static/"}
+
+# Web host configuration
+CNAME = "mysite.example.com"
+".nojekyll" = ""
+"googlecc704f0f191eda8f.html" = {copy_from = "google-verification.html"}
+
+[status_handlers]
+3xx = "warn"  # For a redirect page (HTTP status 3xx), warn but don't fail
 ```
 
 The following options are configurable:
@@ -150,24 +150,24 @@ The CLI option has priority over the configuration file.
 Examples:
 
 Freezeyt looks for the variable `app` inside the module by default.
-```yaml
-app: app_module
+```toml
+app = "app_module"
 ```
 
 If `app` is in a submodule, separate package names with a dot:
-```yaml
-app: folder1.folder2.app_module
+```toml
+app = "folder1.folder2.app_module"
 ```
 
 A different variable name can be specified by using `:`.
-```yaml
-app: app_module:wsgi_application
+```toml
+app = "app_module:wsgi_application"
 ```
 
 If the variable is an attribute of some namespace, use dots in the variable name:
 
-```yaml
-app: app_module:namespace.wsgi_application
+```toml
+app = "app_module:namespace.wsgi_application"
 ```
 
 When configuration is given as a Python dict, `app` can be given as the WSGI application object, rather than a string.
@@ -177,16 +177,16 @@ When configuration is given as a Python dict, `app` can be given as the WSGI app
 To outupt the frozen website to a directory, specify
 the directory name:
 
-```yaml
-output: ./_build/
+```toml
+output = "./_build/"
 ```
 
 Or use the full form – using the `dir` *saver*:
 
-```yaml
-output:
-    type: dir
-    dir: ./_build/
+```toml
+[output]
+type = "dir"
+dir = "./_build/"
 ```
 
 If output is not specified in the configuration file,
@@ -208,9 +208,9 @@ For testing, `freezeyt` can output to a dictionary rather than save
 files to the disk.
 This can be configured with:
 
-```yaml
-output:
-    type: dict
+```toml
+[output]
+type = "dict"
 ```
 
 In this case, the `freeze()` function returns a dictionary of filenames
@@ -238,12 +238,12 @@ This is not useful in the CLI, as the return value is lost.
 The URL where the application will be deployed can be
 specified with:
 
-```yaml
-prefix: http://localhost:8000/
+```toml
+prefix = "http://localhost:8000/"
 ```
 or
-```yaml
-prefix: https://mysite.example.com/subpage/
+```toml
+prefix = "https://mysite.example.com/subpage/"
 ```
 
 Freezeyt will freeze all pages starting with `prefix` that
@@ -259,10 +259,11 @@ The CLI argument has priority over the config file.
 URLs of pages that are not reachable by following links from the homepage
 can specified as “extra” pages in the configuration:
 
-```yaml
-extra_pages:
-    - /extra/
-    - /extra2.html
+```toml
+extra_pages = [
+    "/extra/",
+    "/extra2.html",
+]
 ```
 
 Freezeyt will handle these pages as if it found them by following links.
@@ -275,9 +276,10 @@ The lists from CLI and the config file are merged together.
 You can also specify extra pages using a Python generator,
 specified using a module name and function name as follows:
 
-```yaml
-extra_pages:
-    - generator: my_app:generate_extra_pages
+```toml
+extra_pages = [
+    {generator = "my_app:generate_extra_pages"},
+]
 ```
 
 The `generate_extra_pages` function should take the application
@@ -315,33 +317,30 @@ If you specify backslashes in `url part`, `freezeyt` convert them to forward sla
 For example, the following config will add 3 files to
 the output:
 
-```yaml
-extra_files:
-      CNAME: mysite.example.com
-      ".nojekyll": ''
-      config/xyz: abc
+```toml
+[extra_files]
+"CNAME" = "mysite.example.com"
+".nojekyll" = ""
+"config/xyz" = "abc"
 ```
 
 You can also specify extra files using Base64 encoding or
 a file path, like so:
 
 
-```yaml
-extra_files:
-    config.dat:
-        base64: "YWJjZAASNA=="
-    config2.dat:
-        copy_from: included/config2.dat
+```toml
+[extra_files]
+"config.dat" = {base64 = "YWJjZAASNA=="}
+"config2.dat" = {copy_from = "included/config2.dat"}
 ```
 
 It's possible to recursively copy an entire directory using `copy_from`,
 as in:
 
 
-```yaml
-extra_files:
-    static:
-        copy_from: static/
+```toml
+[extra_files]
+"static" = {copy_from = "static/"}
 ```
 
 Extra files cannot be specified on the CLI.
@@ -356,8 +355,8 @@ If you want to keep the incomplete directory (for example,
 to help debugging), you can use the `--no-cleanup` switch
 or the `cleanup` key in the configuration file:
 
-```yaml
-cleanup: False
+```toml
+cleanup = false
 ```
 
 The command line switch has priority over the configuration.
@@ -374,8 +373,8 @@ The fail fast is defined as `boolean` option.
 If you want to specified fail fast in configuration file, use key `fail_fast` with
  `boolean` values `True` or `False`:
 
-```yaml
-fail_fast: True
+```toml
+fail_fast = true
 ```
 
 If you want to specified fail fast from command line, use switches
@@ -393,8 +392,8 @@ To make it easier to upload frozen pages to ([Github Pages service](https://page
 By default, the Github Pages Plugin is not active, however, if you have activated this plugin in your configuration, you can always override the current configuration with `--no-gh-pages` switch in the CLI.
 
 Configuration example:
-```yaml
-gh_pages: True
+```toml
+gh_pages = true
 ```
 
 To deploy a site to Github, you can then work with the git repository directly in the output directory or pull the files into another repository/directory.
@@ -420,11 +419,11 @@ It is possible to specify the MIME type used for files without an extension.
 For example, if your server of static pages defaults to plain text files,
 use:
 
-```yaml
-default_mimetype: text/plain
+```toml
+default_mimetype = "text/plain"
 ```
 
-If the default MIME type isn't explicitly configured in YAML configuration,
+If the default MIME type isn't explicitly configured in the configuration,
 then the `freezeyt` uses value `application/octet-stream`.
 
 The default mimetype cannot be specified on the CLI.
@@ -436,10 +435,10 @@ from file extension.
 You can setup your own `get_mimetype` function.
 
 Freezeyt will register your own function, if you specify it in configuration
-YAML file as:
+file as:
 
-```yaml
-get_mimetype: module:your_function
+```toml
+get_mimetype = "module:your_function"
 ```
 
 If the `get_mimetype` is not defined in configuration file,
@@ -449,7 +448,7 @@ and uses the mimetype (the first element) it returns.
 `get_mimetype` can be defined as:
 * strings in the form `"module:function"`, which name the function to call,
 * Python functions (if configuring `freezeyt` from Python, e.g. as a `dict`,
-  rather than YAML).
+  rather than TOML or YAML).
 
 The `get_mimetype`:
 * gets one argument - the `filepath` as `str`
@@ -471,8 +470,8 @@ or a database with the same structure.
 The database will be used to get file MIME type from file suffix.
 
 To use this database, add the path to the JSON file to `freezeyt` configuration:
-```yaml
-mime_db_file: path/to/mime-db.json
+```toml
+mime_db_file = "path/to/mime-db.json"
 ```
 This is equivalent to setting `get_mimetype` to a function that maps
 extensions to filetypes according to the database.
@@ -501,8 +500,8 @@ See below on how to enable plugins.
 To ensure that your configuration will work unchanged in newer versions of freezeyt,
 you should add the current version number, `1`, to your configuration like this:
 
-```yaml
-version: 1
+```toml
+version = 1
 ```
 
 This is not mandatory. If the version is not given, the configuration may
@@ -517,10 +516,11 @@ ship with `freezeyt` or external ones.
 
 Plugins are added using configuration like:
 
-```yaml
-plugins:
-    - freezeyt.progressbar:ProgressBar
-    - mymodule:my_plugin
+```toml
+plugins = [
+    "freezeyt.progressbar:ProgressBar",
+    "mymodule:my_plugin",
+]
 ```
 
 #### Custom plugins
@@ -541,12 +541,10 @@ specific events happen in the freezing process.
 For example, if `mymodule` defines functions `start` and `page_frozen`,
 you can make freezeyt call them using this configuration:
 
-```yaml
-hooks:
-    start:
-        - mymodule:start
-    page_frozen:
-        - mymodule:page_frozen
+```toml
+[hooks]
+start = ["mymodule:start"]
+page_frozen = ["mymodule:page_frozen"]
 ```
 
 When using the Python API, a function can be used instead of a name
@@ -631,24 +629,30 @@ The behavior can be customized using the `status_handlers` setting.
 For example, to ignore pages with the `404 NOT FOUND` status, set the
 `404` handler to `'ignore'`:
 
-```yaml
-status_handlers:
-    '404': ignore
+```toml
+[status_handlers]
+404 = "ignore"
 ```
 
 For example, `status_handlers` would be specified as:
 
-```yaml
-status_handlers:
-    '202': warn
-    '301': follow
-    '404': ignore
-    '418': my_module:custom_action  # see below
-    '429': ignore
-    '5xx': error
+```toml
+[status_handlers]
+202 = "warn"
+301 = "follow"
+404 = "ignore"
+418 = "my_module:custom_action"  # see below
+429 = "ignore"
+5xx = "error"
 ```
 
-Note that the status code must be a string, so it needs to be quoted in the YAML file.
+If you use YAML syntax, note that the status code must be a string,
+so it needs to be quoted:
+
+```yaml
+status_handlers:
+  "404": ignore
+```
 
 A range of statuses can be specified as a number (`1-5`) followed by lowercase `xx`.
 (Other "wildcards" like `50x` are not supported.)
@@ -661,7 +665,7 @@ You can also define a custom action in `status_handlers` as:
 * a string in the form `'my_module:custom_action'`, which names a handler
   function to call,
 * a Python function (if configuring `freezeyt` from Python rather than from
-  YAML).
+  TOML or YAML).
 
 The action function takes one argument, `task` (TaskInfo): information about the freezing task.
 See the `TaskInfo` hook for a description.
@@ -682,10 +686,10 @@ are functions whose goal is to find url of specific MIME type.
 
 Example of configuration:
 
-```yaml
-url_finders:
-    text/html: get_html_links
-    text/css: get_css_links
+```toml
+[url_finders]
+"text/html" = "get_html_links"
+"text/css" = "get_css_links"
 ```
 
 Keys in the `url_finders` dict are MIME types;
@@ -696,7 +700,7 @@ Values are URL finders, which can be defined as:
 * strings like `get_html_links`, which name a function from the
   `freezeyt.url_finders` module, or
 * Python functions (if configuring `freezeyt` from Python rather than
-  YAML).
+  TOML or YAML).
 
 
 An URL finder gets these arguments:
@@ -752,8 +756,8 @@ for `text/css`.
 
 You can disable this behaviour:
 
-```yaml
-use_default_url_finders: false
+```toml
+use_default_url_finders = false
 ```
 
 
@@ -762,8 +766,8 @@ use_default_url_finders: false
 By default, `freezeyt` will follow URLs in `Link` HTTP headers.
 To disable this, specify:
 
-```yaml
-urls_from_link_headers: false
+```toml
+urls_from_link_headers = false
 ```
 
 
@@ -772,8 +776,8 @@ urls_from_link_headers: false
 It is possible to customize the filenames that URLs are saved under
 using the `url_to_path` configuration key, for example:
 
-```yaml
-url_to_path: my_module:url_to_path
+```toml
+url_to_path = "my_module:url_to_path"
 ```
 
 The value can be:
@@ -781,7 +785,7 @@ The value can be:
   function to call (the function can be omitted along with the colon,
   and defaults to `url_to_path`), or
 * a Python function (if configuring `freezeyt` from Python rather than
-  YAML).
+  TOML or YAML).
 
 The function receives the *path* of the URL to save, relative to the `prefix`,
 and should return a path to the saved file, relative to the build directory.
@@ -797,8 +801,8 @@ if the URL path ends with `/`.
 When using the `freezeyt` middleware, you can enable *static mode*,
 which simulates behaviour after the app is saved to static pages:
 
-```yaml
-static_mode: true
+```toml
+static_mode = true
 ```
 
 Currently in static mode:
@@ -823,7 +827,7 @@ $ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/
 ```
 
 ```console
-$ python -m freezeyt my_app _build/ -c config.yaml
+$ python -m freezeyt my_app _build/ -t config.toml
 ```
 
 ```console
@@ -831,7 +835,7 @@ $ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/ --extra-page /
 ```
 
 ```console
-$ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/ --config path/to/config.yaml
+$ python -m freezeyt my_app _build/ --prefix https://pyladies.cz/ --extra-page /extra1/ --extra-page /extra2/ --toml-config path/to/config.toml
 ```
 
 
