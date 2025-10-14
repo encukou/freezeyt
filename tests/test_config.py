@@ -58,24 +58,37 @@ def test_func_empty_config(tmp_path):
         freeze(app, config)
 
 
-def test_cli_to_dict_without_path(tmp_path, monkeypatch):
+YAML_CONF_TEXT = 'output: {type: dict}'
+TOML_CONF_TEXT = '[output]\ntype = "dict"'
+CONF_PARAMS = [
+    ('-c', YAML_CONF_TEXT),
+    ('--config', YAML_CONF_TEXT),
+    ('-y', YAML_CONF_TEXT),
+    ('--yaml-config', YAML_CONF_TEXT),
+    ('-t', TOML_CONF_TEXT),
+    ('--toml-config', TOML_CONF_TEXT),
+]
+
+@pytest.mark.parametrize(('conf_option', 'conf_text'), CONF_PARAMS)
+def test_cli_to_dict_without_path(tmp_path, monkeypatch, conf_option, conf_text):
     config_path = tmp_path / 'freezeyt.conf'
     app_name = 'app_with_extra_files'
 
-    config_path.write_text('output: {type: dict}')
+    config_path.write_text(conf_text)
 
-    run_freezeyt_cli(['app', '-c', config_path], app_name)
+    run_freezeyt_cli(['app', conf_option, config_path], app_name)
 
 
-def test_cli_to_dict_with_config_and_path(tmp_path):
+@pytest.mark.parametrize(('conf_option', 'conf_text'), CONF_PARAMS)
+def test_cli_to_dict_with_config_and_path(tmp_path, conf_option, conf_text):
     builddir = tmp_path / 'build'
     config_path = tmp_path / 'freezeyt.conf'
     app_name = 'app_with_extra_files'
 
-    config_path.write_text('output: {type: dict}')  # ignored (overriden by CLI)
+    config_path.write_text(conf_text)  # ignored (overriden by CLI)
 
     run_freezeyt_cli(
-        ['app', '-c', config_path, str(builddir)], app_name,
+        ['app', conf_option, config_path, str(builddir)], app_name,
     )
     assert builddir.exists()
     assert builddir.joinpath('index.html').exists()
