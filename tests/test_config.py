@@ -70,7 +70,7 @@ CONF_PARAMS = [
 ]
 
 @pytest.mark.parametrize(('conf_option', 'conf_text'), CONF_PARAMS)
-def test_cli_to_dict_without_path(tmp_path, monkeypatch, conf_option, conf_text):
+def test_cli_to_dict_without_path(tmp_path, conf_option, conf_text):
     config_path = tmp_path / 'freezeyt.conf'
     app_name = 'app_with_extra_files'
 
@@ -92,6 +92,24 @@ def test_cli_to_dict_with_config_and_path(tmp_path, conf_option, conf_text):
     )
     assert builddir.exists()
     assert builddir.joinpath('index.html').exists()
+
+
+@pytest.mark.parametrize(('options'), [
+    ('-t', 'freezeyt.conf', '-y', 'freezeyt.conf'),
+    ('-y', 'freezeyt.conf', '-C', 'freezeyt.conf'),
+    ('-t', 'freezeyt.conf', '-C', 'freezeyt.conf'),
+    ('-y', 'freezeyt.conf', '-t', 'freezeyt.conf', '-C', 'freezeyt.conf'),
+])
+def test_cli_incompatible_comfig_options(tmp_path, monkeypatch, options):
+    monkeypatch.chdir(tmp_path)
+    config_path = tmp_path / 'freezeyt.conf'
+    app_name = 'app_with_extra_files'
+
+    config_path.write_text('')
+
+    result = run_freezeyt_cli(['app', *options], app_name, check=False)
+    assert result.exit_code != 0
+    assert 'Can only specify one of:' in result.output
 
 
 def test_cli_without_path_and_output(tmp_path, monkeypatch):

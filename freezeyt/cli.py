@@ -88,8 +88,8 @@ def main(
         config = yaml.safe_load(yaml_config_file)
         if not isinstance(config, dict):
             raise SyntaxError(
-                    f'File {config_file.name} is not a YAML dictionary.'
-                    )
+                    f'File {yaml_config_file.name} is not a YAML dictionary.'
+                )
     elif config_var is not None:
         config = import_variable_from_module(config_var)
 
