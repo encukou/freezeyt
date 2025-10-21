@@ -2,7 +2,8 @@
 
 import sys
 import shutil
-from typing import Optional, TextIO, List
+from typing import Optional, TextIO, BinaryIO, List
+import tomllib
 
 import click
 import yaml
@@ -27,7 +28,10 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.option('--extra-page', 'extra_pages', multiple=True,
               help="URLs of a page to freeze even if it's not linked from "
                 + "the application. May be repeated.")
-@click.option('-c', '--config', 'config_file', type=click.File(),
+@click.option('-t', '--toml-config', 'toml_config_file', type=click.File('rb'),
+              help='Path to configuration TOML file')
+@click.option('-y', '--yaml-config', '-c', '--config', 'yaml_config_file',
+              type=click.File(),
               help='Path to configuration YAML file')
 @click.option('-C', '--import-config', 'config_var',
               help='Python variable with configuration')
@@ -49,7 +53,8 @@ def main(
     output: Optional[str],
     prefix: Optional[str],
     extra_pages: Optional[List[str]],
-    config_file: Optional[TextIO],
+    toml_config_file: Optional[BinaryIO],
+    yaml_config_file: Optional[TextIO],
     config_var: Optional[str],
     progress: Optional[Literal['none', 'bar', 'log']],
     cleanup: Optional[bool],
@@ -69,18 +74,22 @@ def main(
 
         python -m freezeyt demo_app build -c config.yaml
     """
-    if config_file and config_var:
-        raise click.UsageError(
-            "Can't pass configuration both in a file and in a variable."
-        )
 
-    elif config_file is not None:
-        config = yaml.safe_load(config_file)
+    config_options = [toml_config_file, yaml_config_file, config_var]
+    if len([c for c in config_options if c is not None]) > 1:
+        raise click.UsageError(
+            "Can only specify one of: --toml-config (-t), "
+            + "--yaml-config (-y, -c), -import-config (-C)"
+        )
+    elif toml_config_file is not None:
+        config = tomllib.load(toml_config_file)
+        assert isinstance(config, dict)
+    elif yaml_config_file is not None:
+        config = yaml.safe_load(yaml_config_file)
         if not isinstance(config, dict):
             raise SyntaxError(
                     f'File {config_file.name} is not a YAML dictionary.'
                     )
-
     elif config_var is not None:
         config = import_variable_from_module(config_var)
 
