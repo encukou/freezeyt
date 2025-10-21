@@ -26,6 +26,7 @@ dependencies = [
     "pyyaml",
     "Werkzeug",
     "enlighten",
+    "tomli; python_version < '3.11'",
 ]
 
 # build 1.2.2 doesn't support PEP 639 license specification yet.

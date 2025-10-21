@@ -3,7 +3,11 @@
 import sys
 import shutil
 from typing import Optional, TextIO, BinaryIO, List
-import tomllib
+try:
+    import tomllib  # type: ignore[import-not-found]
+except ModuleNotFoundError:
+    # Python 3.10 and below
+    import tomli as tomllib  # type: ignore[import-not-found,no-redef]
 
 import click
 import yaml
