@@ -1,14 +1,12 @@
-import falcon
+import falcon.asgi
 from pathlib import Path
-
-freeze_config = {
-    'app_interface': 'asgi',
-}
 
 STATIC_IMAGE_PATH = Path(__file__).parent / 'static'
 
+freeze_config = {'app_interface': 'asgi'}
+
 class Resource(object):
-    def on_get(self, req, resp):
+    async def on_get(self, req, resp):
         """Handles GET requests on index (/)"""
         resp.text = """
     <html>
@@ -22,8 +20,10 @@ class Resource(object):
             </div>
         </body>
     </html>\n"""
+
+    on_head = on_get
     
-    def on_get_second(self, req, resp):
+    async def on_get_second(self, req, resp):
         """Handles GET requests on index (/second_page/)"""
         resp.text = """
     <html>
@@ -36,7 +36,9 @@ class Resource(object):
         </body>
     </html>\n"""
     
-    def on_get_image(self, req, resp):
+    on_head_second = on_get_second
+
+    async def on_get_image(self, req, resp):
         resp.text = """
     <html>
         <head>
@@ -49,7 +51,9 @@ class Resource(object):
         </body>
     </html>\n"""
 
-app = falcon.App(media_type=falcon.MEDIA_HTML)
+    on_head_image = on_get_image
+
+app = falcon.asgi.App(media_type=falcon.MEDIA_HTML)
 app.add_static_route("/images", STATIC_IMAGE_PATH, downloadable=True, fallback_filename=None)
 
 resource = Resource()
@@ -95,7 +99,5 @@ expected_dict = {
 
 # this part of code will not affect tests but you can run standalone Falcon app with it
 if __name__ == "__main__":
-    from wsgiref.simple_server import make_server
-    with make_server('', 8000, app) as httpd:
-        print("Serving on port 8000...")
-        httpd.serve_forever()
+    import uvicorn
+    uvicorn.run(app, port=5000, log_level="info")
