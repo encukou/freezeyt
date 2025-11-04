@@ -14,10 +14,10 @@ Python's [http.server].
 [http.server]: https://docs.python.org/3/library/http.server.html
 
 Freezeyt is compatible with all Python web frameworks that use the common
-[Web Server Gateway Interface] (WSGI)
+[Web Server Gateway Interface] (WSGI) or [Asynchronous Server Gateway Interface] (ASGI)
 
 [Web Server Gateway Interface]: https://www.python.org/dev/peps/pep-3333/
-
+[Asynchronous Server Gateway Interface]: https://asgi.readthedocs.io
 
 ## Installation
 
@@ -170,7 +170,18 @@ If the variable is an attribute of some namespace, use dots in the variable name
 app = "app_module:namespace.wsgi_application"
 ```
 
-When configuration is given as a Python dict, `app` can be given as the WSGI application object, rather than a string.
+When configuration is given as a Python dict, `app` can be given as the WSGI
+or ASGI application object, rather than a string.
+
+### Application interface (WSGI or ASGI)
+
+The `app_interface` config option specifies the interface to be used when
+calling `app`:
+
+- `wsgi` (default): `app` should be a WSGI application, as defined in PEP 3333.
+- `asgi`: `app` should be a ASGI single-callable application,
+  as specified in [asgi.readthedocs.io](https://asgi.readthedocs.io) (version 3).
+
 
 ### Output
 
