@@ -13,7 +13,7 @@ from freezeyt.extra_files import get_extra_files
 from freezeyt.types import Config, WSGIHeaderList, WSGIExceptionInfo
 
 
-class Middleware:
+class WSGIMiddleware:
     def __init__(self, app: WSGIApplication, config: Config):
         self.app = app
         self.mimetype_checker = MimetypeChecker(config)

@@ -28,7 +28,9 @@ from freezeyt.compat import warnings_warn
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
-from freezeyt.middleware import Middleware
+from freezeyt.wsgi_middleware import WSGIMiddleware
+from freezeyt.asgi_middleware import ASGIMiddleware
+from freezeyt.wsgi_to_asgi import WSGIToASGIMiddleware
 from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
@@ -267,8 +269,19 @@ class Freezer:
         # The original app, to be passed back to the user when needed
         self.user_app = app
 
-        # The app we call, wrapped in Middleware
-        self.app = Middleware(app, self.config)
+        app_interface = self.config.get('app_interface', 'wsgi')
+        if app_interface == 'wsgi':
+            # The app we call, wrapped in WSGI Middleware and
+            # WSGI->ASGI Middleware
+            self.app = WSGIToASGIMiddleware(WSGIMiddleware(app, self.config))
+        elif app_interface == 'asgi':
+            # The app we call, wrapped in ASGI Middleware
+            self.app = ASGIMiddleware(app, self.config)
+        else:
+            raise ValueError(
+                'app_interface must be "asgi" or "wsgi", '
+                + f'got {app_interface!r}'
+            )
 
         self.fail_fast = self.config.get('fail_fast', False)
 

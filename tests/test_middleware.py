@@ -7,7 +7,7 @@ from packaging.version import Version
 
 import pytest
 
-from freezeyt.middleware import Middleware
+from freezeyt.wsgi_middleware import WSGIMiddleware
 from freezeyt.util import WrongMimetypeError
 
 from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
@@ -76,9 +76,9 @@ def test_middleware_doesnt_change_app(app_name):
 
         app_client = Client(app)
         try:
-            mw_client = Client(Middleware(app, config))
+            mw_client = Client(WSGIMiddleware(app, config))
         except ValueError:
-            # If creating the Middleware fails, it should raise the same
+            # If creating the WSGIMiddleware fails, it should raise the same
             # exception as freezing the app.
             # Currently, only ValueError can be raised in the initialization
             assert error_path.exists()
@@ -136,7 +136,7 @@ def check_responses_are_same(
 def test_middleware_rejects_wrong_mimetype():
     with context_for_test('app_wrong_mimetype') as module:
         app = module.app
-        mw_client = Client(Middleware(app, {}))
+        mw_client = Client(WSGIMiddleware(app, {}))
 
         with pytest.raises(WrongMimetypeError):
             mw_client.get('/image.jpg')
@@ -149,7 +149,7 @@ def test_middleware_rejects_wrong_mimetype():
 def test_middleware_tricky_extra_files():
     with context_for_test('tricky_extra_files') as module:
         app = module.app
-        mw_client = Client(Middleware(app, module.freeze_config))
+        mw_client = Client(WSGIMiddleware(app, module.freeze_config))
 
         # This file is looked up in static_dir:
         with mw_client.get('/static/file.txt') as response:
@@ -185,7 +185,7 @@ def test_middleware_tricky_extra_files():
             assert response.status.startswith('403')
 
         # Same as above, but in this case werkzeug.routing.Map returns a
-        # redirect to '/static/etc/passwd' before Middleware gets a chance
+        # redirect to '/static/etc/passwd' before WSGIMiddleware gets a chance
         # to return `403 Forbidden`. This is a detail that might change in
         # the future, so just assert that this isn't successful.
         with mw_client.get('/static//etc/passwd') as response:
@@ -204,13 +204,13 @@ def test_static_mode_disallows_methods(method):
     def index():
         return 'OK'
 
-    # Test the test app (behaviour without the Middleware)
+    # Test the test app (behaviour without the WSGIMiddleware)
     app_client = Client(app)
     assert app_client.open('/index.html', method='GET').status.startswith('200')
     assert app_client.open('/index.html', method=method).status.startswith('200')
 
-    # Test behaviour with Middleware
-    mw_client = Client(Middleware(app, config))
+    # Test behaviour with WSGIMiddleware
+    mw_client = Client(WSGIMiddleware(app, config))
     assert mw_client.open('/index.html', method='GET').status.startswith('200')
 
     # HTTP status 405: Method Not Allowed
@@ -225,7 +225,7 @@ def test_static_mode_options(path):
     @app.route('/index.html')
     def index():
         return 'OK'
-    mw_client = Client(Middleware(app, config))
+    mw_client = Client(WSGIMiddleware(app, config))
 
     response = mw_client.options(path)
     assert response.status.startswith('200')
@@ -254,7 +254,7 @@ def test_static_mode_head(app_name):
     with context_for_test(app_name) as module:
         app = module.app
         app_client = Client(app)
-        mw_client = Client(Middleware(app, config))
+        mw_client = Client(WSGIMiddleware(app, config))
 
         try:
             expected_dict = module.expected_dict
@@ -288,7 +288,7 @@ def test_parameter_removal():
     assert app_response.get_data() == b'a=b'
 
     # Ensure the middleware deletes parameters
-    mw_client = Client(Middleware(app, config))
+    mw_client = Client(WSGIMiddleware(app, config))
     mw_response = mw_client.get('/?a=b')
     assert mw_response.get_data() == b''
 
@@ -309,7 +309,7 @@ def test_request_body_removal():
     assert app_response.get_data() == b'abc'
 
     # Ensure the middleware deletes parameters
-    mw_client = Client(Middleware(app, config))
+    mw_client = Client(WSGIMiddleware(app, config))
     mw_response = mw_client.get('/', data='abc')
     assert mw_response.get_data() == b''
 

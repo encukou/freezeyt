@@ -1,10 +1,6 @@
 import falcon
 from pathlib import Path
 
-freeze_config = {
-    'app_interface': 'asgi',
-}
-
 STATIC_IMAGE_PATH = Path(__file__).parent / 'static'
 
 class Resource(object):
@@ -99,3 +95,10 @@ if __name__ == "__main__":
     with make_server('', 8000, app) as httpd:
         print("Serving on port 8000...")
         httpd.serve_forever()
+
+# SOME NOTES:
+
+# if you need to check dictionary output, you can do that with this code:
+# from freezeyt import freeze
+# new_dict = freeze(app, {"output": {"type": "dict"}})
+
