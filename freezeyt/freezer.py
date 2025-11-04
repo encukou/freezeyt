@@ -700,23 +700,30 @@ class Freezer:
         if path_info.startswith(self.prefix.path):
             path_info = "/" + path_info[len(self.prefix.path):]
 
-        environ: WSGIEnvironment = {
-            'SERVER_NAME': self.prefix.hostname,
-            'SERVER_PORT': str(self.prefix.port),
-            'REQUEST_METHOD': 'GET',
-            'PATH_INFO': encode_wsgi_path(path_info),
-            'SCRIPT_NAME': encode_wsgi_path(self.prefix.path),
-            'SERVER_PROTOCOL': 'HTTP/1.1',
-            'SERVER_SOFTWARE': f'freezeyt/{freezeyt.__version__}',
+        hostname_idna = self.prefix.hostname.encode('idna')
 
-            'wsgi.version': (1, 0),
-            'wsgi.url_scheme': self.prefix.scheme,
-            'wsgi.input': io.BytesIO(),
-            'wsgi.errors': sys.stderr,
-            'wsgi.multithread': False,
-            'wsgi.multiprocess': False,
-            'wsgi.run_once': False,
+        scope = {
+            'type': "http",
+            'asgi': {
+                'version': '3.0',
+                'spec_version': '2.3',
+            },
+            'http_version': '2',
+            'method': 'GET',
+            'scheme': self.prefix.scheme,
+            'path': url.path,
+            #'raw_path':
+            'query_string': b'',
 
+            'headers': [
+                (b'host', hostname_idna + f':{self.prefix.port}'.encode()),
+                (b'user-agent', f'freezeyt/{freezeyt.__version__}'.encode()),
+                (b'freezeyt-freezing', b'True'),
+            ],
+            'root_path': self.prefix.path.rstrip('/'),
+            #client
+            'server': (hostname_idna.decode('ascii'), self.prefix.port),
+            #state (Lifespan Protocol)
             'freezeyt.freezing': True,
         }
 
