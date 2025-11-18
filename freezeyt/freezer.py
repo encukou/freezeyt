@@ -525,7 +525,7 @@ class Freezer:
         self,
         task: Task,
         url: AppURL,
-        status: str,
+        status: int,
         headers: WSGIHeaderList,
     ) -> None:
         """WSGI start_response hook
@@ -535,7 +535,8 @@ class Freezer:
         status_handler_name = task.response.headers.get('Freezeyt-Action')
 
         # handle redirecting to same filepath like source URL
-        if status.startswith('3'):
+        status_str = str(status)
+        if status_str.startswith('3'):
             location = task.response.headers.get('Location')
         else:
             location = None
@@ -573,16 +574,16 @@ class Freezer:
 
         if not status_handler:
             # Get a handler for the particular status from configuration
-            status_handler = self.status_handlers.get(status[:3])
+            status_handler = self.status_handlers.get(status_str[:3])
 
         if not status_handler:
             # If a handler for the particular status isn't found,
             # get handler for a group of statuses
-            status_handler = self.status_handlers.get(status[0] + 'xx')
+            status_handler = self.status_handlers.get(status_str[0] + 'xx')
 
         if not status_handler:
             # Still not found? Use the default handler
-            if status.startswith('200'):
+            if status_str.startswith('200'):
                 # default behaviour for status 200
                 status_handler = freezeyt.actions.save
             else:
@@ -735,10 +736,10 @@ class Freezer:
                     (key.decode('latin-1'), value.decode('latin-1'))
                     for key, value in event.get('headers', [])
                 )
-                status = str(event['status'])
+                status = event['status']
                 task.response = Response(
                     headers=headers,
-                    status=status,
+                    status=str(status),
                 )
                 self.raise_for_status_action(task, url, status, headers)
                 if task.error:
