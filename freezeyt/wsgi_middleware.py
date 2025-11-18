@@ -135,7 +135,14 @@ class WSGIMiddleware:
             exc_info: WSGIExceptionInfo = None,
         ) -> Callable[[bytes], object]:
             result = server_start_response(status, headers, exc_info)
-            self.mimetype_checker.check(path_info, headers)
+            try:
+                self.mimetype_checker.check(path_info, headers)
+            except Exception as e:
+                if task := environ.get('freezeyt.task'):
+                    print(task)
+                    task.error = e
+                else:
+                    raise
             return result
 
         return self.app(environ, mw_start_response)

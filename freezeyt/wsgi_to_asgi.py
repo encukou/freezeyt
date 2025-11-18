@@ -1,6 +1,5 @@
 import io
 import sys
-import asyncio
 import itertools
 
 import freezeyt
@@ -41,6 +40,7 @@ class WSGIToASGIMiddleware:
             'wsgi.run_once': False,
 
             'freezeyt.freezing': scope.get('freezeyt.freezing', False),
+            'freezeyt.task': scope.get('freezeyt.task', None),
         }
         server = scope.get('server')
         if server:
@@ -63,8 +63,9 @@ class WSGIToASGIMiddleware:
         # that the client (Freezeyt) won't mind.
 
         wsgi_write_data: List[bytes] = []
+        start_event = None
 
-        def start_response(status, headers, exc_info):
+        def start_response(status, headers, exc_info=None):
             """WSGI start_response hook
 
             The application we are freezing will call this method
@@ -79,12 +80,18 @@ class WSGIToASGIMiddleware:
                 exc_info: Information about a server error, if any.
                     Will be raised if given.
             """
+            nonlocal start_event
+
             if exc_info:
                 exc_type, value, traceback = exc_info
                 if value is not None:
                     raise value
 
-            event = {
+            if start_event:
+                raise AssertionError(
+                    'WSGI application called start_response twice')
+
+            start_event = {
                 'type': "http.response.start",
                 'headers': [
                     (key.encode('latin-1'), value.encode('latin-1'))
@@ -93,13 +100,16 @@ class WSGIToASGIMiddleware:
                 'status': int(status.split(maxsplit=1)[0]),
             }
 
-            asyncio.create_task(send(event))
-
             return wsgi_write_data.append
 
         # Call the application. All calls to write (wsgi_write_data.append)
         # must be done as part of this call.
         result_iterable = self.wsgi_app(environ, start_response)
+
+        if not start_event:
+            raise AssertionError(
+                'WSGI application did not call start_response')
+        await send(start_event)
 
         try:
             for body_part in itertools.chain(wsgi_write_data, result_iterable):

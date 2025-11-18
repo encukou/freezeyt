@@ -702,7 +702,9 @@ class Freezer:
             'server': (hostname_idna.decode('ascii'), self.prefix.port),
             #state (Lifespan Protocol)
             'freezeyt.freezing': True,
+            'freezeyt.task': task,
         }
+        task.error = None
 
         sent_request = False
 
@@ -739,6 +741,8 @@ class Freezer:
                     status=status,
                 )
                 self.raise_for_status_action(task, url, status, headers)
+                if task.error:
+                    raise task.error
                 if event.get('trailers'):
                     raise NotImplementedError('trailers not supported')
             elif event['type'] == "http.response.body":
