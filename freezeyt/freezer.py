@@ -266,6 +266,16 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
+        prefix = self.config.get('prefix', 'http://localhost:8000/')
+
+        # Decode path in the prefix URL.
+        # Save the parsed version of prefix as self.prefix
+        prefix_parsed = PrefixURL(prefix)
+        decoded_path = decode_input_path(prefix_parsed.path)
+        if not decoded_path.endswith('/'):
+            raise ValueError('prefix must end with /')
+        self.prefix = prefix_parsed._replace_path(path=decoded_path)
+
         # The original app, to be passed back to the user when needed
         self.user_app = app
 
@@ -273,7 +283,10 @@ class Freezer:
         if app_interface == 'wsgi':
             # The app we call, wrapped in WSGI Middleware and
             # WSGI->ASGI Middleware
-            self.app = WSGIToASGIMiddleware(WSGIMiddleware(app, self.config))
+            self.app = WSGIToASGIMiddleware(
+                WSGIMiddleware(app, self.config),
+                prefix=self.prefix,
+            )
         elif app_interface == 'asgi':
             # The app we call, wrapped in ASGI Middleware
             self.app = ASGIMiddleware(app, self.config)
@@ -327,16 +340,6 @@ class Freezer:
         self.status_handlers = parse_handlers(
             _status_handlers, default_module='freezeyt.actions', label="Status handler"
         )
-
-        prefix = self.config.get('prefix', 'http://localhost:8000/')
-
-        # Decode path in the prefix URL.
-        # Save the parsed version of prefix as self.prefix
-        prefix_parsed = PrefixURL(prefix)
-        decoded_path = decode_input_path(prefix_parsed.path)
-        if not decoded_path.endswith('/'):
-            raise ValueError('prefix must end with /')
-        self.prefix = prefix_parsed._replace_path(path=decoded_path)
 
         output = self.config['output']
         if isinstance(output, str):
@@ -518,41 +521,15 @@ class Freezer:
         # and at the end prepare the saver
         return await self.saver.prepare()
 
-    def start_response(
+    def raise_for_status_action(
         self,
         task: Task,
         url: AppURL,
-        wsgi_write: Func,
         status: str,
         headers: WSGIHeaderList,
-        exc_info: WSGIExceptionInfo = None,
-    ) -> Func:
+    ) -> None:
         """WSGI start_response hook
-
-        The application we are freezing will call this method
-        and supply the status, headers, exc_info arguments.
-        (self and wsgi_write are provided by freezeyt.)
-
-        See: https://www.python.org/dev/peps/pep-3333/#the-start-response-callable
-
-        Arguments:
-            wsgi_write: function that the application can call to output data
-            status: HTTP status line, like '200 OK'
-            headers: HTTP headers (list of tuples)
-            exc_info: Information about a server error, if any.
-                Will be raised if given.
         """
-        if exc_info:
-            exc_type, value, traceback = exc_info
-            if value is not None:
-                raise value
-
-        if task.response is not None:
-            raise AssertionError('WSGI app called start_response twice')
-        task.response = Response(
-            headers=Headers(headers),
-            status=status,
-        )
 
         status_handler_name: Optional[str]
         status_handler_name = task.response.headers.get('Freezeyt-Action')
@@ -615,7 +592,7 @@ class Freezer:
         status_action = status_handler(hooks.TaskInfo(task))
 
         if status_action == 'save':
-            return wsgi_write
+            return
         elif status_action == 'ignore':
             raise IgnorePage()
         elif status_action == 'follow':
@@ -727,27 +704,55 @@ class Freezer:
             'freezeyt.freezing': True,
         }
 
-        # The WSGI application can output data in two ways:
-        # - by a "write" function, which, in our case, will append
-        #   any data to a list, `wsgi_write_data`
-        # - (preferably) by returning an iterable object.
+        sent_request = False
 
-        # See: https://www.python.org/dev/peps/pep-3333/#the-write-callable
+        async def receive():
+            """The app calls this to receive the next event.
+            Freezeyt simulates a browser that connects once, sends no body,
+            and never disconnects.
+            """
+            nonlocal sent_request
 
-        # Set up the wsgi_write_data, and make its `append` method
-        # available to `start_response` as first argument:
-        wsgi_write_data: List[bytes] = []
-        start_response: StartResponse = functools.partial(
-            self.start_response,
-            task,
-            url,
-            wsgi_write_data.append,
-        )
+            if not sent_request:
+                sent_request = True
+                return {'type': "http.request"}
+            else:
+                # Wait forever
+                await asyncio.Future()
 
-        # Call the application. All calls to write (wsgi_write_data.append)
-        # must be done as part of this call.
+        response_body = []
+        done: asyncio.Future = asyncio.Future()
+
+        async def send(event):
+            """The app calls this to send the next event to Freezeyt.
+            """
+            if event['type'] == "http.response.start":
+                if task.response is not None:
+                    raise AssertionError('App started a response twice')
+                headers = Headers(
+                    (key.decode('latin-1'), value.decode('latin-1'))
+                    for key, value in event.get('headers', [])
+                )
+                status = str(event['status'])
+                task.response = Response(
+                    headers=headers,
+                    status=status,
+                )
+                self.raise_for_status_action(task, url, status, headers)
+                if event.get('trailers'):
+                    raise NotImplementedError('trailers not supported')
+            elif event['type'] == "http.response.body":
+                response_body.append(event.get('body', b''))
+                if not event.get('more_body', False):
+                    done.set_result(True)
+
         try:
-            result_iterable = self.app(environ, start_response)
+            app_task = asyncio.create_task(
+                self.app(scope, receive, send),
+                name=f"freeze: {url}",
+            )
+            await app_task
+            await done
         except IsARedirect:
             return
         except IgnorePage:
@@ -756,20 +761,7 @@ class Freezer:
         except RedirectToSamePath:
             return await self.handle_one_task(task)
 
-        try:
-            # Combine the list of data from write() with the returned
-            # iterable object.
-            full_result = itertools.chain(
-                wsgi_write_data,
-                result_iterable,
-            )
-
-            await self.saver.save_to_filename(task.path, full_result)
-
-        finally:
-            close = getattr(result_iterable, 'close', None)
-            if close is not None:
-                close()
+        await self.saver.save_to_filename(task.path, response_body)
 
         assert task.response is not None
         finder_name = task.response.headers.get('Freezeyt-URL-Finder')
