@@ -281,12 +281,11 @@ class Freezer:
 
         app_interface = self.config.get('app_interface', 'wsgi')
         if app_interface == 'wsgi':
-            # The app we call, wrapped in WSGI Middleware and
-            # WSGI->ASGI Middleware
-            self.app = WSGIToASGIMiddleware(
-                WSGIMiddleware(app, self.config),
-                prefix=self.prefix,
-            )
+            # The app we call, wrapped in WSGI Middleware,
+            # WSGI->ASGI Middleware, and ASGI Middleware
+            app = WSGIMiddleware(app, self.config)
+            asgi_app = WSGIToASGIMiddleware(app, prefix=self.prefix)
+            self.app = ASGIMiddleware(asgi_app, self.config)
         elif app_interface == 'asgi':
             # The app we call, wrapped in ASGI Middleware
             self.app = ASGIMiddleware(app, self.config)
