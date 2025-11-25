@@ -28,9 +28,7 @@ from freezeyt.compat import warnings_warn
 from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
-from freezeyt.wsgi_middleware import WSGIMiddleware
 from freezeyt.asgi_middleware import ASGIMiddleware
-from freezeyt.wsgi_to_asgi import WSGIToASGIMiddleware
 from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
@@ -266,34 +264,14 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
-        prefix = self.config.get('prefix', 'http://localhost:8000/')
-
-        # Decode path in the prefix URL.
-        # Save the parsed version of prefix as self.prefix
-        prefix_parsed = PrefixURL(prefix)
-        decoded_path = decode_input_path(prefix_parsed.path)
-        if not decoded_path.endswith('/'):
-            raise ValueError('prefix must end with /')
-        self.prefix = prefix_parsed._replace_path(path=decoded_path)
+        self.prefix = PrefixURL.from_config(self.config)
 
         # The original app, to be passed back to the user when needed
         self.user_app = app
 
-        app_interface = self.config.get('app_interface', 'wsgi')
-        if app_interface == 'wsgi':
-            # The app we call, wrapped in WSGI Middleware,
-            # WSGI->ASGI Middleware, and ASGI Middleware
-            app = WSGIMiddleware(app, self.config)
-            asgi_app = WSGIToASGIMiddleware(app, prefix=self.prefix)
-            self.app = ASGIMiddleware(asgi_app, self.config)
-        elif app_interface == 'asgi':
-            # The app we call, wrapped in ASGI Middleware
-            self.app = ASGIMiddleware(app, self.config)
-        else:
-            raise ValueError(
-                'app_interface must be "asgi" or "wsgi", '
-                + f'got {app_interface!r}'
-            )
+        # The app we call is wrapped in ASGIMiddleware so it gains
+        # freezeyt superpowers
+        self.app = ASGIMiddleware(app, self.config, prefix=self.prefix)
 
         self.fail_fast = self.config.get('fail_fast', False)
 
@@ -369,9 +347,9 @@ class Freezer:
             TaskStatus.IN_PROGRESS: self.inprogress_tasks,
             TaskStatus.FAILED: self.failed_tasks,
         }
-        if "//" in prefix_parsed.path:
+        if "//" in self.prefix.path:
             self.warnings.append(
-                f"Freezeyt reduces multiple consecutive slashes in {prefix!r} to one"
+                f"Freezeyt reduces multiple consecutive slashes in {str(self.prefix)!r} to one"
             )
 
         self.hooks = {}

@@ -49,6 +49,8 @@ dev = [
     "falcon",
     "freezegun",
     "packaging",
+    "starlette",
+    "httpx",
 ]
 blog = [
     "flask",
