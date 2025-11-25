@@ -10,7 +10,10 @@ import pytest
 from freezeyt.wsgi_middleware import WSGIMiddleware
 from freezeyt.util import WrongMimetypeError
 
-from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
+from testutil import APP_NAMES as APP_NAMES_ORIG, context_for_test, FIXTURES_PATH
+
+# For now, exclude the ASGI-only app
+APP_NAMES = [name for name in APP_NAMES_ORIG if name != 'falcon_asgi_app']
 
 def urls_from_expected_dict(expected_dict, prefix=''):
     """Generate URLs from an `expected_dict` found in tests
