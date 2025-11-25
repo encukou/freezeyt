@@ -8,6 +8,8 @@ from freezeyt.urls import PrefixURL
 
 
 class WSGIToASGIMiddleware:
+    """Middleware that converts a WSGI app into an ASGI app."""
+
     def __init__(self, wsgi_app, *, prefix: PrefixURL):
         self.wsgi_app = wsgi_app
         self.prefix = prefix
