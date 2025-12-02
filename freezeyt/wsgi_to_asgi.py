@@ -24,7 +24,11 @@ class WSGIToASGIMiddleware:
         if path_info.startswith(prefix_path):
             path_info = "/" + path_info[len(prefix_path):]
 
+        scheme = scope.get('scheme', 'http')
+        DEFAULT_PORTS = {'http': 80, 'https': 443}
+
         environ: WSGIEnvironment = {
+            'HTTP_HOST': self.prefix.hostname,  # default; overridden below
             'SERVER_NAME': self.prefix.hostname,  # default; overridden below
             'SERVER_PORT': str(self.prefix.port), # default; overridden below
             'REQUEST_METHOD': scope['method'],
@@ -34,7 +38,7 @@ class WSGIToASGIMiddleware:
             'SERVER_SOFTWARE': f'freezeyt/{freezeyt.__version__}',
 
             'wsgi.version': (1, 0),
-            'wsgi.url_scheme': scope.get('scheme', 'http'),
+            'wsgi.url_scheme': scheme,
             'wsgi.input': io.BytesIO(),
             'wsgi.errors': sys.stderr,
             'wsgi.multithread': False,
@@ -49,7 +53,11 @@ class WSGIToASGIMiddleware:
             hostname, port = server
             environ['SERVER_NAME'] = hostname
             if port is None:
-                port = 80
+                port = DEFAULT_PORTS[scheme]
+            if port == DEFAULT_PORTS[scheme]:
+                environ['HTTP_HOST'] = hostname
+            else:
+                environ['HTTP_HOST'] = hostname + ':' + str(port)
             environ['SERVER_PORT'] = str(port)
 
         # The WSGI application can output data in two ways:
