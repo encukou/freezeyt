@@ -152,8 +152,6 @@ def check_responses_are_same(
     app_client, mw_client, url, expected_error=(), expect_extra_files=False,
 ):
     with app_client.get(url) as app_response:
-        print(app_response)
-        print(app_response.get_data())
         try:
             mw_response = mw_client.get(url)
         except expected_error:
