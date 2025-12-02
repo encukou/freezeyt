@@ -48,6 +48,8 @@ class WSGIToASGIMiddleware:
             'freezeyt.freezing': scope.get('freezeyt.freezing', False),
             'freezeyt.task': scope.get('freezeyt.task', None),
         }
+        if 'raw_path' in scope:
+            environ['RAW_URI'] = scope['raw_path']
         server = scope.get('server')
         if server:
             hostname, port = server
