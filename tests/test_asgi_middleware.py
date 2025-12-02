@@ -98,6 +98,17 @@ def test_urls_from_expected_dict():
     ]
 
 
+def get_clients(app, config={}):
+    if config.get('app_interface', 'wsgi') == 'asgi':
+        app_client = ASGITestClient(app)
+    else:
+        app_client = WSGITestClient(app)
+
+    mw_client = ASGITestClient(ASGIMiddleware(app, config))
+
+    return app_client, mw_client
+
+
 @pytest.mark.parametrize('app_name', APP_NAMES)
 @freezegun.freeze_time()  # freeze time so that Date headers don't change
 def test_middleware_doesnt_change_app(app_name):
@@ -110,12 +121,8 @@ def test_middleware_doesnt_change_app(app_name):
         app = module.app
         config = getattr(module, 'freeze_config', {})
 
-        if config.get('app_interface', 'wsgi') == 'asgi':
-            app_client = ASGITestClient(app)
-        else:
-            app_client = WSGITestClient(app)
         try:
-            mw_client = ASGITestClient(ASGIMiddleware(app, config))
+            app_client, mw_client = get_clients(app, config)
         except ValueError:
             # If creating the ASGIMiddleware fails, it should raise the same
             # exception as freezing the app.
@@ -250,13 +257,13 @@ def test_static_mode_disallows_methods(method):
     def index():
         return 'OK'
 
+    app_client, mw_client = get_clients(app, config)
+
     # Test the test app (behaviour without the ASGIMiddleware)
-    app_client = WSGITestClient(app)
     assert app_client.open('/index.html', method='GET').status.startswith('200')
     assert app_client.open('/index.html', method=method).status.startswith('200')
 
     # Test behaviour with ASGIMiddleware
-    mw_client = ASGITestClient(ASGIMiddleware(app, config))
     assert mw_client.open('/index.html', method='GET').status.startswith('200')
 
     # HTTP status 405: Method Not Allowed
@@ -308,11 +315,7 @@ def test_static_mode_head(app_name):
             **getattr(module, 'freeze_config', {}),
             'static_mode': True,
         }
-        if config.get('app_interface', 'wsgi') == 'asgi':
-            app_client = ASGITestClient(app)
-        else:
-            app_client = WSGITestClient(app)
-        mw_client = ASGITestClient(ASGIMiddleware(app, config))
+        app_client, mw_client = get_clients(app, config)
 
         for url in urls_from_expected_dict(expected_dict):
             with app_client.get(url) as app_response:
@@ -332,13 +335,13 @@ def test_parameter_removal():
     def echo_params():
         return request.query_string
 
+    app_client, mw_client = get_clients(app, config)
+
     # Ensure the app works
-    app_client = WSGITestClient(app)
     app_response = app_client.get('/?a=b')
     assert app_response.get_data() == b'a=b'
 
     # Ensure the middleware deletes parameters
-    mw_client = ASGITestClient(ASGIMiddleware(app, config))
     mw_response = mw_client.get('/?a=b')
     assert mw_response.get_data() == b''
 
@@ -353,13 +356,13 @@ def test_request_body_removal():
     def echo_body():
         return request.get_data()
 
+    app_client, mw_client = get_clients(app, config)
+
     # Ensure the app works
-    app_client = WSGITestClient(app)
     app_response = app_client.get('/', data=b'abc')
     assert app_response.get_data() == b'abc'
 
     # Ensure the middleware deletes parameters
-    mw_client = ASGITestClient(ASGIMiddleware(app, config))
     mw_response = mw_client.get('/', data='abc')
     assert mw_response.get_data() == b''
 
