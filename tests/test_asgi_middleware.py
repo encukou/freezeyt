@@ -315,6 +315,10 @@ def test_static_mode_head(app_name):
             **getattr(module, 'freeze_config', {}),
             'static_mode': True,
         }
+
+        # extra_files are added by middleware, they aren't present in the app
+        config.pop('extra_files', None)
+
         app_client, mw_client = get_clients(app, config)
 
         for url in urls_from_expected_dict(expected_dict):
