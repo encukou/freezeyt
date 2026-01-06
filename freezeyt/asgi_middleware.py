@@ -31,6 +31,30 @@ class ASGIMiddleware:
             await self.handle_non_get(scope, receive, send)
             return
 
+        if self.static_mode:
+            # Construct a new scope, only keeping the info that a server
+            # of static pages would use
+            COPIED_KEYS = {
+                'type',
+                'asgi',
+                'http_version',
+                'method',
+                'root_path',
+                'path',
+                # query_string (URL parameters) is missing
+                # headers is missing
+                'server',
+                'freezeyt.freezing',
+                'freezeyt.task',  # (hack, TODO: remove)
+            }
+            new_scope = {
+                **{
+                    key: scope[key] for key
+                    in COPIED_KEYS.intersection(scope)
+                },
+            }
+            scope = new_scope
+
         await self.app(scope, receive, send)
 
     async def handle_non_get(self, scope, receive, send):
