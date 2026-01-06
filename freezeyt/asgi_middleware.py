@@ -1,6 +1,14 @@
+from werkzeug.routing import Map, Rule, RequestRedirect
+from werkzeug.exceptions import NotFound, Forbidden
+from werkzeug.security import safe_join
+
 from freezeyt.wsgi_middleware import WSGIMiddleware
 from freezeyt.wsgi_to_asgi import WSGIToASGIMiddleware
 from freezeyt.urls import PrefixURL
+from freezeyt.extra_files import get_extra_files
+from freezeyt.mimetype_check import MimetypeChecker
+
+FILE_CHUNK_SIZE = 1024*4
 
 class ASGIMiddleware:
     def __init__(self, app, config, *, prefix=None):
@@ -20,6 +28,32 @@ class ASGIMiddleware:
             )
 
         self.app = app
+        self.prefix = prefix
+        self.mimetype_checker = MimetypeChecker(config)
+
+        self.url_map = Map()
+        for url_part, kind, content_or_path in get_extra_files(config):
+            if '<' in url_part:
+                raise NotImplementedError("the extra file URL cannot include '<'")
+            if kind == 'content':
+                self.url_map.add(Rule(
+                    f'/{url_part}',
+                    endpoint='content',
+                    defaults={'content': content_or_path},
+                ))
+            elif kind == 'path':
+                self.url_map.add(Rule(
+                    f'/{url_part}',
+                    endpoint='path',
+                    defaults={'path': content_or_path, 'subpath': None},
+                ))
+                self.url_map.add(Rule(
+                    f'/{url_part}/<path:subpath>',
+                    endpoint='path',
+                    defaults={'path': content_or_path},
+                ))
+            else:
+                raise ValueError(kind)
 
         self.static_mode = config.get('static_mode', False)
 
@@ -54,6 +88,142 @@ class ASGIMiddleware:
                 },
             }
             scope = new_scope
+
+        # path_info = environ.get('PATH_INFO', '')
+
+        server = scope.get('server')
+        if server:
+            hostname, port = server
+        elif self.prefix:
+            hostname = self.prefix.hostname
+        else:
+            hostname = 'unknown-host.invalid'
+        prefix_path = scope.get('root_path', '')
+        if not prefix_path.endswith('/'):
+            prefix_path += '/'
+        path_info = scope['path']
+        if path_info.startswith(prefix_path):
+            path_info = "/" + path_info[len(prefix_path):]
+        map_adapter = self.url_map.bind(
+            server_name=hostname,
+            script_name=prefix_path,
+            path_info=path_info,
+        )
+        try:
+            endpoint, args = map_adapter.match()
+        except NotFound:
+            endpoint = 'app'
+            args = {}
+        except RequestRedirect as redirect:
+            while True:
+                event = await receive()
+                if event['type'] == "http.request":
+                    await send({
+                        "type": "http.response.start",
+                        "status": 308,  # permanent redirect
+                        "headers": [(b'Location', redirect.new_url.encode())],
+                    })
+                    await send({
+                        "type": "http.response.body",
+                    })
+                    break
+            return
+
+        if endpoint == 'content':
+            mimetype = self.mimetype_checker.guess_mimetype(path_info)
+            while True:
+                event = await receive()
+                if event['type'] == "http.request":
+                    await send({
+                        "type": "http.response.start",
+                        "status": 200,  # OK
+                        "headers": [(b'Content-Type', mimetype.encode())],
+                    })
+                    await send({
+                        "type": "http.response.body",
+                        "body": args['content'],
+                    })
+                    break
+            return
+        if endpoint == 'path':
+            base_path = args['path']
+            extra_path = args['subpath']
+            if extra_path:
+                file_path = safe_join(str(base_path), str(extra_path))
+                if file_path is None:
+                    while True:
+                        event = await receive()
+                        if event['type'] == "http.request":
+                            await send({
+                                "type": "http.response.start",
+                                "status": 403,  # Forbidden
+                            })
+                            await send({
+                                "type": "http.response.body",
+                                "body": "403 Forbidden",
+                            })
+                            break
+                    return
+            else:
+                file_path = base_path
+            assert file_path is not None
+            # TODO: use PathSend extension: https://asgi.readthedocs.io/en/latest/extensions.html#path-send
+            try:
+                file = open(file_path, 'rb')
+            except FileNotFoundError:
+                while True:
+                    event = await receive()
+                    if event['type'] == "http.request":
+                        await send({
+                            "type": "http.response.start",
+                            "status": 404,  # not found
+                        })
+                        await send({
+                            "type": "http.response.body",
+                        })
+                        break
+                return
+            except OSError:
+                # This could have several different behaviors,
+                # see https://github.com/encukou/freezeyt/issues/331
+                # For now, return a 404
+                while True:
+                    event = await receive()
+                    if event['type'] == "http.request":
+                        await send({
+                            "type": "http.response.start",
+                            "status": 404,  # not found
+                        })
+                        await send({
+                            "type": "http.response.body",
+                        })
+                        break
+                return
+            mimetype = self.mimetype_checker.guess_mimetype(path_info)
+            while True:
+                event = await receive()
+                if event['type'] == "http.request":
+                    await send({
+                        "type": "http.response.start",
+                        "status": 200,  # OK
+                        "headers": [(b'Content-Type', mimetype.encode())],
+                    })
+                    with file:
+                        while True:
+                            chunk = file.read(FILE_CHUNK_SIZE)
+                            if chunk:
+                                await send({
+                                    "type": "http.response.body",
+                                    "body": chunk,
+                                    "more_body": True,
+                                })
+                            else:
+                                await send({
+                                    "type": "http.response.body",
+                                })
+                                break
+                    break
+            return
 
         await self.app(scope, receive, send)
 
