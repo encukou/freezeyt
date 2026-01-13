@@ -113,35 +113,20 @@ class ASGIMiddleware:
             endpoint = 'app'
             args = {}
         except RequestRedirect as redirect:
-            while True:
-                event = await receive()
-                if event['type'] == "http.request":
-                    await send({
-                        "type": "http.response.start",
-                        "status": 308,  # permanent redirect
-                        "headers": [(b'Location', redirect.new_url.encode())],
-                    })
-                    await send({
-                        "type": "http.response.body",
-                    })
-                    break
+            await asgi_app(
+                scope, receive, send,
+                (b'location', redirect.new_url.encode()),
+                status=308,  # permanent redirect
+            )
             return
 
         if endpoint == 'content':
             mimetype = self.mimetype_checker.guess_mimetype(path_info)
-            while True:
-                event = await receive()
-                if event['type'] == "http.request":
-                    await send({
-                        "type": "http.response.start",
-                        "status": 200,  # OK
-                        "headers": [(b'Content-Type', mimetype.encode())],
-                    })
-                    await send({
-                        "type": "http.response.body",
-                        "body": args['content'],
-                    })
-                    break
+            await asgi_app(
+                scope, receive, send,
+                (b'content-type', mimetype.encode()),
+                body=args['content'],
+            )
             return
         if endpoint == 'path':
             base_path = args['path']
@@ -149,18 +134,11 @@ class ASGIMiddleware:
             if extra_path:
                 file_path = safe_join(str(base_path), str(extra_path))
                 if file_path is None:
-                    while True:
-                        event = await receive()
-                        if event['type'] == "http.request":
-                            await send({
-                                "type": "http.response.start",
-                                "status": 403,  # Forbidden
-                            })
-                            await send({
-                                "type": "http.response.body",
-                                "body": "403 Forbidden",
-                            })
-                            break
+                    await asgi_app(
+                        scope, receive, send,
+                        status=403,  # Forbidden
+                        body=b"403 Forbidden",
+                    )
                     return
             else:
                 file_path = base_path
@@ -169,33 +147,19 @@ class ASGIMiddleware:
             try:
                 file = open(file_path, 'rb')
             except FileNotFoundError:
-                while True:
-                    event = await receive()
-                    if event['type'] == "http.request":
-                        await send({
-                            "type": "http.response.start",
-                            "status": 404,  # not found
-                        })
-                        await send({
-                            "type": "http.response.body",
-                        })
-                        break
+                await asgi_app(
+                    scope, receive, send,
+                    status=404,  # not found
+                )
                 return
             except OSError:
                 # This could have several different behaviors,
                 # see https://github.com/encukou/freezeyt/issues/331
                 # For now, return a 404
-                while True:
-                    event = await receive()
-                    if event['type'] == "http.request":
-                        await send({
-                            "type": "http.response.start",
-                            "status": 404,  # not found
-                        })
-                        await send({
-                            "type": "http.response.body",
-                        })
-                        break
+                await asgi_app(
+                    scope, receive, send,
+                    status=404,  # not found
+                )
                 return
             mimetype = self.mimetype_checker.guess_mimetype(path_info)
             while True:
@@ -257,30 +221,35 @@ class ASGIMiddleware:
             # For OPTIONS, give our own response
             # (The status should be '204 No Content', but according to
             # MDN, some browsers misinterpret that, so '200' is safer.)
-            while True:
-                event = await receive()
-                if event['type'] == "http.request":
-                    await send({
-                        "type": "http.response.start",
-                        "status": 200,  # OK
-                        "headers": [(b'Allow', b'GET, HEAD, OPTIONS')],
-                    })
-                    await send({
-                        "type": "http.response.body",
-                    })
-                    break
+            await asgi_app(
+                scope, receive, send,
+                (b'allow', b'GET, HEAD, OPTIONS'),
+            )
             return
         else:
             # Disallow other methods
-            while True:
-                event = await receive()
-                if event['type'] == "http.request":
-                    await send({
-                        "type": "http.response.start",
-                        "status": 405,  # Method not allowed
-                    })
-                    await send({
-                        "type": "http.response.body",
-                    })
-                    break
+            await asgi_app(
+                scope, receive, send,
+                status=405,  # Method not allowed
+            )
             return
+
+async def asgi_app(
+    scope, receive, send,
+    *headers,
+    status=200,
+    body=b'',
+):
+    while True:
+        event = await receive()
+        if event['type'] == "http.request":
+            await send({
+                "type": "http.response.start",
+                "status": status,
+                "headers": headers,
+            })
+            await send({
+                "type": "http.response.body",
+                "body": body,
+            })
+            break
