@@ -81,18 +81,23 @@ From asynchronous code running in an `asyncio` event loop,
 you can call `freeze_async` instead of `freeze`.
 
 
-### Middleware
+### ASGI Middleware
 
-Some of Freezeyt's functionality is available as a WSGI middleware.
-To use it, wrap your application in `freezeyt.Middeleware`. For example:
+Some of Freezeyt's functionality is available as ASGI middleware.
+To use it, wrap your application in `freezeyt.ASGIMiddeleware`. For example:
 
 ```python
-from freezeyt import Middleware
+from freezeyt import ASGIMiddleware
 
 config = {}  # use a configuration dict as for `freeze(app, config)`
 
-app = Middleware(app, config)
+asgi_app = ASGIMiddleware(app, config)
 ```
+
+The wrapped application may be either a WSGI or ASGI app (selected using
+the `app_interface` key in the configuration.
+The result (that is, the `ASGIMiddleware` instance) is an ASGI app
+(that is, it requires an ASGI server to run).
 
 
 ## Configuration
@@ -422,7 +427,7 @@ correspond to the MIME types served by the app.
 If there's a mismatch, freezeyt fails, because this means a server
 wouldn't be able to serve the page correctly.
 
-This funtionality is provided by `freezeyt.Middleware`.
+This funtionality is provided by `freezeyt.ASGIMiddleware`.
 
 #### Default MIME type
 

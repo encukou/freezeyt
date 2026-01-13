@@ -2,7 +2,6 @@ from werkzeug.routing import Map, Rule, RequestRedirect
 from werkzeug.exceptions import NotFound, Forbidden
 from werkzeug.security import safe_join
 
-from freezeyt.wsgi_middleware import WSGIMiddleware
 from freezeyt.wsgi_to_asgi import WSGIToASGIMiddleware
 from freezeyt.urls import PrefixURL
 from freezeyt.extra_files import get_extra_files
@@ -15,7 +14,6 @@ class ASGIMiddleware:
 
         app_interface = config.get('app_interface', 'wsgi')
         if app_interface == 'wsgi':
-            app = WSGIMiddleware(app, config)
             if prefix is None:
                 prefix = PrefixURL.from_config(config)
             app = WSGIToASGIMiddleware(app, prefix=prefix)

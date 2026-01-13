@@ -7,7 +7,7 @@ from packaging.version import Version
 
 import pytest
 
-from freezeyt.wsgi_middleware import WSGIMiddleware
+#from freezeyt.wsgi_middleware import WSGIMiddleware
 from freezeyt.util import WrongMimetypeError
 
 from testutil import APP_NAMES as APP_NAMES_ORIG, context_for_test, FIXTURES_PATH
