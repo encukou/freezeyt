@@ -225,7 +225,17 @@ class ASGIMiddleware:
                     break
             return
 
-        await self.app(scope, receive, send)
+        asgi_headers = None
+        async def checking_send(event):
+            nonlocal asgi_headers
+            await send(event)
+            if event["type"] == "http.response.start":
+                asgi_headers = event.get("headers", [])
+            elif event["type"] == "http.response.body":
+                wsgi_headers = [(k.decode(), v.decode()) for k, v in asgi_headers]
+                self.mimetype_checker.check(path_info, wsgi_headers)
+
+        await self.app(scope, receive, checking_send)
 
     async def handle_non_get(self, scope, receive, send):
         # Handle requests other than GET. These can't come from Freezeyt.
@@ -243,7 +253,7 @@ class ASGIMiddleware:
                 if event['type'] == "http.response.start":
                     await send(event)
                     await send({'type': "http.response.body"})
-            await self.app(scope, receive, filtered_send)
+            await self.app(new_scope, receive, filtered_send)
             return
         elif scope['method'] == 'OPTIONS':
             # For OPTIONS, give our own response
