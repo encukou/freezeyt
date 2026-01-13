@@ -55,13 +55,15 @@ class ASGIMiddleware:
 
         self.static_mode = config.get('static_mode', False)
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope, receive, send) -> None:
+        await self.get_app(scope, receive, send)
+
+    def get_app(self, scope, receive, send):
         if scope['method'] != 'GET':
             # The Freezer only sends GET requests.
             # When we get another method, we know it came from another WSGI
             # server. Handle it specially.
-            await self.handle_non_get(scope, receive, send)
-            return
+            return self.handle_non_get(scope, receive, send)
 
         if self.static_mode:
             # Construct a new scope, only keeping the info that a server
@@ -113,33 +115,30 @@ class ASGIMiddleware:
             endpoint = 'app'
             args = {}
         except RequestRedirect as redirect:
-            await asgi_app(
+            return asgi_app(
                 scope, receive, send,
                 (b'location', redirect.new_url.encode()),
                 status=308,  # permanent redirect
             )
-            return
 
         if endpoint == 'content':
             mimetype = self.mimetype_checker.guess_mimetype(path_info)
-            await asgi_app(
+            return asgi_app(
                 scope, receive, send,
                 (b'content-type', mimetype.encode()),
                 body=args['content'],
             )
-            return
         if endpoint == 'path':
             base_path = args['path']
             extra_path = args['subpath']
             if extra_path:
                 file_path = safe_join(str(base_path), str(extra_path))
                 if file_path is None:
-                    await asgi_app(
+                    return asgi_app(
                         scope, receive, send,
                         status=403,  # Forbidden
                         body=b"403 Forbidden",
                     )
-                    return
             else:
                 file_path = base_path
             assert file_path is not None
@@ -147,45 +146,20 @@ class ASGIMiddleware:
             try:
                 file = open(file_path, 'rb')
             except FileNotFoundError:
-                await asgi_app(
+                return asgi_app(
                     scope, receive, send,
                     status=404,  # not found
                 )
-                return
             except OSError:
                 # This could have several different behaviors,
                 # see https://github.com/encukou/freezeyt/issues/331
                 # For now, return a 404
-                await asgi_app(
+                return asgi_app(
                     scope, receive, send,
                     status=404,  # not found
                 )
-                return
             mimetype = self.mimetype_checker.guess_mimetype(path_info)
-            while True:
-                event = await receive()
-                if event['type'] == "http.request":
-                    await send({
-                        "type": "http.response.start",
-                        "status": 200,  # OK
-                        "headers": [(b'Content-Type', mimetype.encode())],
-                    })
-                    with file:
-                        while True:
-                            chunk = file.read(FILE_CHUNK_SIZE)
-                            if chunk:
-                                await send({
-                                    "type": "http.response.body",
-                                    "body": chunk,
-                                    "more_body": True,
-                                })
-                            else:
-                                await send({
-                                    "type": "http.response.body",
-                                })
-                                break
-                    break
-            return
+            return send_file(scope, receive, send, file=file, mimetype=mimetype)
 
         asgi_headers = None
         async def checking_send(event):
@@ -197,14 +171,13 @@ class ASGIMiddleware:
                 wsgi_headers = [(k.decode(), v.decode()) for k, v in asgi_headers]
                 self.mimetype_checker.check(path_info, wsgi_headers)
 
-        await self.app(scope, receive, checking_send)
+        return self.app(scope, receive, checking_send)
 
-    async def handle_non_get(self, scope, receive, send):
+    def handle_non_get(self, scope, receive, send):
         # Handle requests other than GET. These can't come from Freezeyt.
         if not self.static_mode:
             # Normally, pass all other requests to the app unchanged.
-            await self.app(scope, receive, send)
-            return
+            return self.app(scope, receive, send)
 
         # In static mode, disallow everything but GET, HEAD, OPTIONS.
 
@@ -215,24 +188,21 @@ class ASGIMiddleware:
                 if event['type'] == "http.response.start":
                     await send(event)
                     await send({'type': "http.response.body"})
-            await self.app(new_scope, receive, filtered_send)
-            return
+            return self.app(new_scope, receive, filtered_send)
         elif scope['method'] == 'OPTIONS':
             # For OPTIONS, give our own response
             # (The status should be '204 No Content', but according to
             # MDN, some browsers misinterpret that, so '200' is safer.)
-            await asgi_app(
+            return asgi_app(
                 scope, receive, send,
                 (b'allow', b'GET, HEAD, OPTIONS'),
             )
-            return
         else:
             # Disallow other methods
-            await asgi_app(
+            return asgi_app(
                 scope, receive, send,
                 status=405,  # Method not allowed
             )
-            return
 
 async def asgi_app(
     scope, receive, send,
@@ -252,4 +222,29 @@ async def asgi_app(
                 "type": "http.response.body",
                 "body": body,
             })
-            break
+            return
+
+
+async def send_file(scope, receive, send, *, file, mimetype):
+    while True:
+        event = await receive()
+        if event['type'] == "http.request":
+            await send({
+                "type": "http.response.start",
+                "status": 200,  # OK
+                "headers": [(b'Content-Type', mimetype.encode())],
+            })
+            with file:
+                while True:
+                    chunk = file.read(FILE_CHUNK_SIZE)
+                    if chunk:
+                        await send({
+                            "type": "http.response.body",
+                            "body": chunk,
+                            "more_body": True,
+                        })
+                    else:
+                        await send({
+                            "type": "http.response.body",
+                        })
+                        return
