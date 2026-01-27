@@ -29,7 +29,7 @@ from freezeyt.asgi_middleware import ASGIMiddleware
 from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
-from freezeyt.types import Config, SaverResult, WSGIHeaderList
+from freezeyt.types import Config, SaverResult, WSGIHeaderList, asgi_types
 
 
 MAX_RUNNING_TASKS = 100
@@ -499,10 +499,11 @@ class Freezer:
         task: Task,
         url: AppURL,
         status: int,
-        headers: WSGIHeaderList,
+        headers: Headers,
     ) -> None:
         """WSGI start_response hook
         """
+        assert task.response is not None
 
         status_handler_name: Optional[str]
         status_handler_name = task.response.headers.get('Freezeyt-Action')
@@ -653,7 +654,7 @@ class Freezer:
 
         hostname_idna = self.prefix.hostname.encode('idna')
 
-        scope = {
+        scope: asgi_types.HTTPScope = {
             'type': "http",
             'asgi': {
                 'version': '3.0',
@@ -675,10 +676,12 @@ class Freezer:
             #client
             'server': (hostname_idna.decode('ascii'), self.prefix.port),
             #state (Lifespan Protocol)
-            'freezeyt.freezing': True,
-            'freezeyt.task': task,
+            'extensions': {
+                'freezeyt': {
+                    'freezing': True,
+                },
+            },
         }
-        task.error = None
 
         sent_request = False
 
@@ -715,8 +718,6 @@ class Freezer:
                     status=str(status),
                 )
                 self.raise_for_status_action(task, url, status, headers)
-                if task.error:
-                    raise task.error
                 if event.get('trailers'):
                     raise NotImplementedError('trailers not supported')
             elif event['type'] == "http.response.body":

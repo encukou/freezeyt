@@ -1,7 +1,10 @@
+from typing import Awaitable
+
 from werkzeug.routing import Map, Rule, RequestRedirect
 from werkzeug.exceptions import NotFound
 from werkzeug.security import safe_join
 
+from freezeyt.types import asgi_types
 from freezeyt.wsgi_to_asgi import WSGIToASGIMiddleware
 from freezeyt.urls import PrefixURL
 from freezeyt.extra_files import get_extra_files
@@ -55,10 +58,28 @@ class ASGIMiddleware:
 
         self.static_mode = config.get('static_mode', False)
 
-    async def __call__(self, scope, receive, send) -> None:
-        await self.get_app(scope, receive, send)
+    async def __call__(
+        self,
+        scope: asgi_types.Scope,
+        receive: asgi_types.ASGIReceiveCallable,
+        send: asgi_types.ASGISendCallable,
+    ) -> None:
+        if scope['type'] != 'http':
+            return
 
-    def get_app(self, scope, receive, send):
+        # Filter out unknown extensions
+        scope['extensions'] = {
+            'freezeyt': (scope.get('extensions') or {}).get('freezeyt', {}),
+        }
+
+        await self.get_called_app(scope, receive, send)
+
+    def get_called_app(
+        self,
+        scope: asgi_types.HTTPScope,
+        receive: asgi_types.ASGIReceiveCallable,
+        send: asgi_types.ASGISendCallable,
+    ) -> Awaitable[None]:
         if scope['method'] != 'GET':
             # The Freezer only sends GET requests.
             # When we get another method, we know it came from another WSGI
@@ -68,28 +89,23 @@ class ASGIMiddleware:
         if self.static_mode:
             # Construct a new scope, only keeping the info that a server
             # of static pages would use
-            COPIED_KEYS = {
-                'type',
-                'asgi',
-                'http_version',
-                'method',
-                'root_path',
-                'path',
-                # query_string (URL parameters) is missing
-                # headers is missing
-                'server',
-                'freezeyt.freezing',
-                'freezeyt.task',  # (hack, TODO: remove)
-            }
-            new_scope = {
-                **{
-                    key: scope[key] for key
-                    in COPIED_KEYS.intersection(scope)
-                },
+            new_scope: asgi_types.HTTPScope = {
+                'type': 'http',
+                'asgi': scope.get(
+                    'asgi',
+                    asgi_types.ASGIVersions(version='3.0', spec_version='2.0'),
+                ),
+                'http_version': scope['http_version'],
+                'method': 'GET',
+                'root_path': scope.get('root_path', ''),
+                'path': scope['path'],
+                'query_string': b'',  # empty
+                'headers': [],  # empty
+                # client is left out
+                'server': scope.get('server', None),
+                'extensions': scope.get('extensions', {}),
             }
             scope = new_scope
-
-        # path_info = environ.get('PATH_INFO', '')
 
         server = scope.get('server')
         if server:
@@ -162,12 +178,13 @@ class ASGIMiddleware:
             return send_file(scope, receive, send, file=file, mimetype=mimetype)
 
         asgi_headers = None
-        async def checking_send(event):
+        async def checking_send(event: asgi_types.ASGISendEvent) -> None:
             nonlocal asgi_headers
             await send(event)
             if event["type"] == "http.response.start":
                 asgi_headers = event.get("headers", [])
             elif event["type"] == "http.response.body":
+                assert asgi_headers is not None
                 wsgi_headers = [(k.decode(), v.decode()) for k, v in asgi_headers]
                 self.mimetype_checker.check(path_info, wsgi_headers)
 

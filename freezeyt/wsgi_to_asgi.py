@@ -1,22 +1,32 @@
 import io
 import sys
 import itertools
-from typing import List, Dict
+from typing import List, Dict, Tuple, Optional
 
 import freezeyt
+from freezeyt.types import asgi_types
 from freezeyt.encoding import encode_wsgi_path
 from freezeyt.urls import PrefixURL
-from freezeyt.types import WSGIExceptionInfo
+from freezeyt.types import WSGIExceptionInfo, WSGIStartResponseResult
+from freezeyt.compat import WSGIApplication
 
 
 class WSGIToASGIMiddleware:
     """Middleware that converts a WSGI app into an ASGI app."""
 
-    def __init__(self, wsgi_app, *, prefix: PrefixURL):
+    def __init__(self, wsgi_app: WSGIApplication, *, prefix: PrefixURL):
         self.wsgi_app = wsgi_app
         self.prefix = prefix
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(
+        self,
+        scope: asgi_types.Scope,
+        receive: asgi_types.ASGIReceiveCallable,
+        send: asgi_types.ASGISendCallable,
+    ) -> None:
+        if scope['type'] != 'http':
+            return
+
         path_info = scope['path']
 
         prefix_path = scope.get('root_path', '')
@@ -77,9 +87,13 @@ class WSGIToASGIMiddleware:
         # that the client (Freezeyt) won't mind.
 
         wsgi_write_data: List[bytes] = []
-        start_event = None
+        start_event: Optional[asgi_types.HTTPResponseStartEvent] = None
 
-        def start_response(status, headers, exc_info: WSGIExceptionInfo = None):
+        def start_response(
+            status: str,
+            headers: List[Tuple[str, str]],
+            exc_info: WSGIExceptionInfo = None,
+        ) -> WSGIStartResponseResult:
             """WSGI start_response hook
 
             The application we are freezing will call this method
@@ -105,14 +119,14 @@ class WSGIToASGIMiddleware:
                 raise AssertionError(
                     'WSGI application called start_response twice')
 
-            start_event = {
-                'type': "http.response.start",
-                'headers': [
+            start_event = asgi_types.HTTPResponseStartEvent(
+                type="http.response.start",
+                headers=[
                     (key.encode('latin-1'), value.encode('latin-1'))
                     for key, value in headers
                 ],
-                'status': int(status.split(maxsplit=1)[0]),
-            }
+                status=int(status.split(maxsplit=1)[0]),
+            )
 
             return wsgi_write_data.append
 
@@ -126,6 +140,7 @@ class WSGIToASGIMiddleware:
         await send(start_event)
 
         try:
+            event: asgi_types.HTTPResponseBodyEvent
             for body_part in itertools.chain(wsgi_write_data, result_iterable):
                 event = {
                     'type': "http.response.body",
