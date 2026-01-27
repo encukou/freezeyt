@@ -34,7 +34,7 @@ class ASGITestClientResponse:
         self._httpx_response = httpx_response
         code = httpx_response.status_code
         self.status = f'{code} {httpx_response.reason_phrase}'
-        self.headers = Headers(httpx_response.headers)
+        self.headers = Headers(dict(httpx_response.headers))
 
     def __enter__(self):
         return self
