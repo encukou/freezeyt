@@ -1,10 +1,12 @@
 import io
 import sys
 import itertools
+from typing import List, Dict
 
 import freezeyt
-from freezeyt.encoding import encode_wsgi_path, decode_input_path
+from freezeyt.encoding import encode_wsgi_path
 from freezeyt.urls import PrefixURL
+from freezeyt.types import WSGIExceptionInfo
 
 
 class WSGIToASGIMiddleware:
@@ -27,7 +29,7 @@ class WSGIToASGIMiddleware:
         scheme = scope.get('scheme', 'http')
         DEFAULT_PORTS = {'http': 80, 'https': 443}
 
-        environ: WSGIEnvironment = {
+        environ: Dict[str, object] = {
             'HTTP_HOST': self.prefix.hostname,  # default; overridden below
             'SERVER_NAME': self.prefix.hostname,  # default; overridden below
             'SERVER_PORT': str(self.prefix.port), # default; overridden below
@@ -77,7 +79,7 @@ class WSGIToASGIMiddleware:
         wsgi_write_data: List[bytes] = []
         start_event = None
 
-        def start_response(status, headers, exc_info=None):
+        def start_response(status, headers, exc_info: WSGIExceptionInfo = None):
             """WSGI start_response hook
 
             The application we are freezing will call this method

@@ -1,5 +1,5 @@
 from werkzeug.routing import Map, Rule, RequestRedirect
-from werkzeug.exceptions import NotFound, Forbidden
+from werkzeug.exceptions import NotFound
 from werkzeug.security import safe_join
 
 from freezeyt.wsgi_to_asgi import WSGIToASGIMiddleware

@@ -1,7 +1,4 @@
-import sys
 from pathlib import Path, PurePosixPath
-import io
-import itertools
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
@@ -16,7 +13,7 @@ from werkzeug.http import parse_options_header, parse_list_header
 
 import freezeyt
 import freezeyt.actions
-from freezeyt.encoding import encode_wsgi_path, decode_input_path
+from freezeyt.encoding import decode_input_path
 from freezeyt.encoding import encode_file_path
 from freezeyt.filesaver import FileSaver
 from freezeyt.dictsaver import DictSaver
@@ -33,7 +30,6 @@ from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
 from freezeyt.types import Config, SaverResult, WSGIHeaderList
-from freezeyt.types import WSGIExceptionInfo
 
 
 MAX_RUNNING_TASKS = 100

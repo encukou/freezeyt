@@ -14,6 +14,8 @@ from testutil import APP_NAMES as APP_NAMES_ORIG, context_for_test, FIXTURES_PAT
 
 pytest.skip('WSGI middleware is being deconstructed', allow_module_level=True)
 
+from freezeyt import WSGIMiddleware
+
 # For now, exclude the ASGI-only app
 APP_NAMES = [name for name in APP_NAMES_ORIG if name != 'falcon_asgi_app']
 
