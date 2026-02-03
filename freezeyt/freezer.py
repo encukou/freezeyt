@@ -21,15 +21,14 @@ from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError, TaskStatus
 from freezeyt.urls import AppURL, PrefixURL
-from freezeyt.compat import warnings_warn
-from freezeyt.compat import StartResponse, WSGIEnvironment, WSGIApplication
+from freezeyt.compat import warnings_warn, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.asgi_middleware import ASGIMiddleware
 from freezeyt.actions import ActionFunction
 from freezeyt.url_finders import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
-from freezeyt.types import Config, SaverResult, WSGIHeaderList, asgi_types
+from freezeyt.types import Config, SaverResult, asgi_types
 
 
 MAX_RUNNING_TASKS = 100

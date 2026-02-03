@@ -20,7 +20,7 @@ from typing import (
 if sys.version_info >= (3, 11):
     from typing import NotRequired
 else:
-    NotRequired = Optional
+    from typing_extensions import NotRequired
 
 __all__ = (
     "ASGIVersions",

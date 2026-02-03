@@ -1,8 +1,10 @@
-from typing import Mapping, Any, Union, TYPE_CHECKING, Tuple, Callable, Awaitable
-from typing import List, NotRequired, TypedDict, Literal, Iterable
+from typing import Mapping, Any, Union, TYPE_CHECKING, Tuple, Callable
+from typing import List
 from types import TracebackType
 
-from . import compat_asgiref_typing as asgi_types
+from . import compat_asgiref_typing
+
+asgi_types = compat_asgiref_typing
 
 if TYPE_CHECKING:
     from .dictsaver import DictSaverContents
