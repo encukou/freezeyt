@@ -1,3 +1,5 @@
+import asyncio
+
 import werkzeug
 from starlette.testclient import TestClient as StarletteTestClient
 from werkzeug.test import Client as WSGITestClient
@@ -196,28 +198,22 @@ def test_middleware_rejects_wrong_mimetype():
         mw_client.put('/image.jpg')
 
 
-def test_middleware_tricky_extra_files():
-    with context_for_test('tricky_extra_files') as module:
-        app = module.app
-        mw_client = ASGITestClient(ASGIMiddleware(app, module.freeze_config))
-
+@pytest.mark.parametrize(
+    ['path', 'expected_status', 'use_testclient'],
+    [
         # This file is looked up in static_dir:
-        with mw_client.get('/static/file.txt') as response:
-            assert response.status.startswith('200')
+        ('/static/file.txt', 200, True),  # 200 OK
 
         # This file doesn't exist in static_dir; we shouldn't request it
         # from the app
-        with mw_client.get('/static/missing.html') as response:
-            assert response.status.startswith('404')
+        ('/static/missing.html', 404, True),  # Not Found
 
         # This page should be requested from the app (where it exists)
-        with mw_client.get('/static-not.html') as response:
-            assert response.status.startswith('200')
+        ('/static-not.html', 200, True), # OK
 
         # This page should also be requested from the app; but it doesn't
         # exist there.
-        with mw_client.get('/static-not-missing.html') as response:
-            assert response.status.startswith('404')
+        ('/static-not-missing.html', 404, True),  # Not Found
 
         # When getting a directory, there are several things Freezeyt could do:
         # - look for index.html, and serve it if found
@@ -225,24 +221,69 @@ def test_middleware_tricky_extra_files():
         # - fail with 404
         # It should do the same thing whether or not there's a trailing slash,
         # or one version could redirect to the other.
-        with mw_client.get('/static') as response:
-            assert response.status.startswith('404')
-        with mw_client.get('/static/') as response:
-            assert response.status.startswith('404')
+        ('/static', 404, True),  # Not Found
+        ('/static/', 404, True),  # Not Found
 
-        # Same as above, but in this case werkzeug.routing.Map returns a
+        # Same as above, but in this case werkzeug.routing.Map returns a permanent
         # redirect to '/static/etc/passwd' before ASGIMiddleware gets a chance
-        # to return `403 Forbidden`. This is a detail that might change in
-        # the future, so just assert that this isn't successful.
-        with mw_client.get('/static//etc/passwd') as response:
-            assert not response.status.startswith('200')
+        # to return `403 Forbidden`. (This is a detail that might change in
+        # the future).
+        ('/static//etc/passwd', 308, True),  # Permanent Redirect
 
         # Looking outside the static directory is forbidden
         # This can't be done using the Starlette/httpx client, which normalizes
         # paths for us.
-        pytest.skip()
-        with mw_client.get('http://localhost/static/../app.py') as response:
-            assert response.status.startswith('403')
+        # So we use an "ASGI server" that asks the app for a single page
+        # (using one call to the app).
+        ('/static/../app.py', 403, False),
+    ]
+)
+def test_middleware_tricky_extra_files(path, expected_status, use_testclient):
+    # Test that tricky extra files are handled correctly.
+    with context_for_test('tricky_extra_files') as module:
+        app = module.app
+        mw_app = ASGIMiddleware(app, module.freeze_config)
+        mw_client = ASGITestClient(mw_app)
+
+        assert get_status(mw_app, path) == expected_status
+        if use_testclient:
+            # Test that our custom server in `get_status` works the same
+            # as the Starlette test client (except that it doesn't follow
+            # redirects).
+            with mw_client.get(path) as response:
+                assert response.status.startswith(str(expected_status))
+
+
+def get_status(app, path):
+    """Retrieve the status that app returns for the given path"""
+    # This is a simple ASGI server.
+    scope = {
+        'type': "http",
+        'asgi': {'version': "2.2", 'spec_version': "2.0"},
+        'http_version': "1.1",
+        'method': 'GET',
+        'scheme': "https",
+        'path': path,
+        'query_string': b'',
+        'root_path': '',
+        'headers': [],
+    }
+    receive_events = iter([
+        {'type': "http.request"},
+    ])
+    async def receive():
+        try:
+            return next(receive_events)
+        except StopIteration:
+            # no more events; this will never return
+            await asyncio.Future()
+    sent_events = []
+    async def send(event):
+        if event['type'] == "http.response.start":
+            sent_events.append(event)
+    asyncio.run(app(scope, receive, send))
+    [sent_event] = sent_events
+    return sent_event['status']
 
 
 DYNAMIC_METHODS = 'POST', 'PUT', 'PATCH', 'DELETE'
