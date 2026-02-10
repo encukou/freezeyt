@@ -12,7 +12,6 @@ __all__ = [
     'freeze',
     'freeze_async',
     'url_to_path',
-    'Middleware',
     'ASGIMiddleware',
     'DirectoryExistsError',
     'InfiniteRedirection',
