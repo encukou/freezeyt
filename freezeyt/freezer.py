@@ -229,6 +229,7 @@ class Freezer:
     hooks: Dict[str, List[Callable]]
     url_to_path: Callable[[str], str]
     fail_fast: bool
+    prefix: PrefixURL
 
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
@@ -259,14 +260,15 @@ class Freezer:
                 raise ValueError("Application is specified both as parameter and in configuration")
             app = app
 
-        self.prefix = PrefixURL.from_config(self.config)
-
         # The original app, to be passed back to the user when needed
         self.user_app = app
 
         # The app we call is wrapped in ASGIMiddleware so it gains
         # freezeyt superpowers
-        self.app = ASGIMiddleware(app, self.config, prefix=self.prefix)
+        self.app = ASGIMiddleware(app, self.config)
+
+        # Use the prefix that the middleware got from the config
+        self.prefix = self.app.prefix
 
         self.fail_fast = self.config.get('fail_fast', False)
 

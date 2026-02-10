@@ -1,34 +1,46 @@
-from typing import Awaitable
+from typing import Awaitable, Union, Tuple, BinaryIO, cast
 
 from werkzeug.routing import Map, Rule, RequestRedirect
 from werkzeug.exceptions import NotFound
 from werkzeug.security import safe_join
 
-from freezeyt.types import asgi_types
+from freezeyt.types import asgi_types, Config
 from freezeyt.wsgi_to_asgi import WSGIToASGIMiddleware
 from freezeyt.urls import PrefixURL
 from freezeyt.extra_files import get_extra_files
 from freezeyt.mimetype_check import MimetypeChecker
+from freezeyt.compat import WSGIApplication
 
 FILE_CHUNK_SIZE = 1024*4
 
 class ASGIMiddleware:
-    def __init__(self, app, config, *, prefix=None):
-        if prefix is None:
-            prefix = PrefixURL.from_config(config)
+    app: asgi_types.ASGI3Application
+    prefix: PrefixURL
+    mimetype_checker: MimetypeChecker
+    url_map: Map
+    static_mode: bool
+
+    def __init__(
+        self,
+        app: Union[WSGIApplication, asgi_types.ASGI3Application],
+        config: Config,
+    ):
+        prefix = PrefixURL.from_config(config)
 
         app_interface = config.get('app_interface', 'wsgi')
         if app_interface == 'wsgi':
-            app = WSGIToASGIMiddleware(app, prefix=prefix)
+            self.app = WSGIToASGIMiddleware(
+                cast(WSGIApplication, app),
+                prefix=prefix,
+            )
         elif app_interface == 'asgi':
-            pass
+            self.app = cast(asgi_types.ASGI3Application, app)
         else:
             raise ValueError(
                 'app_interface must be "asgi" or "wsgi", '
                 + f'got {app_interface!r}'
             )
 
-        self.app = app
         self.prefix = prefix
         self.mimetype_checker = MimetypeChecker(config)
 
@@ -190,7 +202,12 @@ class ASGIMiddleware:
 
         return self.app(scope, receive, checking_send)
 
-    def handle_non_get(self, scope, receive, send):
+    def handle_non_get(
+        self,
+        scope: asgi_types.HTTPScope,
+        receive: asgi_types.ASGIReceiveCallable,
+        send: asgi_types.ASGISendCallable,
+    ) -> Awaitable:
         # Handle requests other than GET. These can't come from Freezeyt.
         if not self.static_mode:
             # Normally, pass all other requests to the app unchanged.
@@ -200,7 +217,7 @@ class ASGIMiddleware:
 
         if scope['method'] == 'HEAD':
             # For HEAD, call the app but ignore the response body
-            new_scope = {**scope, 'method': 'GET'}
+            new_scope: asgi_types.HTTPScope = {**scope, 'method': 'GET'}
             async def filtered_send(event):
                 if event['type'] == "http.response.start":
                     await send(event)
@@ -222,11 +239,13 @@ class ASGIMiddleware:
             )
 
 async def asgi_app(
-    scope, receive, send,
-    *headers,
-    status=200,
-    body=b'',
-):
+    scope: asgi_types.HTTPScope,
+    receive: asgi_types.ASGIReceiveCallable,
+    send: asgi_types.ASGISendCallable,
+    *headers: Tuple[bytes, bytes],
+    status: int = 200,
+    body: bytes = b'',
+) -> None:
     while True:
         event = await receive()
         if event['type'] == "http.request":
@@ -242,7 +261,14 @@ async def asgi_app(
             return
 
 
-async def send_file(scope, receive, send, *, file, mimetype):
+async def send_file(
+    scope: asgi_types.HTTPScope,
+    receive: asgi_types.ASGIReceiveCallable,
+    send: asgi_types.ASGISendCallable,
+    *,
+    file: BinaryIO,
+    mimetype: str,
+) -> None:
     while True:
         event = await receive()
         if event['type'] == "http.request":
