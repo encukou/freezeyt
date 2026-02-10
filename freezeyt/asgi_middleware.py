@@ -25,13 +25,13 @@ class ASGIMiddleware:
         app: Union[WSGIApplication, asgi_types.ASGI3Application],
         config: Config,
     ):
-        prefix = PrefixURL.from_config(config)
+        self.prefix = PrefixURL.from_config(config)
 
         app_interface = config.get('app_interface', 'wsgi')
         if app_interface == 'wsgi':
             self.app = WSGIToASGIMiddleware(
                 cast(WSGIApplication, app),
-                prefix=prefix,
+                prefix=self.prefix,
             )
         elif app_interface == 'asgi':
             self.app = cast(asgi_types.ASGI3Application, app)
@@ -41,7 +41,6 @@ class ASGIMiddleware:
                 + f'got {app_interface!r}'
             )
 
-        self.prefix = prefix
         self.mimetype_checker = MimetypeChecker(config)
 
         self.url_map = Map()
@@ -170,7 +169,6 @@ class ASGIMiddleware:
             else:
                 file_path = base_path
             assert file_path is not None
-            # TODO: use PathSend extension: https://asgi.readthedocs.io/en/latest/extensions.html#path-send
             try:
                 file = open(file_path, 'rb')
             except FileNotFoundError:
@@ -189,14 +187,10 @@ class ASGIMiddleware:
             mimetype = self.mimetype_checker.guess_mimetype(path_info)
             return send_file(scope, receive, send, file=file, mimetype=mimetype)
 
-        asgi_headers = None
         async def checking_send(event: asgi_types.ASGISendEvent) -> None:
-            nonlocal asgi_headers
             await send(event)
             if event["type"] == "http.response.start":
                 asgi_headers = event.get("headers", [])
-            elif event["type"] == "http.response.body":
-                assert asgi_headers is not None
                 wsgi_headers = [(k.decode(), v.decode()) for k, v in asgi_headers]
                 self.mimetype_checker.check(path_info, wsgi_headers)
 

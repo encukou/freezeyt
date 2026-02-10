@@ -2,9 +2,9 @@ from typing import Mapping, Any, Union, TYPE_CHECKING, Tuple, Callable
 from typing import List
 from types import TracebackType
 
-from . import compat_asgiref_typing
+from . import asgiref_typing
 
-asgi_types = compat_asgiref_typing
+asgi_types = asgiref_typing
 
 if TYPE_CHECKING:
     from .dictsaver import DictSaverContents

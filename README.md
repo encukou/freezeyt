@@ -1111,3 +1111,7 @@ See GitHub history for all [contributors](https://github.com/encukou/freezeyt/gr
 
 This project is licensed under the [MIT License](LICENCE.MIT).
 May it serve you well.
+
+The file `asgiref_typing.py` is licenced under the [BSD-3-Clause license](LICENCE.asgiref).
+It is an improved version of a file from the `asgiref` project,
+[sent as a pull request](https://github.com/django/asgiref/pull/546).
