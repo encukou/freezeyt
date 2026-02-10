@@ -14,11 +14,11 @@ FILE_CHUNK_SIZE = 1024*4
 
 class ASGIMiddleware:
     def __init__(self, app, config, *, prefix=None):
+        if prefix is None:
+            prefix = PrefixURL.from_config(config)
 
         app_interface = config.get('app_interface', 'wsgi')
         if app_interface == 'wsgi':
-            if prefix is None:
-                prefix = PrefixURL.from_config(config)
             app = WSGIToASGIMiddleware(app, prefix=prefix)
         elif app_interface == 'asgi':
             pass
