@@ -31,7 +31,6 @@ jobs:
       matrix:
         include:
         - python-version: '3.8'
-          toxenv: 'py38'
     steps:
       - uses: actions/checkout@v6
       - name: Install uv
@@ -40,4 +39,6 @@ jobs:
         run: |
           uv tool install --python ${{ matrix.python-version }} tox
       - name: Run tests
-        run: tox -e ${{ matrix.toxenv }}
+        env:
+          PY_VERSION_WITH_DOT: ${{ matrix.python-version }}
+        run: tox -e py${PY_VERSION_WITH_DOT/[.]/}  # remove dot
