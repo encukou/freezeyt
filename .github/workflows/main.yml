@@ -9,10 +9,10 @@ on:
 name: Main tests
 
 jobs:
-  tox_test:
+  fedora_tox_test:
     name: Tox env
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Run Tox test
       id: test
       uses: fedora-python/tox-github-action@main
@@ -20,7 +20,25 @@ jobs:
         tox_env: ${{ matrix.tox_env }}
     strategy:
       matrix:
-        tox_env: [py38, py39, py310, py311, py312, py313, py314, pyflakes, mypy310, mypy313]
+        tox_env: [py39, py310, py311, py312, py313, py314, pyflakes, mypy310, mypy313]
 
     # Use GitHub's Linux Docker host
     runs-on: ubuntu-latest
+
+  uv_tox_test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+        - python-version: '3.8'
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Install tox
+        run: |
+          uv tool install --python ${{ matrix.python-version }} tox
+      - name: Run tests
+        env:
+          PY_VERSION_WITH_DOT: ${{ matrix.python-version }}
+        run: tox -e py${PY_VERSION_WITH_DOT/[.]/}  # remove dot
