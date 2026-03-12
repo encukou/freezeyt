@@ -27,6 +27,7 @@ dependencies = [
     "Werkzeug",
     "enlighten",
     "tomli; python_version < '3.11'",
+    "typing_extensions; python_version < '3.11'",
 ]
 
 # build 1.2.2 doesn't support PEP 639 license specification yet.
@@ -49,6 +50,8 @@ dev = [
     "falcon",
     "freezegun",
     "packaging",
+    "starlette",
+    "httpx",
 ]
 blog = [
     "flask",
@@ -59,6 +62,7 @@ typecheck = [
     "mypy",
     "types-click",
     "types-PyYAML",
+    "asgiref",
 
     # New version neded for: https://github.com/python/typeshed/issues/11478
     "types-html5lib >= 1.1.11.20240228",

@@ -1,6 +1,10 @@
-from typing import Mapping, Any, Union, TYPE_CHECKING, Tuple
+from typing import Mapping, Any, Union, TYPE_CHECKING, Tuple, Callable
 from typing import List
 from types import TracebackType
+
+from . import asgiref_typing
+
+asgi_types = asgiref_typing
 
 if TYPE_CHECKING:
     from .dictsaver import DictSaverContents
@@ -19,3 +23,5 @@ WSGIExceptionInfo = Union[
 ]
 
 WSGIHeaderList = List[Tuple[str, str]]
+
+WSGIStartResponseResult = Callable[[bytes], object]

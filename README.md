@@ -14,10 +14,10 @@ Python's [http.server].
 [http.server]: https://docs.python.org/3/library/http.server.html
 
 Freezeyt is compatible with all Python web frameworks that use the common
-[Web Server Gateway Interface] (WSGI)
+[Web Server Gateway Interface] (WSGI) or [Asynchronous Server Gateway Interface] (ASGI)
 
 [Web Server Gateway Interface]: https://www.python.org/dev/peps/pep-3333/
-
+[Asynchronous Server Gateway Interface]: https://asgi.readthedocs.io
 
 ## Installation
 
@@ -81,18 +81,23 @@ From asynchronous code running in an `asyncio` event loop,
 you can call `freeze_async` instead of `freeze`.
 
 
-### Middleware
+### ASGI Middleware
 
-Some of Freezeyt's functionality is available as a WSGI middleware.
-To use it, wrap your application in `freezeyt.Middeleware`. For example:
+Some of Freezeyt's functionality is available as ASGI middleware.
+To use it, wrap your application in `freezeyt.ASGIMiddeleware`. For example:
 
 ```python
-from freezeyt import Middleware
+from freezeyt import ASGIMiddleware
 
 config = {}  # use a configuration dict as for `freeze(app, config)`
 
-app = Middleware(app, config)
+asgi_app = ASGIMiddleware(app, config)
 ```
+
+The wrapped application may be either a WSGI or ASGI app (selected using
+the `app_interface` key in the configuration.
+The result (that is, the `ASGIMiddleware` instance) is an ASGI app
+(that is, it requires an ASGI server to run).
 
 
 ## Configuration
@@ -170,7 +175,18 @@ If the variable is an attribute of some namespace, use dots in the variable name
 app = "app_module:namespace.wsgi_application"
 ```
 
-When configuration is given as a Python dict, `app` can be given as the WSGI application object, rather than a string.
+When configuration is given as a Python dict, `app` can be given as the WSGI
+or ASGI application object, rather than a string.
+
+### Application interface (WSGI or ASGI)
+
+The `app_interface` config option specifies the interface to be used when
+calling `app`:
+
+- `wsgi` (default): `app` should be a WSGI application, as defined in PEP 3333.
+- `asgi`: `app` should be a ASGI single-callable application,
+  as specified in [asgi.readthedocs.io](https://asgi.readthedocs.io) (version 3).
+
 
 ### Output
 
@@ -411,7 +427,7 @@ correspond to the MIME types served by the app.
 If there's a mismatch, freezeyt fails, because this means a server
 wouldn't be able to serve the page correctly.
 
-This funtionality is provided by `freezeyt.Middleware`.
+This funtionality is provided by `freezeyt.ASGIMiddleware`.
 
 #### Default MIME type
 
@@ -1095,3 +1111,7 @@ See GitHub history for all [contributors](https://github.com/encukou/freezeyt/gr
 
 This project is licensed under the [MIT License](LICENCE.MIT).
 May it serve you well.
+
+The file `asgiref_typing.py` is licenced under the [BSD-3-Clause license](LICENCE.asgiref).
+It is an improved version of a file from the `asgiref` project,
+[sent as a pull request](https://github.com/django/asgiref/pull/546).

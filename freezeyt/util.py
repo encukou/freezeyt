@@ -3,6 +3,8 @@ import concurrent.futures
 from typing import Sequence, TYPE_CHECKING, List, Optional, Any
 import enum
 
+from werkzeug.http import HTTP_STATUS_CODES
+
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 from freezeyt.encoding import decode_input_path
 
@@ -44,16 +46,21 @@ class UnexpectedStatus(ValueError):
     def __init__(
         self,
         url: 'AppURL',
-        status: str,
+        int_status: int,
         redirect_location: Optional[str] = None,
     ):
         self.url = str(url)
-        self.status = status
+        self.int_status = int_status
+        if int_status in HTTP_STATUS_CODES:
+            str_status = f'{int_status} {HTTP_STATUS_CODES[int_status]}'
+        else:
+            str_status = f'{int_status}'
+        self.status = str_status
         self.redirect_location = redirect_location
         if redirect_location is None:
-            message = str(status)
+            message = str_status
         else:
-            message = f'{status} (-> {redirect_location})'
+            message = f'{str_status} (-> {redirect_location})'
         super().__init__(message)
 
 class WrongMimetypeError(ValueError):

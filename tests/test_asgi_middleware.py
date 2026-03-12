@@ -1,5 +1,8 @@
+import asyncio
+
 import werkzeug
-from werkzeug.test import Client
+from starlette.testclient import TestClient as StarletteTestClient
+from werkzeug.test import Client as WSGITestClient
 from werkzeug.datastructures import Headers
 import freezegun
 from flask import Flask, request
@@ -7,10 +10,42 @@ from packaging.version import Version
 
 import pytest
 
-from freezeyt.middleware import Middleware
+from freezeyt.asgi_middleware import ASGIMiddleware
 from freezeyt.util import WrongMimetypeError
 
 from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
+
+
+class ASGITestClient:
+    def __init__(self, app):
+        self._client = StarletteTestClient(app, base_url='http://localhost:80')
+
+    def open(self, url, *, method, data=b''):
+        httpx_response = self._client.request(method, url, follow_redirects=False, content=data)
+        return ASGITestClientResponse(httpx_response)
+
+    # add specific methods: get, head, ...
+    for method in 'get head options post send put'.split():
+        def _func(self, *args, method=method, **kwargs):
+            return self.open(*args, method=method, **kwargs)
+        _func.__name__ = method
+        locals()[method] = _func
+
+class ASGITestClientResponse:
+    def __init__(self, httpx_response):
+        self._httpx_response = httpx_response
+        code = httpx_response.status_code
+        self.status = f'{code} {httpx_response.reason_phrase}'
+        self.headers = Headers(dict(httpx_response.headers))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        pass
+
+    def get_data(self):
+        return self._httpx_response.content
 
 def urls_from_expected_dict(expected_dict, prefix=''):
     """Generate URLs from an `expected_dict` found in tests
@@ -65,20 +100,33 @@ def test_urls_from_expected_dict():
     ]
 
 
+def get_clients(app, config={}):
+    if config.get('app_interface', 'wsgi') == 'asgi':
+        app_client = ASGITestClient(app)
+    else:
+        app_client = WSGITestClient(app)
+
+    mw_client = ASGITestClient(ASGIMiddleware(app, config))
+
+    return app_client, mw_client
+
+
 @pytest.mark.parametrize('app_name', APP_NAMES)
 @freezegun.freeze_time()  # freeze time so that Date headers don't change
 def test_middleware_doesnt_change_app(app_name):
+    if app_name in {'app_double_response_start'}:
+        pytest.skip('app triggers extra check in WSGI-to-ASGI middleware')
+
     app_path = FIXTURES_PATH / app_name
     error_path = app_path / 'error.txt'
     with context_for_test(app_name) as module:
         app = module.app
         config = getattr(module, 'freeze_config', {})
 
-        app_client = Client(app)
         try:
-            mw_client = Client(Middleware(app, config))
+            app_client, mw_client = get_clients(app, config)
         except ValueError:
-            # If creating the Middleware fails, it should raise the same
+            # If creating the ASGIMiddleware fails, it should raise the same
             # exception as freezing the app.
             # Currently, only ValueError can be raised in the initialization
             assert error_path.exists()
@@ -113,8 +161,6 @@ def check_responses_are_same(
     app_client, mw_client, url, expected_error=(), expect_extra_files=False,
 ):
     with app_client.get(url) as app_response:
-        print(app_response)
-        print(app_response.get_data())
         try:
             mw_response = mw_client.get(url)
         except expected_error:
@@ -128,15 +174,21 @@ def check_responses_are_same(
                 # expected extra page
                 return
 
-            assert app_response.status == mw_response.status
+            assert get_status_code(app_response.status) == get_status_code(mw_response.status)
             assert app_response.headers == mw_response.headers
             assert app_response.get_data() == mw_response.get_data()
+
+
+def get_status_code(phrase):
+    code = int(phrase[:3])
+    assert str(code) == phrase[:3]
+    return code
 
 
 def test_middleware_rejects_wrong_mimetype():
     with context_for_test('app_wrong_mimetype') as module:
         app = module.app
-        mw_client = Client(Middleware(app, {}))
+        mw_client = ASGITestClient(ASGIMiddleware(app, {}))
 
         with pytest.raises(WrongMimetypeError):
             mw_client.get('/image.jpg')
@@ -146,28 +198,22 @@ def test_middleware_rejects_wrong_mimetype():
         mw_client.put('/image.jpg')
 
 
-def test_middleware_tricky_extra_files():
-    with context_for_test('tricky_extra_files') as module:
-        app = module.app
-        mw_client = Client(Middleware(app, module.freeze_config))
-
+@pytest.mark.parametrize(
+    ['path', 'expected_status', 'use_testclient'],
+    [
         # This file is looked up in static_dir:
-        with mw_client.get('/static/file.txt') as response:
-            assert response.status.startswith('200')
+        ('/static/file.txt', 200, True),  # 200 OK
 
         # This file doesn't exist in static_dir; we shouldn't request it
         # from the app
-        with mw_client.get('/static/missing.html') as response:
-            assert response.status.startswith('404')
+        ('/static/missing.html', 404, True),  # Not Found
 
         # This page should be requested from the app (where it exists)
-        with mw_client.get('/static-not.html') as response:
-            assert response.status.startswith('200')
+        ('/static-not.html', 200, True), # OK
 
         # This page should also be requested from the app; but it doesn't
         # exist there.
-        with mw_client.get('/static-not-missing.html') as response:
-            assert response.status.startswith('404')
+        ('/static-not-missing.html', 404, True),  # Not Found
 
         # When getting a directory, there are several things Freezeyt could do:
         # - look for index.html, and serve it if found
@@ -175,21 +221,69 @@ def test_middleware_tricky_extra_files():
         # - fail with 404
         # It should do the same thing whether or not there's a trailing slash,
         # or one version could redirect to the other.
-        with mw_client.get('/static') as response:
-            assert response.status.startswith('404')
-        with mw_client.get('/static/') as response:
-            assert response.status.startswith('404')
+        ('/static', 404, True),  # Not Found
+        ('/static/', 404, True),  # Not Found
+
+        # Same as above, but in this case werkzeug.routing.Map returns a permanent
+        # redirect to '/static/etc/passwd' before ASGIMiddleware gets a chance
+        # to return `403 Forbidden`. (This is a detail that might change in
+        # the future).
+        ('/static//etc/passwd', 308, True),  # Permanent Redirect
 
         # Looking outside the static directory is forbidden
-        with mw_client.get('/static/../app.py') as response:
-            assert response.status.startswith('403')
+        # This can't be done using the Starlette/httpx client, which normalizes
+        # paths for us.
+        # So we use an "ASGI server" that asks the app for a single page
+        # (using one call to the app).
+        ('/static/../app.py', 403, False),
+    ]
+)
+def test_middleware_tricky_extra_files(path, expected_status, use_testclient):
+    # Test that tricky extra files are handled correctly.
+    with context_for_test('tricky_extra_files') as module:
+        app = module.app
+        mw_app = ASGIMiddleware(app, module.freeze_config)
+        mw_client = ASGITestClient(mw_app)
 
-        # Same as above, but in this case werkzeug.routing.Map returns a
-        # redirect to '/static/etc/passwd' before Middleware gets a chance
-        # to return `403 Forbidden`. This is a detail that might change in
-        # the future, so just assert that this isn't successful.
-        with mw_client.get('/static//etc/passwd') as response:
-            assert not response.status.startswith('200')
+        assert get_status(mw_app, path) == expected_status
+        if use_testclient:
+            # Test that our custom server in `get_status` works the same
+            # as the Starlette test client (except that it doesn't follow
+            # redirects).
+            with mw_client.get(path) as response:
+                assert response.status.startswith(str(expected_status))
+
+
+def get_status(app, path):
+    """Retrieve the status that app returns for the given path"""
+    # This is a simple ASGI server.
+    scope = {
+        'type': "http",
+        'asgi': {'version': "2.2", 'spec_version': "2.0"},
+        'http_version': "1.1",
+        'method': 'GET',
+        'scheme': "https",
+        'path': path,
+        'query_string': b'',
+        'root_path': '',
+        'headers': [],
+    }
+    receive_events = iter([
+        {'type': "http.request"},
+    ])
+    async def receive():
+        try:
+            return next(receive_events)
+        except StopIteration:
+            # no more events; this will never return
+            await asyncio.Future()
+    sent_events = []
+    async def send(event):
+        if event['type'] == "http.response.start":
+            sent_events.append(event)
+    asyncio.run(app(scope, receive, send))
+    [sent_event] = sent_events
+    return sent_event['status']
 
 
 DYNAMIC_METHODS = 'POST', 'PUT', 'PATCH', 'DELETE'
@@ -204,13 +298,13 @@ def test_static_mode_disallows_methods(method):
     def index():
         return 'OK'
 
-    # Test the test app (behaviour without the Middleware)
-    app_client = Client(app)
+    app_client, mw_client = get_clients(app, config)
+
+    # Test the test app (behaviour without the ASGIMiddleware)
     assert app_client.open('/index.html', method='GET').status.startswith('200')
     assert app_client.open('/index.html', method=method).status.startswith('200')
 
-    # Test behaviour with Middleware
-    mw_client = Client(Middleware(app, config))
+    # Test behaviour with ASGIMiddleware
     assert mw_client.open('/index.html', method='GET').status.startswith('200')
 
     # HTTP status 405: Method Not Allowed
@@ -225,7 +319,7 @@ def test_static_mode_options(path):
     @app.route('/index.html')
     def index():
         return 'OK'
-    mw_client = Client(Middleware(app, config))
+    mw_client = ASGITestClient(ASGIMiddleware(app, config))
 
     response = mw_client.options(path)
     assert response.status.startswith('200')
@@ -247,29 +341,33 @@ def test_static_mode_options(path):
 @pytest.mark.parametrize('app_name', APP_NAMES)
 @freezegun.freeze_time()  # freeze time so that Date headers don't change
 def test_static_mode_head(app_name):
-    config = {
-        'static_mode': True,
-    }
 
     with context_for_test(app_name) as module:
-        app = module.app
-        app_client = Client(app)
-        mw_client = Client(Middleware(app, config))
-
         try:
             expected_dict = module.expected_dict
         except AttributeError:
             # If expected_dict is not available, the app probably tests
             # that freezing fails.
             # Skip it.
-            pass
-        else:
-            for url in urls_from_expected_dict(expected_dict):
-                with app_client.get(url) as app_response:
-                    with mw_client.head(url) as mw_response:
-                        assert mw_response.status == app_response.status
-                        assert mw_response.headers == app_response.headers
-                        assert mw_response.get_data() == b''
+            pytest.skip()
+
+        app = module.app
+        config = {
+            **getattr(module, 'freeze_config', {}),
+            'static_mode': True,
+        }
+
+        # extra_files are added by middleware, they aren't present in the app
+        config.pop('extra_files', None)
+
+        app_client, mw_client = get_clients(app, config)
+
+        for url in urls_from_expected_dict(expected_dict):
+            with app_client.get(url) as app_response:
+                with mw_client.head(url) as mw_response:
+                    assert get_status_code(mw_response.status) == get_status_code(app_response.status)
+                    assert mw_response.headers == app_response.headers
+                    assert mw_response.get_data() == b''
 
 def test_parameter_removal():
     config = {
@@ -282,13 +380,13 @@ def test_parameter_removal():
     def echo_params():
         return request.query_string
 
+    app_client, mw_client = get_clients(app, config)
+
     # Ensure the app works
-    app_client = Client(app)
     app_response = app_client.get('/?a=b')
     assert app_response.get_data() == b'a=b'
 
     # Ensure the middleware deletes parameters
-    mw_client = Client(Middleware(app, config))
     mw_response = mw_client.get('/?a=b')
     assert mw_response.get_data() == b''
 
@@ -303,13 +401,13 @@ def test_request_body_removal():
     def echo_body():
         return request.get_data()
 
+    app_client, mw_client = get_clients(app, config)
+
     # Ensure the app works
-    app_client = Client(app)
     app_response = app_client.get('/', data=b'abc')
     assert app_response.get_data() == b'abc'
 
     # Ensure the middleware deletes parameters
-    mw_client = Client(Middleware(app, config))
     mw_response = mw_client.get('/', data='abc')
     assert mw_response.get_data() == b''
 
