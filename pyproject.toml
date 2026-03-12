@@ -62,7 +62,6 @@ typecheck = [
     "mypy",
     "types-click",
     "types-PyYAML",
-    "asgiref",
 
     # New version neded for: https://github.com/python/typeshed/issues/11478
     "types-html5lib >= 1.1.11.20240228",
