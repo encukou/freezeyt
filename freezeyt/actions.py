@@ -2,8 +2,7 @@ from typing import Callable, TYPE_CHECKING
 
 from freezeyt.hooks import TaskInfo
 from freezeyt.util import TaskStatus, ExternalURLError
-
-ActionFunction = Callable[[TaskInfo], str]
+from freezeyt.types import ActionFunction
 
 
 _ACTIONS = {}

@@ -9,10 +9,8 @@ from werkzeug.http import parse_options_header
 
 from freezeyt.util import WrongMimetypeError
 from freezeyt.util import import_variable_from_module
-from freezeyt.types import Config, WSGIHeaderList
+from freezeyt.types import Config, WSGIHeaderList, GetMimetypeFunction
 
-
-GetMimetypeFunction = Callable[[str], Optional[List[str]]]
 
 class MimetypeChecker:
     default_mimetype: str

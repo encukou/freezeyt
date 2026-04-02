@@ -15,6 +15,7 @@ import yaml
 from freezeyt import freeze, MultiError
 from freezeyt.util import import_variable_from_module
 from freezeyt.compat import Literal
+from freezeyt.types import Config
 
 # Use -h as an alias for --help
 # (see https://click.palletsprojects.com/en/stable/documentation/#help-parameter-customization)
@@ -62,7 +63,7 @@ def main(
     config_var: Optional[str],
     progress: Optional[Literal['none', 'bar', 'log']],
     cleanup: Optional[bool],
-    gh_pages: Optional[str],
+    gh_pages: Optional[bool],
     fail_fast: Optional[bool],
 ) -> None:
     """
@@ -79,6 +80,8 @@ def main(
         python -m freezeyt demo_app build -c config.yaml
     """
 
+    config: Config
+
     config_options = [toml_config_file, yaml_config_file, config_var]
     if len([c for c in config_options if c is not None]) > 1:
         raise click.UsageError(
@@ -86,19 +89,22 @@ def main(
             + "--yaml-config (-y, -c), -import-config (-C)"
         )
     elif toml_config_file is not None:
-        config = tomllib.load(toml_config_file)
+        config = tomllib.load(toml_config_file)  # type: ignore[assignment]
         assert isinstance(config, dict)
     elif yaml_config_file is not None:
-        config = yaml.safe_load(yaml_config_file)
+        config = yaml.safe_load(yaml_config_file)  # type: ignore[assignment]
         if not isinstance(config, dict):
             raise SyntaxError(
                     f'File {yaml_config_file.name} is not a YAML dictionary.'
                 )
     elif config_var is not None:
-        config = import_variable_from_module(config_var)
+        config = import_variable_from_module(
+            config_var)  # type: ignore[assignment]
 
     else:
-        config = {}
+        config = {}  # type: ignore[typeddict-item]
+        # typing: 'output' is missing now, but we may set it below and we raise
+        # UsageError if it's still missing
 
     if app is not None:
         config['app'] = app

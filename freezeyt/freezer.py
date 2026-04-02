@@ -2,7 +2,7 @@ from pathlib import Path, PurePosixPath
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, List, TypeVar, Any, cast
+from typing import Tuple, List, TypeVar, Any, Iterable, cast
 import asyncio
 import inspect
 import re
@@ -26,7 +26,7 @@ from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.asgi_middleware import ASGIMiddleware
 from freezeyt.actions import ActionFunction
-from freezeyt.url_finders import UrlFinder
+from freezeyt.types import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
 from freezeyt.types import Config, SaverResult, asgi_types
 
@@ -234,8 +234,12 @@ class Freezer:
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
 
-    def __init__(self, app: Optional[WSGIApplication], config: Config):
-        self.config = dict(config)
+    def __init__(
+        self,
+        app: Optional[WSGIApplication | asgi_types.ASGI3Application],
+        config: Config,
+    ):
+        self.config = cast(Config, dict(config))
         del config  # we always want to use `self.config` from now on
 
         self.check_version(self.config.get('version'))
@@ -316,7 +320,7 @@ class Freezer:
         )
 
         output = self.config['output']
-        if isinstance(output, str):
+        if not isinstance(output, dict):
             output = {'type': 'dir', 'dir': output}
 
         if output['type'] == 'dict':
@@ -351,7 +355,7 @@ class Freezer:
 
         self.hooks = {}
         for name, funcs in self.config.get('hooks', {}).items():
-            for func in funcs:
+            for func in cast(Iterable[str | Callable], funcs):
                 if isinstance(func, str):
                     func = import_variable_from_module(func)
                 self.add_hook(name, func)
@@ -364,7 +368,7 @@ class Freezer:
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
 
-    def check_version(self, config_version: Union[str, float, None]) -> None:
+    def check_version(self, config_version: Union[str, int, float, None]) -> None:
         if config_version is None:
             return
         if not isinstance(config_version, float):
