@@ -41,65 +41,30 @@ def _get_css_links(
         # document that included this stylesheet.
         # Freezeyt cannot currently do this easily.
     )
-    return list(get_urls_from_tinycss2_nodes(parsed))
+    return list(get_urls_from_tinycss2_value(parsed))
 
-def get_urls_from_tinycss2_nodes(
-    nodes: list[tinycss2.ast.Node] | None
-) -> Iterable[str]:
-    if nodes is None:
-        return
-    for node in nodes:
-        match node:
-            case tinycss2.ast.QualifiedRule():
-                yield from get_urls_from_tinycss2_nodes(node.prelude)
-                yield from get_urls_from_tinycss2_nodes(node.content)
-            case tinycss2.ast.AtRule():
-                yield from get_urls_from_tinycss2_nodes(node.prelude)
-                yield from get_urls_from_tinycss2_nodes(node.content)
-            case tinycss2.ast.Declaration():
-                yield from get_urls_from_tinycss2_nodes(node.value)
-            case tinycss2.ast.ParseError():
-                pass
-            case tinycss2.ast.Comment():
-                pass
-            case tinycss2.ast.WhitespaceToken():
-                pass
-            case tinycss2.ast.LiteralToken():
-                pass
-            case tinycss2.ast.IdentToken():
-                pass
-            case tinycss2.ast.AtKeywordToken():
-                pass
-            case tinycss2.ast.HashToken():
-                pass
-            case tinycss2.ast.StringToken():
-                pass
-            case tinycss2.ast.URLToken():
-                # TODO: unescape
-                yield node.value
-            case tinycss2.ast.UnicodeRangeToken():
-                pass
-            case tinycss2.ast.NumberToken():
-                pass
-            case tinycss2.ast.PercentageToken():
-                pass
-            case tinycss2.ast.DimensionToken():
-                pass
-            case tinycss2.ast.ParenthesesBlock():
-                yield from get_urls_from_tinycss2_nodes(node.content)
-            case tinycss2.ast.SquareBracketsBlock():
-                yield from get_urls_from_tinycss2_nodes(node.content)
-            case tinycss2.ast.CurlyBracketsBlock():
-                yield from get_urls_from_tinycss2_nodes(node.content)
-            case tinycss2.ast.FunctionBlock():
-                yield from get_urls_from_tinycss2_nodes(node.arguments)
-                if node.name == 'url':
-                    match node.arguments:
-                        case [tinycss2.ast.StringToken() as string]:
-                            # TODO: unescape
-                            yield string.value
-            case _:
-                raise TypeError(node)
+
+def get_urls_from_tinycss2_value(value: Any) -> Iterable[str]:
+    match value:
+        case str() | int() | float() | None:
+            pass
+        case list():
+            for item in value:
+                yield from get_urls_from_tinycss2_value(item)
+        case tinycss2.ast.URLToken():
+            yield value.value
+        case tinycss2.ast.FunctionBlock():
+            yield from get_urls_from_tinycss2_value(value.arguments)
+            if value.name == 'url':
+                match value.arguments:
+                    case [tinycss2.ast.StringToken() as string]:
+                        yield string.value
+        case tinycss2.ast.Node():
+            for attr_name in value.__slots__:
+                attr_value = getattr(value, attr_name)
+                yield from get_urls_from_tinycss2_value(attr_value)
+        case _:
+            raise TypeError(type(value))
 
 
 def _get_html_links(
