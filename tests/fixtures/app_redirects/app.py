@@ -111,7 +111,7 @@ def reconstruct_url(environ, include_port=True):
         if environ['SERVER_PORT'] != default_port:
             raise ValueError(
                 'For no_port, the default port (80 or 443) must be used')
-    url += quote(environ.get('SCRIPT_NAME', ''))
+    url += quote(environ.get('SCRIPT_NAME', '') or '/')
     return url
 
 

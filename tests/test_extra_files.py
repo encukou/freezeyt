@@ -196,6 +196,24 @@ def test_invalid_url_part(url_path):
             freeze(module.app, config)
 
 
+def test_relative_path(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    tmp_path.joinpath('somefile.txt').write_bytes(b'hello world')
+    config = {
+        'output': {'type': 'dict'},
+        'extra_files': {
+            'somefile': {
+                'copy_from': 'somefile.txt',
+            }
+        }
+    }
+    with context_for_test('app_simple') as module:
+        result = freeze(module.app, config)
+
+    result.pop('index.html')
+    assert result == {'somefile': b'hello world'}
+
+
 def test_content():
     config = {
         'extra_files': {
@@ -215,5 +233,5 @@ def test_content():
         ('bytes.dat', 'content', b'def'),
         ('base64.dat', 'content', b'ghi'),
         ('copied.png', 'path', FIXTURES_PATH / 'app_with_extra_files/smile2.png'),
-        ('directory', 'path', Path('some/dir')),
+        ('directory', 'path', Path.cwd() / 'some/dir'),
     ])

@@ -6,6 +6,7 @@ from werkzeug.urls import uri_to_iri
 
 from freezeyt.util import RelativeURLError, UnsupportedSchemeError
 from freezeyt.util import BadPrefixError, ExternalURLError
+from freezeyt.encoding import decode_input_path
 
 
 def split_iri(url):
@@ -112,6 +113,18 @@ class PrefixURL(BaseURL):
 
         self._split_url = split_url
         self.prefix = self
+
+    @classmethod
+    def from_config(cls, config):
+        prefix = config.get('prefix', 'http://localhost:8000/')
+
+        # Decode path in the prefix URL.
+        # Save the parsed version of prefix as self.prefix
+        prefix_parsed = cls(prefix)
+        decoded_path = decode_input_path(prefix_parsed.path)
+        if not decoded_path.endswith('/'):
+            raise ValueError('prefix must end with /')
+        return prefix_parsed._replace_path(path=decoded_path)
 
     def _replace_path(self, path):
         return PrefixURL(self._split_url._replace(path=path))

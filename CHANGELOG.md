@@ -6,7 +6,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## unreleased
+## [2.0.0] - unreleased
+
+## Backwards incompatible changes
+
+* The ``freezeyt.Middleware`` and ``freezeyt.WSGIMiddleware`` classes
+  are removed.
+  Use ``freezeyt.ASGIMiddleware`` instead.
+
+## Features
+
+* Support ASGI applications in addition to WSGI ones.
+  ASGI apps must be use `app_interface='asgi'` in the freezeyt configuration.
+* Add the ``freezeyt.ASGIMiddleware`` class. This can wrap either an ASGI or
+  WSGI application (selected by the `app_interface` config key).
+
+
+## [1.3.0] - 2025-10-21
+
+### Features
+
+* Configuration may be specified in TOML format, using the `--toml-config` (`-t`)
+  CLI option.
+  The YAML format is still supported, but a new option name `--yaml-config` (`-y`)
+  is preferred to the backwards-compatible name (`--config`, `-c`).
+* For redirects, the message of `UnexpectedStatus` errors now shows the
+  redirect target.
+
+### Fixes
+
+* For the `Freezeyt-URL-Finder` header, Using single word values (like `none`)
+  now works as documented.
+* The warning about multiple URLs being saved as the same file now deduplicates
+  homepage URLs.
+* The `--fail-fast` mode now fails faster.
 
 ### Python version support
 

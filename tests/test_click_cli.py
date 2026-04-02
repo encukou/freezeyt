@@ -373,27 +373,27 @@ def test_multierror_output_redirect(tmp_path):
     assert result.output.strip().endswith("linked from: index.html")
     for message in (
         """
-        UnexpectedStatus: 302 FOUND (-> /to-self/)
+        UnexpectedStatus: 302 Found (-> /to-self/)
           in to-self/index.html
             linked from: index.html
         """,
         """
-        UnexpectedStatus: 302 FOUND (-> nonexistent.wtf)
+        UnexpectedStatus: 302 Found (-> nonexistent.wtf)
           in to-nonexistent/index.html
             linked from: index.html
         """,
         """
-        UnexpectedStatus: 302 FOUND (-> https://nowhere.invalid)
+        UnexpectedStatus: 302 Found (-> https://nowhere.invalid)
           in to-external/index.html
             linked from: index.html
         """,
         """
-        UnexpectedStatus: 302 FOUND (-> /circular2/)
+        UnexpectedStatus: 302 Found (-> /circular2/)
           in circular/index.html
             linked from: index.html
         """,
         """
-        UnexpectedStatus: 301 MOVED PERMANENTLY
+        UnexpectedStatus: 301 Moved Permanently
           in without-location/index.html
             linked from: index.html
         """,
