@@ -82,7 +82,11 @@ warn_redundant_casts = true
 exclude = "tests/fixtures/"
 
 [[tool.mypy.overrides]]
-module = "cssutils"
+module = "tinycss2"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tinycss2.ast"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

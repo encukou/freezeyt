@@ -45,26 +45,27 @@ def _get_css_links(
 
 
 def get_urls_from_tinycss2_value(value: Any) -> Iterable[str]:
-    match value:
-        case str() | int() | float() | None:
-            pass
-        case list():
-            for item in value:
-                yield from get_urls_from_tinycss2_value(item)
-        case tinycss2.ast.URLToken():
+    if value is None:
+        pass
+    elif isinstance(value, (str, int, float)):
+        pass
+    elif isinstance(value, list):
+        for item in value:
+            yield from get_urls_from_tinycss2_value(item)
+    elif isinstance(value, tinycss2.ast.Node):
+        for attr_name in value.__slots__:
+            attr_value = getattr(value, attr_name)
+            yield from get_urls_from_tinycss2_value(attr_value)
+        if isinstance(value, tinycss2.ast.URLToken):
             yield value.value
-        case tinycss2.ast.FunctionBlock():
+        if isinstance(value, tinycss2.ast.FunctionBlock):
             yield from get_urls_from_tinycss2_value(value.arguments)
             if value.name == 'url':
-                match value.arguments:
-                    case [tinycss2.ast.StringToken() as string]:
-                        yield string.value
-        case tinycss2.ast.Node():
-            for attr_name in value.__slots__:
-                attr_value = getattr(value, attr_name)
-                yield from get_urls_from_tinycss2_value(attr_value)
-        case _:
-            raise TypeError(type(value))
+                [arg] = value.arguments
+                if isinstance(arg, tinycss2.ast.StringToken):
+                    yield arg.value
+    else:
+        raise TypeError(type(value))
 
 
 def _get_html_links(
