@@ -1,12 +1,11 @@
-import os
 import sys
-from typing import Mapping, Any, Union, TYPE_CHECKING, Tuple, Callable
+from typing import Any, Union, TYPE_CHECKING, Tuple, Callable
 from typing import List, Literal, TypedDict, Optional, BinaryIO, Dict, Iterable
 from typing import Coroutine
 from types import TracebackType
 
 from . import asgiref_typing
-from freezeyt.compat import WSGIApplication
+from freezeyt.compat import WSGIApplication, PathLike_str
 
 if sys.version_info >= (3, 11):
     from typing import NotRequired
@@ -35,7 +34,7 @@ WSGIHeaderList = List[Tuple[str, str]]
 
 WSGIStartResponseResult = Callable[[bytes], object]
 
-AnyApp = asgi_types.ASGI3Application | WSGIApplication
+AnyApp = Union[asgi_types.ASGI3Application, WSGIApplication]
 
 UrlFinder = Callable[
     [BinaryIO, str, Optional[WSGIHeaderList]],
@@ -49,34 +48,34 @@ class OutputConfig_dict(TypedDict):
 
 class OutputConfig_dir(TypedDict):
     type: Literal['dir']
-    dir: str | os.PathLike[str]
+    dir: Union[str, PathLike_str]
 
 class HooksConfig(TypedDict):
-    start: NotRequired[List[str | Callable[['hooks.FreezeInfo'], object]]]
-    page_frozen: NotRequired[List[str | Callable[['hooks.TaskInfo'], object]]]
-    page_failed: NotRequired[List[str | Callable[['hooks.TaskInfo'], object]]]
-    success: NotRequired[List[str | Callable[['hooks.FreezeInfo'], object]]]
+    start: NotRequired[Iterable[Union[str, Callable[['hooks.FreezeInfo'], object]]]]
+    page_frozen: NotRequired[Iterable[Union[str, Callable[['hooks.TaskInfo'], object]]]]
+    page_failed: NotRequired[Iterable[Union[str, Callable[['hooks.TaskInfo'], object]]]]
+    success: NotRequired[Iterable[Union[str, Callable[['hooks.FreezeInfo'], object]]]]
 
 class ExtraPagesConfig_generator(TypedDict):
-    generator: str | Callable[[AnyApp], Iterable[str]]
+    generator: Union[str, Callable[[AnyApp], Iterable[str]]]
 
-ExtraPagesConfig = List[str | ExtraPagesConfig_generator]
+ExtraPagesConfig = Iterable[Union[str, ExtraPagesConfig_generator]]
 
 class Config(TypedDict):
-    version: NotRequired[int | str]
+    version: NotRequired[Union[int, str]]
     default_mimetype: NotRequired[str]
-    mime_db_file: NotRequired[str | os.PathLike[str]]
-    get_mimetype: NotRequired[str | GetMimetypeFunction]
+    mime_db_file: NotRequired[Union[str, PathLike_str]]
+    get_mimetype: NotRequired[Union[str, GetMimetypeFunction]]
     static_mode: NotRequired[bool]
-    app: NotRequired[str | AnyApp]
+    app: NotRequired[Union[str, AnyApp]]
     fail_fast: NotRequired[bool]
-    plugins: NotRequired[List[str | Callable[['hooks.FreezeInfo'], object]]]
+    plugins: NotRequired[Iterable[Union[str, Callable[['hooks.FreezeInfo'], object]]]]
     use_default_url_finders: NotRequired[bool]
-    url_finders: NotRequired[Dict[str, str | UrlFinder]]
-    status_handlers: NotRequired[Dict[str, str | ActionFunction]]
-    output: str | os.PathLike[str] | OutputConfig_dict | OutputConfig_dir
+    url_finders: NotRequired[Dict[str, Union[str, UrlFinder]]]
+    status_handlers: NotRequired[Dict[str, Union[str, ActionFunction]]]
+    output: Union[str, PathLike_str, OutputConfig_dict, OutputConfig_dir]
     hooks: NotRequired[HooksConfig]
     cleanup: NotRequired[bool]
     prefix: NotRequired[str]
-    extra_pages: NotRequired[List[str]]
+    extra_pages: NotRequired[Iterable[str]]
     gh_pages: NotRequired[bool]

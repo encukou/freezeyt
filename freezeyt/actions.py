@@ -1,4 +1,4 @@
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from freezeyt.hooks import TaskInfo
 from freezeyt.util import TaskStatus, ExternalURLError

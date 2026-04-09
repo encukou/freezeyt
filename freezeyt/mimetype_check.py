@@ -1,6 +1,6 @@
 from mimetypes import guess_type
 import json
-from typing import Optional, List, Mapping, Dict, Callable
+from typing import Optional, List, Mapping, Dict
 import functools
 from pathlib import PurePosixPath
 

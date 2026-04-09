@@ -1,6 +1,7 @@
 """Utilities for compatibility with older versions of Python
 """
 
+import os
 import sys
 import asyncio
 import shutil
@@ -75,3 +76,8 @@ else:
                 self.event.set()
             else:
                 await self.event.wait()
+
+if sys.version_info >= (3, 9):
+    PathLike_str = os.PathLike[str]
+else:
+    PathLike_str = os.PathLike

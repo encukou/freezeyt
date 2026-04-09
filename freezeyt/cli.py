@@ -2,7 +2,7 @@
 
 import sys
 import shutil
-from typing import Optional, TextIO, BinaryIO, List
+from typing import Optional, TextIO, BinaryIO, List, cast
 try:
     import tomllib  # type: ignore[import-not-found]
 except ModuleNotFoundError:
@@ -124,7 +124,7 @@ def main(
         config['prefix'] = prefix
 
     if extra_pages:
-        config.setdefault('extra_pages', []).extend(extra_pages)
+        cast(list, config.setdefault('extra_pages', [])).extend(extra_pages)
 
     if progress is None:
         if sys.stdout.isatty():
@@ -132,14 +132,13 @@ def main(
         else:
             progress = 'log'
 
+    plugins = cast(list, config.setdefault('plugins', []))
     if progress == 'bar':
-        config.setdefault(
-            'plugins', []).append('freezeyt.plugins:ProgressBarPlugin')
+        plugins.append('freezeyt.plugins:ProgressBarPlugin')
     if progress in ('log', 'bar'):
         # The 'log' plugin is activated both with --progress=log and
         # --progress=bar.
-        config.setdefault(
-            'plugins', []).append('freezeyt.plugins:LogPlugin')
+        plugins.append('freezeyt.plugins:LogPlugin')
 
     if cleanup is not None:
         config['cleanup'] = cleanup
