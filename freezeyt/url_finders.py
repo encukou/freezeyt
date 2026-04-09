@@ -59,9 +59,8 @@ def get_urls_from_tinycss2_value(value: Any) -> Iterable[str]:
         if isinstance(value, tinycss2.ast.URLToken):
             yield value.value
         if isinstance(value, tinycss2.ast.FunctionBlock):
-            yield from get_urls_from_tinycss2_value(value.arguments)
-            if value.name == 'url':
-                [arg] = value.arguments
+            if value.name == 'url' and value.arguments:
+                arg = value.arguments[0]
                 if isinstance(arg, tinycss2.ast.StringToken):
                     yield arg.value
     else:

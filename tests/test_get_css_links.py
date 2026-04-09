@@ -104,6 +104,26 @@ TEST_DATA = {
             "a",
         ],
     ),
+    "two_arg_url": (
+        # This isn't valid CSS. The exact result doesn't really matter, but we
+        # shouldn't crash.
+        b"""
+            my-element::before {
+                content: url("first", "second");
+            }
+        """,
+        ['first'],
+    ),
+    "no_arg_url": (
+        # This is an invalid resource, but treating it as empty relative URL
+        # is OK in freezeyt.
+        b"""
+            my-element::before {
+                content: url();
+            }
+        """,
+        [''],
+    ),
 }
 
 @pytest.mark.parametrize("test_name", TEST_DATA)
