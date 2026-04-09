@@ -124,6 +124,17 @@ TEST_DATA = {
         """,
         [''],
     ),
+    "src_function": (
+        # freezeyt supports src(), but only with literal string URLs.
+        b"""
+            my-element::before {
+                content: src("http://image.example/picture");
+                --image: "http://image.example/dynamic_picture";
+                content: src(var(--image));
+            }
+        """,
+        ['http://image.example/picture'],
+    ),
 }
 
 @pytest.mark.parametrize("test_name", TEST_DATA)
