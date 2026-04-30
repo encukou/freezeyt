@@ -2,7 +2,7 @@
 
 import sys
 import shutil
-from typing import Optional, TextIO, BinaryIO, List, cast
+from typing import Optional, TextIO, BinaryIO, List
 try:
     import tomllib  # type: ignore[import-not-found]
 except ModuleNotFoundError:
@@ -80,8 +80,6 @@ def main(
         python -m freezeyt demo_app build -c config.yaml
     """
 
-    config: Config
-
     config_options = [toml_config_file, yaml_config_file, config_var]
     if len([c for c in config_options if c is not None]) > 1:
         raise click.UsageError(
@@ -89,22 +87,23 @@ def main(
             + "--yaml-config (-y, -c), -import-config (-C)"
         )
     elif toml_config_file is not None:
-        config = tomllib.load(toml_config_file)  # type: ignore[assignment]
-        assert isinstance(config, dict)
+        config_dict = tomllib.load(toml_config_file)
+        assert isinstance(config_dict, dict)
     elif yaml_config_file is not None:
-        config = yaml.safe_load(yaml_config_file)  # type: ignore[assignment]
-        if not isinstance(config, dict):
+        config_dict = yaml.safe_load(yaml_config_file)
+        if not isinstance(config_dict, dict):
             raise SyntaxError(
                     f'File {yaml_config_file.name} is not a YAML dictionary.'
                 )
     elif config_var is not None:
-        config = import_variable_from_module(
-            config_var)  # type: ignore[assignment]
+        config_dict = dict(import_variable_from_module(config_var))
 
     else:
-        config = {}  # type: ignore[typeddict-item]
+        config_dict = {}
         # typing: 'output' is missing now, but we may set it below and we raise
         # UsageError if it's still missing
+
+    config: Config = Config(config_dict)    # type: ignore[misc]
 
     if app is not None:
         config['app'] = app
@@ -124,7 +123,7 @@ def main(
         config['prefix'] = prefix
 
     if extra_pages:
-        cast(list, config.setdefault('extra_pages', [])).extend(extra_pages)
+        config['extra_pages'] = [*config.get('extra_pages', []), *extra_pages]
 
     if progress is None:
         if sys.stdout.isatty():
@@ -132,7 +131,7 @@ def main(
         else:
             progress = 'log'
 
-    plugins = cast(list, config.setdefault('plugins', []))
+    plugins = list(config.get('plugins', []))
     if progress == 'bar':
         plugins.append('freezeyt.plugins:ProgressBarPlugin')
     if progress in ('log', 'bar'):
