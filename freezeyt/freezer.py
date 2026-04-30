@@ -76,6 +76,8 @@ def parse_handlers(
     """
     result = {}
 
+    handler: Func
+
     for key, handler_or_name in handlers.items():
         if isinstance(handler_or_name, str):
             handler = import_variable_from_module(
@@ -219,6 +221,7 @@ ExtraPagesConfig = Union[
 ]
 
 class Freezer:
+    config: Config
     saver: Saver
     task_collections: Dict[TaskStatus, TaskCollection]
     done_tasks: TaskCollection
@@ -745,6 +748,7 @@ class Freezer:
 
         assert task.response is not None
         finder_name = task.response.headers.get('Freezeyt-URL-Finder')
+        url_finder: Union[UrlFinder, None]
         if finder_name is not None:
             url_finder = import_variable_from_module(
                 finder_name,
