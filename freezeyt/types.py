@@ -1,4 +1,3 @@
-import sys
 from typing import Any, Union, TYPE_CHECKING, Tuple, Callable
 from typing import List, Literal, TypedDict, Optional, BinaryIO, Dict, Iterable
 from typing import Coroutine
