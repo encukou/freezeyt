@@ -367,7 +367,7 @@ class Freezer:
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
 
-    def check_version(self, config_version: Union[str, int, float, None]) -> None:
+    def check_version(self, config_version: Union[str, int, None]) -> None:
         if config_version is None:
             return
         if not isinstance(config_version, float):
