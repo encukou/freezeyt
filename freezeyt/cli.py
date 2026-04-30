@@ -15,6 +15,7 @@ import yaml
 from freezeyt import freeze, MultiError
 from freezeyt.util import import_variable_from_module
 from freezeyt.compat import Literal
+from freezeyt.types import Config
 
 # Use -h as an alias for --help
 # (see https://click.palletsprojects.com/en/stable/documentation/#help-parameter-customization)
@@ -62,7 +63,7 @@ def main(
     config_var: Optional[str],
     progress: Optional[Literal['none', 'bar', 'log']],
     cleanup: Optional[bool],
-    gh_pages: Optional[str],
+    gh_pages: Optional[bool],
     fail_fast: Optional[bool],
 ) -> None:
     """
@@ -86,19 +87,23 @@ def main(
             + "--yaml-config (-y, -c), -import-config (-C)"
         )
     elif toml_config_file is not None:
-        config = tomllib.load(toml_config_file)
-        assert isinstance(config, dict)
+        config_dict = tomllib.load(toml_config_file)
+        assert isinstance(config_dict, dict)
     elif yaml_config_file is not None:
-        config = yaml.safe_load(yaml_config_file)
-        if not isinstance(config, dict):
+        config_dict = yaml.safe_load(yaml_config_file)
+        if not isinstance(config_dict, dict):
             raise SyntaxError(
                     f'File {yaml_config_file.name} is not a YAML dictionary.'
                 )
     elif config_var is not None:
-        config = import_variable_from_module(config_var)
+        config_dict = dict(import_variable_from_module(config_var))
 
     else:
-        config = {}
+        config_dict = {}
+        # typing: 'output' is missing now, but we may set it below and we raise
+        # UsageError if it's still missing
+
+    config: Config = Config(config_dict)    # type: ignore[misc]
 
     if app is not None:
         config['app'] = app
@@ -118,7 +123,7 @@ def main(
         config['prefix'] = prefix
 
     if extra_pages:
-        config.setdefault('extra_pages', []).extend(extra_pages)
+        config['extra_pages'] = [*config.get('extra_pages', []), *extra_pages]
 
     if progress is None:
         if sys.stdout.isatty():
@@ -126,14 +131,13 @@ def main(
         else:
             progress = 'log'
 
+    plugins = list(config.get('plugins', []))
     if progress == 'bar':
-        config.setdefault(
-            'plugins', []).append('freezeyt.plugins:ProgressBarPlugin')
+        plugins.append('freezeyt.plugins:ProgressBarPlugin')
     if progress in ('log', 'bar'):
         # The 'log' plugin is activated both with --progress=log and
         # --progress=bar.
-        config.setdefault(
-            'plugins', []).append('freezeyt.plugins:LogPlugin')
+        plugins.append('freezeyt.plugins:LogPlugin')
 
     if cleanup is not None:
         config['cleanup'] = cleanup
