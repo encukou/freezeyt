@@ -5,12 +5,7 @@ from typing import Coroutine
 from types import TracebackType
 
 from . import asgiref_typing
-from freezeyt.compat import WSGIApplication, PathLike_str
-
-if sys.version_info >= (3, 11):
-    from typing import NotRequired
-else:
-    from typing_extensions import NotRequired
+from freezeyt.compat import WSGIApplication, PathLike_str, NotRequired
 
 asgi_types = asgiref_typing
 

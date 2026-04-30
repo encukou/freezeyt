@@ -81,3 +81,8 @@ if sys.version_info >= (3, 9):
     PathLike_str = os.PathLike[str]
 else:
     PathLike_str = os.PathLike
+
+if sys.version_info >= (3, 11):
+    from typing import NotRequired
+else:
+    from typing_extensions import NotRequired
