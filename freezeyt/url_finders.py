@@ -1,6 +1,5 @@
 import xml.etree.ElementTree
-from typing import Iterable, BinaryIO, Optional, Callable
-from typing import Coroutine, Union, Any, TYPE_CHECKING
+from typing import Iterable, BinaryIO, Optional, Any, TYPE_CHECKING
 import asyncio
 
 import html5lib
@@ -12,14 +11,10 @@ from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
 
 from .util import process_pool_executor
-from .types import WSGIHeaderList
+from .types import WSGIHeaderList, UrlFinder
 
 
 _Headers = Optional[WSGIHeaderList]
-UrlFinder = Callable[
-    [BinaryIO, str, _Headers],
-    Union[Iterable[str], Coroutine[Any, Any, Iterable[str]]],
-]
 
 
 def _get_css_links(

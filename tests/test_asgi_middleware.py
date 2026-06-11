@@ -17,6 +17,10 @@ from testutil import APP_NAMES, context_for_test, FIXTURES_PATH
 
 
 class ASGITestClient:
+    """Wraps starlette.testclient to provide werkzeug.test-like API"""
+    # These tests were orginally written with Werkzeug (and WSGI);
+    # rather than rewriting them all we provide a similar API for ASGI.
+
     def __init__(self, app):
         self._client = StarletteTestClient(app, base_url='http://localhost:80')
 

@@ -1,9 +1,8 @@
-from typing import Callable, Dict, TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING
 
 from freezeyt.hooks import TaskInfo
 from freezeyt.util import TaskStatus, ExternalURLError
-
-ActionFunction = Callable[[TaskInfo], str]
+from freezeyt.types import ActionFunction
 
 
 _ACTIONS: Dict[str, ActionFunction] = {}

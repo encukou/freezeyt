@@ -1,6 +1,6 @@
 import importlib
 import concurrent.futures
-from typing import Sequence, TYPE_CHECKING, List, Optional, Any
+from typing import Sequence, TYPE_CHECKING, List, Optional, TypeVar
 import enum
 
 from werkzeug.http import HTTP_STATUS_CODES
@@ -111,12 +111,14 @@ class TaskStatus(enum.Enum):
     FAILED = "Raised an exception"
 
 
+T = TypeVar('T')
+
 def import_variable_from_module(
     name: str,
     *,
     default_module_name: Optional[str] = None,
     default_variable_name: Optional[str] = None,
-) -> Any:
+) -> T:  # type: ignore[type-var]
     """Import a variable from a named module
 
     Given a name like "package.module:namespace.variable":
@@ -148,7 +150,7 @@ def import_variable_from_module(
 
     module = importlib.import_module(module_name)
 
-    result = module
+    result: T = module  # type: ignore[assignment]
     for attribute_name in variable_name.split('.'):
         result = getattr(result, attribute_name)
 

@@ -1,14 +1,26 @@
 """Utilities for compatibility with older versions of Python
 """
 
+import os
 import sys
 import asyncio
 import shutil
 import warnings
 from typing import TypeVar, Literal
 
-T = TypeVar('T')
+__all__ = [
+    'StartResponse',
+    'WSGIEnvironment',
+    'WSGIApplication',
+    'rmtree',
+    'HAVE_EXCEPTION_GROUP',
+    'warnings_warn',
+    'asyncio_Barrier',
+    'PathLike_str',
+    'NotRequired',
+]
 
+T = TypeVar('T')
 
 if sys.version_info >= (3, 11):
     import wsgiref.types
@@ -75,3 +87,13 @@ else:
                 self.event.set()
             else:
                 await self.event.wait()
+
+if sys.version_info >= (3, 9):
+    PathLike_str = os.PathLike[str]
+else:
+    PathLike_str = os.PathLike
+
+if sys.version_info >= (3, 11):
+    from typing import NotRequired
+else:
+    from typing_extensions import NotRequired

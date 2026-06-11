@@ -2,7 +2,7 @@ from pathlib import Path, PurePosixPath
 import functools
 import dataclasses
 from typing import Callable, Optional, Mapping, Set, Generator, Dict, Union
-from typing import Tuple, List, TypeVar, Any, cast
+from typing import Tuple, List, TypeVar, Any, Iterable, cast
 import asyncio
 import inspect
 import re
@@ -26,9 +26,9 @@ from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.asgi_middleware import ASGIMiddleware
 from freezeyt.actions import ActionFunction
-from freezeyt.url_finders import UrlFinder
+from freezeyt.types import UrlFinder
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
-from freezeyt.types import Config, SaverResult, asgi_types
+from freezeyt.types import Config, SaverResult, asgi_types, AnyApp
 
 
 MAX_RUNNING_TASKS = 100
@@ -75,6 +75,8 @@ def parse_handlers(
     """Map handler/action as callable
     """
     result = {}
+
+    handler: Func
 
     for key, handler_or_name in handlers.items():
         if isinstance(handler_or_name, str):
@@ -219,6 +221,7 @@ ExtraPagesConfig = Union[
 ]
 
 class Freezer:
+    config: Config
     saver: Saver
     task_collections: Dict[TaskStatus, TaskCollection]
     done_tasks: TaskCollection
@@ -234,8 +237,8 @@ class Freezer:
     url_finders: Dict[str, UrlFinder]
     status_handlers: Dict[str, ActionFunction]
 
-    def __init__(self, app: Optional[WSGIApplication], config: Config):
-        self.config = dict(config)
+    def __init__(self, app: Optional[AnyApp], config: Config):
+        self.config = cast(Config, dict(config))
         del config  # we always want to use `self.config` from now on
 
         self.check_version(self.config.get('version'))
@@ -272,12 +275,12 @@ class Freezer:
 
         self.fail_fast = self.config.get('fail_fast', False)
 
+        plugins = list(self.config.setdefault('plugins', []))
+
         if self.config.get("gh_pages", False):
-            plugins = self.config.setdefault('plugins', [])
             if 'freezeyt.plugins:GHPagesPlugin' not in plugins:
                 plugins.append('freezeyt.plugins:GHPagesPlugin')
         if self.config.get("gh_pages", False) is False:
-            plugins = self.config.setdefault('plugins', [])
             if 'freezeyt.plugins:GHPagesPlugin' in plugins:
                 plugins.remove('freezeyt.plugins:GHPagesPlugin')
 
@@ -316,7 +319,7 @@ class Freezer:
         )
 
         output = self.config['output']
-        if isinstance(output, str):
+        if not isinstance(output, dict):
             output = {'type': 'dir', 'dir': output}
 
         if output['type'] == 'dict':
@@ -351,12 +354,12 @@ class Freezer:
 
         self.hooks = {}
         for name, funcs in self.config.get('hooks', {}).items():
-            for func in funcs:
+            for func in cast(Iterable[Union[str, Callable]], funcs):
                 if isinstance(func, str):
                     func = import_variable_from_module(func)
                 self.add_hook(name, func)
 
-        for plugin in self.config.get('plugins', {}):
+        for plugin in plugins:
             if isinstance(plugin, str):
                 plugin = import_variable_from_module(plugin)
             plugin(self.freeze_info)
@@ -364,7 +367,7 @@ class Freezer:
         self.semaphore = asyncio.Semaphore(MAX_RUNNING_TASKS)
 
 
-    def check_version(self, config_version: Union[str, float, None]) -> None:
+    def check_version(self, config_version: Union[str, int, None]) -> None:
         if config_version is None:
             return
         if not isinstance(config_version, float):
@@ -745,6 +748,7 @@ class Freezer:
 
         assert task.response is not None
         finder_name = task.response.headers.get('Freezeyt-URL-Finder')
+        url_finder: Union[UrlFinder, None]
         if finder_name is not None:
             url_finder = import_variable_from_module(
                 finder_name,
