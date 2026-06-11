@@ -1,4 +1,4 @@
-from typing import Callable, TYPE_CHECKING
+from typing import Callable, Dict, TYPE_CHECKING
 
 from freezeyt.hooks import TaskInfo
 from freezeyt.util import TaskStatus, ExternalURLError
@@ -6,9 +6,9 @@ from freezeyt.util import TaskStatus, ExternalURLError
 ActionFunction = Callable[[TaskInfo], str]
 
 
-_ACTIONS = {}
+_ACTIONS: Dict[str, ActionFunction] = {}
 
-def register(func):
+def register(func: ActionFunction) -> ActionFunction:
     _ACTIONS[func.__name__] = func
     return func
 

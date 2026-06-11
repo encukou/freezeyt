@@ -26,6 +26,7 @@ dependencies = [
     "Werkzeug",
     "enlighten",
     "tinycss2",
+    "tinycss2-core-attributes",
     "tomli; python_version < '3.11'",
     "typing_extensions; python_version < '3.11'",
 ]
@@ -87,6 +88,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "tinycss2.ast"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tinycss2_core_attributes"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

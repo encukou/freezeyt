@@ -6,6 +6,7 @@ import asyncio
 import html5lib
 import tinycss2
 import tinycss2.ast
+import tinycss2_core_attributes
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -45,15 +46,11 @@ def _get_css_links(
 
 
 def get_urls_from_tinycss2_value(value: Any) -> Iterable[str]:
-    if value is None:
-        pass
-    elif isinstance(value, (str, int, float)):
-        pass
-    elif isinstance(value, list):
+    if isinstance(value, list):
         for item in value:
             yield from get_urls_from_tinycss2_value(item)
     elif isinstance(value, tinycss2.ast.Node):
-        for attr_name in value.__slots__:
+        for attr_name in tinycss2_core_attributes.get_core_attrs(value):
             attr_value = getattr(value, attr_name)
             yield from get_urls_from_tinycss2_value(attr_value)
         if isinstance(value, tinycss2.ast.URLToken):
@@ -64,7 +61,7 @@ def get_urls_from_tinycss2_value(value: Any) -> Iterable[str]:
                 if isinstance(arg, tinycss2.ast.StringToken):
                     yield arg.value
     else:
-        raise TypeError(type(value))
+        pass
 
 
 def _get_html_links(
