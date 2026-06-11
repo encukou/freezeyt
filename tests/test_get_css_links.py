@@ -86,6 +86,55 @@ TEST_DATA = {
             'https://www.example.com/style.css'
         ],
     ),
+    "special": (
+        b"""
+            my-element::before {
+                content: url("\\'");
+                content: url("\\61\\A9\\A\\00000A.");
+                content: url("&nbsp;");
+                content: url(-);
+                content: url(\\61);
+            }
+        """,
+        [
+            "'",
+            "a©\x0a\x0a.",
+            "&nbsp;",
+            "-",
+            "a",
+        ],
+    ),
+    "two_arg_url": (
+        # This isn't valid CSS. The exact result doesn't really matter, but we
+        # shouldn't crash.
+        b"""
+            my-element::before {
+                content: url("first", "second");
+            }
+        """,
+        ['first'],
+    ),
+    "no_arg_url": (
+        # This is an invalid resource, but treating it as empty relative URL
+        # is OK in freezeyt.
+        b"""
+            my-element::before {
+                content: url();
+            }
+        """,
+        [''],
+    ),
+    "src_function": (
+        # freezeyt supports src(), but only with literal string URLs.
+        b"""
+            my-element::before {
+                content: src("http://image.example/picture");
+                --image: "http://image.example/dynamic_picture";
+                content: src(var(--image));
+            }
+        """,
+        ['http://image.example/picture'],
+    ),
 }
 
 @pytest.mark.parametrize("test_name", TEST_DATA)
@@ -93,11 +142,11 @@ def test_links_css(test_name):
     input, expected = TEST_DATA[test_name]
     f = BytesIO(input)
     links = get_css_links(f, 'http://localhost:8000')
-    assert sorted(links) == expected
+    assert set(links) == set(expected)
 
 @pytest.mark.parametrize("test_name", TEST_DATA)
 def test_links_css_async(test_name):
     input, expected = TEST_DATA[test_name]
     f = BytesIO(input)
     links = asyncio.run(get_css_links_async(f, 'http://localhost:8000'))
-    assert sorted(links) == expected
+    assert set(links) == set(expected)

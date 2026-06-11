@@ -760,7 +760,8 @@ may be improved in the future.
 
 #### Default `get_css_links`
 
-The default URL finder for CSS uses the [`cssutils`](https://pypi.org/project/cssutils/) library to find all
+The default URL finder for CSS uses the
+[`tinycss2`](https://pypi.org/project/tinycss2/) library to find all
 links in a stylesheet.
 
 #### Disabling default URL finders

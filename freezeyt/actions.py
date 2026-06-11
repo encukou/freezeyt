@@ -1,13 +1,13 @@
-from typing import TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING
 
 from freezeyt.hooks import TaskInfo
 from freezeyt.util import TaskStatus, ExternalURLError
 from freezeyt.types import ActionFunction
 
 
-_ACTIONS = {}
+_ACTIONS: Dict[str, ActionFunction] = {}
 
-def register(func):
+def register(func: ActionFunction) -> ActionFunction:
     _ACTIONS[func.__name__] = func
     return func
 

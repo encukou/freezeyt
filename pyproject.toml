@@ -22,10 +22,11 @@ classifiers = [
 dependencies = [
     "html5lib",
     "click",
-    "cssutils",
     "pyyaml",
     "Werkzeug",
     "enlighten",
+    "tinycss2",
+    "tinycss2-core-attributes",
     "tomli; python_version < '3.11'",
     "typing_extensions; python_version < '3.11'",
 ]
@@ -81,7 +82,15 @@ warn_redundant_casts = true
 exclude = "tests/fixtures/"
 
 [[tool.mypy.overrides]]
-module = "cssutils"
+module = "tinycss2"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tinycss2.ast"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tinycss2_core_attributes"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

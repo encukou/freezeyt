@@ -1,9 +1,11 @@
 import xml.etree.ElementTree
-from typing import Iterable, BinaryIO, Optional, TYPE_CHECKING
+from typing import Iterable, BinaryIO, Optional, Any, TYPE_CHECKING
 import asyncio
 
 import html5lib
-import cssutils
+import tinycss2
+import tinycss2.ast
+import tinycss2_core_attributes
 
 from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header
@@ -19,8 +21,42 @@ def _get_css_links(
     content: bytes, base_url: str, headers: _Headers,
 )  -> Iterable[str]:
     """Get all links from a CSS file."""
-    parsed = cssutils.parseString(content)
-    return list(cssutils.getUrls(parsed))
+    if headers == None:
+        cont_charset = None
+    else:
+        content_type_header = Headers(headers).get('Content-Type')
+        cont_type, cont_options = parse_options_header(content_type_header)
+        cont_charset = cont_options.get('charset')
+
+    parsed, encoding = tinycss2.parse_stylesheet_bytes(
+        content,
+        protocol_encoding=cont_charset,
+        skip_comments=True,
+        skip_whitespace=True,
+        # Ideally, we'd set `environment_encoding` to the encoding of the
+        # document that included this stylesheet.
+        # Freezeyt cannot currently do this easily.
+    )
+    return list(get_urls_from_tinycss2_value(parsed))
+
+
+def get_urls_from_tinycss2_value(value: Any) -> Iterable[str]:
+    if isinstance(value, list):
+        for item in value:
+            yield from get_urls_from_tinycss2_value(item)
+    elif isinstance(value, tinycss2.ast.Node):
+        for attr_name in tinycss2_core_attributes.get_core_attrs(value):
+            attr_value = getattr(value, attr_name)
+            yield from get_urls_from_tinycss2_value(attr_value)
+        if isinstance(value, tinycss2.ast.URLToken):
+            yield value.value
+        if isinstance(value, tinycss2.ast.FunctionBlock):
+            if value.name in {'url', 'src'} and value.arguments:
+                arg = value.arguments[0]
+                if isinstance(arg, tinycss2.ast.StringToken):
+                    yield arg.value
+    else:
+        pass
 
 
 def _get_html_links(
