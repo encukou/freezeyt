@@ -2,7 +2,7 @@
 
 import sys
 import shutil
-from typing import Optional, TextIO, BinaryIO, List
+from typing import Optional, TextIO, BinaryIO, List, Literal
 try:
     import tomllib  # type: ignore[import-not-found]
 except ModuleNotFoundError:
@@ -14,7 +14,6 @@ import yaml
 
 from freezeyt import freeze, MultiError
 from freezeyt.util import import_variable_from_module
-from freezeyt.compat import Literal
 from freezeyt.types import Config
 
 # Use -h as an alias for --help

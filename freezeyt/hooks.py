@@ -64,7 +64,7 @@ class FreezeInfo:
     def done_task_count(self) -> int:
         # Import TaskStatus here to avoid a circular import
         # (since freezer imports hooks)
-        from freezeyt.freezer import TaskStatus
+        from freezeyt.util import TaskStatus
         return (
             len(self._freezer.task_collections[TaskStatus.FAILED])
             + len(self._freezer.task_collections[TaskStatus.DONE])
@@ -73,5 +73,5 @@ class FreezeInfo:
     @property
     def failed_task_count(self) -> int:
         # Import TaskStatus here, see done_task_count
-        from freezeyt.freezer import TaskStatus
+        from freezeyt.util import TaskStatus
         return len(self._freezer.task_collections[TaskStatus.FAILED])

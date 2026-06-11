@@ -25,8 +25,7 @@ from freezeyt.compat import warnings_warn, WSGIApplication
 from freezeyt import hooks
 from freezeyt.saver import Saver
 from freezeyt.asgi_middleware import ASGIMiddleware
-from freezeyt.actions import ActionFunction
-from freezeyt.types import UrlFinder
+from freezeyt.types import UrlFinder, ActionFunction
 from freezeyt.extra_files import get_extra_files, get_url_parts_from_directory
 from freezeyt.types import Config, SaverResult, asgi_types, AnyApp
 
