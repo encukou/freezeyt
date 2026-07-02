@@ -371,13 +371,30 @@ class Freezer:
         if config_version is None:
             return
         if not isinstance(config_version, float):
-            main_version = str(config_version).split(".")[0]
+            first_component_of_config_version = str(config_version).split(".")[0]
         else:
             raise VersionMismatch("The specified version has to be string or int i.e. 1, 1.1 or '1', '1.1'.")
 
-        current_version = freezeyt.__version__.split(".")[0]
-        if main_version != current_version:
-            raise VersionMismatch("The specified version does not match the freezeyt main version.")
+        try:
+            config_version = int(first_component_of_config_version)
+        except ValueError:
+            raise VersionMismatch(
+                "configuration version must be an integer; "
+                + f"got {first_component_of_config_version!r}"
+            )
+
+        current_version = int(freezeyt.__version__.split(".")[0])
+        if config_version > current_version:
+            raise VersionMismatch(
+                f"configuration version ({config_version}) "
+                + f"is too high for freezeyt {freezeyt.__version__}"
+            )
+        min_version = freezeyt._min_config_version
+        if config_version < min_version:
+            raise VersionMismatch(
+                f"configuration version ({config_version}) "
+                + f"is too low for freezeyt {freezeyt.__version__}"
+            )
 
     def add_hook(self, hook_name: str, func: Callable) -> None:
         self.hooks.setdefault(hook_name, []).append(func)
