@@ -159,6 +159,20 @@ def test_new_custom_ignore_handler():
     result = freeze(hello_app, config)
     assert result == {}
 
+
+async def async_ignore_handler(task):
+    from freezeyt.actions import ignore
+    return ignore(task)
+
+def test_async_custom_ignore_handler():
+    config = {
+        'output': {'type': 'dict'},
+        'status_handlers': {'200': async_ignore_handler}
+    }
+
+    result = freeze(hello_app, config)
+    assert result == {}
+
 @pytest.mark.parametrize(
     'status',
     ['ldaskfjhfasdlkdasjh', '', '50x', '50', 50, 'xxx', 'a8xx', '123a'],

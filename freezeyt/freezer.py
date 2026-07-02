@@ -515,7 +515,7 @@ class Freezer:
         # and at the end prepare the saver
         return await self.saver.prepare()
 
-    def raise_for_status_action(
+    async def raise_for_status_action(
         self,
         task: Task,
         url: AppURL,
@@ -586,6 +586,8 @@ class Freezer:
                 raise UnexpectedStatus(url, status, location)
 
         status_action = status_handler(hooks.TaskInfo(task))
+        if inspect.iscoroutine(status_action):
+            status_action = await status_action
 
         if status_action == 'save':
             return
@@ -593,6 +595,10 @@ class Freezer:
             raise IgnorePage()
         elif status_action == 'follow':
             raise IsARedirect()
+        elif not isinstance(status_action, str):
+            raise ValueError(
+                f'status handler {status_handler} returned unexpected value {status_action!r}'
+            )
         else:
             raise UnexpectedStatus(url, status, location)
 
@@ -738,7 +744,7 @@ class Freezer:
                     headers=headers,
                     status=str(status),
                 )
-                self.raise_for_status_action(task, url, status, headers)
+                await self.raise_for_status_action(task, url, status, headers)
                 if event.get('trailers'):
                     raise NotImplementedError('trailers not supported')
             elif event['type'] == "http.response.body":
