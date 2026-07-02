@@ -1,7 +1,7 @@
 import warnings
 
 from freezeyt.actions import warn, follow, ignore, save, error
-from freezeyt.actions import ActionFunction as StatusHandler
+from freezeyt.types import ActionFunction as StatusHandler
 
 __all__ = [
     'warn', 'follow', 'ignore', 'save', 'error',

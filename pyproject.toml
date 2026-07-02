@@ -79,6 +79,7 @@ version = {attr = "freezeyt.__version__"}
 check_untyped_defs = true
 disallow_incomplete_defs = true
 warn_redundant_casts = true
+implicit_reexport = false
 exclude = "tests/fixtures/"
 
 [[tool.mypy.overrides]]
