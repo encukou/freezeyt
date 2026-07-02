@@ -132,3 +132,41 @@ def test_multierror(tmp_path, monkeypatch):
         for exception in multierror.exceptions:
             with pytest.raises(UnexpectedStatus):
                 raise exception
+
+
+def test_django_asgi(tmp_path):
+    app_name = 'project_django'
+    app_path = FIXTURES_PATH / app_name
+    error_path = app_path / 'error.txt'
+
+    with context_for_test(app_name) as module:
+        app = module.app
+
+        freeze_config = module.asgi_config
+        expected_dict = module.expected_dict
+
+        freeze_config['output'] = {'type': 'dir', 'dir': tmp_path}
+
+        # test the output saved in dir 'test_expected_output'
+        freeze(None, freeze_config) # freeze content to tmp_path
+        expected = app_path / 'test_expected_output'
+
+        if not expected.exists():
+            make_output = os.environ.get('TEST_CREATE_EXPECTED_OUTPUT')
+            if make_output == '1':
+                shutil.copytree(tmp_path, expected)
+            else:
+                raise AssertionError(
+                    f'Expected output directory ({expected}) does not exist. '
+                    + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
+                )
+
+        assert_dirs_same(tmp_path, expected)
+
+        if expected_dict is not None:
+            # test the output saved in dictionary
+            freeze_config['output'] = {'type': 'dict'}
+
+            result = freeze(None, freeze_config) # freeze content to dict
+
+            assert result == expected_dict
