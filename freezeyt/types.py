@@ -55,6 +55,14 @@ class ExtraPagesConfig_generator(TypedDict):
 
 ExtraPagesConfig = Iterable[Union[str, ExtraPagesConfig_generator]]
 
+class ExtraFileConfig_base64(TypedDict):
+    base64: str
+
+class ExtraFileConfig_copy_from(TypedDict):
+    copy_from: PathLike_str
+
+ExtraFileConfig = Union[str, bytes, ExtraFileConfig_base64, ExtraFileConfig_copy_from]
+
 class Config(TypedDict):
     version: NotRequired[Union[int, str]]
     default_mimetype: NotRequired[str]
@@ -62,6 +70,7 @@ class Config(TypedDict):
     get_mimetype: NotRequired[Union[str, GetMimetypeFunction]]
     static_mode: NotRequired[bool]
     app: NotRequired[Union[str, AnyApp]]
+    app_interface: NotRequired[Literal['wsgi', 'asgi']]
     fail_fast: NotRequired[bool]
     plugins: NotRequired[Iterable[Union[str, Callable[['hooks.FreezeInfo'], object]]]]
     use_default_url_finders: NotRequired[bool]
@@ -72,4 +81,5 @@ class Config(TypedDict):
     cleanup: NotRequired[bool]
     prefix: NotRequired[str]
     extra_pages: NotRequired[Iterable[str]]
+    extra_files: NotRequired[Optional[Dict[str, ExtraFileConfig]]]
     gh_pages: NotRequired[bool]
