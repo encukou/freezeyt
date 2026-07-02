@@ -137,11 +137,8 @@ def test_multierror(tmp_path, monkeypatch):
 def test_django_asgi(tmp_path):
     app_name = 'project_django'
     app_path = FIXTURES_PATH / app_name
-    error_path = app_path / 'error.txt'
 
     with context_for_test(app_name) as module:
-        app = module.app
-
         freeze_config = module.asgi_config
         expected_dict = module.expected_dict
 
