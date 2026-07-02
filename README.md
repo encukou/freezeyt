@@ -689,6 +689,10 @@ Freezeyt's default actions, like `follow`, can be imported from `freezeyt.action
 (e.g. `freezeyt.actions.follow`).
 A custom action should call one of these default actions and return the return value from it.
 
+Action functions may be asynchronous:
+- The function can be defined with `async def` (i.e. return a
+  coroutine). If it is, freezeyt will use the result after `await`.
+
 
 ### URL finding
 
