@@ -3,12 +3,24 @@ import os
 from werkzeug.middleware.shared_data import SharedDataMiddleware
 
 from demo_project.wsgi import application as django_wsgi_app
+from demo_project.asgi import application as django_asgi_app
+
+STATIC_PATH = os.path.join(os.path.dirname(__file__), 'static')
 
 app = SharedDataMiddleware(django_wsgi_app, {
-    '/static': os.path.join(os.path.dirname(__file__), 'static')
+    '/static': STATIC_PATH,
 })
 
 freeze_config = {'extra_pages': ['extra/']}
+
+asgi_config = {
+    **freeze_config,
+    'app': django_asgi_app,
+    'app_interface': 'asgi',
+    'extra_files': {'static/demo_app/': {
+        'copy_from': os.path.join(STATIC_PATH, 'demo_app')
+    }},
+}
 
 expected_dict = {
     'index.html':
