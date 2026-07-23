@@ -5,6 +5,7 @@ from typing import Mapping, Iterator, Tuple, Union
 import sys
 
 from freezeyt.util import get_url_part
+from freezeyt.types import ExtraFileConfig
 
 
 if sys.version_info > (3, 8):
@@ -34,6 +35,7 @@ def get_extra_files(
     """
     extra_files_config = config.get('extra_files')
     if extra_files_config is not None:
+        content: ExtraFileConfig
         for text, content in extra_files_config.items():
             url_part = get_url_part(text)
             if isinstance(content, str):
@@ -42,6 +44,11 @@ def get_extra_files(
                 yield url_part, "content", content
             elif isinstance(content, collections.abc.Mapping):
                 if 'base64' in content:
+                    if 'copy_from' in content:
+                        raise ValueError(
+                            'a mapping in extra_files must not contain '
+                            + 'both "base64" and "copy_from"'
+                        )
                     content = base64.b64decode(content['base64'])
                     yield url_part, "content", content
                 elif 'copy_from' in content:
