@@ -514,14 +514,16 @@ See below on how to enable plugins.
 ### Configuration version
 
 To ensure that your configuration will work unchanged in newer versions of freezeyt,
-you should add the current version number, `1`, to your configuration like this:
+you should add the current version number, `2`, to your configuration like this:
 
 ```toml
-version = 1
+version = 2
 ```
 
 This is not mandatory. If the version is not given, the configuration may
 not work in future versions of freezeyt.
+
+Freezeyt 2 accepts configuration version 1 as well.
 
 The version parameter is not accepted on the command line.
 

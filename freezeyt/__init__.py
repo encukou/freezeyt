@@ -6,7 +6,7 @@ from freezeyt.asgi_middleware import ASGIMiddleware
 from freezeyt.types import Config
 
 
-__version__ = '1.3.0'
+__version__ = '2.0.0'
 _min_config_version = 1
 
 __all__ = [

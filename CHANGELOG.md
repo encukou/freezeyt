@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [2.0.0] - unreleased
+## [2.0.0] - 2026-07-23
 
 ## Backwards incompatible changes
 
@@ -20,6 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ASGI apps must be use `app_interface='asgi'` in the freezeyt configuration.
 * Add the ``freezeyt.ASGIMiddleware`` class. This can wrap either an ASGI or
   WSGI application (selected by the `app_interface` config key).
+* Custom action functions for ``status_handlers`` may now be asynchronous.
+
+### Changed
+
+* freezeyt now uses [tinycss2](https://pypi.org/project/tinycss2/) (with
+  a custom helper, [tinycss2-core-attributes](https://pypi.org/project/tinycss2-core-attributes/))
+  to parse CSS.
+  This should avoid warnings related to syntax that the `cssutils` library
+  could not parse.
+
+### Typing
+
+* The config dictionary is now typed.
 
 
 ## [1.3.0] - 2025-10-21
