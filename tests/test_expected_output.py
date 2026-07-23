@@ -149,14 +149,9 @@ def test_django_asgi(tmp_path):
         expected = app_path / 'test_expected_output'
 
         if not expected.exists():
-            make_output = os.environ.get('TEST_CREATE_EXPECTED_OUTPUT')
-            if make_output == '1':
-                shutil.copytree(tmp_path, expected)
-            else:
-                raise AssertionError(
-                    f'Expected output directory ({expected}) does not exist. '
-                    + 'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'
-                )
+            raise AssertionError(
+                f'Expected output directory ({expected}) does not exist. '
+            )
 
         assert_dirs_same(tmp_path, expected)
 
