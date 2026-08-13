@@ -78,6 +78,10 @@ def _get_html_links(
             yield node.attrib['href']
         if 'src' in node.attrib:
             yield node.attrib['src']
+        print(node.tag)
+        if node.tag == '{http://www.w3.org/1999/xhtml}style':
+            text = node.text.encode()  # TODO: parse as string?
+            yield from _get_css_links(text, base_url, headers)
         for child in node:
             yield from get_links_from_node(child, base_url)
 

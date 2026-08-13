@@ -96,11 +96,38 @@ TEST_DATA: Dict[str, Tuple[Tuple, List[str]]] = {
         ),
         ['/π'],
     ),
+    'inline_css': (
+        (
+            b"""
+                <html>
+                    <head>
+                        <title>Hello world</title>
+                        <style>
+                            @font-face {
+                                font-family: 'TurretRoad';
+                                src: url(TurretRoad-Regular.ttf) format('truetype');
+                                font-weight: normal;
+                            }
+                            body {
+                                font-family: 'TurretRoad';
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        This is in a weird font.
+                    </body>
+                </html>
+            """,
+            'http://localhost:8000/',
+            {'Content-Type': 'text/html; charset=cp1253'},
+        ),
+        ['TurretRoad-Regular.ttf'],
+    ),
 }
 
 
 @pytest.mark.parametrize("test_name", TEST_DATA)
-def test_links_css(test_name):
+def test_links_html(test_name):
     (content, *args), expected = TEST_DATA[test_name]
     f = BytesIO(content)
     links = get_html_links(f, *args)
@@ -108,7 +135,7 @@ def test_links_css(test_name):
 
 
 @pytest.mark.parametrize("test_name", TEST_DATA)
-def test_links_css_async(test_name):
+def test_links_html_async(test_name):
     (content, *args), expected = TEST_DATA[test_name]
     f = BytesIO(content)
     links = asyncio.run(get_html_links_async(f, *args))
