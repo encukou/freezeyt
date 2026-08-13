@@ -99,7 +99,9 @@ def _get_html_links(
         if 'style' in node.attrib:
             yield from _get_css_declaration_list_links(node.attrib['style'])
         if node.tag == '{http://www.w3.org/1999/xhtml}style':
-            yield from _get_css_stylesheet_links(node.text)
+            text = node.text
+            if text:
+                yield from _get_css_stylesheet_links(text)
         for child in node:
             yield from get_links_from_node(child, base_url)
 

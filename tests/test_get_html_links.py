@@ -115,6 +115,7 @@ TEST_DATA: Dict[str, Tuple[Tuple, List[str]]] = {
                                 background-image: url(divbg.png)
                             }
                         </style>
+                        <style></style>
                     </head>
                     <body>
                         This is in a weird font.
