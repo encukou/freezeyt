@@ -9,7 +9,7 @@ from werkzeug.http import parse_options_header
 
 from freezeyt.util import WrongMimetypeError
 from freezeyt.util import import_variable_from_module
-from freezeyt.types import Config, WSGIHeaderList, GetMimetypeFunction
+from freezeyt.types import Config, GetMimetypeFunction, asgi_types
 
 
 class MimetypeChecker:
@@ -34,7 +34,7 @@ class MimetypeChecker:
 
         self.get_mimetype = get_mimetype
 
-    def check(self, url: str, headers: WSGIHeaderList) -> None:
+    def check(self, url: str, headers: asgi_types.ASGIHeaders) -> None:
         check_mimetype(
             url,
             headers,
@@ -63,7 +63,7 @@ def default_mimetype(url: str) -> Optional[List[str]]:
 
 def check_mimetype(
     url_path: str,
-    headers: WSGIHeaderList,
+    headers: asgi_types.ASGIHeaders,
     default: str = 'application/octet-stream',
     *,
     get_mimetype: GetMimetypeFunction = default_mimetype,
@@ -80,7 +80,7 @@ def check_mimetype(
         file_mimetypes = [default]
 
     headers_mimetype, encoding = parse_options_header(
-        Headers(headers).get('Content-Type')
+        Headers([(k.decode(), v.decode()) for k, v in headers]).get('Content-Type')
     )
 
     if isinstance(file_mimetypes, str):
