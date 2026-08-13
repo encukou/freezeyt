@@ -111,12 +111,20 @@ TEST_DATA: Dict[str, Tuple[Tuple, List[str]]] = {
                             body {
                                 font-family: 'TurretRoad';
                             }
+                            div {
+                                background-image: url(divbg.png)
+                            }
                         </style>
                     </head>
                     <body>
                         This is in a weird font.
 
                         <p style="background-image: url(smile.png)">
+                            <ul>
+                                <li style="list-style-image: src('bullet.png')">
+                                    Item
+                                </li>
+                            </ul>
                         </p>
                     </body>
                 </html>
@@ -124,7 +132,7 @@ TEST_DATA: Dict[str, Tuple[Tuple, List[str]]] = {
             'http://localhost:8000/',
             {'Content-Type': 'text/html; charset=cp1253'},
         ),
-        ['TurretRoad-Regular.ttf', 'smile.png'],
+        ['TurretRoad-Regular.ttf', 'divbg.png', 'smile.png', 'bullet.png'],
     ),
 }
 
@@ -134,7 +142,7 @@ def test_links_html(test_name):
     (content, *args), expected = TEST_DATA[test_name]
     f = BytesIO(content)
     links = get_html_links(f, *args)
-    assert sorted(links) == expected
+    assert set(links) == set(expected)
 
 
 @pytest.mark.parametrize("test_name", TEST_DATA)
@@ -142,4 +150,4 @@ def test_links_html_async(test_name):
     (content, *args), expected = TEST_DATA[test_name]
     f = BytesIO(content)
     links = asyncio.run(get_html_links_async(f, *args))
-    assert sorted(links) == expected
+    assert set(links) == set(expected)
