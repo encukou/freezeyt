@@ -115,13 +115,16 @@ TEST_DATA: Dict[str, Tuple[Tuple, List[str]]] = {
                     </head>
                     <body>
                         This is in a weird font.
+
+                        <p style="background-image: url(smile.png)">
+                        </p>
                     </body>
                 </html>
             """,
             'http://localhost:8000/',
             {'Content-Type': 'text/html; charset=cp1253'},
         ),
-        ['TurretRoad-Regular.ttf'],
+        ['TurretRoad-Regular.ttf', 'smile.png'],
     ),
 }
 
