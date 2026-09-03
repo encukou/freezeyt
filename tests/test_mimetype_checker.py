@@ -5,9 +5,9 @@ from freezeyt.mimetype_check import MimetypeChecker
 
 def test_simple_check():
     checker = MimetypeChecker({})
-    checker.check('smile.png', [('Content-Type', 'image/png')])
+    checker.check('smile.png', [(b'Content-Type', b'image/png')])
     with pytest.raises(ValueError):
-        checker.check('smile.png', [('Content-Type', 'bad')])
+        checker.check('smile.png', [(b'Content-Type', b'bad')])
 
 
 def test_guess_mimetype():
