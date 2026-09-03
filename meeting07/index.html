@@ -54,13 +54,13 @@ tlačítko <em>Display the rich diff</em> vpravo v rohu u daného souboru v sekc
 <h2>Úprava odchytávání chybných odkazů</h2>
 <p>Následně jsme zkontrolovali Issues a poté jsme se pustili do práce na samotném kódu.
 Začleněný PR na odchytávání špatných odkazů obsahoval i tuto podmínku:</p>
-<pre><code class="language-python"><span class="k">if</span> <span class="s2">&quot;200&quot;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
+<pre><code class="language-python"><span class="k">if</span> <span class="s2">"200"</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
     <span class="o">...</span>
 </code></pre>
 <p>V řetězci, který obsahuje status code, se <code>&quot;200&quot;</code> teoreticky může vyskytovat kdekoliv,
 takže pro jistotu jsme tuto podmínku upravili, protože dle <a href="https://tools.ietf.org/html/rfc7231">standardu</a>
 je status code vždy na začátku. Podmínku jsme upravili tak, že zjišťuje, zda status začíná kódem 200.</p>
-<pre><code class="language-python"><span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;200&quot;</span><span class="p">):</span>
+<pre><code class="language-python"><span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"200"</span><span class="p">):</span>
     <span class="o">...</span>
 </code></pre>
 <h2>Úprava slovníku <code>environ</code></h2>

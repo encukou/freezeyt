@@ -34,7 +34,7 @@
 </blockquote>
 <h2>Zamezení přepisování funkcí</h2>
 <p>Dále jsme se pustili do řešení issue, které by zamezilo tomu, aby se v kódu přepisovaly funkce. Jak už bylo minule zmíněno, šlo by to vyřešit pravděpodobně pomocí linteru. A tak jsme vyzkoušeli <a href="https://pypi.org/project/pyflakes/">PyFlakes</a>. V dokumentaci jsme našli, jak je možné limitovat adresáře. (Aby si to nestěžovalo na adresář tox a virtuální prostředí.) PyFlakes vadilo, že v souboru <code>__init__.py</code> máme nepoužitý import, to jsme vyřešili pomocí</p>
-<pre><code class="language-python"><span class="n">__all__</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;freeze&quot;</span><span class="p">]</span>
+<pre><code class="language-python"><span class="n">__all__</span><span class="o">=</span><span class="p">[</span><span class="s2">"freeze"</span><span class="p">]</span>
 </code></pre>
 <p>Do toxu jsme přidali i kontrolu pomocí PyFlakes a následně ho přidali do GitHub actions.</p>
 <p>Následně byl poslán Pull request.</p>

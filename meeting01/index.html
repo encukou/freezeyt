@@ -54,9 +54,9 @@ Základní konstrukce takové aplikace vypadá následovně:</p>
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">index</span><span class="p">():</span>
-    <span class="k">return</span> <span class="s2">&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">"""</span>
 <span class="s2">    &lt;html&gt;</span>
 <span class="s2">        &lt;head&gt;</span>
 <span class="s2">            &lt;title&gt;Hello world&lt;/title&gt;</span>
@@ -65,7 +65,7 @@ Základní konstrukce takové aplikace vypadá následovně:</p>
 <span class="s2">            Hello world!</span>
 <span class="s2">        &lt;/body&gt;</span>
 <span class="s2">    &lt;/html&gt;</span>
-<span class="s2">    &quot;&quot;&quot;</span>
+<span class="s2">    """</span>
 </code></pre>
 <p>Dále jsme si vytvořili virtuální prostředí a do něj nainstalovali Flask.
 Dalším krokem je pustit Flask pomocí následujících příkazů
@@ -93,9 +93,9 @@ Funkce <code>freeze(app, tmp_path)</code> ještě není napsaná, ale test zajis
 
 <span class="k">def</span><span class="w"> </span><span class="nf">test_one_page</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
     <span class="n">freeze</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tmp_path</span> <span class="o">/</span> <span class="s2">"index.html"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">read_text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-    <span class="k">assert</span> <span class="n">read_text</span> <span class="o">==</span> <span class="s2">&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">read_text</span> <span class="o">==</span> <span class="s2">"""</span>
 <span class="s2">    &lt;html&gt;</span>
 <span class="s2">        &lt;head&gt;</span>
 <span class="s2">            &lt;title&gt;Hello world&lt;/title&gt;</span>
@@ -104,7 +104,7 @@ Funkce <code>freeze(app, tmp_path)</code> ještě není napsaná, ale test zajis
 <span class="s2">            Hello world!</span>
 <span class="s2">        &lt;/body&gt;</span>
 <span class="s2">    &lt;/html&gt;</span>
-<span class="s2">    &quot;&quot;&quot;</span>
+<span class="s2">    """</span>
 </code></pre>
 <blockquote>
 <p><code>tmp/frozen</code> je dočasný adresář a na Windows to nebude fungovat.
@@ -140,8 +140,8 @@ je zkopírována z <a href="https://docs.python.org/3.8/library/wsgiref.html#mod
 <span class="kn">from</span><span class="w"> </span><span class="nn">demo_app</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
 
 <span class="c1"># Create a demo WSGI server from a Flask app.</span>
-<span class="k">with</span> <span class="n">make_server</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">app</span><span class="p">)</span> <span class="k">as</span> <span class="n">server</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Serving HTTP on port 8000...&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">make_server</span><span class="p">(</span><span class="s1">''</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">app</span><span class="p">)</span> <span class="k">as</span> <span class="n">server</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Serving HTTP on port 8000..."</span><span class="p">)</span>
 
     <span class="c1"># Respond to requests until process is killed</span>
     <span class="n">server</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>

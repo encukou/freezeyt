@@ -57,9 +57,9 @@
 </li>
 <li>
 <p><strong>Creating a dynamic route (generic route for all posts)</strong> - added a <code>'/&lt;slug&gt;''</code> parameter (slug is a tech-term referring to the last peace of an address/Path):</p>
-<pre><code class="language-python"><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&lt;slug&gt;&#39;</span><span class="p">)</span>
+<pre><code class="language-python"><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/&lt;slug&gt;'</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span><span class="n">slug</span><span class="p">):</span>
-    <span class="n">md_file</span> <span class="o">=</span> <span class="n">base_url</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;content/articles/</span><span class="si">{slug}</span><span class="s1">.md&#39;</span><span class="p">)</span>
+    <span class="n">md_file</span> <span class="o">=</span> <span class="n">base_url</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="s1">'content/articles/</span><span class="si">{slug}</span><span class="s1">.md'</span><span class="p">)</span>
 </code></pre>
 <ul>
 <li>Changed the url_for in the index page accordingly.</li>
@@ -74,14 +74,14 @@
 <li>
 <p><strong>Shorten code in the 'try' block:</strong></p>
 <pre><code class="language-python"><span class="k">try</span><span class="p">:</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">md_file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">md_file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'r'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">'UTF-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">md_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
     <span class="n">abort</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
 </code></pre>
 <p>Improved into:</p>
 <pre><code class="language-python"><span class="k">try</span><span class="p">:</span>
-    <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">md_file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">md_file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'r'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">'UTF-8'</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
     <span class="n">abort</span><span class="p">(</span><span class="mi">404</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">file</span><span class="p">:</span>
@@ -109,10 +109,10 @@
 <ol>
 <li>
 <p>In the first commit, MODULE_NAMES is generated from the 'fixtures' folder and than used as a parameter in <code>test_output(tmp_path, module_name)</code>:</p>
-<pre><code class="language-python"><span class="n">FIXTURES_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;fixtures&#39;</span>
+<pre><code class="language-python"><span class="n">FIXTURES_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">'fixtures'</span>
 <span class="n">MODULE_NAMES</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">stem</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">FIXTURES_PATH</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">is_file</span><span class="p">()]</span>
 
-<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">&#39;module_name&#39;</span><span class="p">,</span> <span class="n">MODULE_NAMES</span><span class="p">)</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">'module_name'</span><span class="p">,</span> <span class="n">MODULE_NAMES</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">test_output</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">module_name</span><span class="p">):</span>
 </code></pre>
 </li>
@@ -152,7 +152,7 @@
 <li>
 <p>Adding more apps which can not be frozen, similar to &quot;demo_app_broken_link&quot;:
 01hr:17min</p>
-<pre><code class="language-python"><span class="k">if</span> <span class="n">module_name</span> <span class="o">==</span> <span class="s2">&quot;demo_app_broken_link&quot;</span><span class="p">:</span>
+<pre><code class="language-python"><span class="k">if</span> <span class="n">module_name</span> <span class="o">==</span> <span class="s2">"demo_app_broken_link"</span><span class="p">:</span>
   <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
     <span class="n">freeze</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
 </code></pre>
@@ -179,7 +179,7 @@ Asside from built_in modules, all others are imported from a python variable nam
 </code></pre>
 <p>The first item in this list is an empty string which represents the current directory. When we import something from python, it iterates through the whole list until it finds the requested module:</p>
 <pre><code class="language-python"><span class="o">&gt;&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span>
-<span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/lib64/python38.zip&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/lib64/python3.8&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/lib64/python3.8/lib-dynload&#39;</span><span class="p">,</span> <span class="s1">&#39;/home/user/python_2020/pyladiesweb/projekt/venv/lib64/python3.8/site-packages&#39;</span><span class="p">,</span> <span class="s1">&#39;/home/user/python_2020/pyladiesweb/projekt/venv/lib/python3.8/site-packages&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="s1">''</span><span class="p">,</span> <span class="s1">'/usr/lib64/python38.zip'</span><span class="p">,</span> <span class="s1">'/usr/lib64/python3.8'</span><span class="p">,</span> <span class="s1">'/usr/lib64/python3.8/lib-dynload'</span><span class="p">,</span> <span class="s1">'/home/user/python_2020/pyladiesweb/projekt/venv/lib64/python3.8/site-packages'</span><span class="p">,</span> <span class="s1">'/home/user/python_2020/pyladiesweb/projekt/venv/lib/python3.8/site-packages'</span><span class="p">]</span>
 </code></pre>
 <h3>How is the <code>__path__</code> created</h3>
 <ul>
@@ -194,7 +194,7 @@ Asside from built_in modules, all others are imported from a python variable nam
 <img src="/freezeyt/article_image/sys_path_append_mess.png" alt="" >
 </p>
 <p>The solution is to create another orig_path variable to record the original sys.path, and put the test_output inside a <code>try</code> block. Once the test is finished return the sys.path to it's original state before the test.</p>
-<pre><code class="language-python"><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">&#39;module_name&#39;</span><span class="p">,</span> <span class="n">MODULE_NAMES</span><span class="p">)</span>
+<pre><code class="language-python"><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">'module_name'</span><span class="p">,</span> <span class="n">MODULE_NAMES</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">test_output</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">module_name</span><span class="p">):</span>
   <span class="n">orig_path</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span>
   <span class="k">try</span><span class="p">:</span>
@@ -202,7 +202,7 @@ Asside from built_in modules, all others are imported from a python variable nam
     <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">app</span>
 
-    <span class="n">expected</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;fixture&#39;</span> <span class="o">/</span> <span class="n">module_name</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">'fixture'</span> <span class="o">/</span> <span class="n">module_name</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">expected</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
       <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
@@ -211,12 +211,12 @@ Asside from built_in modules, all others are imported from a python variable nam
       <span class="n">freeze</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
 
       <span class="k">if</span> <span class="ow">not</span> <span class="n">expected</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-        <span class="k">if</span> <span class="s1">&#39;TEST_CREATE_EXPECTED_OUTPUT&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">'TEST_CREATE_EXPECTED_OUTPUT'</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
           <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
           <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">&#39;Expected output directory (</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s1">) does not exist.</span>
-            <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it&#39;</span>
+            <span class="sa">f</span><span class="s1">'Expected output directory (</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s1">) does not exist.</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s1">'Run with TEST_CREATE_EXPECTED_OUTPUT=1 to create it'</span>
           <span class="p">)</span>
       <span class="n">assert_dirs_same</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
   <span class="k">finally</span><span class="p">:</span>
