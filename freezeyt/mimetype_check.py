@@ -4,9 +4,6 @@ from typing import Optional, List, Mapping, Dict
 import functools
 from pathlib import PurePosixPath
 
-from werkzeug.datastructures import Headers
-from werkzeug.http import parse_options_header
-
 from freezeyt.util import WrongMimetypeError
 from freezeyt.util import import_variable_from_module
 from freezeyt.types import Config, GetMimetypeFunction, asgi_types
@@ -79,14 +76,19 @@ def check_mimetype(
     if file_mimetypes is None:
         file_mimetypes = [default]
 
-    headers_mimetype, encoding = parse_options_header(
-        Headers([(k.decode(), v.decode()) for k, v in headers]).get('Content-Type')
-    )
+    # Get the MIME type from the Content-Type header
+    headers_mimetype = "application/octet-stream"  # Default per RFC 9110
+    for key, value in headers:
+        if key.lower() == b'content-type':
+            # Parse the media-type per RFC 9110 8.3.1.
+            headers_mimetype_bytes, sep, options = value.partition(b';')
+            headers_mimetype = headers_mimetype_bytes.strip().lower().decode()
+            break
 
     if isinstance(file_mimetypes, str):
         raise TypeError("get_mimetype result must not be a string")
 
-    if headers_mimetype.lower() not in (m.lower() for m in file_mimetypes):
+    if headers_mimetype not in (m.lower() for m in file_mimetypes):
         raise WrongMimetypeError(file_mimetypes, headers_mimetype, url_path)
 
 
