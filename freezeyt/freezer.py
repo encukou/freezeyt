@@ -8,7 +8,6 @@ import inspect
 import re
 import os
 
-from werkzeug.datastructures import Headers
 from werkzeug.http import parse_options_header, parse_list_header
 
 import freezeyt
@@ -20,6 +19,7 @@ from freezeyt.dictsaver import DictSaver
 from freezeyt.util import import_variable_from_module
 from freezeyt.util import InfiniteRedirection, ExternalURLError
 from freezeyt.util import UnexpectedStatus, MultiError, TaskStatus
+from freezeyt.util import Headers
 from freezeyt.urls import AppURL, PrefixURL
 from freezeyt.compat import warnings_warn, WSGIApplication
 from freezeyt import hooks
@@ -734,10 +734,10 @@ class Freezer:
             if event['type'] == "http.response.start":
                 if task.response is not None:
                     raise AssertionError('App started a response twice')
-                headers = Headers(
+                headers = Headers([
                     (key.decode('latin-1'), value.decode('latin-1'))
                     for key, value in event.get('headers', [])
-                )
+                ])
                 status = event['status']
                 task.response = Response(
                     headers=headers,
