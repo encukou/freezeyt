@@ -7,6 +7,7 @@ from werkzeug.http import HTTP_STATUS_CODES
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 from freezeyt.encoding import decode_input_path
+from freezeyt.types import asgi_types
 
 
 if TYPE_CHECKING:
@@ -186,3 +187,7 @@ def get_url_part(part: str) -> str:
 
     return part.lstrip("/")
 
+
+class Headers:
+    def __init__(self, asgi_headers: asgi_types.ASGIHeaders):
+        self._original_headers = asgi_headers
