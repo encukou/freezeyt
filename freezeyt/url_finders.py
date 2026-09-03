@@ -58,6 +58,24 @@ def get_urls_from_tinycss2_value(value: Any) -> Iterable[str]:
     else:
         pass
 
+def _get_css_blocks_contents_links(content: str)  -> Iterable[str]:
+    """Get all links from a CSS declaration_list."""
+    parsed = tinycss2.parse_blocks_contents(
+        content,
+        skip_comments=True,
+        skip_whitespace=True,
+    )
+    return list(get_urls_from_tinycss2_value(parsed))
+
+def _get_css_stylesheet_links(content: str)  -> Iterable[str]:
+    """Get all links from an inline CSS stylesheet."""
+    parsed = tinycss2.parse_stylesheet(
+        content,
+        skip_comments=True,
+        skip_whitespace=True,
+    )
+    return list(get_urls_from_tinycss2_value(parsed))
+
 
 def _get_html_links(
     page_content: bytes, base_url: str, headers: _Headers,
@@ -78,6 +96,12 @@ def _get_html_links(
             yield node.attrib['href']
         if 'src' in node.attrib:
             yield node.attrib['src']
+        if 'style' in node.attrib:
+            yield from _get_css_blocks_contents_links(node.attrib['style'])
+        if node.tag == '{http://www.w3.org/1999/xhtml}style':
+            text = node.text
+            if text:
+                yield from _get_css_stylesheet_links(text)
         for child in node:
             yield from get_links_from_node(child, base_url)
 
