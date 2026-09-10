@@ -526,12 +526,12 @@ class Freezer:
         assert task.response is not None
 
         status_handler_name: Optional[str]
-        status_handler_name = task.response.headers.get('Freezeyt-Action')
+        status_handler_name_bytes = task.response.headers.get_str(b'Freezeyt-Action')
 
         # handle redirecting to same filepath like source URL
         status_str = str(status)
         if status_str.startswith('3'):
-            location = task.response.headers.get('Location')
+            location = task.response.headers.get_str(b'Location')
         else:
             location = None
         if location is not None:
@@ -769,7 +769,7 @@ class Freezer:
         await self.saver.save_to_filename(task.path, response_body)
 
         assert task.response is not None
-        finder_name = task.response.headers.get('Freezeyt-URL-Finder')
+        finder_name = task.response.headers.get_str(b'Freezeyt-URL-Finder')
         url_finder: Union[UrlFinder, None]
         if finder_name is not None:
             url_finder = import_variable_from_module(
@@ -777,7 +777,7 @@ class Freezer:
                 default_module_name='freezeyt.url_finders',
             )
         else:
-            content_type = task.response.headers.get('Content-Type')
+            content_type = task.response.headers.get_str(b'Content-Type')
             mime_type, encoding = parse_options_header(content_type)
             url_finder = self.url_finders.get(mime_type)
         if url_finder is not None:
@@ -806,8 +806,8 @@ class Freezer:
                         )
 
         if self.config.get('urls_from_link_headers', True):
-            for link_header in task.response.headers.getlist('Link'):
-                for link in parse_list_header(link_header):
+            for link_header in task.response.headers.getlist(b'Link'):
+                for link in parse_list_header(link_header.decode()):
                     link = link.strip()
                     if not link.startswith('<'):
                         raise ValueError(f'Invalid Link header: {link!r}')

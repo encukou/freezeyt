@@ -1,6 +1,7 @@
 import importlib
 import concurrent.futures
 from typing import Sequence, TYPE_CHECKING, List, Optional, TypeVar
+from typing import Iterable, Tuple
 import enum
 
 from werkzeug.http import HTTP_STATUS_CODES
@@ -191,3 +192,31 @@ def get_url_part(part: str) -> str:
 class Headers:
     def __init__(self, asgi_headers: asgi_types.ASGIHeaders):
         self._original_headers = asgi_headers
+
+    def get(self, header_name: bytes) -> bytes | None:
+        header_name = header_name.lower()
+        for name, value in self._original_headers:
+            if name.lower() == header_name:
+                return value
+        return None
+
+    def get_str(self, header_name: bytes) -> str | None:
+        header_name = header_name.lower()
+        for name, value in self._original_headers:
+            if name.lower() == header_name:
+                return value.decode()
+        return None
+
+    def getlist(self, header_name: bytes) -> list[bytes]:
+        result = []
+        header_name = header_name.lower()
+        for name, value in self._original_headers:
+            if name.lower() == header_name:
+                result.append(value)
+        return result
+
+    def to_wsgi_list(self) -> list[Tuple[str, str]]:
+        result = []
+        for name, value in self._original_headers:
+            result.append((name.decode(), value.decode()))
+        return result

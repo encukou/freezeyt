@@ -23,7 +23,7 @@ def _get_css_links(
     if headers == None:
         cont_charset = None
     else:
-        content_type_header = Headers(headers).get('Content-Type')
+        content_type_header = Headers(headers).get_str(b'Content-Type')
         cont_type, cont_options = parse_options_header(content_type_header)
         cont_charset = cont_options.get('charset')
 
