@@ -7,52 +7,52 @@ TEST_DATA = {
     'normal_html': (
         'http://localhost:8000/index.html',
         [
-            ('Content-Type', 'text/html; charset=utf-8'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'text/html; charset=utf-8'),
+            (b'Content-Length', b'164'),
         ],
     ),
 
     'jpg_X_png_fail': (
         'http://localhost:8000/index.jpg',
         [
-            ('Content-Type', 'image/png'),
-            ('Content-Length', '654'),
+            (b'Content-Type', b'image/png'),
+            (b'Content-Length', b'654'),
         ],
     ),
 
     'missing_content_type_fail': (
-        'http://localhost:8000/index.html', [('Content-Length', '164')]
+        'http://localhost:8000/index.html', [(b'Content-Length', b'164')]
     ),
 
     'case_insensitive_content_type': (
         'http://localhost:8000/index.html',
         [
-            ('Content-Type', 'TEXT/HTML; charset=utf-8'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'TEXT/HTML; charset=utf-8'),
+            (b'Content-Length', b'164'),
         ],
     ),
 
     'case_insensitive_file': (
         'http://localhost:8000/index.HTML',
         [
-            ('Content-Type', 'text/html; charset=utf-8'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'text/html; charset=utf-8'),
+            (b'Content-Length', b'164'),
         ],
     ),
 
     'case_insensitive_headers_fail': (
         'http://localhost:8000/index.jpg',
         [
-            ('CONTENT-TYPE', 'IMAGE/PNG'),
-            ('Content-Length', '654'),
+            (b'CONTENT-TYPE', b'IMAGE/PNG'),
+            (b'Content-Length', b'654'),
         ],
     ),
 
     'case_insensitive_headers': (
         'http://localhost:8000/index.jpg',
         [
-            ('coNtENT-TypE', 'IMAgE/JpEG'),
-            ('Content-Length', '654'),
+            (b'coNtENT-TypE', b'IMAgE/JpEG'),
+            (b'Content-Length', b'654'),
         ],
     ),
 
@@ -62,29 +62,29 @@ TEST_DATA = {
     'same_jpg_fail': (
         'http://localhost:8000/image.jpg',
         [
-            ('Content-Type', 'image/jpg'),
-            ('Content-Length', '654'),
+            (b'Content-Type', b'image/jpg'),
+            (b'Content-Length', b'654'),
         ],
     ),
 
     'missing_file_suffix': (
         'http://localhost:8000/index',
         [
-            ('Content-Type', 'application/octet-stream'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'application/octet-stream'),
+            (b'Content-Length', b'164'),
         ],
     ),
 
     'missing_file_suffix_fail': (
         'http://localhost:8000/index',
         [
-            ('Content-Type', 'image/png'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'image/png'),
+            (b'Content-Length', b'164'),
         ],
     ),
 
     'directory': (
-        'http://localhost:8000/foo/', [('Content-Type', 'text/html')]
+        'http://localhost:8000/foo/', [(b'Content-Type', b'text/html')]
     ),
 }
 @pytest.mark.parametrize('testname', TEST_DATA)
@@ -103,8 +103,8 @@ TEST_DATA_DEFAULT = {
     'missing_file_suffix': (
         'http://localhost:8000/index',
         [
-            ('Content-Type', 'image/png'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'image/png'),
+            (b'Content-Length', b'164'),
         ],
         'image/png'
     ),
@@ -112,8 +112,8 @@ TEST_DATA_DEFAULT = {
     'missing_file_suffix_fail': (
         'http://localhost:8000/index',
         [
-            ('Content-Type', 'text/html'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'text/html'),
+            (b'Content-Length', b'164'),
         ],
         'image/png'
     ),
@@ -121,8 +121,8 @@ TEST_DATA_DEFAULT = {
     'default_ignored': (
         'http://localhost:8000/picture.jpg',
         [
-            ('Content-Type', 'image/jpeg'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'image/jpeg'),
+            (b'Content-Length', b'164'),
         ],
         'image/png'
     ),
@@ -130,8 +130,8 @@ TEST_DATA_DEFAULT = {
     'default_ignored_fail': (
         'http://localhost:8000/picture.jpg',
         [
-            ('Content-Type', 'image/png'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'image/png'),
+            (b'Content-Length', b'164'),
         ],
         'image/png'
     )
@@ -155,8 +155,8 @@ def test_missing_file_suffix_get_mimetype():
     check_mimetype(
         'http://localhost:8000/index',
         [
-            ('Content-Type', 'image/png'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'image/png'),
+            (b'Content-Length', b'164'),
         ],
         get_mimetype=get_mimetype
     )
@@ -169,8 +169,8 @@ def test_get_mimetype_capital_mimetype(monkeypatch):
     check_mimetype(
         'http://localhost:8000/image.png',
         [
-            ('Content-Type', 'image/png'),
-            ('Content-Length', '164'),
+            (b'Content-Type', b'image/png'),
+            (b'Content-Length', b'164'),
         ],
         get_mimetype=get_mimetype
     )
@@ -184,8 +184,8 @@ def test_missing_file_suffix_get_mimetype_fail():
         check_mimetype(
             'http://localhost:8000/index',
             [
-                ('Content-Type', 'image/jpeg'),
-                ('Content-Length', '164'),
+                (b'Content-Type', b'image/jpeg'),
+                (b'Content-Length', b'164'),
             ],
             get_mimetype=get_mimetype
         )
@@ -199,8 +199,8 @@ def test_missing_file_suffix_get_mimetype_fail_default_ignored():
         check_mimetype(
             'http://localhost:8000/index',
             [
-                ('Content-Type', 'text/html'),
-                ('Content-Length', '164'),
+                (b'Content-Type', b'text/html'),
+                (b'Content-Length', b'164'),
             ],
             default='text/html',
             get_mimetype=get_mimetype,

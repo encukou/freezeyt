@@ -191,8 +191,7 @@ class ASGIMiddleware:
             await send(event)
             if event["type"] == "http.response.start":
                 asgi_headers = event.get("headers", [])
-                wsgi_headers = [(k.decode(), v.decode()) for k, v in asgi_headers]
-                self.mimetype_checker.check(path_info, wsgi_headers)
+                self.mimetype_checker.check(path_info, asgi_headers)
 
         return self.app(scope, receive, checking_send)
 

@@ -23,6 +23,7 @@ else:
     from typing_extensions import NotRequired
 
 __all__ = (
+    "ASGIHeaders",
     "ASGIVersions",
     "HTTPScope",
     "WebSocketScope",
@@ -60,6 +61,8 @@ __all__ = (
     "ASGIApplication",
 )
 
+ASGIHeaders = Iterable[Tuple[bytes, bytes]]
+
 
 class ASGIVersions(TypedDict):
     spec_version: str
@@ -76,7 +79,7 @@ class HTTPScope(TypedDict):
     raw_path: NotRequired[Optional[bytes]]
     query_string: bytes
     root_path: NotRequired[str]
-    headers: Iterable[Tuple[bytes, bytes]]
+    headers: ASGIHeaders
     client: NotRequired[Optional[Tuple[str, int]]]
     server: NotRequired[Optional[Tuple[str, Optional[int]]]]
     state: NotRequired[Dict[str, Any]]
@@ -92,7 +95,7 @@ class WebSocketScope(TypedDict):
     raw_path: NotRequired[Optional[bytes]]
     query_string: NotRequired[Optional[bytes]]
     root_path: NotRequired[str]
-    headers: Iterable[Tuple[bytes, bytes]]
+    headers: ASGIHeaders
     client: NotRequired[Optional[Tuple[str, int]]]
     server: NotRequired[Optional[Tuple[str, Optional[int]]]]
     subprotocols: NotRequired[Iterable[str]]
@@ -125,7 +128,7 @@ class HTTPResponseDebugEvent(TypedDict):
 class HTTPResponseStartEvent(TypedDict):
     type: Literal["http.response.start"]
     status: int
-    headers: NotRequired[Iterable[Tuple[bytes, bytes]]]
+    headers: NotRequired[ASGIHeaders]
     trailers: NotRequired[bool]
 
 
@@ -137,7 +140,7 @@ class HTTPResponseBodyEvent(TypedDict):
 
 class HTTPResponseTrailersEvent(TypedDict):
     type: Literal["http.response.trailers"]
-    headers: Iterable[Tuple[bytes, bytes]]
+    headers: ASGIHeaders
     more_trailers: NotRequired[bool]
 
 
@@ -149,7 +152,7 @@ class HTTPResponsePathsendEvent(TypedDict):
 class HTTPServerPushEvent(TypedDict):
     type: Literal["http.response.push"]
     path: str
-    headers: Iterable[Tuple[bytes, bytes]]
+    headers: ASGIHeaders
 
 
 class HTTPDisconnectEvent(TypedDict):
@@ -163,7 +166,7 @@ class WebSocketConnectEvent(TypedDict):
 class WebSocketAcceptEvent(TypedDict):
     type: Literal["websocket.accept"]
     subprotocol: NotRequired[Optional[str]]
-    headers: NotRequired[Iterable[Tuple[bytes, bytes]]]
+    headers: NotRequired[ASGIHeaders]
 
 
 class _WebSocketSendEvent_Text(TypedDict):
@@ -205,7 +208,7 @@ WebSocketReceiveEvent = Union[
 class WebSocketResponseStartEvent(TypedDict):
     type: Literal["websocket.http.response.start"]
     status: int
-    headers: NotRequired[Iterable[Tuple[bytes, bytes]]]
+    headers: NotRequired[ASGIHeaders]
     trailers: NotRequired[bool]
 
 
