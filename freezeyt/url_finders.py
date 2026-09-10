@@ -15,21 +15,22 @@ from .types import WSGIHeaderList, UrlFinder
 
 _Headers = Optional[WSGIHeaderList]
 
+def _get_charset_from_headers(headers: _Headers) -> Optional[str]:
+    if headers:
+        for key, value in headers:
+            if key.lower() == 'content-type':
+                cont_type, cont_options = parse_options_header(value)
+                return cont_options.get('charset')
+    return None
+
 
 def _get_css_links(
     content: bytes, base_url: str, headers: _Headers,
 )  -> Iterable[str]:
     """Get all links from a CSS file."""
-    if headers == None:
-        cont_charset = None
-    else:
-        content_type_header = Headers(headers).get('Content-Type')
-        cont_type, cont_options = parse_options_header(content_type_header)
-        cont_charset = cont_options.get('charset')
-
     parsed, encoding = tinycss2.parse_stylesheet_bytes(
         content,
-        protocol_encoding=cont_charset,
+        protocol_encoding=_get_charset_from_headers(headers),
         skip_comments=True,
         skip_whitespace=True,
         # Ideally, we'd set `environment_encoding` to the encoding of the
@@ -104,12 +105,7 @@ def _get_html_links(
         for child in node:
             yield from get_links_from_node(child, base_url)
 
-    if headers == None:
-        cont_charset = None
-    else:
-        content_type_header = Headers(headers).get('Content-Type')
-        cont_type, cont_options = parse_options_header(content_type_header)
-        cont_charset = cont_options.get('charset')
+    cont_charset = _get_charset_from_headers(headers)
     document = html5lib.parse(page_content, transport_encoding=cont_charset)
     return list(get_links_from_node(document, base_url))
 

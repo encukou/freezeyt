@@ -75,7 +75,7 @@ TEST_DATA: Dict[str, Tuple[Tuple, List[str]]] = {
                 </html>
             """,
             'http://localhost:8000/',
-            {'Content-Type': 'text/html; charset=utf-8'},
+            [('Content-Type', 'text/html; charset=utf-8')],
         ),
         ['/čau'],
     ),
@@ -92,7 +92,7 @@ TEST_DATA: Dict[str, Tuple[Tuple, List[str]]] = {
                 </html>
             """,
             'http://localhost:8000/',
-            {'Content-Type': 'text/html; charset=cp1253'},
+            [('Content-Type', 'text/html; charset=cp1253')],
         ),
         ['/π'],
     ),
@@ -131,7 +131,7 @@ TEST_DATA: Dict[str, Tuple[Tuple, List[str]]] = {
                 </html>
             """,
             'http://localhost:8000/',
-            {'Content-Type': 'text/html; charset=cp1253'},
+            [('Content-Type', 'text/html; charset=cp1253')],
         ),
         ['TurretRoad-Regular.ttf', 'divbg.png', 'smile.png', 'bullet.png'],
     ),

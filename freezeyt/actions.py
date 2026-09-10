@@ -5,10 +5,10 @@ from freezeyt.util import TaskStatus, ExternalURLError
 from freezeyt.types import ActionFunction
 
 
-_ACTIONS: Dict[str, ActionFunction] = {}
+_ACTIONS: Dict[bytes, ActionFunction] = {}
 
 def register(func: ActionFunction) -> ActionFunction:
-    _ACTIONS[func.__name__] = func
+    _ACTIONS[func.__name__.encode()] = func
     return func
 
 
@@ -34,15 +34,20 @@ def follow(task: TaskInfo) -> str:
     if response is None:
         raise ValueError(
             f'follow() called on {url} which is not being saved yet')
+    location = response.headers.get_str(b'Location')
+    if location is None:
+        # XXX Add test for this
+        raise ValueError(
+            f'follow() called on page without a Location header')
     try:
-        location = url.join(response.headers['Location'])
+        redirect_url = url.join(location)
     except ExternalURLError:
         raise NotImplementedError(
             'Redirects to external pages are not supported',
         )
 
     target_task = task._freezer.add_task(
-        location,
+        redirect_url,
         reason=f'target of redirect from: {task._task.path}',
     )
 
