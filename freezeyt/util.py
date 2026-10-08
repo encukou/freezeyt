@@ -43,6 +43,9 @@ class UnsupportedSchemeError(ValueError):
 class BadPrefixError(ValueError):
     """Raised for URLs that can't be used as prefix"""
 
+class BadRedirectError(ValueError):
+    """Raised when following redirect without a Location"""
+
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
     def __init__(

@@ -1,7 +1,7 @@
 from typing import Dict, TYPE_CHECKING
 
 from freezeyt.hooks import TaskInfo
-from freezeyt.util import TaskStatus, ExternalURLError
+from freezeyt.util import TaskStatus, ExternalURLError, BadRedirectError
 from freezeyt.types import ActionFunction
 
 
@@ -36,9 +36,8 @@ def follow(task: TaskInfo) -> str:
             f'follow() called on {url} which is not being saved yet')
     location = response.headers.get_str(b'Location')
     if location is None:
-        # XXX Add test for this
-        raise ValueError(
-            f'follow() called on page without a Location header')
+        raise BadRedirectError(
+            f"'follow' action called on page without a Location header: {url}")
     try:
         redirect_url = url.join(location)
     except ExternalURLError:
