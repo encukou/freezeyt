@@ -9,7 +9,7 @@ import tinycss2_core_attributes
 
 from werkzeug.http import parse_options_header
 
-from .util import process_pool_executor, Headers
+from .util import process_pool_executor
 from .types import WSGIHeaderList, UrlFinder
 
 
