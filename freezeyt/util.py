@@ -205,20 +205,20 @@ class Headers:
             if name.lower() == header_name:
                 yield value
 
-    def get(self, header_name: bytes) -> bytes | None:
+    def get(self, header_name: bytes) -> Optional[bytes]:
         for value in self._getiter(header_name):
             return value
         return None
 
-    def get_str(self, header_name: bytes) -> str | None:
+    def get_str(self, header_name: bytes) -> Optional[str]:
         for value in self._getiter(header_name):
             return value.decode('latin-1')
         return None
 
-    def getlist(self, header_name: bytes) -> list[bytes]:
+    def getlist(self, header_name: bytes) -> List[bytes]:
         return list(self._getiter(header_name))
 
-    def to_wsgi_list(self) -> list[Tuple[str, str]]:
+    def to_wsgi_list(self) -> List[Tuple[str, str]]:
         result = []
         for name, value in self._original_headers:
             result.append((name.decode('latin-1'), value.decode('latin-1')))
