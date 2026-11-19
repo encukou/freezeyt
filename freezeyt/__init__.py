@@ -1,5 +1,7 @@
 from freezeyt.freezer import freeze, freeze_async, VersionMismatch
-from freezeyt.util import InfiniteRedirection, ExternalURLError, RelativeURLError, UnexpectedStatus, MultiError
+from freezeyt.util import InfiniteRedirection, ExternalURLError
+from freezeyt.util import RelativeURLError, UnexpectedStatus, MultiError
+from freezeyt.util import BadRedirectError
 from freezeyt.filesaver import DirectoryExistsError
 from freezeyt.freezer import default_url_to_path as url_to_path
 from freezeyt.asgi_middleware import ASGIMiddleware
@@ -20,6 +22,7 @@ __all__ = [
     'RelativeURLError',
     'UnexpectedStatus',
     'MultiError',
+    'BadRedirectError',
     'VersionMismatch',
     'Config',
 ]

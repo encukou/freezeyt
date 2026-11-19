@@ -1,12 +1,14 @@
 import importlib
 import concurrent.futures
-from typing import Sequence, TYPE_CHECKING, List, Optional, TypeVar
+from typing import Sequence, TYPE_CHECKING, List, Optional, TypeVar, Dict
+from typing import Tuple
 import enum
 
 from werkzeug.http import HTTP_STATUS_CODES
 
 from freezeyt.compat import _MultiErrorBase, HAVE_EXCEPTION_GROUP
 from freezeyt.encoding import decode_input_path
+from freezeyt.types import asgi_types
 
 
 if TYPE_CHECKING:
@@ -40,6 +42,9 @@ class UnsupportedSchemeError(ValueError):
 
 class BadPrefixError(ValueError):
     """Raised for URLs that can't be used as prefix"""
+
+class BadRedirectError(ValueError):
+    """Raised when following redirect without a Location"""
 
 class UnexpectedStatus(ValueError):
     """The application returned an unexpected status code for a page"""
@@ -186,3 +191,32 @@ def get_url_part(part: str) -> str:
 
     return part.lstrip("/")
 
+
+class Headers:
+    def __init__(self, asgi_headers: asgi_types.ASGIHeaders):
+        self._dict: Dict[bytes, List[bytes]] = {}
+        for name, value in asgi_headers:
+            self._dict.setdefault(name.lower(), []).append(value)
+
+    def __repr__(self):
+        return f'<{type(self).__name__}({self._dict})>'
+
+    def get(self, header_name: bytes) -> Optional[bytes]:
+        return self._dict.get(header_name.lower(), [None])[0]
+
+    def get_str(self, header_name: bytes) -> Optional[str]:
+        result = self.get(header_name)
+        if result is None:
+            return None
+        return result.decode('latin-1')
+
+    def get_list(self, header_name: bytes) -> List[bytes]:
+        return self._dict.get(header_name.lower(), [])
+
+    def to_wsgi_list(self) -> List[Tuple[str, str]]:
+        result = []
+        for name, values in self._dict.items():
+            name_encoded = name.decode('latin-1')
+            for value in values:
+                result.append((name_encoded, value.decode('latin-1')))
+        return result

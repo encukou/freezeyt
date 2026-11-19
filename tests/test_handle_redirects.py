@@ -2,6 +2,7 @@ from flask import Flask, redirect, url_for, request
 import pytest
 
 from freezeyt import freeze, UnexpectedStatus, InfiniteRedirection
+from freezeyt import BadRedirectError
 
 from testutil import raises_multierror_with_one_exception
 
@@ -243,3 +244,24 @@ def test_redirect_with_same_path_with_different_spelling():
     expected = {'index.html': b"Hello world!"}
 
     assert result == expected
+
+
+def test_follow_without_location():
+    app = Flask(__name__)
+
+    @app.route('/')
+    def index():
+        return "Hello world!"
+
+    config = {
+        'output': {'type': 'dict'},
+        'status_handlers': {'2xx': 'follow'},
+    }
+
+    with raises_multierror_with_one_exception(BadRedirectError) as exc:
+        freeze(app, config)
+
+    assert str(exc.value) == (
+        "'follow' action called on page without a "
+        + "Location header: http://localhost:8000/"
+    )
