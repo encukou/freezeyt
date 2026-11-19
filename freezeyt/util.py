@@ -199,24 +199,24 @@ class Headers:
     def __repr__(self):
         return f'<{type(self).__name__}({self._original_headers})>'
 
-    def _getiter(self, header_name: bytes) -> Iterable[bytes]:
+    def _get_iter(self, header_name: bytes) -> Iterable[bytes]:
         header_name = header_name.lower()
         for name, value in self._original_headers:
             if name.lower() == header_name:
                 yield value
 
     def get(self, header_name: bytes) -> Optional[bytes]:
-        for value in self._getiter(header_name):
+        for value in self._get_iter(header_name):
             return value
         return None
 
     def get_str(self, header_name: bytes) -> Optional[str]:
-        for value in self._getiter(header_name):
+        for value in self._get_iter(header_name):
             return value.decode('latin-1')
         return None
 
-    def getlist(self, header_name: bytes) -> List[bytes]:
-        return list(self._getiter(header_name))
+    def get_list(self, header_name: bytes) -> List[bytes]:
+        return list(self._get_iter(header_name))
 
     def to_wsgi_list(self) -> List[Tuple[str, str]]:
         result = []

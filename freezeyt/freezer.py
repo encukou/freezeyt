@@ -802,7 +802,7 @@ class Freezer:
                         )
 
         if self.config.get('urls_from_link_headers', True):
-            for link_header in task.response.headers.getlist(b'Link'):
+            for link_header in task.response.headers.get_list(b'Link'):
                 for link in parse_list_header(link_header.decode('latin-1')):
                     link = link.strip()
                     if not link.startswith('<'):
